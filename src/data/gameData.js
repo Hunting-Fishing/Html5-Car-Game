@@ -1,6 +1,7 @@
 export const SCREENS = [
   { id: 'hub', label: 'Hub', icon: '🏁' },
   { id: 'race', label: 'Race', icon: '🚗' },
+  { id: 'lines', label: 'Lines', icon: '📈' },
   { id: 'merge', label: 'Merge', icon: '🔧' },
   { id: 'garage', label: 'Build', icon: '🏗️' },
   { id: 'profile', label: 'Profile', icon: '👤' },
@@ -58,6 +59,105 @@ export const RACE_MODES = {
   }
 };
 
+export const IDLE_LINES = [
+  {
+    key: 'streetRoute', name: 'Street Route', icon: '🌆', output: 'coins', outputLabel: 'Coins', costResource: 'coins',
+    description: 'First route. Basic clicker income from safe local driving.',
+    baseIncome: 8, baseCycleMs: 3000, baseCost: 25, costRate: 1.16, startLevel: 1,
+    unlock: { type: 'starter' }, problemRisk: ['fuel', 'traffic', 'heat'],
+    manager: { name: 'Route Driver', unlockLevel: 10, cost: { coins: 500 }, description: 'Automatically collects Street Route income.' },
+    milestones: [
+      { level: 10, type: 'incomeMultiplier', value: 2, label: 'Local route optimized: x2 income' },
+      { level: 25, type: 'cycleMultiplier', value: 0.85, label: 'Better timing: 15% faster' },
+      { level: 50, type: 'incomeMultiplier', value: 3, label: 'Trusted route: x3 income' }
+    ]
+  },
+  {
+    key: 'partsDelivery', name: 'Parts Delivery', icon: '📦', output: 'parts', outputLabel: 'Service Parts', costResource: 'coins',
+    description: 'Small 365 parts delivery line. Feeds garage builds and repairs.',
+    baseIncome: 3, baseCycleMs: 5000, baseCost: 90, costRate: 1.18, startLevel: 0,
+    unlock: { type: 'lineLevel', key: 'streetRoute', level: 5, label: 'Street Route' }, problemRisk: ['fuel', 'traffic'],
+    manager: { name: 'Parts Courier', unlockLevel: 10, cost: { coins: 900, parts: 25 }, description: 'Automatically collects Parts Delivery income.' },
+    milestones: [
+      { level: 10, type: 'incomeMultiplier', value: 2, label: 'Known suppliers: x2 parts' },
+      { level: 25, type: 'cycleMultiplier', value: 0.82, label: 'Shorter delivery path' },
+      { level: 50, type: 'incomeMultiplier', value: 3, label: 'Bulk delivery rhythm' }
+    ]
+  },
+  {
+    key: 'mobileMechanic', name: 'Mobile Mechanic', icon: '🧑‍🔧', output: 'tools', outputLabel: 'Toolkits', costResource: 'parts',
+    description: 'Service calls create toolkits for building and problem fixes.',
+    baseIncome: 2, baseCycleMs: 6500, baseCost: 35, costRate: 1.19, startLevel: 0,
+    unlock: { type: 'lineLevel', key: 'partsDelivery', level: 5, label: 'Parts Delivery' }, problemRisk: ['condition', 'traffic'],
+    manager: { name: 'Mobile Tech', unlockLevel: 10, cost: { coins: 1500, tools: 20 }, description: 'Automatically collects Mobile Mechanic income.' },
+    milestones: [
+      { level: 10, type: 'incomeMultiplier', value: 2, label: 'Faster repairs: x2 tools' },
+      { level: 25, type: 'cycleMultiplier', value: 0.84, label: 'Better dispatch timing' },
+      { level: 50, type: 'incomeMultiplier', value: 3, label: 'Trusted mobile crew' }
+    ]
+  },
+  {
+    key: 'fuelRun', name: 'Fuel Run', icon: '⛽', output: 'fuelCans', outputLabel: 'Fuel Cans', costResource: 'coins',
+    description: 'Produces fuel cans so racing problems do not stop progress.',
+    baseIncome: 1, baseCycleMs: 7000, baseCost: 240, costRate: 1.17, startLevel: 0,
+    unlock: { type: 'stage', stage: 3 }, problemRisk: ['traffic'],
+    manager: { name: 'Fuel Runner', unlockLevel: 10, cost: { coins: 2100, fuelCans: 8 }, description: 'Automatically collects Fuel Run income.' },
+    milestones: [
+      { level: 10, type: 'incomeMultiplier', value: 2, label: 'Fuel route secured' },
+      { level: 25, type: 'cycleMultiplier', value: 0.86, label: 'Less waiting at pumps' },
+      { level: 50, type: 'incomeMultiplier', value: 3, label: 'Bulk fuel plan' }
+    ]
+  },
+  {
+    key: 'towingJob', name: 'Towing Job', icon: '🪝', output: 'scrap', outputLabel: 'Scrap', costResource: 'tools',
+    description: 'Recovery jobs provide scrap for repairs and pit upgrades.',
+    baseIncome: 3, baseCycleMs: 8500, baseCost: 28, costRate: 1.2, startLevel: 0,
+    unlock: { type: 'lineLevel', key: 'mobileMechanic', level: 5, label: 'Mobile Mechanic' }, problemRisk: ['condition', 'traffic'],
+    manager: { name: 'Tow Operator', unlockLevel: 10, cost: { coins: 2500, scrap: 45 }, description: 'Automatically collects Towing Job income.' },
+    milestones: [
+      { level: 10, type: 'incomeMultiplier', value: 2, label: 'Recovery route mapped' },
+      { level: 25, type: 'cycleMultiplier', value: 0.85, label: 'Faster hookup time' },
+      { level: 50, type: 'incomeMultiplier', value: 3, label: 'Reliable salvage flow' }
+    ]
+  },
+  {
+    key: 'dealerShowcase', name: 'Dealer Showcase', icon: '📣', output: 'rep', outputLabel: 'Reputation', costResource: 'coins',
+    description: 'Showcase vehicles and dealer activity for 365-style reputation.',
+    baseIncome: 2, baseCycleMs: 9000, baseCost: 700, costRate: 1.21, startLevel: 0,
+    unlock: { type: 'stage', stage: 5 }, problemRisk: ['heat', 'traffic'],
+    manager: { name: 'Sales Rep', unlockLevel: 10, cost: { coins: 3500, rep: 35 }, description: 'Automatically collects Dealer Showcase income.' },
+    milestones: [
+      { level: 10, type: 'incomeMultiplier', value: 2, label: 'Better listings: x2 rep' },
+      { level: 25, type: 'cycleMultiplier', value: 0.84, label: 'Faster buyer attention' },
+      { level: 50, type: 'incomeMultiplier', value: 3, label: 'Trusted dealer network' }
+    ]
+  },
+  {
+    key: 'performanceBay', name: 'Performance Bay', icon: '⚙️', output: 'tune', outputLabel: 'Tune Points', costResource: 'parts',
+    description: 'Micro tuning income. Locked behind the Tuning Corner building.',
+    baseIncome: 2, baseCycleMs: 10000, baseCost: 130, costRate: 1.22, startLevel: 0,
+    unlock: { type: 'building', key: 'tuningCorner', level: 1, label: 'Tuning Corner' }, problemRisk: ['condition'],
+    manager: { name: 'Tuner', unlockLevel: 10, cost: { coins: 4200, tune: 35 }, description: 'Automatically collects Performance Bay income.' },
+    milestones: [
+      { level: 10, type: 'incomeMultiplier', value: 2, label: 'Better tune cards' },
+      { level: 25, type: 'cycleMultiplier', value: 0.84, label: 'Faster tuning cycle' },
+      { level: 50, type: 'incomeMultiplier', value: 3, label: 'Pro tuning bench' }
+    ]
+  },
+  {
+    key: 'raceEvent', name: 'Race Event', icon: '🏁', output: 'rep', outputLabel: 'Race Rep', costResource: 'tune',
+    description: 'Offline 2D race event line. No live PVP.',
+    baseIncome: 5, baseCycleMs: 12000, baseCost: 55, costRate: 1.23, startLevel: 0,
+    unlock: { type: 'building', key: 'testTrack', level: 1, label: '2D Test Track' }, problemRisk: ['fuel', 'condition', 'heat'],
+    manager: { name: 'Crew Chief', unlockLevel: 10, cost: { coins: 6500, tune: 65, rep: 55 }, description: 'Automatically collects Race Event income.' },
+    milestones: [
+      { level: 10, type: 'incomeMultiplier', value: 2, label: 'Organized event format' },
+      { level: 25, type: 'cycleMultiplier', value: 0.82, label: 'Faster staging' },
+      { level: 50, type: 'incomeMultiplier', value: 3, label: 'Regional attention' }
+    ]
+  }
+];
+
 export const UPGRADES = [
   { key: 'tapCrew', icon: '👆', name: 'Tap Boost Crew', description: '+tap power and manual income.', resource: 'coins', baseCost: 75, costRate: 1.32 },
   { key: 'idleDriver', icon: '🧑‍🔧', name: 'Idle Driver', description: '+idle meters per second.', resource: 'coins', baseCost: 120, costRate: 1.36 },
@@ -77,13 +177,13 @@ export const BUILDINGS = [
   {
     key: 'tuningCorner', icon: '🔬', name: 'Tuning Corner', max: 2,
     description: 'Unlocks Performance Parts starter drops after the player proves the core loop.',
-    unlocks: 'Performance Parts chain',
+    unlocks: 'Performance Parts chain and Performance Bay line',
     costs: [{ coins: 350, parts: 55, tools: 35 }, { coins: 1600, parts: 120, tools: 95, tune: 20 }]
   },
   {
     key: 'testTrack', icon: '🛣️', name: '2D Test Track', max: 2,
     description: 'Unlocks Racing Gear and stronger route rewards.',
-    unlocks: 'Racing Gear chain',
+    unlocks: 'Racing Gear chain and Race Event line',
     costs: [{ coins: 800, tune: 35, rep: 18 }, { coins: 2600, tune: 95, rep: 70 }]
   },
   {
@@ -109,8 +209,13 @@ export const CREATOR_RULES = [
   },
   {
     mode: 'Idle Racing',
-    do: ['Use fuel, police heat, breakdowns, traffic, and maintenance as the “enemy.”', 'Show constant progress feedback.', 'Let players recover quickly from problems.'],
+    do: ['Use fuel, police heat, breakdowns, traffic, and maintenance as the enemy.', 'Show constant progress feedback.', 'Let players recover quickly from problems.'],
     dont: ['Do not require steering controls.', 'Do not promise realistic physics.', 'Do not punish players so hard that idle progress stops for too long.']
+  },
+  {
+    mode: 'Idle Lines',
+    do: ['Use upgradeable income lines.', 'Show cycle progress and output clearly.', 'Unlock automation with managers.'],
+    dont: ['Do not show every advanced line as playable at the start.', 'Do not hide upgrade costs.', 'Do not make line cards too large for mobile.']
   },
   {
     mode: 'Merge Bay',
