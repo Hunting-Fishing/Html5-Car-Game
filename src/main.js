@@ -1,12 +1,13 @@
 import './styles.css';
 import { gsap } from 'gsap';
-import { SCREENS, RACE_MODES, CHAINS, UPGRADES, BUILDINGS, PROBLEMS, CREATOR_RULES } from './data/gameData.js';
+import { SCREENS, RACE_MODES, CHAINS, UPGRADES, BUILDINGS, PROBLEMS, CREATOR_RULES, IDLE_LINES } from './data/gameData.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, costToText, canAfford } from './systems/economySystem.js';
 import { getObjectiveList, applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, itemDisplayName, boardLimit, activeBoardCount, shelfCapacity, normalizeMergeState, unlockedChainKeys } from './systems/mergeSystem.js';
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
 import { buyUpgrade, upgradeCost, buyBuilding, nextBuildingCost } from './systems/upgradeSystem.js';
+import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, getLineState, getLineIncome, getLineCycleMs, getLineUpgradeCost, getManagerCost, getNextMilestone, canCollectLine, hasManager, isLineUnlocked, unlockText, getTotalIdlePerMinute } from './systems/idleLineSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
 let state = loadState();
@@ -19,6 +20,7 @@ boot();
 
 function boot() {
   normalizeMergeState(state);
+  ensureIdleLineState(state);
   renderShell();
   render();
   root.addEventListener('click', handleClick);
@@ -29,12 +31,13 @@ function gameLoop(now) {
   const dt = Math.min(2, (now - lastTime) / 1000);
   lastTime = now;
   tickRace(state, dt);
+  tickIdleLines(state, dt);
   tickSupplier(state, dt);
   applyDerivedObjectives(state);
   updateRaceCanvas(state);
   updateTopBar();
 
-  if (!renderLock && ['race', 'hub', 'merge'].includes(state.activeScreen)) {
+  if (!renderLock && ['race', 'hub', 'merge', 'lines'].includes(state.activeScreen)) {
     renderLock = true;
     setTimeout(() => {
       renderLock = false;
@@ -77,6 +80,7 @@ function renderShell() {
 }
 
 function render() {
+  ensureIdleLineState(state);
   updateTopBar();
   document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
   document.querySelector(`#screen-${state.activeScreen}`)?.classList.add('active');
@@ -93,6 +97,7 @@ function renderActiveScreen() {
     const host = el.querySelector('#raceCanvas');
     if (host) mountRaceCanvas(host).then(() => updateRaceCanvas(state));
   }
+  if (state.activeScreen === 'lines') el.innerHTML = renderLines();
   if (state.activeScreen === 'merge') el.innerHTML = renderMerge();
   if (state.activeScreen === 'garage') el.innerHTML = renderGarage();
   if (state.activeScreen === 'profile') el.innerHTML = renderProfile();
@@ -109,6 +114,7 @@ function renderHub() {
   const objectives = getObjectiveList(state);
   const next = objectives.find((item) => !item.done);
   const stats = getRaceStats(state);
+  const totals = getTotalIdlePerMinute(state);
   return `
     <section class="card">
       <div class="cardTitle">
@@ -120,13 +126,20 @@ function renderHub() {
 
     <section class="card">
       <div class="cardTitle">
-        <div><h2>Companion Loop</h2><p>This app creates micro progress for the larger 365 ecosystem.</p></div>
+        <div><h2>Idle Clicker Loop</h2><p>Upgrade automotive lines. Merge Bay feeds the garage. Racing is the visual tap loop.</p></div>
       </div>
       <div class="grid2">
-        <button class="btn primary" data-action="screen" data-screen="race">Race / Click</button>
+        <button class="btn primary" data-action="screen" data-screen="race">Race / Tap</button>
+        <button class="btn gold" data-action="screen" data-screen="lines">Upgrade Lines</button>
         <button class="btn" data-action="screen" data-screen="merge">Merge Parts</button>
-        <button class="btn" data-action="screen" data-screen="garage">Build Garage</button>
         <button class="btn ghost" data-action="screen" data-screen="creator">Creator Rules</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardTitle"><div><h3>Idle Output / Minute</h3><p>Managers automate lines. Manual collect is required until then.</p></div></div>
+      <div class="grid2">
+        ${Object.entries(totals).length ? Object.entries(totals).map(([key, value]) => `<div class="notice good"><b>${fmt(value)}</b><br>${key}/min</div>`).join('') : `<div class="notice">Upgrade an idle line to begin output.</div>`}
       </div>
     </section>
 
@@ -163,7 +176,7 @@ function renderRace() {
       <button class="tapButton" data-action="tapRace">TAP RACE BOOST</button>
     </section>
 
-    ${problem ? renderProblem(problem) : `<section class="notice good">Route is clear. Tap for burst income or let the idle driver continue.</section>`}
+    ${problem ? renderProblem(problem) : `<section class="notice good">Route is clear. Tap for burst income or let the idle systems continue.</section>`}
 
     <section class="card">
       <div class="cardTitle"><div><h3>Route Modes</h3><p>2D idle modes only. No real-time PVP.</p></div></div>
@@ -173,8 +186,72 @@ function renderRace() {
     </section>
 
     <section class="card">
-      <div class="cardTitle"><div><h3>Racing Upgrades</h3><p>Idle-clicker upgrades. These should feel like Adventure Capitalist style progression, but automotive.</p></div></div>
+      <div class="cardTitle"><div><h3>Fast Upgrades</h3><p>These modify the race route. Main economy upgrades are in Lines.</p></div></div>
       ${UPGRADES.filter((u) => !['supplierShelf'].includes(u.key)).map(renderUpgrade).join('')}
+    </section>
+  `;
+}
+
+function renderLines() {
+  return `
+    <section class="card">
+      <div class="cardTitle">
+        <div><h2>Idle Business Lines</h2><p>Upgrade each automotive line. Hire managers at Lv 10 to auto-collect.</p></div>
+        <span class="pill">Phase 10</span>
+      </div>
+      <div class="notice good"><b>Goal:</b> Street Route → Parts Delivery → Mobile Mechanic → Fuel/Towing → Dealer/Performance/Race.</div>
+    </section>
+    ${IDLE_LINES.map(renderLineCard).join('')}
+  `;
+}
+
+function renderLineCard(line) {
+  const current = getLineState(state, line.key);
+  const unlocked = isLineUnlocked(state, line);
+  const level = current.level;
+  const cycleMs = getLineCycleMs(state, line);
+  const pct = level > 0 ? Math.max(0, Math.min(100, (current.cycle / cycleMs) * 100)) : 0;
+  const income = getLineIncome(state, line);
+  const upgradeCost = getLineUpgradeCost(state, line);
+  const managerCost = getManagerCost(state, line);
+  const managerOwned = hasManager(state, line.key);
+  const nextMilestone = getNextMilestone(state, line);
+  const collectReady = canCollectLine(state, line);
+
+  if (!unlocked) {
+    return `
+      <section class="lineCard lockedLine">
+        <div class="lineHead">
+          <div class="lineIcon">${line.icon}</div>
+          <div><h3>${line.name}</h3><p>${line.description}</p></div>
+          <span class="pill">Locked</span>
+        </div>
+        <div class="notice">${unlockText(line)}</div>
+      </section>
+    `;
+  }
+
+  return `
+    <section class="lineCard">
+      <div class="lineHead">
+        <div class="lineIcon">${line.icon}</div>
+        <div><h3>${line.name} <span class="pill">Lv ${level}</span></h3><p>${line.description}</p></div>
+        <span class="pill">${managerOwned ? 'AUTO' : 'MANUAL'}</span>
+      </div>
+      <div class="lineStats">
+        <div><b>${fmt(income)}</b><span>${line.outputLabel}/cycle</span></div>
+        <div><b>${(cycleMs / 1000).toFixed(1)}s</b><span>Cycle</span></div>
+        <div><b>${fmt(current.collected)}</b><span>Collects</span></div>
+      </div>
+      <div class="lineProgress"><div style="width:${pct}%"></div></div>
+      <div class="lineButtons">
+        <button class="btn small ${collectReady ? 'gold' : 'ghost'}" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}>${managerOwned ? 'Auto Running' : 'Collect'}</button>
+        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}" ${canAfford(state, upgradeCost) ? '' : 'disabled'}>Upgrade<br><small>${costToText(upgradeCost)}</small></button>
+      </div>
+      <div class="lineManager">
+        ${managerOwned ? `<div class="notice good"><b>${line.manager.name}</b> hired. This line auto-collects.</div>` : `<button class="btn small" data-action="buyManager" data-line="${line.key}" ${level >= line.manager.unlockLevel && canAfford(state, managerCost) ? '' : 'disabled'}>Hire ${line.manager.name}<br><small>${level < line.manager.unlockLevel ? `Needs Lv ${line.manager.unlockLevel}` : costToText(managerCost)}</small></button>`}
+      </div>
+      <div class="cost">Next milestone: ${nextMilestone ? `Lv ${nextMilestone.level} · ${nextMilestone.label}` : 'All early milestones reached.'}</div>
     </section>
   `;
 }
@@ -286,7 +363,7 @@ function renderBuilding(building) {
 function renderProfile() {
   const objectives = getObjectiveList(state);
   const completed = objectives.filter((o) => o.done).length;
-  const garageValue = Math.round(state.currencies.coins + state.stage * 100 + state.merge.totalMerges * 18 + Object.values(state.buildings).reduce((a, b) => a + b, 0) * 500);
+  const garageValue = Math.round(state.currencies.coins + state.stage * 100 + state.merge.totalMerges * 18 + Object.values(state.buildings).reduce((a, b) => a + b, 0) * 500 + state.idleLines.lifetimeCollections * 12);
   return `
     <section class="card">
       <div class="cardTitle"><div><h2>${state.playerName}</h2><p>Local-only profile. Git repo stage. No Supabase yet.</p></div><span class="pill">Lv ${state.level}</span></div>
@@ -295,7 +372,7 @@ function renderProfile() {
         <div class="notice good"><b>${fmt(garageValue)}</b><br>Garage Value</div>
         <div class="notice good"><b>${fmt(state.race.lifetimeMeters)}</b><br>Lifetime Meters</div>
         <div class="notice"><b>${state.merge.totalMerges}</b><br>Total Merges</div>
-        <div class="notice"><b>${completed}/${objectives.length}</b><br>Objectives</div>
+        <div class="notice"><b>${fmt(state.idleLines.lifetimeCollections)}</b><br>Line Collects</div>
       </div>
     </section>
 
@@ -353,6 +430,9 @@ function handleClick(event) {
   }
   if (action === 'raceMode') result = changeRaceMode(state, target.dataset.mode);
   if (action === 'fixProblem') result = fixProblem(state, Number(target.dataset.fix));
+  if (action === 'collectLine') result = collectIdleLine(state, target.dataset.line);
+  if (action === 'upgradeLine') result = buyLineUpgrade(state, target.dataset.line);
+  if (action === 'buyManager') result = buyLineManager(state, target.dataset.line);
   if (action === 'placeShelf') result = placeSupplierItem(state, Number(target.dataset.index));
   if (action === 'placeAll') result = placeAllReady(state);
   if (action === 'autoMerge') result = autoMergeOnce(state);
@@ -363,6 +443,7 @@ function handleClick(event) {
   if (action === 'reset') {
     if (confirm('Reset local save?')) {
       state = resetState();
+      ensureIdleLineState(state);
       toast('Local save reset.');
       render();
     }
