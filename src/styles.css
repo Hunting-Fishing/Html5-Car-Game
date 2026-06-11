@@ -36,11 +36,11 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .screen { height: 100%; display: none; overflow-y: auto; padding: 12px 12px 18px; scrollbar-width: none; }
 .screen::-webkit-scrollbar { display: none; }
 .screen.active { display: block; }
-.bottomNav { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 6px 5px calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(7,20,31,.98); }
-.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 14px; color: var(--muted); font-size: 9px; font-weight: 900; background: transparent; }
-.tabIcon { font-size: 20px; }
+.bottomNav { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 6px 5px calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(7,20,31,.98); }
+.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 14px; color: var(--muted); font-size: 8px; font-weight: 900; background: transparent; }
+.tabIcon { font-size: 19px; }
 .tab.active { background: linear-gradient(180deg, rgba(53,229,138,.18), rgba(45,212,191,.08)); color: var(--text); border: 1px solid rgba(53,229,138,.25); }
-.card { background: linear-gradient(180deg, rgba(22,61,84,.95), rgba(11,33,48,.96)); border: 1px solid var(--line); border-radius: 20px; padding: 12px; margin-bottom: 10px; box-shadow: 0 12px 26px rgba(0,0,0,.22); }
+.card, .lineCard { background: linear-gradient(180deg, rgba(22,61,84,.95), rgba(11,33,48,.96)); border: 1px solid var(--line); border-radius: 20px; padding: 12px; margin-bottom: 10px; box-shadow: 0 12px 26px rgba(0,0,0,.22); }
 .cardTitle { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
 .cardTitle h2, .cardTitle h3 { margin: 0; font-size: 16px; }
 .cardTitle p { margin: 2px 0 0; color: var(--muted); font-size: 11px; line-height: 1.35; }
@@ -71,6 +71,20 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .tapButton { width: 100%; height: 78px; border-radius: 22px; background: radial-gradient(circle at top, var(--yellow), #ff8f00 72%); color: #2a1200; font-size: 20px; font-weight: 1000; box-shadow: 0 10px 0 #8d4c00, 0 18px 26px rgba(0,0,0,.35); }
 .tapButton:active { transform: translateY(6px); box-shadow: 0 4px 0 #8d4c00; }
 .problemCard { border-color: rgba(255,93,115,.36); background: linear-gradient(180deg, rgba(255,93,115,.16), rgba(11,33,48,.96)); }
+.lineCard { background: linear-gradient(180deg, rgba(28,73,98,.95), rgba(11,33,48,.96)); }
+.lockedLine { opacity: .72; background: linear-gradient(180deg, rgba(45,53,64,.9), rgba(11,22,32,.96)); }
+.lineHead { display: grid; grid-template-columns: auto 1fr auto; gap: 9px; align-items: start; }
+.lineHead h3 { margin: 0; font-size: 15px; }
+.lineHead p { margin: 3px 0 0; color: var(--muted); font-size: 10px; line-height: 1.28; }
+.lineIcon { width: 43px; height: 43px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(255,209,102,.28), rgba(45,212,191,.12)); font-size: 23px; }
+.lineStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin: 10px 0 8px; }
+.lineStats div { border: 1px solid var(--line); background: rgba(0,0,0,.19); border-radius: 13px; padding: 7px 4px; text-align: center; }
+.lineStats b { display: block; font-size: 13px; }
+.lineStats span { display: block; font-size: 8px; color: var(--muted); margin-top: 1px; }
+.lineProgress { height: 12px; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: rgba(0,0,0,.32); margin: 8px 0; }
+.lineProgress div { height: 100%; background: linear-gradient(90deg, var(--yellow), var(--green)); transition: width .18s; }
+.lineButtons { display: grid; grid-template-columns: .85fr 1.15fr; gap: 7px; margin-top: 8px; }
+.lineManager { margin-top: 8px; }
 .shelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
 .shelfSlot, .cell { position: relative; aspect-ratio: 1 / 1; border-radius: 16px; border: 1px solid var(--line); background: rgba(0,0,0,.22); display: grid; place-items: center; text-align: center; overflow: hidden; }
 .shelfSlot.ready { background: linear-gradient(180deg, rgba(53,229,138,.18), rgba(45,212,191,.07)); border-color: rgba(53,229,138,.38); }
@@ -96,8 +110,9 @@ ul { margin: 6px 0 0 17px; padding: 0; color: var(--muted); font-size: 10px; lin
   .appShell { grid-template-rows: 84px 1fr 70px; }
   .currencyGrid { gap: 3px; }
   .cur span { font-size: 7px; }
-  .card { padding: 10px; border-radius: 18px; }
+  .card, .lineCard { padding: 10px; border-radius: 18px; }
   .raceCanvas { height: 160px; }
   .bottomNav { height: 70px; }
-  .tabIcon { font-size: 18px; }
+  .tabIcon { font-size: 17px; }
+  .tab { font-size: 7px; }
 }
