@@ -1,6 +1,6 @@
 export function defaultState() {
   return {
-    version: 9,
+    version: 10,
     activeScreen: 'hub',
     playerName: 'Garage Rookie',
     createdAt: Date.now(),
@@ -10,7 +10,7 @@ export function defaultState() {
     level: 1,
     xp: 0,
     currencies: {
-      coins: 0,
+      coins: 50,
       scrap: 10,
       parts: 0,
       tools: 0,
@@ -27,6 +27,29 @@ export function defaultState() {
       problem: null,
       lifetimeMeters: 0,
       completedStages: 0
+    },
+    idleLines: {
+      lifetimeCollections: 0,
+      managers: {
+        streetRoute: false,
+        partsDelivery: false,
+        mobileMechanic: false,
+        fuelRun: false,
+        towingJob: false,
+        dealerShowcase: false,
+        performanceBay: false,
+        raceEvent: false
+      },
+      lines: {
+        streetRoute: { level: 1, cycle: 0, collected: 0 },
+        partsDelivery: { level: 0, cycle: 0, collected: 0 },
+        mobileMechanic: { level: 0, cycle: 0, collected: 0 },
+        fuelRun: { level: 0, cycle: 0, collected: 0 },
+        towingJob: { level: 0, cycle: 0, collected: 0 },
+        dealerShowcase: { level: 0, cycle: 0, collected: 0 },
+        performanceBay: { level: 0, cycle: 0, collected: 0 },
+        raceEvent: { level: 0, cycle: 0, collected: 0 }
+      }
     },
     upgrades: {
       tapCrew: 1,
@@ -54,6 +77,8 @@ export function defaultState() {
     objectives: {
       firstTap: false,
       firstMerge: false,
+      idleLineUpgrade: false,
+      firstManager: false,
       buildStorage: false,
       unlockPerformance: false,
       unlockTrack: false,
@@ -61,7 +86,7 @@ export function defaultState() {
       stageFive: false
     },
     log: [
-      'Welcome to 365 Micro Garage. Tap Race, merge starter parts, and build the garage systems.'
+      'Welcome to 365 Micro Garage. Collect Street Route income, upgrade idle lines, then use Merge Bay to support the garage.'
     ]
   };
 }
