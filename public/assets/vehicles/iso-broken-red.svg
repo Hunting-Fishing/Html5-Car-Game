@@ -1,17 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 152 108" role="img" aria-label="Original isometric broken red car">
-  <defs>
-    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fca5a5"/><stop offset="1" stop-color="#ef4444"/></linearGradient>
-    <linearGradient id="side" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b91c1c"/><stop offset="1" stop-color="#7f1d1d"/></linearGradient>
-    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fee2e2"/><stop offset="1" stop-color="#93c5fd"/></linearGradient>
-  </defs>
-  <ellipse cx="75" cy="89" rx="58" ry="13" fill="#020617" opacity=".25"/>
-  <path d="M16 60 71 29 134 56 78 88Z" fill="url(#side)" stroke="#450a0a" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M33 46 69 27 115 47 78 67Z" fill="url(#top)" stroke="#450a0a" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M49 44 69 33 96 45 77 56Z" fill="url(#glass)" stroke="#0f172a" stroke-width="2" stroke-linejoin="round" opacity=".9"/>
-  <path d="M16 60 78 88 78 71 16 45Z" fill="#991b1b" opacity=".95"/>
-  <path d="M78 88 134 56 134 41 78 71Z" fill="#ef4444" opacity=".95"/>
-  <circle cx="42" cy="81" r="10" fill="#111827"/><circle cx="42" cy="81" r="4" fill="#e5e7eb"/>
-  <circle cx="104" cy="73" r="10" fill="#111827"/><circle cx="104" cy="73" r="4" fill="#e5e7eb"/>
-  <path d="M116 24c6-11 15-5 10 3 10-2 12 9 2 11" fill="none" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round" opacity=".9"/>
-  <path d="M42 22 49 32 61 30 53 40 58 52 47 47 38 56 39 43 28 37 40 33Z" fill="#fde047" stroke="#450a0a" stroke-width="2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Kenney Car Kit damaged vehicle debris sprite">
+  <title>Kenney Car Kit damaged vehicle debris sprite</title>
+  <image href="/assets/vendor/kenney/car-kit/Previews/debris-bumper.png" x="0" y="0" width="64" height="64" image-rendering="auto"/>
 </svg>
