@@ -58,6 +58,7 @@ export const AUTO_WORLD_LOCATIONS = [
     key: 'roadsideBreakdown',
     name: 'Roadside Breakdown',
     icon: '⚠️',
+    asset: '/assets/vehicles/broken-car-red.svg',
     type: 'event',
     x: 52,
     y: 78,
@@ -68,11 +69,12 @@ export const AUTO_WORLD_LOCATIONS = [
 ];
 
 export const WORLD_TRAFFIC = [
-  { key: 'compactA', icon: '🚗', lane: 'horizontalA', delay: 0, speedClass: 'normal' },
-  { key: 'vanA', icon: '🚐', lane: 'horizontalB', delay: 2.1, speedClass: 'slow' },
-  { key: 'pickupA', icon: '🛻', lane: 'verticalA', delay: 1.2, speedClass: 'normal' },
-  { key: 'truckA', icon: '🚚', lane: 'verticalB', delay: 3.2, speedClass: 'slow' },
-  { key: 'towA', icon: '🚛', lane: 'horizontalC', delay: 4.1, speedClass: 'normal' }
+  { key: 'compactA', asset: '/assets/vehicles/car-compact-green.svg', lane: 'horizontalA', delay: 0, speedClass: 'normal' },
+  { key: 'vanA', asset: '/assets/vehicles/van-service-white.svg', lane: 'horizontalB', delay: 2.1, speedClass: 'slow' },
+  { key: 'pickupA', asset: '/assets/vehicles/pickup-orange.svg', lane: 'verticalA', delay: 1.2, speedClass: 'normal' },
+  { key: 'deliveryA', asset: '/assets/vehicles/delivery-truck-teal.svg', lane: 'verticalB', delay: 3.2, speedClass: 'slow' },
+  { key: 'towA', asset: '/assets/vehicles/tow-truck-yellow.svg', lane: 'horizontalC', delay: 4.1, speedClass: 'normal' },
+  { key: 'compactB', asset: '/assets/vehicles/car-compact-blue.svg', lane: 'horizontalA', delay: 5.2, speedClass: 'slow' }
 ];
 
 export const WORLD_PEOPLE = [
