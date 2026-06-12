@@ -13,7 +13,7 @@ The following assets were created for this project and are intended for use in 3
 - `public/assets/shop/room-tuning-corner.svg`
 - `public/assets/shop/room-test-track.svg`
 
-### Vehicle Sprite Assets
+### Vehicle Sprite Assets — Original Placeholders
 
 - `public/assets/vehicles/car-compact-green.svg`
 - `public/assets/vehicles/car-compact-blue.svg`
@@ -23,11 +23,22 @@ The following assets were created for this project and are intended for use in 3
 - `public/assets/vehicles/delivery-truck-teal.svg`
 - `public/assets/vehicles/broken-car-red.svg`
 
-These are generic original vector placeholders. They contain no manufacturer logos, no real vehicle trademarks, and no copied game artwork.
+### Vehicle Sprite Assets — Original Isometric Set
+
+- `public/assets/vehicles/iso-car-green.svg`
+- `public/assets/vehicles/iso-car-blue.svg`
+- `public/assets/vehicles/iso-sedan-yellow.svg`
+- `public/assets/vehicles/iso-pickup-orange.svg`
+- `public/assets/vehicles/iso-van-white.svg`
+- `public/assets/vehicles/iso-delivery-teal.svg`
+- `public/assets/vehicles/iso-tow-yellow.svg`
+- `public/assets/vehicles/iso-broken-red.svg`
+
+These are generic original vector assets. They contain no manufacturer logos, no real vehicle trademarks, and no copied game artwork.
 
 ## Inspiration References
 
-The following games may be used for high-level gameplay inspiration only:
+The following games may be used for high-level gameplay and style inspiration only:
 
 - Idle Car Repair
 - Idle Workshop Tycoon
