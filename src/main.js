@@ -1,6 +1,7 @@
 import './styles.css';
 import { gsap } from 'gsap';
 import { SCREENS, RACE_MODES, CHAINS, UPGRADES, BUILDINGS, PROBLEMS, CREATOR_RULES, IDLE_LINES } from './data/gameData.js';
+import { AUTO_SHOP_ROOMS } from './data/visualData.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, costToText, canAfford } from './systems/economySystem.js';
 import { getObjectiveList, applyDerivedObjectives } from './systems/objectiveSystem.js';
@@ -37,7 +38,7 @@ function gameLoop(now) {
   updateRaceCanvas(state);
   updateTopBar();
 
-  if (!renderLock && ['race', 'hub', 'merge', 'lines'].includes(state.activeScreen)) {
+  if (!renderLock && ['race', 'hub', 'merge', 'lines', 'garage'].includes(state.activeScreen)) {
     renderLock = true;
     setTimeout(() => {
       renderLock = false;
@@ -131,8 +132,8 @@ function renderHub() {
       <div class="grid2">
         <button class="btn primary" data-action="screen" data-screen="race">Race / Tap</button>
         <button class="btn gold" data-action="screen" data-screen="lines">Upgrade Lines</button>
-        <button class="btn" data-action="screen" data-screen="merge">Merge Parts</button>
-        <button class="btn ghost" data-action="screen" data-screen="creator">Creator Rules</button>
+        <button class="btn" data-action="screen" data-screen="garage">Auto Shop</button>
+        <button class="btn ghost" data-action="screen" data-screen="merge">Merge Parts</button>
       </div>
     </section>
 
@@ -326,6 +327,13 @@ function renderItem(item) {
 function renderGarage() {
   return `
     <section class="card">
+      <div class="cardTitle"><div><h2>365 Auto Shop Floor</h2><p>Visual workshop expansion. Rooms map to idle lines and unlock through garage systems.</p></div><span class="pill">Tycoon View</span></div>
+      <div class="shopFloor">
+        ${AUTO_SHOP_ROOMS.map(renderShopRoom).join('')}
+      </div>
+    </section>
+
+    <section class="card">
       <div class="cardTitle"><div><h2>Build Garage Systems</h2><p>Buildings unlock mechanics. They are not just cosmetics.</p></div></div>
       ${BUILDINGS.map(renderBuilding).join('')}
     </section>
@@ -333,6 +341,36 @@ function renderGarage() {
       <div class="cardTitle"><div><h3>Supplier / Merge Upgrades</h3><p>These support the merge board instead of replacing it.</p></div></div>
       ${UPGRADES.filter((u) => u.key === 'supplierShelf').map(renderUpgrade).join('')}
     </section>
+  `;
+}
+
+function renderShopRoom(room) {
+  const unlocked = !room.buildingKey || (state.buildings[room.buildingKey] || 0) > 0;
+  const line = IDLE_LINES.find((item) => item.key === room.lineKey);
+  const lineState = line ? getLineState(state, line.key) : null;
+  const level = lineState?.level || 0;
+  const income = line ? getLineIncome(state, line) : 0;
+  const cycleMs = line ? getLineCycleMs(state, line) : 1;
+  const progress = lineState && level > 0 ? Math.max(0, Math.min(100, (lineState.cycle / cycleMs) * 100)) : 0;
+  const manager = line ? hasManager(state, line.key) : false;
+  const lockedText = room.buildingKey ? `Build ${BUILDINGS.find((item) => item.key === room.buildingKey)?.name || 'required system'} to open.` : 'Open from start.';
+
+  return `
+    <article class="shopRoom ${unlocked ? '' : 'lockedRoom'}">
+      <img class="roomArt" src="${room.asset}" alt="${room.name}" loading="lazy">
+      <div class="roomInfo">
+        <div class="roomHead"><h3>${room.icon} ${room.name}</h3><span class="pill">${unlocked ? `Lv ${level}` : 'Locked'}</span></div>
+        <p>${unlocked ? room.description : lockedText}</p>
+        <div class="roomProgress"><div style="width:${progress}%"></div></div>
+        <div class="roomMeta">
+          <span>${line ? `${fmt(income)} ${line.outputLabel}` : 'No line'}</span>
+          <span>${manager ? 'Manager Active' : 'Manual'}</span>
+        </div>
+        <button class="btn small ${unlocked ? 'primary' : 'ghost'}" data-action="screen" data-screen="lines">${unlocked ? 'Upgrade Line' : 'View Requirements'}</button>
+      </div>
+      ${unlocked && line && canCollectLine(state, line) && !manager ? `<div class="incomeBubble">Collect</div>` : ''}
+      ${!unlocked ? `<div class="roomLock">🔒</div>` : ''}
+    </article>
   `;
 }
 
