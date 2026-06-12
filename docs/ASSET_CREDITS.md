@@ -1,5 +1,56 @@
 # Asset Credits
 
+## Kenney Car Kit
+
+Pack: `Car Kit (3.1)`
+
+Source: Kenney — `kenney.nl/assets/car-kit`
+
+License from uploaded pack: Creative Commons Zero, CC0. The included license states the content may be used for personal, educational, and commercial purposes. Credit to Kenney is appreciated but not required.
+
+Recommended credit line:
+
+```text
+Vehicle sprites based on Kenney Car Kit by Kenney.nl, CC0.
+```
+
+### Required Local Install Path
+
+The repo now expects the extracted pack here:
+
+```text
+public/assets/vendor/kenney/car-kit/
+```
+
+Expected files after extraction:
+
+```text
+public/assets/vendor/kenney/car-kit/License.txt
+public/assets/vendor/kenney/car-kit/Previews/sedan.png
+public/assets/vendor/kenney/car-kit/Previews/hatchback-sports.png
+public/assets/vendor/kenney/car-kit/Previews/taxi.png
+public/assets/vendor/kenney/car-kit/Previews/truck.png
+public/assets/vendor/kenney/car-kit/Previews/van.png
+public/assets/vendor/kenney/car-kit/Previews/delivery.png
+public/assets/vendor/kenney/car-kit/Previews/truck-flat.png
+public/assets/vendor/kenney/car-kit/Previews/debris-bumper.png
+```
+
+### Current Game Mapping
+
+The existing world vehicle aliases now point to Kenney preview sprites:
+
+| In-game alias | Kenney preview |
+|---|---|
+| `iso-car-green.svg` | `hatchback-sports.png` |
+| `iso-car-blue.svg` | `sedan.png` |
+| `iso-sedan-yellow.svg` | `taxi.png` |
+| `iso-pickup-orange.svg` | `truck.png` |
+| `iso-van-white.svg` | `van.png` |
+| `iso-delivery-teal.svg` | `delivery.png` |
+| `iso-tow-yellow.svg` | `truck-flat.png` |
+| `iso-broken-red.svg` | `debris-bumper.png` |
+
 ## Original Project Assets
 
 The following assets were created for this project and are intended for use in 365 Micro Garage Companion:
@@ -23,7 +74,9 @@ The following assets were created for this project and are intended for use in 3
 - `public/assets/vehicles/delivery-truck-teal.svg`
 - `public/assets/vehicles/broken-car-red.svg`
 
-### Vehicle Sprite Assets — Original Isometric Set
+### Vehicle Sprite Alias Files
+
+These files are now wrappers that point to locally installed Kenney Car Kit preview assets:
 
 - `public/assets/vehicles/iso-car-green.svg`
 - `public/assets/vehicles/iso-car-blue.svg`
@@ -33,8 +86,6 @@ The following assets were created for this project and are intended for use in 3
 - `public/assets/vehicles/iso-delivery-teal.svg`
 - `public/assets/vehicles/iso-tow-yellow.svg`
 - `public/assets/vehicles/iso-broken-red.svg`
-
-These are generic original vector assets. They contain no manufacturer logos, no real vehicle trademarks, and no copied game artwork.
 
 ## Inspiration References
 
