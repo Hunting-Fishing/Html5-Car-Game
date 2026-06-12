@@ -1,5 +1,6 @@
 export const SCREENS = [
   { id: 'hub', label: 'Hub', icon: '🏁' },
+  { id: 'world', label: 'World', icon: '🗺️' },
   { id: 'race', label: 'Race', icon: '🚗' },
   { id: 'lines', label: 'Lines', icon: '📈' },
   { id: 'merge', label: 'Merge', icon: '🔧' },
@@ -206,6 +207,11 @@ export const CREATOR_RULES = [
     mode: 'Core Companion Scope',
     do: ['Keep rewards micro-sized.', 'Use this app to support the larger 365 ecosystem.', 'Make every mode understandable in one sentence.'],
     dont: ['Do not build the full racing game here.', 'Do not add live PVP yet.', 'Do not make rewards valuable enough to require complex anti-cheat.']
+  },
+  {
+    mode: 'Auto World Map',
+    do: ['Make buildings clickable.', 'Show cars moving on roads.', 'Use breakdowns, towing, dealers, salvage, and repair shops as playable events.'],
+    dont: ['Do not build a huge open world before the basic loop is fun.', 'Do not use real vehicle brands.', 'Do not add multiplayer map sync yet.']
   },
   {
     mode: 'Idle Racing',
