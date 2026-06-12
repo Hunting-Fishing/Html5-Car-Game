@@ -58,7 +58,7 @@ export const AUTO_WORLD_LOCATIONS = [
     key: 'roadsideBreakdown',
     name: 'Roadside Breakdown',
     icon: '⚠️',
-    asset: '/assets/vehicles/broken-car-red.svg',
+    asset: '/assets/vehicles/iso-broken-red.svg',
     type: 'event',
     x: 52,
     y: 78,
@@ -69,12 +69,14 @@ export const AUTO_WORLD_LOCATIONS = [
 ];
 
 export const WORLD_TRAFFIC = [
-  { key: 'compactA', asset: '/assets/vehicles/car-compact-green.svg', lane: 'horizontalA', delay: 0, speedClass: 'normal' },
-  { key: 'vanA', asset: '/assets/vehicles/van-service-white.svg', lane: 'horizontalB', delay: 2.1, speedClass: 'slow' },
-  { key: 'pickupA', asset: '/assets/vehicles/pickup-orange.svg', lane: 'verticalA', delay: 1.2, speedClass: 'normal' },
-  { key: 'deliveryA', asset: '/assets/vehicles/delivery-truck-teal.svg', lane: 'verticalB', delay: 3.2, speedClass: 'slow' },
-  { key: 'towA', asset: '/assets/vehicles/tow-truck-yellow.svg', lane: 'horizontalC', delay: 4.1, speedClass: 'normal' },
-  { key: 'compactB', asset: '/assets/vehicles/car-compact-blue.svg', lane: 'horizontalA', delay: 5.2, speedClass: 'slow' }
+  { key: 'greenCompactA', asset: '/assets/vehicles/iso-car-green.svg', lane: 'horizontalA', delay: 0, speedClass: 'normal' },
+  { key: 'whiteVanA', asset: '/assets/vehicles/iso-van-white.svg', lane: 'horizontalB', delay: -3.1, speedClass: 'slow' },
+  { key: 'orangePickupA', asset: '/assets/vehicles/iso-pickup-orange.svg', lane: 'verticalA', delay: -1.7, speedClass: 'normal' },
+  { key: 'tealDeliveryA', asset: '/assets/vehicles/iso-delivery-teal.svg', lane: 'verticalB', delay: -5.4, speedClass: 'slow' },
+  { key: 'yellowTowA', asset: '/assets/vehicles/iso-tow-yellow.svg', lane: 'horizontalC', delay: -6.3, speedClass: 'normal' },
+  { key: 'blueCompactB', asset: '/assets/vehicles/iso-car-blue.svg', lane: 'horizontalA', delay: -7.8, speedClass: 'slow' },
+  { key: 'yellowSedanB', asset: '/assets/vehicles/iso-sedan-yellow.svg', lane: 'horizontalC', delay: -2.8, speedClass: 'slow' },
+  { key: 'greenCompactC', asset: '/assets/vehicles/iso-car-green.svg', lane: 'roadLoopA', delay: -4.2, speedClass: 'normal' }
 ];
 
 export const WORLD_PEOPLE = [
