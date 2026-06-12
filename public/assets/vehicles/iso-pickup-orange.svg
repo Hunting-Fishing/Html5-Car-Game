@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 110" role="img" aria-label="Original isometric orange pickup">
+  <defs>
+    <linearGradient id="cab" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fed7aa"/><stop offset="1" stop-color="#f97316"/></linearGradient>
+    <linearGradient id="side" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c2410c"/><stop offset="1" stop-color="#7c2d12"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0fdfa"/><stop offset="1" stop-color="#38bdf8"/></linearGradient>
+  </defs>
+  <ellipse cx="78" cy="90" rx="60" ry="13" fill="#020617" opacity=".25"/>
+  <path d="M16 61 73 30 139 58 80 91Z" fill="url(#side)" stroke="#431407" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M34 47 68 28 97 40 62 60Z" fill="url(#cab)" stroke="#431407" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M94 43 128 57 92 76 59 61Z" fill="#fb923c" stroke="#431407" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M51 45 69 35 86 42 66 52Z" fill="url(#glass)" stroke="#0f172a" stroke-width="2" stroke-linejoin="round" opacity=".92"/>
+  <path d="M16 61 80 91 80 74 16 47Z" fill="#9a3412" opacity=".92"/>
+  <path d="M80 91 139 58 139 43 80 74Z" fill="#f97316" opacity=".96"/>
+  <circle cx="45" cy="82" r="10" fill="#111827"/><circle cx="45" cy="82" r="4" fill="#e5e7eb"/>
+  <circle cx="108" cy="74" r="10" fill="#111827"/><circle cx="108" cy="74" r="4" fill="#e5e7eb"/>
+  <path d="M25 60 36 54" stroke="#fff7ed" stroke-width="5" stroke-linecap="round"/>
+  <path d="M125 59 139 53" stroke="#ef4444" stroke-width="5" stroke-linecap="round"/>
+</svg>
