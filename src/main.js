@@ -194,7 +194,8 @@ function renderWorld() {
 }
 
 function renderTrafficCar(car) {
-  return `<div class="trafficCar ${car.lane} ${car.speedClass}" style="animation-delay:${car.delay}s">${car.icon}</div>`;
+  const vehicle = car.asset ? `<img src="${car.asset}" alt="${car.key}" loading="lazy">` : car.icon;
+  return `<div class="trafficCar ${car.lane} ${car.speedClass}" style="animation-delay:${car.delay}s">${vehicle}</div>`;
 }
 
 function renderWorldPerson(person) {
@@ -202,9 +203,10 @@ function renderWorldPerson(person) {
 }
 
 function renderWorldLocation(location) {
+  const locationIcon = location.asset ? `<img class="worldLocationVehicle" src="${location.asset}" alt="${location.name}" loading="lazy">` : `<span class="worldIcon">${location.icon}</span>`;
   return `
     <button class="worldLocation ${location.type}" style="left:${location.x}%; top:${location.y}%" data-action="worldLocation" data-location="${location.key}">
-      <span class="worldIcon">${location.icon}</span>
+      ${locationIcon}
       <span class="worldLabel">${location.name}</span>
       ${location.type === 'event' ? '<span class="alertPing">!</span>' : ''}
     </button>
