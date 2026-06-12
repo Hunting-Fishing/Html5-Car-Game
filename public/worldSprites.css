@@ -1,0 +1,44 @@
+.trafficCar {
+  width: 66px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+}
+
+.trafficCar img {
+  display: block;
+  width: 66px;
+  height: auto;
+  pointer-events: none;
+}
+
+.worldLocationVehicle {
+  display: block;
+  width: 62px;
+  height: auto;
+  filter: drop-shadow(0 5px 6px rgba(0, 0, 0, .45));
+  pointer-events: none;
+}
+
+.horizontalA {
+  left: -18%;
+}
+
+.horizontalB {
+  right: -18%;
+}
+
+.horizontalC {
+  left: -18%;
+}
+
+@media (max-width: 380px) {
+  .trafficCar,
+  .trafficCar img {
+    width: 56px;
+  }
+
+  .worldLocationVehicle {
+    width: 54px;
+  }
+}
