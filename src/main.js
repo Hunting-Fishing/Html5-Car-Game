@@ -1,9 +1,9 @@
 import './styles.css';
 import { gsap } from 'gsap';
 import { SCREENS, RACE_MODES, CHAINS, UPGRADES, BUILDINGS, PROBLEMS, CREATOR_RULES, IDLE_LINES } from './data/gameData.js';
-import { AUTO_SHOP_ROOMS } from './data/visualData.js';
+import { AUTO_SHOP_ROOMS, AUTO_WORLD_LOCATIONS, WORLD_TRAFFIC, WORLD_PEOPLE } from './data/visualData.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
-import { fmt, costToText, canAfford } from './systems/economySystem.js';
+import { fmt, costToText, canAfford, addCurrency, addXp } from './systems/economySystem.js';
 import { getObjectiveList, applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, itemDisplayName, boardLimit, activeBoardCount, shelfCapacity, normalizeMergeState, unlockedChainKeys } from './systems/mergeSystem.js';
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
@@ -38,7 +38,7 @@ function gameLoop(now) {
   updateRaceCanvas(state);
   updateTopBar();
 
-  if (!renderLock && ['race', 'hub', 'merge', 'lines', 'garage'].includes(state.activeScreen)) {
+  if (!renderLock && ['race', 'hub', 'merge', 'lines', 'garage', 'world'].includes(state.activeScreen)) {
     renderLock = true;
     setTimeout(() => {
       renderLock = false;
@@ -56,7 +56,7 @@ function renderShell() {
         <div class="topLine">
           <div class="brand">
             <div class="brandLogo">365</div>
-            <div class="brandText"><b>Micro Garage</b><span>Idle racing companion · local save</span></div>
+            <div class="brandText"><b>Micro Garage</b><span>Playable auto world · local save</span></div>
           </div>
           <div class="stagePill" id="stagePill">Stage 1</div>
         </div>
@@ -93,6 +93,7 @@ function renderActiveScreen() {
   const el = document.querySelector(`#screen-${state.activeScreen}`);
   if (!el) return;
   if (state.activeScreen === 'hub') el.innerHTML = renderHub();
+  if (state.activeScreen === 'world') el.innerHTML = renderWorld();
   if (state.activeScreen === 'race') {
     el.innerHTML = renderRace();
     const host = el.querySelector('#raceCanvas');
@@ -127,10 +128,10 @@ function renderHub() {
 
     <section class="card">
       <div class="cardTitle">
-        <div><h2>Idle Clicker Loop</h2><p>Upgrade automotive lines. Merge Bay feeds the garage. Racing is the visual tap loop.</p></div>
+        <div><h2>Playable Auto World</h2><p>Move through the 365 auto world by tapping buildings, roads, repair shops, dealers, and roadside events.</p></div>
       </div>
       <div class="grid2">
-        <button class="btn primary" data-action="screen" data-screen="race">Race / Tap</button>
+        <button class="btn primary" data-action="screen" data-screen="world">Open World Map</button>
         <button class="btn gold" data-action="screen" data-screen="lines">Upgrade Lines</button>
         <button class="btn" data-action="screen" data-screen="garage">Auto Shop</button>
         <button class="btn ghost" data-action="screen" data-screen="merge">Merge Parts</button>
@@ -156,6 +157,57 @@ function renderHub() {
       <div class="cardTitle"><div><h3>Activity Log</h3><p>Short feedback only. Mobile games need fast readable feedback.</p></div></div>
       ${state.log.slice(0, 5).map((line) => `<div class="logLine">${line}</div>`).join('')}
     </section>
+  `;
+}
+
+function renderWorld() {
+  return `
+    <section class="card worldCard">
+      <div class="cardTitle">
+        <div><h2>365 Auto World</h2><p>Tap buildings and events. Cars move on roads, shops generate work, and breakdowns feed tow/recovery gameplay.</p></div>
+        <span class="pill">Playable Map</span>
+      </div>
+      <div class="autoWorldMap">
+        <div class="mapGround"></div>
+        <div class="road roadH roadTop"></div>
+        <div class="road roadH roadMid"></div>
+        <div class="road roadH roadBottom"></div>
+        <div class="road roadV roadLeft"></div>
+        <div class="road roadV roadRight"></div>
+        <div class="intersection centerCross"></div>
+        ${WORLD_TRAFFIC.map(renderTrafficCar).join('')}
+        ${WORLD_PEOPLE.map(renderWorldPerson).join('')}
+        ${AUTO_WORLD_LOCATIONS.map(renderWorldLocation).join('')}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardTitle"><div><h3>World Jobs</h3><p>This is the beginning of the real game layer: click locations, handle roadside work, grow the auto economy.</p></div></div>
+      <div class="grid2">
+        <button class="btn primary" data-action="worldTow">Dispatch Tow</button>
+        <button class="btn" data-action="screen" data-screen="garage">Manage Shop</button>
+        <button class="btn" data-action="screen" data-screen="lines">Upgrade Businesses</button>
+        <button class="btn ghost" data-action="screen" data-screen="race">Run Route</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderTrafficCar(car) {
+  return `<div class="trafficCar ${car.lane} ${car.speedClass}" style="animation-delay:${car.delay}s">${car.icon}</div>`;
+}
+
+function renderWorldPerson(person) {
+  return `<div class="worldPerson" style="left:${person.x}%; top:${person.y}%" title="${person.label}">${person.icon}</div>`;
+}
+
+function renderWorldLocation(location) {
+  return `
+    <button class="worldLocation ${location.type}" style="left:${location.x}%; top:${location.y}%" data-action="worldLocation" data-location="${location.key}">
+      <span class="worldIcon">${location.icon}</span>
+      <span class="worldLabel">${location.name}</span>
+      ${location.type === 'event' ? '<span class="alertPing">!</span>' : ''}
+    </button>
   `;
 }
 
@@ -471,6 +523,8 @@ function handleClick(event) {
   if (action === 'collectLine') result = collectIdleLine(state, target.dataset.line);
   if (action === 'upgradeLine') result = buyLineUpgrade(state, target.dataset.line);
   if (action === 'buyManager') result = buyLineManager(state, target.dataset.line);
+  if (action === 'worldLocation') result = handleWorldLocation(target.dataset.location);
+  if (action === 'worldTow') result = completeTowEvent();
   if (action === 'placeShelf') result = placeSupplierItem(state, Number(target.dataset.index));
   if (action === 'placeAll') result = placeAllReady(state);
   if (action === 'autoMerge') result = autoMergeOnce(state);
@@ -495,6 +549,29 @@ function handleClick(event) {
   }
   render();
   queueSave();
+}
+
+function handleWorldLocation(locationKey) {
+  const location = AUTO_WORLD_LOCATIONS.find((item) => item.key === locationKey);
+  if (!location) return { ok: false, message: 'Unknown world location.' };
+  if (location.action === 'towEvent') return completeTowEvent();
+  if (location.screen) {
+    state.activeScreen = location.screen;
+    return { ok: true, message: `${location.name}: ${location.description}` };
+  }
+  return { ok: true, message: location.description };
+}
+
+function completeTowEvent() {
+  const towLine = getLineState(state, 'towingJob');
+  const towLevel = towLine?.level || 0;
+  const rewardCoins = 55 + towLevel * 6;
+  const rewardScrap = 6 + Math.floor(towLevel / 2);
+  addCurrency(state, 'coins', rewardCoins);
+  addCurrency(state, 'scrap', rewardScrap);
+  addXp(state, 10 + towLevel);
+  state.race.condition = Math.min(getRaceStats(state).conditionMax, state.race.condition + 8);
+  return { ok: true, message: `Tow job complete: +${rewardCoins} coins, +${rewardScrap} scrap.` };
 }
 
 function setText(id, value) {
