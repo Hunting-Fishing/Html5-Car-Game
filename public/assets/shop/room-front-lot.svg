@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="365 Micro Garage Front Lot">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#123247"/></linearGradient>
+    <linearGradient id="road" x1="0" x2="1"><stop offset="0" stop-color="#334155"/><stop offset="1" stop-color="#111827"/></linearGradient>
+  </defs>
+  <rect width="320" height="180" rx="18" fill="url(#sky)"/>
+  <rect x="0" y="116" width="320" height="64" fill="url(#road)"/>
+  <rect x="20" y="38" width="124" height="72" rx="10" fill="#153a50" stroke="#5ab7ff" stroke-width="3"/>
+  <rect x="34" y="52" width="42" height="28" rx="5" fill="#2dd4bf" opacity=".85"/>
+  <rect x="88" y="52" width="42" height="28" rx="5" fill="#2dd4bf" opacity=".85"/>
+  <text x="82" y="101" text-anchor="middle" font-size="18" font-weight="900" fill="#eaf8ff">365</text>
+  <g transform="translate(174 86)">
+    <path d="M24 18h86l16 26H8z" fill="#35e58a"/>
+    <path d="M40 3h48l22 22H20z" fill="#2dd4bf"/>
+    <circle cx="35" cy="48" r="12" fill="#06131d"/><circle cx="101" cy="48" r="12" fill="#06131d"/>
+    <circle cx="35" cy="48" r="5" fill="#92b3c5"/><circle cx="101" cy="48" r="5" fill="#92b3c5"/>
+    <rect x="51" y="10" width="28" height="15" rx="3" fill="#eaf8ff" opacity=".75"/>
+  </g>
+  <path d="M18 146h62M110 146h62M204 146h62" stroke="#ffd166" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+</svg>
