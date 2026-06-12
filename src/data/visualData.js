@@ -1,3 +1,87 @@
+export const AUTO_WORLD_LOCATIONS = [
+  {
+    key: 'mainGarage',
+    name: '365 Main Garage',
+    icon: '🏢',
+    type: 'garage',
+    x: 46,
+    y: 46,
+    screen: 'garage',
+    lineKey: 'mobileMechanic',
+    description: 'Your central shop. Upgrade bays, parts storage, staff, and service capacity.'
+  },
+  {
+    key: 'dealerRow',
+    name: 'Dealer Row',
+    icon: '🚘',
+    type: 'dealer',
+    x: 18,
+    y: 26,
+    screen: 'lines',
+    lineKey: 'dealerShowcase',
+    description: 'Vehicle showcase area. Builds reputation and future listing activity.'
+  },
+  {
+    key: 'partsHub',
+    name: 'Parts Hub',
+    icon: '📦',
+    type: 'parts',
+    x: 72,
+    y: 25,
+    screen: 'merge',
+    lineKey: 'partsDelivery',
+    description: 'Supplier and parts flow. Feeds the merge bay and repair jobs.'
+  },
+  {
+    key: 'privateRepair',
+    name: 'Private Repair Shops',
+    icon: '🔧',
+    type: 'repair',
+    x: 24,
+    y: 68,
+    screen: 'lines',
+    lineKey: 'mobileMechanic',
+    description: 'Local private shops. They create repair jobs, toolkits, and service demand.'
+  },
+  {
+    key: 'salvageYard',
+    name: 'Auto Salvage Yard',
+    icon: '🧲',
+    type: 'salvage',
+    x: 78,
+    y: 70,
+    screen: 'garage',
+    lineKey: 'towingJob',
+    description: 'Scrap, recovery, dismantling, and tow-truck work live here.'
+  },
+  {
+    key: 'roadsideBreakdown',
+    name: 'Roadside Breakdown',
+    icon: '⚠️',
+    type: 'event',
+    x: 52,
+    y: 78,
+    action: 'towEvent',
+    lineKey: 'towingJob',
+    description: 'A generic car is stuck on the road. Dispatch tow support for coins and scrap.'
+  }
+];
+
+export const WORLD_TRAFFIC = [
+  { key: 'compactA', icon: '🚗', lane: 'horizontalA', delay: 0, speedClass: 'normal' },
+  { key: 'vanA', icon: '🚐', lane: 'horizontalB', delay: 2.1, speedClass: 'slow' },
+  { key: 'pickupA', icon: '🛻', lane: 'verticalA', delay: 1.2, speedClass: 'normal' },
+  { key: 'truckA', icon: '🚚', lane: 'verticalB', delay: 3.2, speedClass: 'slow' },
+  { key: 'towA', icon: '🚛', lane: 'horizontalC', delay: 4.1, speedClass: 'normal' }
+];
+
+export const WORLD_PEOPLE = [
+  { key: 'buyer', icon: '🧍', x: 20, y: 35, label: 'buyer' },
+  { key: 'mechanic', icon: '👨‍🔧', x: 38, y: 56, label: 'mechanic' },
+  { key: 'yardWorker', icon: '🧑‍🏭', x: 82, y: 78, label: 'yard' },
+  { key: 'driver', icon: '🚶', x: 56, y: 82, label: 'driver' }
+];
+
 export const AUTO_SHOP_ROOMS = [
   {
     key: 'frontLot',
