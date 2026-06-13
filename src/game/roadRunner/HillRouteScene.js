@@ -5,6 +5,7 @@ import { createVehicle, updateVehicleWheels } from './vehicle.js';
 import { createPickups, collectPickups } from './pickups.js';
 import { createGhostVehicles, updateGhostVehicles } from './ghosts.js';
 import { saveRoadRunner } from './save.js';
+import { vehicleStats } from './upgrades.js';
 
 export class HillRouteScene extends Phaser.Scene {
   constructor() {
@@ -21,10 +22,11 @@ export class HillRouteScene extends Phaser.Scene {
 
   create() {
     this.route = ROUTES[this.routeKey];
+    this.stats = vehicleStats(this.saveData.upgrades);
     this.elapsed = 0;
     this.xPos = 80;
     this.speed = 0;
-    this.energy = 112;
+    this.energy = this.stats.startingEnergy;
     this.distance = 0;
     this.coins = 0;
     this.parts = 0;
@@ -52,26 +54,30 @@ export class HillRouteScene extends Phaser.Scene {
     this.elapsed += dt;
 
     if (this.controls.push && this.energy > 0) {
-      this.speed += 190 * dt;
-      this.energy -= 5.7 * dt;
+      this.speed += this.stats.pushPower * dt;
+      this.energy -= this.stats.energyUse * dt;
     }
 
     if (this.controls.slow) this.speed -= 250 * dt;
 
-    this.speed -= 20 * dt;
-    this.speed = Phaser.Math.Clamp(this.speed, 0, 320);
+    this.speed -= this.stats.rollingLoss * dt;
+    this.speed = Phaser.Math.Clamp(this.speed, 0, this.stats.maxSpeed);
     this.xPos += this.speed * dt;
     this.distance = Math.max(0, this.xPos - 80);
 
     this.player.x = this.xPos;
     this.player.y = routeY(this.route, this.xPos) - 30;
-    this.player.rotation = routeAngle(this.route, this.xPos);
+    this.player.rotation = Phaser.Math.Linear(
+      this.player.rotation,
+      Phaser.Math.Clamp(routeAngle(this.route, this.xPos), -this.stats.slopeLimit, this.stats.slopeLimit),
+      this.stats.slopeSmoothing
+    );
     updateVehicleWheels(this.player, this.speed, dt);
 
     const rewards = collectPickups(this.player, this.pickups, 1);
     this.coins += rewards.coins;
     this.parts += rewards.parts;
-    this.energy = Math.min(120, this.energy + rewards.energy);
+    this.energy = Math.min(this.stats.startingEnergy + 24, this.energy + rewards.energy);
 
     if (this.elapsed - this.lastSample > 0.18) {
       this.samples.push({
@@ -83,7 +89,7 @@ export class HillRouteScene extends Phaser.Scene {
     }
 
     updateGhostVehicles(this.route, this.ghosts, this.saveData, this.elapsed);
-    this.onHud?.({ distance: this.distance, energy: this.energy });
+    this.onHud?.({ distance: this.distance, energy: this.energy, maxEnergy: this.stats.startingEnergy });
 
     if (this.energy <= 0 || this.distance >= this.route.length) {
       this.finish(this.distance >= this.route.length);
@@ -102,14 +108,14 @@ export class HillRouteScene extends Phaser.Scene {
     }
 
     saveRoadRunner(this.saveData);
-    this.onHud?.({ distance: this.distance, energy: this.energy });
+    this.onHud?.({ distance: this.distance, energy: this.energy, maxEnergy: this.stats.startingEnergy });
 
     const message = completed
-      ? `Route complete. +${earned} coins.`
-      : `Run ended at ${Math.floor(this.distance)}m. +${earned} coins.`;
+      ? `Route complete. +${earned} coins, +${this.parts} parts.`
+      : `Run ended at ${Math.floor(this.distance)}m. +${earned} coins, +${this.parts} parts.`;
 
-    this.add.rectangle(this.player.x + 170, this.player.y - 95, 310, 78, 0x04111d, 0.86).setDepth(2000);
-    this.add.text(this.player.x + 32, this.player.y - 120, message, {
+    this.add.rectangle(this.player.x + 170, this.player.y - 95, 310, 82, 0x04111d, 0.86).setDepth(2000);
+    this.add.text(this.player.x + 32, this.player.y - 124, message, {
       fontSize: '15px',
       color: '#fff',
       fontStyle: 'bold',
