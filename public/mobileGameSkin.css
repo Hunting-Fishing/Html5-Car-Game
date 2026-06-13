@@ -1,0 +1,188 @@
+/* 365 Auto City - strong mobile game UI skin. This is intentionally visible even when no art-pack button PNG is found. */
+:root {
+  --game-gold-a: #ffe08a;
+  --game-gold-b: #f4a51c;
+  --game-green-a: #5cf18d;
+  --game-green-b: #18a852;
+  --game-blue-a: #63d4ff;
+  --game-blue-b: #1477bd;
+  --game-panel-a: #1d6b9a;
+  --game-panel-b: #0b2a4a;
+  --game-dark: #06131d;
+}
+
+.appShell {
+  max-width: 520px;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(79, 209, 255, .22), transparent 40%),
+    linear-gradient(180deg, #092a45, #06131d 74%);
+}
+
+.topBar {
+  min-height: 104px;
+  padding: 10px 10px 8px;
+  background:
+    linear-gradient(180deg, rgba(55, 154, 207, .98), rgba(8, 47, 78, .98));
+  border-bottom: 3px solid rgba(0,0,0,.34);
+  box-shadow: inset 0 -2px 0 rgba(255,255,255,.14), 0 5px 12px rgba(0,0,0,.32);
+}
+
+.brandLogo {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #52ffe2, #19bd9f);
+  border: 2px solid rgba(255,255,255,.45);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.35), 0 5px 0 rgba(0,0,0,.22), 0 8px 18px rgba(0,0,0,.28);
+}
+
+.brandText b {
+  font-size: 16px;
+  text-shadow: 0 3px 0 rgba(0,0,0,.24);
+}
+
+.stagePill {
+  background: linear-gradient(180deg, #ffffff, #c9e4f3);
+  color: #17364a;
+  border: 2px solid rgba(0,0,0,.26);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.75), 0 4px 0 rgba(0,0,0,.22);
+}
+
+.currencyGrid {
+  gap: 6px;
+}
+
+.cur {
+  min-height: 40px;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(21, 50, 70, .98), rgba(5, 17, 28, .98));
+  border: 2px solid rgba(255,255,255,.14);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 4px 0 rgba(0,0,0,.18);
+}
+
+.cur b {
+  color: #ffffff;
+  font-size: 12px;
+  text-shadow: 0 2px 0 rgba(0,0,0,.28);
+}
+
+.card, .lineCard, .pixiWorldShell {
+  border-radius: 24px !important;
+  padding: 14px !important;
+  background:
+    var(--ui-pack-panel),
+    linear-gradient(180deg, rgba(34, 104, 146, .96), rgba(10, 35, 57, .98)) !important;
+  background-size: 100% 100%, auto !important;
+  border: 3px solid rgba(255,255,255,.13) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.16), 0 10px 0 rgba(0,0,0,.18), 0 18px 28px rgba(0,0,0,.30) !important;
+}
+
+.pixiWorldHeader {
+  margin: -4px -4px 10px;
+  padding: 14px 14px 12px;
+  border-radius: 18px 18px 10px 10px;
+  background: linear-gradient(180deg, #277faf, #0d3e68);
+  border-bottom: 3px solid rgba(0,0,0,.28);
+}
+
+.pixiWorldHeader h2,
+.cardTitle h2,
+.cardTitle h3 {
+  color: #ffffff;
+  text-shadow: 0 3px 0 rgba(0,0,0,.30);
+}
+
+.btn {
+  border-radius: 18px !important;
+  border: 2px solid rgba(0,0,0,.34) !important;
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.30), 0 5px 0 rgba(0,0,0,.24), 0 8px 13px rgba(0,0,0,.24) !important;
+  text-shadow: 0 2px 0 rgba(0,0,0,.24);
+  letter-spacing: .1px;
+}
+
+.btn.primary {
+  background:
+    var(--ui-pack-button),
+    linear-gradient(180deg, var(--game-green-a), var(--game-green-b)) !important;
+  background-size: 100% 100%, auto !important;
+  color: #062313 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.28);
+}
+
+.btn.gold {
+  background: linear-gradient(180deg, var(--game-gold-a), var(--game-gold-b)) !important;
+  color: #2b1700 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.34);
+}
+
+.btn.red {
+  background: linear-gradient(180deg, #ff7891, #d82946) !important;
+  color: #ffffff !important;
+}
+
+.btn.ghost {
+  background: linear-gradient(180deg, #2e6f94, #153951) !important;
+  color: #e9fbff !important;
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.20), 0 1px 0 rgba(0,0,0,.24) !important;
+}
+
+.bottomNav {
+  height: 84px;
+  padding: 7px 5px calc(7px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #0a2b45, #04111d);
+  border-top: 3px solid rgba(255,255,255,.12);
+  box-shadow: 0 -8px 18px rgba(0,0,0,.30);
+}
+
+.tab {
+  border-radius: 16px;
+  color: #bde8f7;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+
+.tab.active {
+  background: linear-gradient(180deg, #fff3c4, #37d980) !important;
+  color: #052213 !important;
+  border: 2px solid rgba(0,0,0,.35) !important;
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.40), 0 5px 0 rgba(0,0,0,.28);
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
+}
+
+.mobileCityHud {
+  border-radius: 0 0 22px 22px;
+  background:
+    var(--ui-pack-panel),
+    linear-gradient(180deg, rgba(23, 91, 132, .98), rgba(7, 28, 48, .98));
+  background-size: 100% 100%, auto;
+  border-top: 3px solid rgba(255,255,255,.14);
+}
+
+.mobileBuildTray,
+.mobilePlacedSheet {
+  border-radius: 22px;
+  background:
+    var(--ui-pack-panel),
+    linear-gradient(180deg, rgba(35, 112, 158, .98), rgba(9, 38, 66, .98));
+  background-size: 100% 100%, auto;
+  border: 3px solid rgba(255,255,255,.16);
+}
+
+.mobileBuildingList .btn {
+  min-height: 54px;
+  font-size: 11px;
+}
+
+.mobileBuildingList .btn.primary {
+  outline: 3px solid #fff4a7;
+  outline-offset: 2px;
+}
+
+.notice.good {
+  border: 2px solid rgba(75, 255, 155, .35);
+  background: linear-gradient(180deg, rgba(53, 229, 138, .16), rgba(8, 65, 52, .82));
+}
