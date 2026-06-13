@@ -1,4 +1,5 @@
 import { SAVE_KEY } from './config.js';
+import { normalizeUpgrades } from './upgrades.js';
 
 export function loadRoadRunnerSave() {
   try {
@@ -7,14 +8,16 @@ export function loadRoadRunnerSave() {
       coins: parsed.coins || 0,
       parts: parsed.parts || 0,
       bestDistance: parsed.bestDistance || 0,
-      bestTrail: Array.isArray(parsed.bestTrail) ? parsed.bestTrail : []
+      bestTrail: Array.isArray(parsed.bestTrail) ? parsed.bestTrail : [],
+      upgrades: normalizeUpgrades(parsed.upgrades)
     };
   } catch {
     return {
       coins: 0,
       parts: 0,
       bestDistance: 0,
-      bestTrail: []
+      bestTrail: [],
+      upgrades: normalizeUpgrades()
     };
   }
 }
