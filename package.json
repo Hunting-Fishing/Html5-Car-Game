@@ -1,9 +1,9 @@
 {
   "name": "365-micro-garage-companion",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "type": "module",
-  "description": "Mobile-first 365 Motor Sales companion idle racing clicker with merge-based micro parts and local saves.",
+  "description": "Mobile-first 365 Motor Sales companion idle racing clicker with a Phaser side-scroll racer and ghost race mode.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
@@ -15,6 +15,7 @@
     "gsap": "latest",
     "howler": "latest",
     "lucide-static": "latest",
+    "phaser": "latest",
     "pixi.js": "latest"
   },
   "devDependencies": {
