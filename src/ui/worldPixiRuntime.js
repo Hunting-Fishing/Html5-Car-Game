@@ -60,14 +60,14 @@ const LOTS = [
 ];
 
 const INITIAL_BUILDINGS = [
-  { x: 60, y: 88, w: 104, h: 100, label: 'Dealer Row', colorA: 0xfbbf24, colorB: 0xd97706, action: 'lines' },
-  { x: 455, y: 90, w: 124, h: 100, label: '365 Garage', colorA: 0x22c55e, colorB: 0x0f766e, action: 'garage' },
-  { x: 64, y: 398, w: 104, h: 100, label: 'Parts Hub', colorA: 0x2dd4bf, colorB: 0x0891b2, action: 'merge' },
-  { x: 720, y: 398, w: 104, h: 100, label: 'Repair Shops', colorA: 0xa78bfa, colorB: 0x6d28d9, action: 'lines' },
-  { x: 72, y: 745, w: 112, h: 100, label: 'Salvage Yard', colorA: 0xf97316, colorB: 0x9a3412, action: 'garage' },
-  { x: 720, y: 745, w: 104, h: 100, label: 'Tow Dispatch', colorA: 0xfacc15, colorB: 0xca8a04, action: 'lines' },
-  { x: 70, y: 1072, w: 112, h: 100, label: 'Showcase', colorA: 0x60a5fa, colorB: 0x2563eb, action: 'lines' },
-  { x: 700, y: 1072, w: 112, h: 100, label: 'Test Track', colorA: 0x38bdf8, colorB: 0x2563eb, action: 'race' }
+  { x: 76, y: 98, w: 76, h: 54, label: 'Dealer Row', colorA: 0xfbbf24, colorB: 0xd97706, action: 'lines' },
+  { x: 478, y: 98, w: 88, h: 56, label: '365 Garage', colorA: 0x22c55e, colorB: 0x0f766e, action: 'garage' },
+  { x: 78, y: 408, w: 76, h: 54, label: 'Parts Hub', colorA: 0x2dd4bf, colorB: 0x0891b2, action: 'merge' },
+  { x: 730, y: 408, w: 76, h: 54, label: 'Repair Shops', colorA: 0xa78bfa, colorB: 0x6d28d9, action: 'lines' },
+  { x: 84, y: 755, w: 80, h: 56, label: 'Salvage Yard', colorA: 0xf97316, colorB: 0x9a3412, action: 'garage' },
+  { x: 730, y: 755, w: 76, h: 54, label: 'Tow Dispatch', colorA: 0xfacc15, colorB: 0xca8a04, action: 'lines' },
+  { x: 84, y: 1083, w: 78, h: 54, label: 'Showcase', colorA: 0x60a5fa, colorB: 0x2563eb, action: 'lines' },
+  { x: 714, y: 1083, w: 78, h: 54, label: 'Test Track', colorA: 0x38bdf8, colorB: 0x2563eb, action: 'race' }
 ];
 
 const GRID = {
@@ -165,12 +165,12 @@ function html() {
   return `
     <section class="card pixiWorldShell">
       <div class="pixiWorldHeader">
-        <h2>365 Auto City — Build Grid V1</h2>
-        <p>Drag the map. Tap green grid cells to place purchased buildings. Roads, existing lots, and occupied buildings are blocked.</p>
+        <h2>365 Auto City — Directional Traffic V1</h2>
+        <p>Drag the map. Traffic uses generated directional vehicles with animated wheels. Kenney cars stay for parked/display assets until a real 4-direction vehicle pack is installed.</p>
       </div>
       <div class="pixiWorldHost" id="pixiWorldHost"></div>
       <div class="pixiWorldHud">
-        <div class="hint">Build Grid V1: green cells are buildable, red cells are blocked, purchased-shop placeholders use a 2×2 grid footprint, and placements are saved locally for testing.</div>
+        <div class="hint">Directional Traffic V1: cars face lane direction, wheels animate, buildings are smaller, and the build grid still blocks roads, lots, buildings, events, and occupied cells.</div>
         <div class="pixiProxyRow">
           <button class="btn primary" onclick="window.toggleCityBuildGrid?.()">Toggle Build Grid</button>
           <button class="btn red" onclick="window.clearCityPlacements?.()">Clear Test Buildings</button>
@@ -269,6 +269,21 @@ function gRect(x, y, w, h, fill, stroke = null) {
   return g;
 }
 
+function gCircle(x, y, radius, fill, stroke = null) {
+  const g = new PIXI.Graphics();
+  if (g.circle) {
+    g.circle(x, y, radius).fill(fillStyle(fill));
+    if (stroke) g.circle(x, y, radius).stroke(stroke);
+    return g;
+  }
+  const f = fillStyle(fill);
+  g.beginFill(f.color, f.alpha ?? 1);
+  if (stroke) g.lineStyle(stroke.width || 1, stroke.color || 0xffffff, stroke.alpha ?? 1);
+  g.drawCircle(x, y, radius);
+  g.endFill();
+  return g;
+}
+
 function gPolygon(points, fill) {
   const g = new PIXI.Graphics();
   const style = fillStyle(fill);
@@ -309,7 +324,7 @@ function getRoadRects() {
 
 function getBlockedRects() {
   const lotRects = LOTS.map((lot) => ({ x: lot.x, y: lot.y, w: lot.w, h: lot.h, type: 'lot' }));
-  const buildingRects = INITIAL_BUILDINGS.map((b) => ({ x: b.x, y: b.y, w: b.w + 20, h: b.h + 36, type: 'building' }));
+  const buildingRects = INITIAL_BUILDINGS.map((b) => ({ x: b.x, y: b.y, w: b.w + 20, h: b.h + 34, type: 'building' }));
   const placedRects = placedBuildings.map((b) => ({ x: b.x, y: b.y, w: b.w, h: b.h, type: 'placed' }));
   const eventRects = [{ x: 402, y: 708, w: 120, h: 92, type: 'event' }];
   return [...getRoadRects(), ...lotRects, ...buildingRects, ...placedRects, ...eventRects];
@@ -388,7 +403,7 @@ function addHorizontalRoad(y, label = '') {
   road.addChild(gRect(0, y + h / 2 - 2, WORLD.width, 4, { color: 0xf8fafc, alpha: 0.42 }));
 
   if (label) {
-    const t = makeText(label, { fontSize: 13, fill: 0xcbd5e1 });
+    const t = makeText(label, { fontSize: 10, fill: 0xcbd5e1 });
     t.x = 12;
     t.y = y + 7;
     road.addChild(t);
@@ -413,7 +428,7 @@ function addVerticalRoad(x, label = '') {
   road.addChild(gRect(x + w / 2 - 2, 0, 4, WORLD.height, { color: 0xf8fafc, alpha: 0.42 }));
 
   if (label) {
-    const t = makeText(label, { fontSize: 12, fill: 0xcbd5e1 });
+    const t = makeText(label, { fontSize: 9, fill: 0xcbd5e1 });
     t.x = x + 8;
     t.y = 22;
     t.rotation = Math.PI / 2;
@@ -439,9 +454,9 @@ function addLot({ x, y, w, h, label, color = 0xd8dee9 }) {
   lot.addChild(gRoundRect(x, y, w, h, 14, color, { width: 4, color: 0xffffff, alpha: 0.55 }));
 
   if (label) {
-    const t = makeText(label, { fontSize: 11, fill: 0x334155 });
-    t.x = x + 10;
-    t.y = y + h - 20;
+    const t = makeText(label, { fontSize: 9, fill: 0x334155 });
+    t.x = x + 8;
+    t.y = y + h - 17;
     lot.addChild(t);
   }
 
@@ -452,27 +467,27 @@ function drawLots() {
   for (const lot of LOTS) addLot(lot);
 }
 
-function addBuilding({ x, y, label, colorA, colorB, action, w = 104, h = 76, interactive = true }) {
+function addBuilding({ x, y, label, colorA, colorB, action, w = 76, h = 54, interactive = true }) {
   const b = new PIXI.Container();
   b.x = x;
   b.y = y;
   b.zIndex = y + 80;
 
-  b.addChild(gRoundRect(10, h - 4, w, 12, 6, { color: 0x000000, alpha: 0.18 }));
-  b.addChild(gRoundRect(5, 30, 24, 42, 5, colorB, { width: 2, color: 0x1e293b }));
-  b.addChild(gRoundRect(28, 25, w - 24, 50, 8, colorA, { width: 2, color: 0x1e293b }));
-  b.addChild(gRoundRect(18, 6, w - 22, 34, 8, 0xe2e8f0, { width: 2, color: 0x1e293b }));
+  b.addChild(gRoundRect(7, h - 2, w, 9, 5, { color: 0x000000, alpha: 0.16 }));
+  b.addChild(gRoundRect(4, 23, 18, 32, 4, colorB, { width: 2, color: 0x1e293b }));
+  b.addChild(gRoundRect(21, 20, w - 18, 38, 6, colorA, { width: 2, color: 0x1e293b }));
+  b.addChild(gRoundRect(13, 5, w - 16, 25, 6, 0xe2e8f0, { width: 2, color: 0x1e293b }));
 
   for (let row = 0; row < 2; row++) {
     for (let col = 0; col < 3; col++) {
-      b.addChild(gRoundRect(42 + col * 21, 37 + row * 16, 12, 9, 2, 0xfde68a));
+      b.addChild(gRoundRect(31 + col * 15, 29 + row * 12, 9, 7, 2, 0xfde68a));
     }
   }
 
-  b.addChild(gRoundRect(0, h + 5, w + 20, 24, 12, { color: 0x04111d, alpha: 0.86 }, { width: 1, color: 0xffffff, alpha: 0.18 }));
-  const title = makeText(label, { fontSize: 11, fill: 0xffffff, wordWrap: true, wordWrapWidth: w + 14 });
+  b.addChild(gRoundRect(0, h + 7, w + 12, 19, 10, { color: 0x04111d, alpha: 0.86 }, { width: 1, color: 0xffffff, alpha: 0.18 }));
+  const title = makeText(label, { fontSize: 9, fill: 0xffffff, wordWrap: true, wordWrapWidth: w + 8 });
   title.anchor.set(0.5, 0.5);
-  title.x = 10 + w / 2;
+  title.x = 6 + w / 2;
   title.y = h + 17;
   b.addChild(title);
 
@@ -492,7 +507,7 @@ function addEvent({ x, y }) {
   sprite.anchor.set(0.5);
   sprite.x = 60;
   sprite.y = 38;
-  sprite.scale.set(0.86);
+  sprite.scale.set(0.70);
   e.addChild(sprite);
 
   e.addChild(gRoundRect(92, -12, 32, 32, 16, 0xfb7185));
@@ -522,8 +537,8 @@ function addPlacedBuilding({ col, row, name = 'Purchased Shop' }) {
     colorA: 0x35e58a,
     colorB: 0x0f766e,
     action: 'garage',
-    w: GRID.footprintW * GRID.size - 18,
-    h: GRID.footprintH * GRID.size - 18,
+    w: GRID.footprintW * GRID.size - 26,
+    h: GRID.footprintH * GRID.size - 26,
     interactive: false
   });
 }
@@ -604,7 +619,7 @@ function placePurchasedBuilding(col, row) {
   console.info('[365 Auto City] Placed Purchased Shop:', { col, row });
 }
 
-function addParkedCar(src, x, y, flip = false, scale = 0.62) {
+function addParkedCar(src, x, y, flip = false, scale = 0.48) {
   const s = spriteFrom(src);
   s.anchor.set(0.5);
   s.x = x;
@@ -614,22 +629,60 @@ function addParkedCar(src, x, y, flip = false, scale = 0.62) {
   world.addChild(s);
 }
 
-function makeVehicle(src, path, options = {}) {
+function makeDirectionalVehicle({ color = 0x35e58a, accent = 0xffffff, kind = 'car', direction = 'east', scale = 1 }) {
+  const car = new PIXI.Container();
+  const bodyW = kind === 'truck' ? 58 : 48;
+  const bodyH = kind === 'truck' ? 25 : 23;
+  const hoodW = kind === 'truck' ? 14 : 12;
+  const wheels = [];
+
+  car.addChild(gRoundRect(-bodyW / 2, -bodyH / 2 + 3, bodyW, bodyH, 8, { color: 0x000000, alpha: 0.20 }));
+  car.addChild(gRoundRect(-bodyW / 2, -bodyH / 2, bodyW, bodyH, 8, color, { width: 2, color: 0x172033 }));
+  car.addChild(gRoundRect(-bodyW / 2 + 8, -bodyH / 2 + 4, bodyW - hoodW - 16, bodyH - 8, 5, accent, { width: 2, color: 0x172033, alpha: 0.9 }));
+  car.addChild(gPolygon([bodyW / 2 - hoodW, -bodyH / 2 + 3, bodyW / 2 + 8, 0, bodyW / 2 - hoodW, bodyH / 2 - 3], { color, alpha: 1 }));
+
+  const wheelPositions = [
+    [-bodyW / 2 + 10, -bodyH / 2 - 2],
+    [bodyW / 2 - 12, -bodyH / 2 - 2],
+    [-bodyW / 2 + 10, bodyH / 2 + 2],
+    [bodyW / 2 - 12, bodyH / 2 + 2]
+  ];
+
+  for (const [x, y] of wheelPositions) {
+    const wheel = new PIXI.Container();
+    wheel.x = x;
+    wheel.y = y;
+    wheel.addChild(gCircle(0, 0, 5, 0x111827));
+    wheel.addChild(gRect(-1, -4, 2, 8, 0xcbd5e1));
+    wheel.addChild(gRect(-4, -1, 8, 2, 0xcbd5e1));
+    car.addChild(wheel);
+    wheels.push(wheel);
+  }
+
+  if (direction === 'west') car.scale.set(-scale, scale);
+  else car.scale.set(scale, scale);
+  if (direction === 'north') car.rotation = -Math.PI / 2;
+  if (direction === 'south') car.rotation = Math.PI / 2;
+
+  car._wheels = wheels;
+  return car;
+}
+
+function makeVehicle(path, options = {}) {
   const {
     speed = 74,
-    scale = 0.76,
-    flip = false,
-    rotation = 0,
+    scale = 0.82,
+    color = 0x35e58a,
+    accent = 0xffffff,
+    direction = 'east',
+    kind = 'car',
     label = 'traffic'
   } = options;
 
-  const sprite = spriteFrom(src);
-  sprite.anchor.set(0.5);
-  sprite.scale.set(flip ? -scale : scale, scale);
-  sprite.rotation = rotation;
+  const sprite = makeDirectionalVehicle({ color, accent, kind, direction, scale });
   sprite.zIndex = 100;
   world.addChild(sprite);
-  vehicles.push({ sprite, path, speed, distance: Math.random() * 700, label });
+  vehicles.push({ sprite, path, speed, distance: Math.random() * 700, label, wheelSpeed: speed / 10 });
 }
 
 function makeWalker(x, y, path, shirt = 0x2563eb, hair = 0x3b2418) {
@@ -647,7 +700,7 @@ function makeWalker(x, y, path, shirt = 0x2563eb, hair = 0x3b2418) {
   p.addChild(gRoundRect(-8, -31, 16, 16, 8, 0xfed7aa, { width: 2, color: 0x1e293b }));
   p.addChild(gRoundRect(-9, -33, 18, 8, 5, hair, { width: 1, color: 0x1e293b }));
 
-  p.scale.set(0.88);
+  p.scale.set(0.82);
   world.addChild(p);
   walkers.push({ sprite: p, path, t: Math.random() * 400, speed: 34 });
 }
@@ -721,24 +774,24 @@ function buildWorld() {
 
   addEvent({ x: 402, y: 708 });
 
-  addParkedCar(vehicleAssets.green, 80, 182, false, 0.55);
-  addParkedCar(vehicleAssets.blue, 125, 182, false, 0.55);
-  addParkedCar(vehicleAssets.yellow, 170, 182, false, 0.55);
-  addParkedCar(vehicleAssets.van, 816, 494, true, 0.58);
-  addParkedCar(vehicleAssets.broken, 88, 832, false, 0.60);
-  addParkedCar(vehicleAssets.pickup, 138, 832, false, 0.60);
-  addParkedCar(vehicleAssets.broken, 188, 832, false, 0.60);
-  addParkedCar(vehicleAssets.green, 85, 1160, false, 0.55);
-  addParkedCar(vehicleAssets.blue, 135, 1160, false, 0.55);
+  addParkedCar(vehicleAssets.green, 80, 182, false, 0.42);
+  addParkedCar(vehicleAssets.blue, 125, 182, false, 0.42);
+  addParkedCar(vehicleAssets.yellow, 170, 182, false, 0.42);
+  addParkedCar(vehicleAssets.van, 816, 494, true, 0.45);
+  addParkedCar(vehicleAssets.broken, 88, 832, false, 0.47);
+  addParkedCar(vehicleAssets.pickup, 138, 832, false, 0.47);
+  addParkedCar(vehicleAssets.broken, 188, 832, false, 0.47);
+  addParkedCar(vehicleAssets.green, 85, 1160, false, 0.42);
+  addParkedCar(vehicleAssets.blue, 135, 1160, false, 0.42);
 
-  makeVehicle(vehicleAssets.green, hPath(0, 'east'), { speed: 92, scale: 0.68, flip: false, label: 'eastbound dealer traffic' });
-  makeVehicle(vehicleAssets.blue, hPath(0, 'west'), { speed: 78, scale: 0.68, flip: true, label: 'westbound dealer traffic' });
-  makeVehicle(vehicleAssets.yellow, hPath(1, 'east'), { speed: 86, scale: 0.68, flip: false, label: 'eastbound repair traffic' });
-  makeVehicle(vehicleAssets.delivery, hPath(1, 'west'), { speed: 66, scale: 0.76, flip: true, label: 'westbound delivery traffic' });
-  makeVehicle(vehicleAssets.pickup, hPath(2, 'east'), { speed: 78, scale: 0.70, flip: false, label: 'eastbound salvage traffic' });
-  makeVehicle(vehicleAssets.van, hPath(3, 'west'), { speed: 62, scale: 0.74, flip: true, label: 'westbound showcase traffic' });
-  makeVehicle(vehicleAssets.tow, vPath(1, 'north'), { speed: 58, scale: 0.78, rotation: -Math.PI / 2, flip: false, label: 'northbound tow traffic' });
-  makeVehicle(vehicleAssets.delivery, vPath(0, 'south'), { speed: 52, scale: 0.74, rotation: Math.PI / 2, flip: false, label: 'southbound parts traffic' });
+  makeVehicle(hPath(0, 'east'), { speed: 92, scale: 0.72, direction: 'east', color: 0xf97316, accent: 0xfef3c7, label: 'eastbound dealer traffic' });
+  makeVehicle(hPath(0, 'west'), { speed: 78, scale: 0.72, direction: 'west', color: 0x60a5fa, accent: 0xdbeafe, label: 'westbound dealer traffic' });
+  makeVehicle(hPath(1, 'east'), { speed: 86, scale: 0.72, direction: 'east', color: 0xfacc15, accent: 0xfffbeb, label: 'eastbound repair traffic' });
+  makeVehicle(hPath(1, 'west'), { speed: 66, scale: 0.80, direction: 'west', kind: 'truck', color: 0x35e58a, accent: 0xe0f2fe, label: 'westbound delivery traffic' });
+  makeVehicle(hPath(2, 'east'), { speed: 78, scale: 0.72, direction: 'east', color: 0x22c55e, accent: 0xdcfce7, label: 'eastbound salvage traffic' });
+  makeVehicle(hPath(3, 'west'), { speed: 62, scale: 0.80, direction: 'west', kind: 'truck', color: 0x2dd4bf, accent: 0xecfeff, label: 'westbound showcase traffic' });
+  makeVehicle(vPath(1, 'north'), { speed: 58, scale: 0.76, direction: 'north', kind: 'truck', color: 0xfacc15, accent: 0xfffbeb, label: 'northbound tow traffic' });
+  makeVehicle(vPath(0, 'south'), { speed: 52, scale: 0.76, direction: 'south', kind: 'truck', color: 0x38bdf8, accent: 0xe0f2fe, label: 'southbound parts traffic' });
 
   makeWalker(214, 168, [{ x: 214, y: 166 }, { x: 214, y: 220 }, { x: 318, y: 220 }, { x: 318, y: 166 }], 0x2563eb, 0x2f1b12);
   makeWalker(646, 190, [{ x: 646, y: 190 }, { x: 810, y: 190 }, { x: 810, y: 520 }, { x: 646, y: 520 }], 0x16a34a, 0x1f2937);
@@ -803,6 +856,10 @@ function updateVehicles(dt) {
     item.sprite.x = p.x;
     item.sprite.y = p.y;
     item.sprite.zIndex = p.y + 40;
+
+    if (item.sprite._wheels) {
+      for (const wheel of item.sprite._wheels) wheel.rotation += item.wheelSpeed * dt;
+    }
   }
 
   for (const item of walkers) {
