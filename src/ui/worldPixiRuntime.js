@@ -7,14 +7,21 @@ const WORLD = {
   startY: -320
 };
 
-let app = null;
-let mountedHost = null;
-let world = null;
-let vehicles = [];
-let walkers = [];
-let initialized = false;
+const KENNEY_ROOT = '/assets/vendor/kenney/car-kit/Previews/';
+const KENNEY_NESTED = '/assets/vendor/kenney/car-kit/kenney_car-kit/Previews/';
 
-const vehicleAssets = {
+const VEHICLE_CANDIDATES = {
+  green: ['hatchback-sports.png', 'sedan.png'],
+  blue: ['sedan.png', 'hatchback.png'],
+  yellow: ['taxi.png', 'sedan.png'],
+  pickup: ['truck.png', 'pickup.png', 'suv.png'],
+  van: ['van.png', 'delivery.png'],
+  delivery: ['delivery.png', 'truck-delivery.png', 'van.png'],
+  tow: ['truck-flat.png', 'truck.png'],
+  broken: ['debris-bumper.png', 'debris-side.png', 'debris-wheel.png']
+};
+
+const FALLBACK_ASSETS = {
   green: '/assets/vehicles/iso-car-green.svg',
   blue: '/assets/vehicles/iso-car-blue.svg',
   yellow: '/assets/vehicles/iso-sedan-yellow.svg',
@@ -25,8 +32,43 @@ const vehicleAssets = {
   broken: '/assets/vehicles/iso-broken-red.svg'
 };
 
+let app = null;
+let mountedHost = null;
+let world = null;
+let vehicles = [];
+let walkers = [];
+let initialized = false;
+let vehicleAssets = { ...FALLBACK_ASSETS };
+
 function proxyClick(selector) {
   document.querySelector(selector)?.click();
+}
+
+function testImage(path) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(true);
+    image.onerror = () => resolve(false);
+    image.src = `${path}?v=${Date.now()}`;
+  });
+}
+
+async function resolveVehicleAsset(key) {
+  const names = VEHICLE_CANDIDATES[key] || [];
+  for (const name of names) {
+    const nestedPath = `${KENNEY_NESTED}${name}`;
+    if (await testImage(nestedPath)) return nestedPath;
+
+    const rootPath = `${KENNEY_ROOT}${name}`;
+    if (await testImage(rootPath)) return rootPath;
+  }
+  return FALLBACK_ASSETS[key];
+}
+
+async function resolveVehicleAssets() {
+  const entries = await Promise.all(Object.keys(FALLBACK_ASSETS).map(async (key) => [key, await resolveVehicleAsset(key)]));
+  vehicleAssets = Object.fromEntries(entries);
+  console.info('[365 Auto City] Vehicle assets resolved:', vehicleAssets);
 }
 
 function html() {
@@ -38,7 +80,7 @@ function html() {
       </div>
       <div class="pixiWorldHost" id="pixiWorldHost"></div>
       <div class="pixiWorldHud">
-        <div class="hint">PixiJS V1: draggable city camera, large vertical world, depth-sorted roads/buildings, animated cars, walking people, clickable buildings, and tow event.</div>
+        <div class="hint">PixiJS V2: auto-detects Kenney Car Kit from root or nested install folder, draws better pedestrians, and keeps the world ready for real asset packs.</div>
         <div class="pixiProxyRow">
           <button class="btn primary" data-action="worldTow">Dispatch Tow</button>
           <button class="btn" data-action="screen" data-screen="garage">Manage Shop</button>
@@ -110,7 +152,7 @@ function gRoundRect(x, y, w, h, r, fill, stroke = null) {
     if (stroke) g.roundRect(x, y, w, h, r).stroke(stroke);
     return g;
   }
-  g.beginFill(fill);
+  g.beginFill(fill.color ?? fill, fill.alpha ?? 1);
   if (stroke) g.lineStyle(stroke.width || 1, stroke.color || 0xffffff, stroke.alpha ?? 1);
   g.drawRoundedRect(x, y, w, h, r);
   g.endFill();
@@ -124,7 +166,7 @@ function gRect(x, y, w, h, fill, stroke = null) {
     if (stroke) g.rect(x, y, w, h).stroke(stroke);
     return g;
   }
-  g.beginFill(fill);
+  g.beginFill(fill.color ?? fill, fill.alpha ?? 1);
   if (stroke) g.lineStyle(stroke.width || 1, stroke.color || 0xffffff, stroke.alpha ?? 1);
   g.drawRect(x, y, w, h);
   g.endFill();
@@ -144,15 +186,11 @@ function makeButton(container, onTap) {
 function drawGround() {
   const ground = new PIXI.Container();
   ground.zIndex = 0;
-
   ground.addChild(gRect(0, 0, WORLD.width, WORLD.height, 0x71bd5d));
 
   for (let y = 0; y < WORLD.height; y += 80) {
     for (let x = 0; x < WORLD.width; x += 80) {
-      const tile = new PIXI.Graphics();
-      const color = (x / 80 + y / 80) % 2 === 0 ? 0x78c966 : 0x67b85a;
-      if (tile.rect) tile.rect(x, y, 80, 80).fill({ color, alpha: 0.25 });
-      else { tile.beginFill(color, 0.25); tile.drawRect(x, y, 80, 80); tile.endFill(); }
+      const tile = gRect(x, y, 80, 80, { color: (x / 80 + y / 80) % 2 === 0 ? 0x78c966 : 0x67b85a, alpha: 0.25 });
       ground.addChild(tile);
     }
   }
@@ -164,8 +202,7 @@ function addRoad(x, y, w, h, label = '') {
   const road = new PIXI.Container();
   road.zIndex = y;
   road.addChild(gRoundRect(x, y, w, h, 8, 0x202936, { width: 4, color: 0x111827, alpha: 1 }));
-  const center = gRect(x, y + h / 2 - 3, w, 6, 0xffffff);
-  center.alpha = 0.34;
+  const center = gRect(x, y + h / 2 - 3, w, 6, { color: 0xffffff, alpha: 0.34 });
   road.addChild(center);
   if (label) {
     const t = makeText(label, { fontSize: 13, fill: 0xcbd5e1 });
@@ -181,7 +218,6 @@ function addLot(x, y, w, h, color = 0xd8dee9) {
   lot.zIndex = y + 1;
   lot.addChild(gRoundRect(x, y, w, h, 16, color, { width: 5, color: 0xffffff, alpha: 0.55 }));
   world.addChild(lot);
-  return lot;
 }
 
 function addBuilding({ x, y, label, colorA, colorB, action, w = 150, h = 112 }) {
@@ -190,27 +226,20 @@ function addBuilding({ x, y, label, colorA, colorB, action, w = 150, h = 112 }) 
   b.y = y;
   b.zIndex = y + 80;
 
-  const shadow = gRoundRect(14, h - 8, w, 18, 9, { color: 0x000000, alpha: 0.22 });
-  b.addChild(shadow);
-
-  const side = gRoundRect(8, 42, 36, 60, 6, colorB, { width: 3, color: 0x1e293b });
-  b.addChild(side);
-  const front = gRoundRect(38, 35, w - 36, 72, 10, colorA, { width: 3, color: 0x1e293b });
-  b.addChild(front);
+  b.addChild(gRoundRect(14, h - 8, w, 18, 9, { color: 0x000000, alpha: 0.22 }));
+  b.addChild(gRoundRect(8, 42, 36, 60, 6, colorB, { width: 3, color: 0x1e293b }));
+  b.addChild(gRoundRect(38, 35, w - 36, 72, 10, colorA, { width: 3, color: 0x1e293b }));
   const roof = gRoundRect(22, 8, w - 34, 48, 12, 0xe2e8f0, { width: 3, color: 0x1e293b });
   roof.rotation = -0.1;
   b.addChild(roof);
 
   for (let row = 0; row < 2; row++) {
     for (let col = 0; col < 3; col++) {
-      const win = gRoundRect(54 + col * 28, 52 + row * 22, 17, 13, 3, 0xfde68a);
-      win.alpha = 0.92;
-      b.addChild(win);
+      b.addChild(gRoundRect(54 + col * 28, 52 + row * 22, 17, 13, 3, 0xfde68a));
     }
   }
 
-  const titleBg = gRoundRect(12, h + 4, w + 6, 30, 15, { color: 0x04111d, alpha: 0.86 }, { width: 1, color: 0xffffff, alpha: 0.18 });
-  b.addChild(titleBg);
+  b.addChild(gRoundRect(12, h + 4, w + 6, 30, 15, { color: 0x04111d, alpha: 0.86 }, { width: 1, color: 0xffffff, alpha: 0.18 }));
   const title = makeText(label, { fontSize: 13, fill: 0xffffff, wordWrap: true, wordWrapWidth: w + 2 });
   title.anchor.set(0.5, 0.5);
   title.x = 15 + w / 2;
@@ -219,7 +248,6 @@ function addBuilding({ x, y, label, colorA, colorB, action, w = 150, h = 112 }) 
 
   makeButton(b, () => proxyClick(`.pixiWorldProxy[data-proxy="${action}"]`));
   world.addChild(b);
-  return b;
 }
 
 function addEvent({ x, y }) {
@@ -237,8 +265,7 @@ function addEvent({ x, y }) {
   sprite.scale.y = sprite.scale.x;
   e.addChild(sprite);
 
-  const badge = gRoundRect(132, -12, 38, 38, 19, 0xfb7185);
-  e.addChild(badge);
+  e.addChild(gRoundRect(132, -12, 38, 38, 19, 0xfb7185));
   const mark = makeText('!', { fontSize: 25, fill: 0xffffff });
   mark.anchor.set(0.5);
   mark.x = 151;
@@ -264,7 +291,6 @@ function addParkedCar(src, x, y, rotation = 0, scale = 0.48) {
   s.scale.set(scale);
   s.zIndex = y + 10;
   world.addChild(s);
-  return s;
 }
 
 function makeVehicle(src, path, speed = 65, scale = 0.56) {
@@ -276,13 +302,21 @@ function makeVehicle(src, path, speed = 65, scale = 0.56) {
   vehicles.push({ sprite, path, speed, distance: Math.random() * 700 });
 }
 
-function makeWalker(x, y, path, color = 0x2563eb) {
+function makeWalker(x, y, path, shirt = 0x2563eb, hair = 0x3b2418) {
   const p = new PIXI.Container();
   p.x = x;
   p.y = y;
   p.zIndex = y + 30;
-  p.addChild(gRoundRect(-7, -6, 14, 26, 7, color, { width: 2, color: 0x1e293b }));
-  p.addChild(gRoundRect(-5, -18, 10, 10, 5, 0xfed7aa, { width: 2, color: 0x1e293b }));
+
+  p.addChild(gRoundRect(-12, 14, 24, 8, 4, { color: 0x000000, alpha: 0.22 }));
+  p.addChild(gRoundRect(-7, 5, 5, 17, 3, 0x1e293b));
+  p.addChild(gRoundRect(2, 5, 5, 17, 3, 0x1e293b));
+  p.addChild(gRoundRect(-11, -14, 22, 24, 8, shirt, { width: 2, color: 0x1e293b }));
+  p.addChild(gRoundRect(-15, -10, 5, 18, 3, 0xfed7aa, { width: 1, color: 0x1e293b }));
+  p.addChild(gRoundRect(10, -10, 5, 18, 3, 0xfed7aa, { width: 1, color: 0x1e293b }));
+  p.addChild(gRoundRect(-8, -31, 16, 16, 8, 0xfed7aa, { width: 2, color: 0x1e293b }));
+  p.addChild(gRoundRect(-9, -33, 18, 8, 5, hair, { width: 1, color: 0x1e293b }));
+
   world.addChild(p);
   walkers.push({ sprite: p, path, t: Math.random() });
 }
@@ -358,19 +392,19 @@ function buildWorld() {
   addParkedCar(vehicleAssets.green, 105, 1230, 0.08);
   addParkedCar(vehicleAssets.blue, 165, 1248, 0.08);
 
-  makeVehicle(vehicleAssets.green, [{ x: -80, y: 250 }, { x: 1030, y: 250 }], 96, 0.52);
-  makeVehicle(vehicleAssets.blue, [{ x: 1030, y: 582 }, { x: -80, y: 582 }], 78, 0.52);
-  makeVehicle(vehicleAssets.yellow, [{ x: -80, y: 937 }, { x: 1030, y: 937 }], 86, 0.52);
-  makeVehicle(vehicleAssets.delivery, [{ x: 1030, y: 1265 }, { x: -80, y: 1265 }], 70, 0.58);
-  makeVehicle(vehicleAssets.pickup, [{ x: 257, y: -80 }, { x: 257, y: 1800 }], 88, 0.52);
-  makeVehicle(vehicleAssets.van, [{ x: 712, y: 1800 }, { x: 712, y: -80 }], 72, 0.56);
-  makeVehicle(vehicleAssets.tow, [{ x: 1030, y: 937 }, { x: 712, y: 937 }, { x: 712, y: 765 }, { x: 480, y: 740 }], 92, 0.62);
+  makeVehicle(vehicleAssets.green, [{ x: -80, y: 250 }, { x: 1030, y: 250 }], 96, 0.8);
+  makeVehicle(vehicleAssets.blue, [{ x: 1030, y: 582 }, { x: -80, y: 582 }], 78, 0.8);
+  makeVehicle(vehicleAssets.yellow, [{ x: -80, y: 937 }, { x: 1030, y: 937 }], 86, 0.8);
+  makeVehicle(vehicleAssets.delivery, [{ x: 1030, y: 1265 }, { x: -80, y: 1265 }], 70, 0.9);
+  makeVehicle(vehicleAssets.pickup, [{ x: 257, y: -80 }, { x: 257, y: 1800 }], 88, 0.82);
+  makeVehicle(vehicleAssets.van, [{ x: 712, y: 1800 }, { x: 712, y: -80 }], 72, 0.86);
+  makeVehicle(vehicleAssets.tow, [{ x: 1030, y: 937 }, { x: 712, y: 937 }, { x: 712, y: 765 }, { x: 480, y: 740 }], 92, 0.94);
 
-  makeWalker(300, 160, [{ x: 300, y: 160 }, { x: 390, y: 205 }, { x: 330, y: 250 }, { x: 260, y: 205 }], 0x2563eb);
-  makeWalker(720, 210, [{ x: 720, y: 210 }, { x: 820, y: 250 }, { x: 760, y: 310 }, { x: 690, y: 250 }], 0x16a34a);
-  makeWalker(620, 535, [{ x: 620, y: 535 }, { x: 590, y: 620 }, { x: 690, y: 645 }, { x: 730, y: 560 }], 0xf97316);
-  makeWalker(355, 865, [{ x: 355, y: 865 }, { x: 450, y: 900 }, { x: 410, y: 990 }, { x: 330, y: 930 }], 0x7c3aed);
-  makeWalker(340, 1190, [{ x: 340, y: 1190 }, { x: 440, y: 1245 }, { x: 350, y: 1310 }, { x: 280, y: 1240 }], 0x0ea5e9);
+  makeWalker(300, 160, [{ x: 300, y: 160 }, { x: 390, y: 205 }, { x: 330, y: 250 }, { x: 260, y: 205 }], 0x2563eb, 0x2f1b12);
+  makeWalker(720, 210, [{ x: 720, y: 210 }, { x: 820, y: 250 }, { x: 760, y: 310 }, { x: 690, y: 250 }], 0x16a34a, 0x1f2937);
+  makeWalker(620, 535, [{ x: 620, y: 535 }, { x: 590, y: 620 }, { x: 690, y: 645 }, { x: 730, y: 560 }], 0xf97316, 0x3b2418);
+  makeWalker(355, 865, [{ x: 355, y: 865 }, { x: 450, y: 900 }, { x: 410, y: 990 }, { x: 330, y: 930 }], 0x7c3aed, 0x111827);
+  makeWalker(340, 1190, [{ x: 340, y: 1190 }, { x: 440, y: 1245 }, { x: 350, y: 1310 }, { x: 280, y: 1240 }], 0x0ea5e9, 0x2f1b12);
 }
 
 function clampWorld() {
@@ -389,15 +423,18 @@ function setupCamera(host) {
 
   let dragging = false;
   let last = null;
+  let moved = false;
 
   const down = (event) => {
     dragging = true;
+    moved = false;
     last = { x: event.clientX, y: event.clientY };
   };
   const move = (event) => {
     if (!dragging || !last) return;
     const dx = event.clientX - last.x;
     const dy = event.clientY - last.y;
+    if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
     world.x += dx;
     world.y += dy;
     last = { x: event.clientX, y: event.clientY };
@@ -406,6 +443,7 @@ function setupCamera(host) {
   const up = () => {
     dragging = false;
     last = null;
+    setTimeout(() => { moved = false; }, 40);
   };
 
   host.addEventListener('pointerdown', down);
@@ -440,6 +478,7 @@ async function mount(host) {
   vehicles = [];
   walkers = [];
 
+  await resolveVehicleAssets();
   app = await createPixiApp(host);
   appendCanvas(host, app);
   buildWorld();
