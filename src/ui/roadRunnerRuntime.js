@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { ROUTES, GHOST_MODES, START_ROUTE, START_GHOST_MODE } from '../game/roadRunner/config.js';
 import { HillRouteScene } from '../game/roadRunner/HillRouteScene.js';
-import { loadRoadRunnerSave, formatSmall } from '../game/roadRunner/save.js';
+import { loadRoadRunnerSave, saveRoadRunner, formatSmall } from '../game/roadRunner/save.js';
+import { UPGRADE_CATALOG, buyUpgrade, upgradeCost } from '../game/roadRunner/upgrades.js';
 
 let game = null;
 let activeScene = null;
@@ -16,25 +17,63 @@ function text(selector, value) {
 }
 
 function updateHud(stats = {}) {
+  const maxEnergy = stats.maxEnergy || 100;
+  const energyPercent = Math.max(0, Math.min(100, ((stats.energy ?? maxEnergy) / maxEnergy) * 100));
   text('[data-rr-distance]', `${Math.floor(stats.distance || 0)}m`);
-  text('[data-rr-fuel]', `${Math.max(0, Math.floor(stats.energy ?? 100))}%`);
+  text('[data-rr-fuel]', `${Math.floor(energyPercent)}%`);
   text('[data-rr-coins]', formatSmall(saveData.coins));
+  text('[data-rr-parts]', formatSmall(saveData.parts));
   text('[data-rr-best]', `${formatSmall(saveData.bestDistance)}m`);
   text('[data-rr-route]', ROUTES[activeRoute].label);
   text('[data-rr-mode]', GHOST_MODES[activeGhostMode].label);
+  renderGaragePanel();
+}
+
+function upgradeButtonHtml(item) {
+  const level = saveData.upgrades[item.key] || 1;
+  const maxed = level >= item.maxLevel;
+  const cost = upgradeCost(item.key, level);
+  const affordable = !maxed && saveData.coins >= cost.coins && saveData.parts >= cost.parts;
+  const buttonClass = affordable ? 'primary' : 'ghost';
+  const costText = maxed ? 'MAX' : `${formatSmall(cost.coins)} coins • ${cost.parts} parts`;
+
+  return `
+    <div class="roadRunnerUpgradeCard">
+      <h4>${item.label} Lv.${level}</h4>
+      <p>${item.description}</p>
+      <div class="roadRunnerUpgradeMeta"><span>${maxed ? 'Max Level' : `Next Lv.${level + 1}`}</span><span>${costText}</span></div>
+      <button class="btn ${buttonClass}" ${affordable ? '' : 'disabled'} onclick="window.buyRoadRunnerUpgrade?.('${item.key}')">${maxed ? 'Maxed' : 'Upgrade'}</button>
+    </div>
+  `;
+}
+
+function renderGaragePanel() {
+  const panel = document.querySelector('[data-road-runner-garage]');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="roadRunnerPanelTitle"><h3>Garage Upgrades</h3><span class="roadRunnerNotice">Run → earn → upgrade → go farther.</span></div>
+    <div class="roadRunnerWalletRow">
+      <div class="roadRunnerWalletPill">Coins: ${formatSmall(saveData.coins)}</div>
+      <div class="roadRunnerWalletPill">Parts: ${formatSmall(saveData.parts)}</div>
+    </div>
+    <div class="roadRunnerGarageGrid">
+      ${Object.values(UPGRADE_CATALOG).map(upgradeButtonHtml).join('')}
+    </div>
+  `;
 }
 
 function shellHtml() {
   return `
     <section class="card roadRunnerShell">
       <div class="roadRunnerHeader">
-        <h2>365 Hill Route — Ghost Mode MVP</h2>
-        <p>Simple 2D side-scroll route game. Left slows. Right pushes forward. Ghosts are replay/computer opponents, not live multiplayer.</p>
+        <h2>365 Hill Route — Garage Upgrade MVP</h2>
+        <p>Side-scroll route game. Use SLOW / PUSH, collect rewards, then upgrade the vehicle to go farther. Ghosts are replay/computer opponents.</p>
       </div>
       <div class="roadRunnerHud">
         <div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div>
         <div class="roadRunnerStat"><b data-rr-fuel>100%</b><span>Energy</span></div>
         <div class="roadRunnerStat"><b data-rr-coins>${formatSmall(saveData.coins)}</b><span>Coins</span></div>
+        <div class="roadRunnerStat"><b data-rr-parts>${formatSmall(saveData.parts)}</b><span>Parts</span></div>
         <div class="roadRunnerStat"><b data-rr-best>${formatSmall(saveData.bestDistance)}m</b><span>Best</span></div>
       </div>
       <div class="roadRunnerGameFrame">
@@ -55,11 +94,12 @@ function shellHtml() {
         </div>
       </section>
       <section class="roadRunnerPanel">
-        <div class="roadRunnerPanelTitle"><h3>Routes</h3><span class="roadRunnerNotice">Single-player first. Ghost mode gives a 1-4 racer feel.</span></div>
+        <div class="roadRunnerPanelTitle"><h3>Routes</h3><span class="roadRunnerNotice">More routes later unlock by stage/rep.</span></div>
         <div class="roadRunnerModeGrid">
           ${Object.entries(ROUTES).map(([key, value]) => `<button class="btn ${key === activeRoute ? 'gold' : 'ghost'}" onclick="window.setHillRoute?.('${key}')">${value.label}</button>`).join('')}
         </div>
       </section>
+      <section class="roadRunnerPanel" data-road-runner-garage></section>
     </section>
   `;
 }
@@ -140,6 +180,7 @@ function mountRoadRunner(force = false) {
   mountedHost = host;
   bindControls();
   updateHud();
+  renderGaragePanel();
   startGame();
 }
 
@@ -152,6 +193,15 @@ window.setHillGhosts = (mode) => {
 window.setHillRoute = (route) => {
   if (!ROUTES[route]) return;
   activeRoute = route;
+  mountRoadRunner(true);
+};
+window.buyRoadRunnerUpgrade = (key) => {
+  saveData = loadRoadRunnerSave();
+  const result = buyUpgrade(saveData, key);
+  if (!result.ok) return;
+  saveRoadRunner(saveData);
+  updateHud();
+  renderGaragePanel();
   mountRoadRunner(true);
 };
 
