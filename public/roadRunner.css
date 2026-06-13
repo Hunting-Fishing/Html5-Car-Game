@@ -1,0 +1,189 @@
+.roadRunnerShell {
+  overflow: hidden;
+}
+
+.roadRunnerHeader {
+  padding: 14px;
+  border-radius: 18px 18px 10px 10px;
+  background: linear-gradient(180deg, #287fb1, #0d3e68);
+  border-bottom: 3px solid rgba(0,0,0,.28);
+  margin: -4px -4px 10px;
+}
+
+.roadRunnerHeader h2 {
+  margin: 0 0 5px;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0,0,0,.30);
+}
+
+.roadRunnerHeader p {
+  margin: 0;
+  color: #d7f4ff;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.roadRunnerHud {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.roadRunnerStat {
+  min-height: 38px;
+  border-radius: 14px;
+  padding: 6px 7px;
+  background: linear-gradient(180deg, rgba(25, 66, 92, .98), rgba(5, 17, 28, .98));
+  border: 2px solid rgba(255,255,255,.14);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.10), 0 4px 0 rgba(0,0,0,.20);
+  text-align: center;
+}
+
+.roadRunnerStat b {
+  display: block;
+  color: #fff;
+  font-size: 12px;
+  text-shadow: 0 2px 0 rgba(0,0,0,.28);
+}
+
+.roadRunnerStat span {
+  display: block;
+  color: #aee4f4;
+  font-size: 9px;
+  margin-top: 2px;
+}
+
+.roadRunnerGameFrame {
+  position: relative;
+  height: min(54vh, 420px);
+  min-height: 310px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #8bdcff, #b9f2ff 45%, #65bb5a 46%);
+  border: 3px solid rgba(255,255,255,.18);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.20), 0 10px 0 rgba(0,0,0,.20), 0 18px 26px rgba(0,0,0,.25);
+}
+
+#roadRunnerGameHost {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+#roadRunnerGameHost canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.roadRunnerOverlay {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.roadRunnerBadge {
+  min-width: 72px;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: rgba(4,17,29,.72);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  text-align: center;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+
+.roadRunnerControls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.roadRunnerPedal {
+  min-height: 72px;
+  border-radius: 24px;
+  border: 3px solid rgba(0,0,0,.32);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.30), 0 6px 0 rgba(0,0,0,.26), 0 12px 20px rgba(0,0,0,.20);
+  font-size: 18px;
+  font-weight: 1000;
+  touch-action: none;
+  user-select: none;
+}
+
+.roadRunnerPedal.brake {
+  background: linear-gradient(180deg, #ff8ea2, #d82946);
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0,0,0,.34);
+}
+
+.roadRunnerPedal.gas {
+  background: linear-gradient(180deg, #62f394, #17a852);
+  color: #052313;
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
+}
+
+.roadRunnerPedal:active,
+.roadRunnerPedal.active {
+  transform: translateY(5px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 1px 0 rgba(0,0,0,.22);
+}
+
+.roadRunnerPanel {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(28, 91, 132, .98), rgba(6, 25, 42, .98));
+  border: 2px solid rgba(255,255,255,.13);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 8px 0 rgba(0,0,0,.16);
+}
+
+.roadRunnerPanelTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.roadRunnerPanelTitle h3 {
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0,0,0,.28);
+}
+
+.roadRunnerModeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.roadRunnerModeGrid .btn {
+  min-height: 48px;
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.roadRunnerNotice {
+  color: #d8f6ff;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+@media (max-width: 400px) {
+  .roadRunnerHud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .roadRunnerModeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
