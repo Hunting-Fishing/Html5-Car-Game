@@ -59,15 +59,51 @@ const LOTS = [
   { x: 650, y: 1045, w: 230, h: 132, label: 'Track Lot', color: 0xa8d5c8 }
 ];
 
+const INITIAL_BUILDINGS = [
+  { x: 60, y: 88, w: 104, h: 100, label: 'Dealer Row', colorA: 0xfbbf24, colorB: 0xd97706, action: 'lines' },
+  { x: 455, y: 90, w: 124, h: 100, label: '365 Garage', colorA: 0x22c55e, colorB: 0x0f766e, action: 'garage' },
+  { x: 64, y: 398, w: 104, h: 100, label: 'Parts Hub', colorA: 0x2dd4bf, colorB: 0x0891b2, action: 'merge' },
+  { x: 720, y: 398, w: 104, h: 100, label: 'Repair Shops', colorA: 0xa78bfa, colorB: 0x6d28d9, action: 'lines' },
+  { x: 72, y: 745, w: 112, h: 100, label: 'Salvage Yard', colorA: 0xf97316, colorB: 0x9a3412, action: 'garage' },
+  { x: 720, y: 745, w: 104, h: 100, label: 'Tow Dispatch', colorA: 0xfacc15, colorB: 0xca8a04, action: 'lines' },
+  { x: 70, y: 1072, w: 112, h: 100, label: 'Showcase', colorA: 0x60a5fa, colorB: 0x2563eb, action: 'lines' },
+  { x: 700, y: 1072, w: 112, h: 100, label: 'Test Track', colorA: 0x38bdf8, colorB: 0x2563eb, action: 'race' }
+];
+
+const GRID = {
+  size: 40,
+  footprintW: 2,
+  footprintH: 2,
+  storageKey: '365_auto_city_buildings_v1'
+};
+
 let app = null;
 let mountedHost = null;
 let world = null;
+let gridLayer = null;
+let placementLayer = null;
 let vehicles = [];
 let walkers = [];
+let placedBuildings = [];
 let initialized = false;
 let vehicleAssets = { ...FALLBACK_ASSETS };
 let vehicleTextures = {};
 let dragMoved = false;
+let buildGridVisible = true;
+
+window.toggleCityBuildGrid = () => {
+  buildGridVisible = !buildGridVisible;
+  if (gridLayer) gridLayer.visible = buildGridVisible;
+  console.info('[365 Auto City] Build grid visible:', buildGridVisible);
+};
+
+window.clearCityPlacements = () => {
+  placedBuildings = [];
+  localStorage.removeItem(GRID.storageKey);
+  rebuildPlacementLayer();
+  rebuildPlacementGrid();
+  console.info('[365 Auto City] Test placements cleared.');
+};
 
 function proxyClick(selector) {
   if (dragMoved) return;
@@ -129,16 +165,16 @@ function html() {
   return `
     <section class="card pixiWorldShell">
       <div class="pixiWorldHeader">
-        <h2>365 Auto City — Road Rules V1</h2>
-        <p>Drag the map. Roads now use lanes, sidewalks, smaller lots, rule-based traffic, and controlled pedestrian paths.</p>
+        <h2>365 Auto City — Build Grid V1</h2>
+        <p>Drag the map. Tap green grid cells to place purchased buildings. Roads, existing lots, and occupied buildings are blocked.</p>
       </div>
       <div class="pixiWorldHost" id="pixiWorldHost"></div>
       <div class="pixiWorldHud">
-        <div class="hint">Road Rules V1: vehicles stay in lanes, pedestrians stay on sidewalks/lots, buildings are scaled down, and traffic no longer randomly rotates on every path.</div>
+        <div class="hint">Build Grid V1: green cells are buildable, red cells are blocked, purchased-shop placeholders use a 2×2 grid footprint, and placements are saved locally for testing.</div>
         <div class="pixiProxyRow">
-          <button class="btn primary" data-action="worldTow">Dispatch Tow</button>
+          <button class="btn primary" onclick="window.toggleCityBuildGrid?.()">Toggle Build Grid</button>
+          <button class="btn red" onclick="window.clearCityPlacements?.()">Clear Test Buildings</button>
           <button class="btn" data-action="screen" data-screen="garage">Manage Shop</button>
-          <button class="btn" data-action="screen" data-screen="lines">Upgrade Businesses</button>
           <button class="btn ghost" data-action="screen" data-screen="merge">Parts / Merge</button>
         </div>
       </div>
@@ -256,6 +292,57 @@ function makeButton(container, onTap) {
   return container;
 }
 
+function rectsOverlap(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function getRoadRects() {
+  const rects = [];
+  for (const road of ROADS.horizontal) {
+    rects.push({ x: 0, y: road.y - ROADS.sidewalk, w: WORLD.width, h: ROADS.roadWidth + ROADS.sidewalk * 2, type: 'road' });
+  }
+  for (const road of ROADS.vertical) {
+    rects.push({ x: road.x - ROADS.sidewalk, y: 0, w: ROADS.roadWidth + ROADS.sidewalk * 2, h: WORLD.height, type: 'road' });
+  }
+  return rects;
+}
+
+function getBlockedRects() {
+  const lotRects = LOTS.map((lot) => ({ x: lot.x, y: lot.y, w: lot.w, h: lot.h, type: 'lot' }));
+  const buildingRects = INITIAL_BUILDINGS.map((b) => ({ x: b.x, y: b.y, w: b.w + 20, h: b.h + 36, type: 'building' }));
+  const placedRects = placedBuildings.map((b) => ({ x: b.x, y: b.y, w: b.w, h: b.h, type: 'placed' }));
+  const eventRects = [{ x: 402, y: 708, w: 120, h: 92, type: 'event' }];
+  return [...getRoadRects(), ...lotRects, ...buildingRects, ...placedRects, ...eventRects];
+}
+
+function gridRect(col, row, wCells = 1, hCells = 1) {
+  return {
+    x: col * GRID.size,
+    y: row * GRID.size,
+    w: wCells * GRID.size,
+    h: hCells * GRID.size
+  };
+}
+
+function isFootprintBuildable(col, row, wCells = GRID.footprintW, hCells = GRID.footprintH) {
+  const rect = gridRect(col, row, wCells, hCells);
+  if (rect.x < 0 || rect.y < 0 || rect.x + rect.w > WORLD.width || rect.y + rect.h > WORLD.height) return false;
+  return !getBlockedRects().some((blocked) => rectsOverlap(rect, blocked));
+}
+
+function loadPlacements() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(GRID.storageKey) || '[]');
+    placedBuildings = Array.isArray(saved) ? saved : [];
+  } catch {
+    placedBuildings = [];
+  }
+}
+
+function savePlacements() {
+  localStorage.setItem(GRID.storageKey, JSON.stringify(placedBuildings));
+}
+
 function drawGround() {
   const ground = new PIXI.Container();
   ground.zIndex = 0;
@@ -365,7 +452,7 @@ function drawLots() {
   for (const lot of LOTS) addLot(lot);
 }
 
-function addBuilding({ x, y, label, colorA, colorB, action, w = 104, h = 76 }) {
+function addBuilding({ x, y, label, colorA, colorB, action, w = 104, h = 76, interactive = true }) {
   const b = new PIXI.Container();
   b.x = x;
   b.y = y;
@@ -374,8 +461,7 @@ function addBuilding({ x, y, label, colorA, colorB, action, w = 104, h = 76 }) {
   b.addChild(gRoundRect(10, h - 4, w, 12, 6, { color: 0x000000, alpha: 0.18 }));
   b.addChild(gRoundRect(5, 30, 24, 42, 5, colorB, { width: 2, color: 0x1e293b }));
   b.addChild(gRoundRect(28, 25, w - 24, 50, 8, colorA, { width: 2, color: 0x1e293b }));
-  const roof = gRoundRect(18, 6, w - 22, 34, 8, 0xe2e8f0, { width: 2, color: 0x1e293b });
-  b.addChild(roof);
+  b.addChild(gRoundRect(18, 6, w - 22, 34, 8, 0xe2e8f0, { width: 2, color: 0x1e293b }));
 
   for (let row = 0; row < 2; row++) {
     for (let col = 0; col < 3; col++) {
@@ -390,8 +476,9 @@ function addBuilding({ x, y, label, colorA, colorB, action, w = 104, h = 76 }) {
   title.y = h + 17;
   b.addChild(title);
 
-  makeButton(b, () => proxyClick(`.pixiWorldProxy[data-proxy="${action}"]`));
+  if (interactive) makeButton(b, () => proxyClick(`.pixiWorldProxy[data-proxy="${action}"]`));
   world.addChild(b);
+  return b;
 }
 
 function addEvent({ x, y }) {
@@ -423,6 +510,98 @@ function addEvent({ x, y }) {
 
   makeButton(e, () => proxyClick('.pixiWorldProxy[data-proxy="tow"]'));
   world.addChild(e);
+}
+
+function addPlacedBuilding({ col, row, name = 'Purchased Shop' }) {
+  const x = col * GRID.size;
+  const y = row * GRID.size;
+  return addBuilding({
+    x,
+    y,
+    label: name,
+    colorA: 0x35e58a,
+    colorB: 0x0f766e,
+    action: 'garage',
+    w: GRID.footprintW * GRID.size - 18,
+    h: GRID.footprintH * GRID.size - 18,
+    interactive: false
+  });
+}
+
+function rebuildPlacementLayer() {
+  if (!world) return;
+  if (placementLayer) {
+    placementLayer.destroy({ children: true });
+    placementLayer = null;
+  }
+  placementLayer = new PIXI.Container();
+  placementLayer.zIndex = 4000;
+  world.addChild(placementLayer);
+
+  for (const building of placedBuildings) {
+    const visual = addPlacedBuilding(building);
+    placementLayer.addChild(visual);
+  }
+}
+
+function rebuildPlacementGrid() {
+  if (!world) return;
+  if (gridLayer) {
+    gridLayer.destroy({ children: true });
+    gridLayer = null;
+  }
+
+  gridLayer = new PIXI.Container();
+  gridLayer.zIndex = 5000;
+  gridLayer.visible = buildGridVisible;
+  world.addChild(gridLayer);
+
+  const cols = Math.floor(WORLD.width / GRID.size);
+  const rows = Math.floor(WORLD.height / GRID.size);
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const cell = gridRect(col, row);
+      const canBuild = isFootprintBuildable(col, row);
+      const color = canBuild ? 0x35e58a : 0xff5d73;
+      const alpha = canBuild ? 0.10 : 0.18;
+      const outline = canBuild ? 0x8fffc2 : 0xff9aaa;
+      const g = gRect(cell.x + 1, cell.y + 1, GRID.size - 2, GRID.size - 2, { color, alpha }, { width: 1, color: outline, alpha: 0.30 });
+
+      if (canBuild) {
+        g.eventMode = 'static';
+        g.interactive = true;
+        g.cursor = 'copy';
+        g.on('pointertap', () => placePurchasedBuilding(col, row));
+      }
+
+      gridLayer.addChild(g);
+    }
+  }
+}
+
+function placePurchasedBuilding(col, row) {
+  if (dragMoved) return;
+  if (!isFootprintBuildable(col, row)) {
+    console.info('[365 Auto City] Cell blocked:', { col, row });
+    return;
+  }
+
+  placedBuildings.push({
+    id: `shop-${Date.now()}`,
+    col,
+    row,
+    x: col * GRID.size,
+    y: row * GRID.size,
+    w: GRID.footprintW * GRID.size,
+    h: GRID.footprintH * GRID.size,
+    name: 'Purchased Shop'
+  });
+
+  savePlacements();
+  rebuildPlacementLayer();
+  rebuildPlacementGrid();
+  console.info('[365 Auto City] Placed Purchased Shop:', { col, row });
 }
 
 function addParkedCar(src, x, y, flip = false, scale = 0.62) {
@@ -533,18 +712,12 @@ function buildWorld() {
   world.sortableChildren = true;
   app.stage.addChild(world);
 
+  loadPlacements();
   drawGround();
   drawRoadNetwork();
   drawLots();
 
-  addBuilding({ x: 60, y: 88, label: 'Dealer Row', colorA: 0xfbbf24, colorB: 0xd97706, action: 'lines' });
-  addBuilding({ x: 455, y: 90, label: '365 Garage', colorA: 0x22c55e, colorB: 0x0f766e, action: 'garage', w: 124 });
-  addBuilding({ x: 64, y: 398, label: 'Parts Hub', colorA: 0x2dd4bf, colorB: 0x0891b2, action: 'merge' });
-  addBuilding({ x: 720, y: 398, label: 'Repair Shops', colorA: 0xa78bfa, colorB: 0x6d28d9, action: 'lines' });
-  addBuilding({ x: 72, y: 745, label: 'Salvage Yard', colorA: 0xf97316, colorB: 0x9a3412, action: 'garage', w: 112 });
-  addBuilding({ x: 720, y: 745, label: 'Tow Dispatch', colorA: 0xfacc15, colorB: 0xca8a04, action: 'lines' });
-  addBuilding({ x: 70, y: 1072, label: 'Showcase', colorA: 0x60a5fa, colorB: 0x2563eb, action: 'lines', w: 112 });
-  addBuilding({ x: 700, y: 1072, label: 'Test Track', colorA: 0x38bdf8, colorB: 0x2563eb, action: 'race', w: 112 });
+  for (const building of INITIAL_BUILDINGS) addBuilding(building);
 
   addEvent({ x: 402, y: 708 });
 
@@ -564,9 +737,6 @@ function buildWorld() {
   makeVehicle(vehicleAssets.delivery, hPath(1, 'west'), { speed: 66, scale: 0.76, flip: true, label: 'westbound delivery traffic' });
   makeVehicle(vehicleAssets.pickup, hPath(2, 'east'), { speed: 78, scale: 0.70, flip: false, label: 'eastbound salvage traffic' });
   makeVehicle(vehicleAssets.van, hPath(3, 'west'), { speed: 62, scale: 0.74, flip: true, label: 'westbound showcase traffic' });
-
-  // Vertical vehicles are deliberately limited until we add directional sprite sheets.
-  // They use fixed rotations instead of random path angles so direction stays rule-based.
   makeVehicle(vehicleAssets.tow, vPath(1, 'north'), { speed: 58, scale: 0.78, rotation: -Math.PI / 2, flip: false, label: 'northbound tow traffic' });
   makeVehicle(vehicleAssets.delivery, vPath(0, 'south'), { speed: 52, scale: 0.74, rotation: Math.PI / 2, flip: false, label: 'southbound parts traffic' });
 
@@ -575,6 +745,9 @@ function buildWorld() {
   makeWalker(210, 500, [{ x: 210, y: 500 }, { x: 320, y: 500 }, { x: 320, y: 618 }, { x: 210, y: 618 }], 0xf97316, 0x3b2418);
   makeWalker(630, 842, [{ x: 630, y: 842 }, { x: 842, y: 842 }, { x: 842, y: 950 }, { x: 630, y: 950 }], 0x7c3aed, 0x111827);
   makeWalker(230, 1168, [{ x: 230, y: 1168 }, { x: 380, y: 1168 }, { x: 380, y: 1288 }, { x: 230, y: 1288 }], 0x0ea5e9, 0x2f1b12);
+
+  rebuildPlacementLayer();
+  rebuildPlacementGrid();
 }
 
 function clampWorld() {
