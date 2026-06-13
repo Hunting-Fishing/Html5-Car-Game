@@ -77,6 +77,69 @@ const GRID = {
   storageKey: '365_auto_city_buildings_v1'
 };
 
+const BUILDING_CATALOG = [
+  {
+    key: 'streetKiosk',
+    name: 'Street Kiosk',
+    shortName: 'Kiosk',
+    footprintW: 1,
+    footprintH: 1,
+    colorA: 0x35e58a,
+    colorB: 0x0f766e,
+    cost: 50
+  },
+  {
+    key: 'tireRepair',
+    name: 'Tire Repair Shop',
+    shortName: 'Tire',
+    footprintW: 2,
+    footprintH: 2,
+    colorA: 0xfacc15,
+    colorB: 0xca8a04,
+    cost: 150
+  },
+  {
+    key: 'privateShop',
+    name: 'Private Repair Shop',
+    shortName: 'Repair',
+    footprintW: 3,
+    footprintH: 2,
+    colorA: 0xa78bfa,
+    colorB: 0x6d28d9,
+    cost: 350
+  },
+  {
+    key: 'partsWarehouse',
+    name: 'Parts Warehouse',
+    shortName: 'Parts WH',
+    footprintW: 4,
+    footprintH: 3,
+    colorA: 0x2dd4bf,
+    colorB: 0x0891b2,
+    cost: 750
+  },
+  {
+    key: 'dealerShowroom',
+    name: 'Dealer Showroom',
+    shortName: 'Dealer',
+    footprintW: 3,
+    footprintH: 2,
+    colorA: 0x60a5fa,
+    colorB: 0x2563eb,
+    cost: 900
+  },
+  {
+    key: 'salvageBlock',
+    name: 'Salvage Yard Block',
+    shortName: 'Salvage',
+    footprintW: 5,
+    footprintH: 4,
+    colorA: 0xf97316,
+    colorB: 0x9a3412,
+    cost: 1200
+  }
+];
+
 let app = null;
 let mountedHost = null;
 let world = null;
@@ -90,6 +153,38 @@ let vehicleAssets = { ...FALLBACK_ASSETS };
 let vehicleTextures = {};
 let dragMoved = false;
 let buildGridVisible = true;
+let selectedBuildingKey = 'streetKiosk';
+
+function selectedBuildingDef() {
+  return BUILDING_CATALOG.find((item) => item.key === selectedBuildingKey) || BUILDING_CATALOG[0];
+}
+
+function inventoryButtonHtml(item) {
+  const activeClass = item.key === selectedBuildingKey ? ' primary' : ' ghost';
+  return `<button class="btn small${activeClass}" data-city-building-key="${item.key}" onclick="window.selectCityBuilding?.('${item.key}')">${item.shortName}<br>${item.footprintW}×${item.footprintH}</button>`;
+}
+
+function updateBuildInventoryButtons() {
+  const selected = selectedBuildingDef();
+  document.querySelectorAll('[data-city-building-key]').forEach((button) => {
+    const isActive = button.getAttribute('data-city-building-key') === selected.key;
+    button.classList.toggle('primary', isActive);
+    button.classList.toggle('ghost', !isActive);
+  });
+
+  const label = document.querySelector('[data-city-selected-building]');
+  if (label) {
+    label.textContent = `${selected.name} • ${selected.footprintW}×${selected.footprintH} cells • test cost ${selected.cost}`;
+  }
+}
+
+window.selectCityBuilding = (key) => {
+  if (!BUILDING_CATALOG.some((item) => item.key === key)) return;
+  selectedBuildingKey = key;
+  updateBuildInventoryButtons();
+  rebuildPlacementGrid();
+  console.info('[365 Auto City] Selected building:', selectedBuildingDef());
+};
 
 window.toggleCityBuildGrid = () => {
   buildGridVisible = !buildGridVisible;
@@ -165,12 +260,16 @@ function html() {
   return `
     <section class="card pixiWorldShell">
       <div class="pixiWorldHeader">
-        <h2>365 Auto City — Directional Traffic V1</h2>
-        <p>Drag the map. Traffic uses generated directional vehicles with animated wheels. Kenney cars stay for parked/display assets until a real 4-direction vehicle pack is installed.</p>
+        <h2>365 Auto City — Building Inventory V1</h2>
+        <p>Drag the map. Pick a purchased building type, then tap allowed green cells. Roads, lots, events, and occupied cells are blocked.</p>
       </div>
       <div class="pixiWorldHost" id="pixiWorldHost"></div>
       <div class="pixiWorldHud">
-        <div class="hint">Directional Traffic V1: cars face lane direction, wheels animate, buildings are smaller, and the build grid still blocks roads, lots, buildings, events, and occupied cells.</div>
+        <div class="hint">Selected: <strong data-city-selected-building>${selectedBuildingDef().name} • ${selectedBuildingDef().footprintW}×${selectedBuildingDef().footprintH} cells</strong></div>
+        <div class="pixiProxyRow" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 8px;">
+          ${BUILDING_CATALOG.map(inventoryButtonHtml).join('')}
+        </div>
+        <div class="hint">Building Inventory V1: different purchased buildings use different footprints. Green cells mean the selected building fits. Red cells mean road, lot, event, building, or occupied placement conflict.</div>
         <div class="pixiProxyRow">
           <button class="btn primary" onclick="window.toggleCityBuildGrid?.()">Toggle Build Grid</button>
           <button class="btn red" onclick="window.clearCityPlacements?.()">Clear Test Buildings</button>
@@ -339,7 +438,7 @@ function gridRect(col, row, wCells = 1, hCells = 1) {
   };
 }
 
-function isFootprintBuildable(col, row, wCells = GRID.footprintW, hCells = GRID.footprintH) {
+function isFootprintBuildable(col, row, wCells = selectedBuildingDef().footprintW, hCells = selectedBuildingDef().footprintH) {
   const rect = gridRect(col, row, wCells, hCells);
   if (rect.x < 0 || rect.y < 0 || rect.x + rect.w > WORLD.width || rect.y + rect.h > WORLD.height) return false;
   return !getBlockedRects().some((blocked) => rectsOverlap(rect, blocked));
@@ -527,18 +626,19 @@ function addEvent({ x, y }) {
   world.addChild(e);
 }
 
-function addPlacedBuilding({ col, row, name = 'Purchased Shop' }) {
+function addPlacedBuilding({ col, row, name, type }) {
+  const def = BUILDING_CATALOG.find((item) => item.key === type) || BUILDING_CATALOG[0];
   const x = col * GRID.size;
   const y = row * GRID.size;
   return addBuilding({
     x,
     y,
-    label: name,
-    colorA: 0x35e58a,
-    colorB: 0x0f766e,
+    label: name || def.shortName,
+    colorA: def.colorA,
+    colorB: def.colorB,
     action: 'garage',
-    w: GRID.footprintW * GRID.size - 26,
-    h: GRID.footprintH * GRID.size - 26,
+    w: def.footprintW * GRID.size - 26,
+    h: def.footprintH * GRID.size - 26,
     interactive: false
   });
 }
@@ -566,6 +666,7 @@ function rebuildPlacementGrid() {
     gridLayer = null;
   }
 
+  const selected = selectedBuildingDef();
   gridLayer = new PIXI.Container();
   gridLayer.zIndex = 5000;
   gridLayer.visible = buildGridVisible;
@@ -577,7 +678,7 @@ function rebuildPlacementGrid() {
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
       const cell = gridRect(col, row);
-      const canBuild = isFootprintBuildable(col, row);
+      const canBuild = isFootprintBuildable(col, row, selected.footprintW, selected.footprintH);
       const color = canBuild ? 0x35e58a : 0xff5d73;
       const alpha = canBuild ? 0.10 : 0.18;
       const outline = canBuild ? 0x8fffc2 : 0xff9aaa;
@@ -597,26 +698,28 @@ function rebuildPlacementGrid() {
 
 function placePurchasedBuilding(col, row) {
   if (dragMoved) return;
-  if (!isFootprintBuildable(col, row)) {
-    console.info('[365 Auto City] Cell blocked:', { col, row });
+  const selected = selectedBuildingDef();
+  if (!isFootprintBuildable(col, row, selected.footprintW, selected.footprintH)) {
+    console.info('[365 Auto City] Cell blocked:', { col, row, selected });
     return;
   }
 
   placedBuildings.push({
-    id: `shop-${Date.now()}`,
+    id: `${selected.key}-${Date.now()}`,
+    type: selected.key,
     col,
     row,
     x: col * GRID.size,
     y: row * GRID.size,
-    w: GRID.footprintW * GRID.size,
-    h: GRID.footprintH * GRID.size,
-    name: 'Purchased Shop'
+    w: selected.footprintW * GRID.size,
+    h: selected.footprintH * GRID.size,
+    name: selected.shortName
   });
 
   savePlacements();
   rebuildPlacementLayer();
   rebuildPlacementGrid();
-  console.info('[365 Auto City] Placed Purchased Shop:', { col, row });
+  console.info('[365 Auto City] Placed building:', { col, row, selected });
 }
 
 function addParkedCar(src, x, y, flip = false, scale = 0.48) {
@@ -886,6 +989,7 @@ async function mount(host) {
   appendCanvas(host, app);
   buildWorld();
   setupCamera(host);
+  updateBuildInventoryButtons();
 
   app.ticker.add((ticker) => {
     const dt = (ticker.deltaMS ? ticker.deltaMS : ticker * 16.6667) / 1000;
@@ -900,6 +1004,7 @@ function inject() {
     screen.innerHTML = html();
     initialized = false;
     mountedHost = null;
+    requestAnimationFrame(updateBuildInventoryButtons);
   }
   const host = screen.querySelector('#pixiWorldHost');
   if (host) mount(host);
