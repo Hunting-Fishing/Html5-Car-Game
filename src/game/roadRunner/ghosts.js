@@ -1,14 +1,16 @@
 import { routeY, routeAngle } from './terrain.js';
 import { createVehicle } from './vehicle.js';
+import { ROAD_RUNNER_ASSETS } from './assets.js';
 
 export function createGhostVehicles(scene, route, ghostMode, saveData) {
   const colors = [0x60a5fa, 0xa78bfa, 0x2dd4bf];
+  const textureKeys = [ROAD_RUNNER_ASSETS.ghostA.key, ROAD_RUNNER_ASSETS.ghostB.key, ROAD_RUNNER_ASSETS.ghostC.key];
   const ghosts = [];
 
   for (let i = 0; i < ghostMode.count; i++) {
     const label = i === 0 && saveData.bestTrail.length ? 'Best' : `Ghost ${i + 1}`;
-    const node = createVehicle(scene, colors[i], label);
-    node.alpha = 0.42;
+    const node = createVehicle(scene, colors[i], label, textureKeys[i]);
+    node.alpha = 0.46;
     ghosts.push({
       node,
       offset: i * 0.75,
