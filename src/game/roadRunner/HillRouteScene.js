@@ -6,6 +6,7 @@ import { createPickups, collectPickups } from './pickups.js';
 import { createGhostVehicles, updateGhostVehicles } from './ghosts.js';
 import { saveRoadRunner } from './save.js';
 import { vehicleStats } from './upgrades.js';
+import { ROAD_RUNNER_ASSETS, preloadRoadRunnerAssets } from './assets.js';
 
 export class HillRouteScene extends Phaser.Scene {
   constructor() {
@@ -18,6 +19,10 @@ export class HillRouteScene extends Phaser.Scene {
     this.ghostKey = data.ghostKey;
     this.saveData = data.saveData;
     this.onHud = data.onHud;
+  }
+
+  preload() {
+    preloadRoadRunnerAssets(this);
   }
 
   create() {
@@ -38,7 +43,7 @@ export class HillRouteScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.route.length + 700, 820);
     drawRouteScene(this, this.route);
 
-    this.player = createVehicle(this, 0xf97316, 'You');
+    this.player = createVehicle(this, 0xf97316, 'You', ROAD_RUNNER_ASSETS.player.key);
     this.player.x = this.xPos;
     this.player.y = routeY(this.route, this.xPos) - 30;
 
