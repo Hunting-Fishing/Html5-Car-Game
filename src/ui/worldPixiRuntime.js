@@ -18,7 +18,7 @@ const VEHICLE_CANDIDATES = {
   van: ['van.png', 'delivery.png'],
   delivery: ['delivery.png', 'truck-delivery.png', 'van.png'],
   tow: ['truck-flat.png', 'truck.png'],
-  broken: ['debris-bumper.png', 'debris-side.png', 'debris-wheel.png']
+  broken: ['debris-bumper.png', 'debris-side.png', 'debris-wheel.png', 'sedan.png']
 };
 
 const FALLBACK_ASSETS = {
@@ -39,8 +39,11 @@ let vehicles = [];
 let walkers = [];
 let initialized = false;
 let vehicleAssets = { ...FALLBACK_ASSETS };
+let vehicleTextures = {};
+let dragMoved = false;
 
 function proxyClick(selector) {
+  if (dragMoved) return;
   document.querySelector(selector)?.click();
 }
 
@@ -56,19 +59,43 @@ function testImage(path) {
 async function resolveVehicleAsset(key) {
   const names = VEHICLE_CANDIDATES[key] || [];
   for (const name of names) {
-    const nestedPath = `${KENNEY_NESTED}${name}`;
-    if (await testImage(nestedPath)) return nestedPath;
-
     const rootPath = `${KENNEY_ROOT}${name}`;
     if (await testImage(rootPath)) return rootPath;
+
+    const nestedPath = `${KENNEY_NESTED}${name}`;
+    if (await testImage(nestedPath)) return nestedPath;
   }
   return FALLBACK_ASSETS[key];
 }
 
 async function resolveVehicleAssets() {
-  const entries = await Promise.all(Object.keys(FALLBACK_ASSETS).map(async (key) => [key, await resolveVehicleAsset(key)]));
+  const entries = await Promise.all(
+    Object.keys(FALLBACK_ASSETS).map(async (key) => [key, await resolveVehicleAsset(key)])
+  );
   vehicleAssets = Object.fromEntries(entries);
   console.info('[365 Auto City] Vehicle assets resolved:', vehicleAssets);
+}
+
+async function preloadVehicleTextures() {
+  const uniquePaths = [...new Set(Object.values(vehicleAssets))];
+  const loaded = await Promise.all(uniquePaths.map(async (path) => {
+    try {
+      const texture = await PIXI.Assets.load(path);
+      return [path, texture];
+    } catch (error) {
+      console.warn('[365 Auto City] Texture preload failed:', path, error);
+      return [path, null];
+    }
+  }));
+
+  vehicleTextures = Object.fromEntries(loaded.filter(([, texture]) => Boolean(texture)));
+  console.info('[365 Auto City] Vehicle textures preloaded:', Object.keys(vehicleTextures));
+}
+
+function spriteFrom(path) {
+  const texture = vehicleTextures[path];
+  if (texture) return new PIXI.Sprite(texture);
+  return PIXI.Sprite.from(path);
 }
 
 function html() {
@@ -80,7 +107,7 @@ function html() {
       </div>
       <div class="pixiWorldHost" id="pixiWorldHost"></div>
       <div class="pixiWorldHud">
-        <div class="hint">PixiJS V2: auto-detects Kenney Car Kit from root or nested install folder, draws better pedestrians, and keeps the world ready for real asset packs.</div>
+        <div class="hint">PixiJS V3: preloads Kenney vehicle textures before sprites are created, removes cache warnings, improves pedestrians, and keeps the map ready for real asset packs.</div>
         <div class="pixiProxyRow">
           <button class="btn primary" data-action="worldTow">Dispatch Tow</button>
           <button class="btn" data-action="screen" data-screen="garage">Manage Shop</button>
@@ -129,6 +156,10 @@ function appendCanvas(host, instance) {
   host.appendChild(instance.canvas || instance.view);
 }
 
+function fillStyle(fill) {
+  return typeof fill === 'number' ? { color: fill, alpha: 1 } : fill;
+}
+
 function makeText(text, style = {}) {
   const finalStyle = {
     fontFamily: 'Arial, sans-serif',
@@ -148,11 +179,12 @@ function makeText(text, style = {}) {
 function gRoundRect(x, y, w, h, r, fill, stroke = null) {
   const g = new PIXI.Graphics();
   if (g.roundRect) {
-    g.roundRect(x, y, w, h, r).fill(fill);
+    g.roundRect(x, y, w, h, r).fill(fillStyle(fill));
     if (stroke) g.roundRect(x, y, w, h, r).stroke(stroke);
     return g;
   }
-  g.beginFill(fill.color ?? fill, fill.alpha ?? 1);
+  const f = fillStyle(fill);
+  g.beginFill(f.color, f.alpha ?? 1);
   if (stroke) g.lineStyle(stroke.width || 1, stroke.color || 0xffffff, stroke.alpha ?? 1);
   g.drawRoundedRect(x, y, w, h, r);
   g.endFill();
@@ -162,11 +194,12 @@ function gRoundRect(x, y, w, h, r, fill, stroke = null) {
 function gRect(x, y, w, h, fill, stroke = null) {
   const g = new PIXI.Graphics();
   if (g.rect) {
-    g.rect(x, y, w, h).fill(fill);
+    g.rect(x, y, w, h).fill(fillStyle(fill));
     if (stroke) g.rect(x, y, w, h).stroke(stroke);
     return g;
   }
-  g.beginFill(fill.color ?? fill, fill.alpha ?? 1);
+  const f = fillStyle(fill);
+  g.beginFill(f.color, f.alpha ?? 1);
   if (stroke) g.lineStyle(stroke.width || 1, stroke.color || 0xffffff, stroke.alpha ?? 1);
   g.drawRect(x, y, w, h);
   g.endFill();
@@ -190,8 +223,8 @@ function drawGround() {
 
   for (let y = 0; y < WORLD.height; y += 80) {
     for (let x = 0; x < WORLD.width; x += 80) {
-      const tile = gRect(x, y, 80, 80, { color: (x / 80 + y / 80) % 2 === 0 ? 0x78c966 : 0x67b85a, alpha: 0.25 });
-      ground.addChild(tile);
+      const tileColor = (x / 80 + y / 80) % 2 === 0 ? 0x78c966 : 0x67b85a;
+      ground.addChild(gRect(x, y, 80, 80, { color: tileColor, alpha: 0.25 }));
     }
   }
 
@@ -202,14 +235,15 @@ function addRoad(x, y, w, h, label = '') {
   const road = new PIXI.Container();
   road.zIndex = y;
   road.addChild(gRoundRect(x, y, w, h, 8, 0x202936, { width: 4, color: 0x111827, alpha: 1 }));
-  const center = gRect(x, y + h / 2 - 3, w, 6, { color: 0xffffff, alpha: 0.34 });
-  road.addChild(center);
+  road.addChild(gRect(x, y + h / 2 - 3, w, 6, { color: 0xffffff, alpha: 0.34 }));
+
   if (label) {
     const t = makeText(label, { fontSize: 13, fill: 0xcbd5e1 });
     t.x = x + 12;
     t.y = y + 8;
     road.addChild(t);
   }
+
   world.addChild(road);
 }
 
@@ -257,7 +291,7 @@ function addEvent({ x, y }) {
   e.zIndex = y + 160;
   e.addChild(gRoundRect(0, 0, 170, 130, 20, { color: 0x7f1d1d, alpha: 0.92 }, { width: 4, color: 0xfb7185 }));
 
-  const sprite = PIXI.Sprite.from(vehicleAssets.broken);
+  const sprite = spriteFrom(vehicleAssets.broken);
   sprite.anchor.set(0.5);
   sprite.x = 85;
   sprite.y = 52;
@@ -282,8 +316,8 @@ function addEvent({ x, y }) {
   world.addChild(e);
 }
 
-function addParkedCar(src, x, y, rotation = 0, scale = 0.48) {
-  const s = PIXI.Sprite.from(src);
+function addParkedCar(src, x, y, rotation = 0, scale = 0.9) {
+  const s = spriteFrom(src);
   s.anchor.set(0.5);
   s.x = x;
   s.y = y;
@@ -293,8 +327,8 @@ function addParkedCar(src, x, y, rotation = 0, scale = 0.48) {
   world.addChild(s);
 }
 
-function makeVehicle(src, path, speed = 65, scale = 0.56) {
-  const sprite = PIXI.Sprite.from(src);
+function makeVehicle(src, path, speed = 65, scale = 1.05) {
+  const sprite = spriteFrom(src);
   sprite.anchor.set(0.5);
   sprite.scale.set(scale);
   sprite.zIndex = 100;
@@ -308,15 +342,16 @@ function makeWalker(x, y, path, shirt = 0x2563eb, hair = 0x3b2418) {
   p.y = y;
   p.zIndex = y + 30;
 
-  p.addChild(gRoundRect(-12, 14, 24, 8, 4, { color: 0x000000, alpha: 0.22 }));
-  p.addChild(gRoundRect(-7, 5, 5, 17, 3, 0x1e293b));
-  p.addChild(gRoundRect(2, 5, 5, 17, 3, 0x1e293b));
-  p.addChild(gRoundRect(-11, -14, 22, 24, 8, shirt, { width: 2, color: 0x1e293b }));
-  p.addChild(gRoundRect(-15, -10, 5, 18, 3, 0xfed7aa, { width: 1, color: 0x1e293b }));
-  p.addChild(gRoundRect(10, -10, 5, 18, 3, 0xfed7aa, { width: 1, color: 0x1e293b }));
-  p.addChild(gRoundRect(-8, -31, 16, 16, 8, 0xfed7aa, { width: 2, color: 0x1e293b }));
-  p.addChild(gRoundRect(-9, -33, 18, 8, 5, hair, { width: 1, color: 0x1e293b }));
+  p.addChild(gRoundRect(-13, 15, 26, 8, 4, { color: 0x000000, alpha: 0.22 }));
+  p.addChild(gRoundRect(-8, 5, 6, 18, 3, 0x1e293b));
+  p.addChild(gRoundRect(2, 5, 6, 18, 3, 0x1e293b));
+  p.addChild(gRoundRect(-12, -14, 24, 25, 8, shirt, { width: 2, color: 0x1e293b }));
+  p.addChild(gRoundRect(-16, -10, 6, 19, 3, 0xfed7aa, { width: 1, color: 0x1e293b }));
+  p.addChild(gRoundRect(10, -10, 6, 19, 3, 0xfed7aa, { width: 1, color: 0x1e293b }));
+  p.addChild(gRoundRect(-9, -32, 18, 18, 9, 0xfed7aa, { width: 2, color: 0x1e293b }));
+  p.addChild(gRoundRect(-10, -34, 20, 9, 5, hair, { width: 1, color: 0x1e293b }));
 
+  p.scale.set(1.1);
   world.addChild(p);
   walkers.push({ sprite: p, path, t: Math.random() });
 }
@@ -331,6 +366,9 @@ function pointOnPath(path, distance) {
     segments.push({ a, b, len });
     total += len;
   }
+
+  if (!total) return { x: path[0]?.x || 0, y: path[0]?.y || 0, angle: 0 };
+
   const d = ((distance % total) + total) % total;
   let walked = 0;
   for (const seg of segments) {
@@ -382,23 +420,23 @@ function buildWorld() {
 
   addEvent({ x: 390, y: 675 });
 
-  addParkedCar(vehicleAssets.green, 105, 192, -0.08);
-  addParkedCar(vehicleAssets.blue, 155, 204, -0.08);
-  addParkedCar(vehicleAssets.yellow, 205, 216, -0.08);
-  addParkedCar(vehicleAssets.van, 830, 516, 0.05, 0.5);
-  addParkedCar(vehicleAssets.broken, 105, 900, -0.12, 0.5);
-  addParkedCar(vehicleAssets.pickup, 165, 920, -0.12, 0.5);
-  addParkedCar(vehicleAssets.broken, 225, 940, -0.12, 0.5);
-  addParkedCar(vehicleAssets.green, 105, 1230, 0.08);
-  addParkedCar(vehicleAssets.blue, 165, 1248, 0.08);
+  addParkedCar(vehicleAssets.green, 105, 192, -0.08, 0.75);
+  addParkedCar(vehicleAssets.blue, 155, 204, -0.08, 0.75);
+  addParkedCar(vehicleAssets.yellow, 205, 216, -0.08, 0.75);
+  addParkedCar(vehicleAssets.van, 830, 516, 0.05, 0.78);
+  addParkedCar(vehicleAssets.broken, 105, 900, -0.12, 0.82);
+  addParkedCar(vehicleAssets.pickup, 165, 920, -0.12, 0.82);
+  addParkedCar(vehicleAssets.broken, 225, 940, -0.12, 0.82);
+  addParkedCar(vehicleAssets.green, 105, 1230, 0.08, 0.75);
+  addParkedCar(vehicleAssets.blue, 165, 1248, 0.08, 0.75);
 
-  makeVehicle(vehicleAssets.green, [{ x: -80, y: 250 }, { x: 1030, y: 250 }], 96, 0.8);
-  makeVehicle(vehicleAssets.blue, [{ x: 1030, y: 582 }, { x: -80, y: 582 }], 78, 0.8);
-  makeVehicle(vehicleAssets.yellow, [{ x: -80, y: 937 }, { x: 1030, y: 937 }], 86, 0.8);
-  makeVehicle(vehicleAssets.delivery, [{ x: 1030, y: 1265 }, { x: -80, y: 1265 }], 70, 0.9);
-  makeVehicle(vehicleAssets.pickup, [{ x: 257, y: -80 }, { x: 257, y: 1800 }], 88, 0.82);
-  makeVehicle(vehicleAssets.van, [{ x: 712, y: 1800 }, { x: 712, y: -80 }], 72, 0.86);
-  makeVehicle(vehicleAssets.tow, [{ x: 1030, y: 937 }, { x: 712, y: 937 }, { x: 712, y: 765 }, { x: 480, y: 740 }], 92, 0.94);
+  makeVehicle(vehicleAssets.green, [{ x: -80, y: 250 }, { x: 1030, y: 250 }], 96, 1.02);
+  makeVehicle(vehicleAssets.blue, [{ x: 1030, y: 582 }, { x: -80, y: 582 }], 78, 1.02);
+  makeVehicle(vehicleAssets.yellow, [{ x: -80, y: 937 }, { x: 1030, y: 937 }], 86, 1.02);
+  makeVehicle(vehicleAssets.delivery, [{ x: 1030, y: 1265 }, { x: -80, y: 1265 }], 70, 1.1);
+  makeVehicle(vehicleAssets.pickup, [{ x: 257, y: -80 }, { x: 257, y: 1800 }], 88, 1.05);
+  makeVehicle(vehicleAssets.van, [{ x: 712, y: 1800 }, { x: 712, y: -80 }], 72, 1.08);
+  makeVehicle(vehicleAssets.tow, [{ x: 1030, y: 937 }, { x: 712, y: 937 }, { x: 712, y: 765 }, { x: 480, y: 740 }], 92, 1.15);
 
   makeWalker(300, 160, [{ x: 300, y: 160 }, { x: 390, y: 205 }, { x: 330, y: 250 }, { x: 260, y: 205 }], 0x2563eb, 0x2f1b12);
   makeWalker(720, 210, [{ x: 720, y: 210 }, { x: 820, y: 250 }, { x: 760, y: 310 }, { x: 690, y: 250 }], 0x16a34a, 0x1f2937);
@@ -423,27 +461,28 @@ function setupCamera(host) {
 
   let dragging = false;
   let last = null;
-  let moved = false;
 
   const down = (event) => {
     dragging = true;
-    moved = false;
+    dragMoved = false;
     last = { x: event.clientX, y: event.clientY };
   };
+
   const move = (event) => {
     if (!dragging || !last) return;
     const dx = event.clientX - last.x;
     const dy = event.clientY - last.y;
-    if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+    if (Math.abs(dx) + Math.abs(dy) > 3) dragMoved = true;
     world.x += dx;
     world.y += dy;
     last = { x: event.clientX, y: event.clientY };
     clampWorld();
   };
+
   const up = () => {
     dragging = false;
     last = null;
-    setTimeout(() => { moved = false; }, 40);
+    setTimeout(() => { dragMoved = false; }, 90);
   };
 
   host.addEventListener('pointerdown', down);
@@ -477,8 +516,11 @@ async function mount(host) {
   mountedHost = host;
   vehicles = [];
   walkers = [];
+  vehicleTextures = {};
 
   await resolveVehicleAssets();
+  await preloadVehicleTextures();
+
   app = await createPixiApp(host);
   appendCanvas(host, app);
   buildWorld();
