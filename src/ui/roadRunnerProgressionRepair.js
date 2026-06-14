@@ -55,3 +55,4 @@ setInterval(tick,1000);document.addEventListener('click',()=>setTimeout(tick,50)
 
 const rrV2Style=document.createElement('link');rrV2Style.rel='stylesheet';rrV2Style.href='/roadRunnerResultClose.css';document.head.appendChild(rrV2Style);
 import('./roadRunnerProgressionRepairV2.js');
+import('./roadRunnerVehicleGarageFixV3.js');
