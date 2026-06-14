@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 78" role="img" aria-label="Auto parts store checkpoint">
+  <rect x="10" y="26" width="92" height="38" rx="7" fill="#e0f2fe" stroke="#0f172a" stroke-width="3"/>
+  <path d="M8 28 20 12h72l12 16z" fill="#f97316" stroke="#0f172a" stroke-width="3"/>
+  <rect x="21" y="39" width="22" height="25" rx="3" fill="#bfdbfe" stroke="#0f172a" stroke-width="2"/>
+  <rect x="55" y="41" width="33" height="11" rx="3" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+  <text x="72" y="50" text-anchor="middle" font-family="Arial" font-size="9" font-weight="900" fill="#0f172a">PARTS</text>
+  <circle cx="31" cy="51" r="6" fill="#64748b" stroke="#0f172a" stroke-width="2"/>
+  <path d="M65 20h-8l-3 5 7 8h8l3-5z" fill="#a78bfa" stroke="#0f172a" stroke-width="2"/>
+  <rect x="8" y="66" width="96" height="6" rx="3" fill="#0f172a" opacity=".25"/>
+</svg>
