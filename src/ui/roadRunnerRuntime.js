@@ -66,8 +66,8 @@ function shellHtml() {
   return `
     <section class="card roadRunnerShell">
       <div class="roadRunnerHeader">
-        <h2>365 Hill Route — Garage Upgrade MVP</h2>
-        <p>Side-scroll route game. Use SLOW / PUSH, collect rewards, then upgrade the vehicle to go farther. Ghosts are replay/computer opponents.</p>
+        <h2>365 Hill Route — Playable Mobile Controls</h2>
+        <p>Hold GAS to drive. Hold BRAKE to slow and balance. Controls stay on top of the game frame for mobile play.</p>
       </div>
       <div class="roadRunnerHud">
         <div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div>
@@ -82,10 +82,11 @@ function shellHtml() {
           <div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div>
           <div class="roadRunnerBadge" data-rr-mode>${GHOST_MODES[activeGhostMode].label}</div>
         </div>
-      </div>
-      <div class="roadRunnerControls">
-        <button class="roadRunnerPedal brake" data-rr-control="slow">SLOW</button>
-        <button class="roadRunnerPedal gas" data-rr-control="push">PUSH</button>
+        <div class="roadRunnerControlHint">Hold GAS to move. Hold BRAKE for control. Keyboard: → / ←</div>
+        <div class="roadRunnerControls">
+          <button class="roadRunnerPedal brake" data-rr-control="slow">BRAKE</button>
+          <button class="roadRunnerPedal gas" data-rr-control="push">GAS</button>
+        </div>
       </div>
       <section class="roadRunnerPanel">
         <div class="roadRunnerPanelTitle"><h3>Ghost Mode</h3><button class="btn primary" onclick="window.restartHillRoute?.()">Restart</button></div>
@@ -104,24 +105,38 @@ function shellHtml() {
   `;
 }
 
+function setSceneControl(control, isActive) {
+  if (activeScene) activeScene.controls[control] = isActive;
+  document.querySelector(`[data-rr-control="${control}"]`)?.classList.toggle('active', isActive);
+}
+
 function bindControls() {
   document.querySelectorAll('[data-rr-control]').forEach((button) => {
     const control = button.getAttribute('data-rr-control');
     const down = (event) => {
       event.preventDefault();
-      if (activeScene) activeScene.controls[control] = true;
-      button.classList.add('active');
+      button.setPointerCapture?.(event.pointerId);
+      setSceneControl(control, true);
     };
     const up = (event) => {
       event.preventDefault();
-      if (activeScene) activeScene.controls[control] = false;
-      button.classList.remove('active');
+      setSceneControl(control, false);
     };
-    button.addEventListener('pointerdown', down);
-    button.addEventListener('pointerup', up);
-    button.addEventListener('pointercancel', up);
-    button.addEventListener('pointerleave', up);
+    button.addEventListener('pointerdown', down, { passive: false });
+    button.addEventListener('pointerup', up, { passive: false });
+    button.addEventListener('pointercancel', up, { passive: false });
+    button.addEventListener('pointerleave', up, { passive: false });
   });
+
+  window.onkeydown = (event) => {
+    if (!document.querySelector('#screen-race.active')) return;
+    if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') setSceneControl('push', true);
+    if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') setSceneControl('slow', true);
+  };
+  window.onkeyup = (event) => {
+    if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') setSceneControl('push', false);
+    if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') setSceneControl('slow', false);
+  };
 }
 
 function startGame() {
@@ -147,16 +162,14 @@ function startGame() {
     }
   });
 
-  game.events.once('ready', () => {
-    const scene = game.scene.getScene('HillRouteScene');
-    activeScene = scene;
-  });
-
   game.scene.start('HillRouteScene', {
     routeKey: activeRoute,
     ghostKey: activeGhostMode,
     saveData,
-    onHud: updateHud
+    onHud: updateHud,
+    onReady: (scene) => {
+      activeScene = scene;
+    }
   });
 }
 
