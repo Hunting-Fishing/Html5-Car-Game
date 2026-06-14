@@ -1,0 +1,94 @@
+.roadRunnerControlHint {
+  display: none !important;
+}
+
+.roadRunnerOverlay {
+  left: 12px !important;
+  right: auto !important;
+  top: 9px !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  max-width: calc(100% - 160px);
+  z-index: 31;
+}
+
+.roadRunnerBadge {
+  min-width: auto !important;
+  max-width: 142px;
+  padding: 5px 9px !important;
+  font-size: 9px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rrGaugeDash {
+  top: 4px !important;
+  right: 8px !important;
+  width: 118px !important;
+  z-index: 34 !important;
+}
+
+.rrGaugeDashGrid {
+  gap: 4px !important;
+}
+
+.rrGaugeStatus {
+  display: none !important;
+}
+
+.rrDialValue b {
+  font-size: 10px !important;
+}
+
+.rrDialValue span {
+  font-size: 5px !important;
+}
+
+.rrNeedleHub {
+  width: 7px !important;
+  height: 7px !important;
+}
+
+.rrGasGearBadge {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  min-width: 34px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(4, 17, 29, .72);
+  border: 1px solid rgba(255,255,255,.24);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 1000;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  pointer-events: none;
+}
+
+.roadRunnerPedal.gas {
+  position: relative;
+}
+
+@media (max-width: 430px) {
+  .rrGaugeDash {
+    width: 106px !important;
+    top: 4px !important;
+    right: 7px !important;
+  }
+
+  .roadRunnerOverlay {
+    max-width: calc(100% - 132px);
+    left: 10px !important;
+    top: 8px !important;
+  }
+
+  .roadRunnerBadge {
+    max-width: 112px;
+    font-size: 8px !important;
+    padding: 4px 8px !important;
+  }
+}
