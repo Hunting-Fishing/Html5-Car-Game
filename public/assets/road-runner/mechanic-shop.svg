@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 82" role="img" aria-label="Mechanic shop repair checkpoint">
+  <rect x="12" y="28" width="104" height="40" rx="7" fill="#e0f2fe" stroke="#0f172a" stroke-width="3"/>
+  <path d="M8 30 24 12h80l16 18z" fill="#2563eb" stroke="#0f172a" stroke-width="3"/>
+  <rect x="24" y="42" width="28" height="26" rx="3" fill="#bfdbfe" stroke="#0f172a" stroke-width="2"/>
+  <rect x="64" y="42" width="38" height="14" rx="3" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+  <text x="83" y="53" text-anchor="middle" font-family="Arial" font-size="10" font-weight="900" fill="#0f172a">REPAIR</text>
+  <path d="M52 22l8-8 6 6-8 8 4 4-6 6-12-12 6-6z" fill="#facc15" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="38" cy="55" r="7" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+  <rect x="10" y="70" width="108" height="6" rx="3" fill="#0f172a" opacity=".25"/>
+</svg>
