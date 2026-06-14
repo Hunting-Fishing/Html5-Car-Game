@@ -19,6 +19,7 @@ export class HillRouteScene extends Phaser.Scene {
     this.ghostKey = data.ghostKey;
     this.saveData = data.saveData;
     this.onHud = data.onHud;
+    this.onReady = data.onReady;
   }
 
   preload() {
@@ -50,6 +51,7 @@ export class HillRouteScene extends Phaser.Scene {
     this.pickups = createPickups(this, this.route);
     this.ghosts = createGhostVehicles(this, this.route, GHOST_MODES[this.ghostKey], this.saveData);
     this.cameras.main.startFollow(this.player, true, 0.10, 0.10, -145, 95);
+    this.onReady?.(this);
   }
 
   update(time, delta) {
