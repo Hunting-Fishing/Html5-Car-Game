@@ -42,7 +42,8 @@ export class HillRouteScene extends Phaser.Scene {
     this.finished = false;
 
     this.cameras.main.setBackgroundColor(this.route.sky);
-    this.cameras.main.setBounds(0, 0, this.route.length + 700, 820);
+    this.cameras.main.setBounds(0, 0, this.route.length + 700, 560);
+    this.cameras.main.setScroll(0, 0);
     drawRouteScene(this, this.route);
 
     this.player = createVehicle(this, 0xf97316, 'You', ROAD_RUNNER_ASSETS.player.key);
@@ -51,7 +52,8 @@ export class HillRouteScene extends Phaser.Scene {
 
     this.pickups = createPickups(this, this.route);
     this.ghosts = createGhostVehicles(this, this.route, GHOST_MODES[this.ghostKey], this.saveData);
-    this.cameras.main.startFollow(this.player, true, 0.10, 0.10, -145, 95);
+    this.cameras.main.startFollow(this.player, true, 0.12, 0, -145, 0);
+    this.cameras.main.setFollowOffset(-145, 0);
     this.onReady?.(this);
   }
 
