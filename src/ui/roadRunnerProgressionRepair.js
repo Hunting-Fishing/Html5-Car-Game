@@ -52,3 +52,6 @@ function renderMissions(){const page=document.querySelector('[data-racer-page="m
 
 function tick(){patchActions();wireRoutes();addReasons();recordRunFromPanel();if(document.querySelector('[data-racer-page="missions"]'))renderMissions()}
 setInterval(tick,1000);document.addEventListener('click',()=>setTimeout(tick,50));window.addEventListener('load',tick);
+
+const rrV2Style=document.createElement('link');rrV2Style.rel='stylesheet';rrV2Style.href='/roadRunnerResultClose.css';document.head.appendChild(rrV2Style);
+import('./roadRunnerProgressionRepairV2.js');
