@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { ROUTES, GHOST_MODES } from './config.js';
+import { ROUTES, GHOST_MODES, routeMeters } from './config.js';
 import { routeY, routeAngle, drawRouteScene } from './terrain.js';
 import { createVehicle, updateVehicleWheels } from './vehicle.js';
 import { createPickups, collectPickups } from './pickups.js';
@@ -34,6 +34,7 @@ export class HillRouteScene extends Phaser.Scene {
     this.speed = 0;
     this.energy = this.stats.startingEnergy;
     this.distance = 0;
+    this.displayDistance = 0;
     this.coins = 0;
     this.parts = 0;
     this.samples = [];
@@ -71,6 +72,7 @@ export class HillRouteScene extends Phaser.Scene {
     this.speed = Phaser.Math.Clamp(this.speed, 0, this.stats.maxSpeed);
     this.xPos += this.speed * dt;
     this.distance = Math.max(0, this.xPos - 80);
+    this.displayDistance = routeMeters(this.route, this.distance);
 
     this.player.x = this.xPos;
     this.player.y = routeY(this.route, this.xPos) - 30;
@@ -81,7 +83,7 @@ export class HillRouteScene extends Phaser.Scene {
     );
     updateVehicleWheels(this.player, this.speed, dt);
 
-    const rewards = collectPickups(this.player, this.pickups, 1);
+    const rewards = collectPickups(this.player, this.pickups, this.route.reward || 1);
     this.coins += rewards.coins;
     this.parts += rewards.parts;
     this.energy = Math.min(this.stats.startingEnergy + 24, this.energy + rewards.energy);
@@ -96,7 +98,7 @@ export class HillRouteScene extends Phaser.Scene {
     }
 
     updateGhostVehicles(this.route, this.ghosts, this.saveData, this.elapsed);
-    this.onHud?.({ distance: this.distance, energy: this.energy, maxEnergy: this.stats.startingEnergy });
+    this.onHud?.({ distance: this.displayDistance, energy: this.energy, maxEnergy: this.stats.startingEnergy });
 
     if (this.energy <= 0 || this.distance >= this.route.length) {
       this.finish(this.distance >= this.route.length);
@@ -105,28 +107,29 @@ export class HillRouteScene extends Phaser.Scene {
 
   finish(completed) {
     this.finished = true;
-    const earned = this.coins + Math.floor(this.distance / 20);
+    const routeProgressBonus = Math.floor(this.displayDistance / 45);
+    const earned = this.coins + routeProgressBonus;
     this.saveData.coins += earned;
     this.saveData.parts += this.parts;
 
-    if (this.distance > this.saveData.bestDistance) {
-      this.saveData.bestDistance = Math.floor(this.distance);
+    if (this.displayDistance > this.saveData.bestDistance) {
+      this.saveData.bestDistance = Math.floor(this.displayDistance);
       this.saveData.bestTrail = this.samples.slice(-520);
     }
 
     saveRoadRunner(this.saveData);
-    this.onHud?.({ distance: this.distance, energy: this.energy, maxEnergy: this.stats.startingEnergy });
+    this.onHud?.({ distance: this.displayDistance, energy: this.energy, maxEnergy: this.stats.startingEnergy });
 
     const message = completed
-      ? `Route complete. +${earned} coins, +${this.parts} parts.`
-      : `Run ended at ${Math.floor(this.distance)}m. +${earned} coins, +${this.parts} parts.`;
+      ? `Route complete. ${this.route.meters}m. +${earned} coins, +${this.parts} parts.`
+      : `Run ended at ${Math.floor(this.displayDistance)}m. +${earned} coins, +${this.parts} parts.`;
 
-    this.add.rectangle(this.player.x + 170, this.player.y - 95, 310, 82, 0x04111d, 0.86).setDepth(2000);
-    this.add.text(this.player.x + 32, this.player.y - 124, message, {
+    this.add.rectangle(this.player.x + 180, this.player.y - 95, 340, 82, 0x04111d, 0.86).setDepth(2000);
+    this.add.text(this.player.x + 22, this.player.y - 124, message, {
       fontSize: '15px',
       color: '#fff',
       fontStyle: 'bold',
-      wordWrap: { width: 280 }
+      wordWrap: { width: 310 }
     }).setDepth(2001);
   }
 }
