@@ -1,0 +1,12 @@
+starter-hatchback.svg
+compact-sport.svg
+city-taxi.svg
+parts-pickup.svg
+rally-lite.svg
+service-van.svg
+desert-runner.svg
+off-road-truck.svg
+export-support-van.svg
+purple-race-coupe.svg
+mountain-courier.svg
+super-coupe.svg
