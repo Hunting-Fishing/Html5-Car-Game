@@ -1,9 +1,39 @@
 export function routeY(route, x) {
   const seed = route.seed || 1;
-  return 545
-    + Math.sin((x + seed * 120) / 120) * 35
-    + Math.sin((x + seed * 70) / 57) * 14
-    - Math.sin((x + seed * 30) / 310) * 55;
+  const profile = route.profile || 'barangay';
+
+  if (profile === 'track') {
+    return 548
+      + Math.sin((x + seed * 90) / 430) * 18
+      + Math.sin((x + seed * 40) / 190) * 8
+      + Math.sin((x + seed * 20) / 820) * 22;
+  }
+
+  if (profile === 'mountain') {
+    return 545
+      + Math.sin((x + seed * 160) / 180) * 58
+      + Math.sin((x + seed * 85) / 74) * 18
+      - Math.sin((x + seed * 60) / 520) * 76;
+  }
+
+  if (profile === 'farm') {
+    return 550
+      + Math.sin((x + seed * 120) / 240) * 34
+      + Math.sin((x + seed * 70) / 96) * 12
+      - Math.sin((x + seed * 30) / 680) * 28;
+  }
+
+  if (profile === 'port') {
+    return 555
+      + Math.sin((x + seed * 110) / 360) * 24
+      + Math.sin((x + seed * 55) / 155) * 9
+      - Math.sin((x + seed * 40) / 940) * 34;
+  }
+
+  return 548
+    + Math.sin((x + seed * 120) / 175) * 30
+    + Math.sin((x + seed * 70) / 78) * 10
+    - Math.sin((x + seed * 30) / 540) * 34;
 }
 
 export function routeAngle(route, x) {
@@ -14,16 +44,23 @@ export function routeAngle(route, x) {
 export function drawRouteScene(scene, route) {
   const maxX = route.length + 700;
 
-  for (let x = 140; x < maxX; x += 320) {
-    scene.add.ellipse(x, 610, 400, 190, 0x3f9a48, 0.24).setDepth(-20);
+  for (let x = 140; x < maxX; x += 360) {
+    scene.add.ellipse(x, 620, 430, 190, 0x3f9a48, 0.22).setDepth(-20);
   }
 
-  for (let x = 180; x < maxX; x += 360) {
+  for (let x = 180; x < maxX; x += 520) {
     const cloud = scene.add.container(x, 100 + (x % 120));
     cloud.add(scene.add.circle(0, 8, 22, 0xffffff, 0.72));
     cloud.add(scene.add.circle(26, 0, 28, 0xffffff, 0.72));
     cloud.add(scene.add.circle(58, 10, 20, 0xffffff, 0.72));
     cloud.setDepth(-25);
+  }
+
+  for (let x = 260; x < maxX; x += 620) {
+    const sign = scene.add.container(x, routeY(route, x) - 74);
+    sign.add(scene.add.rectangle(0, 18, 6, 40, 0x78350f));
+    sign.add(scene.add.roundRectangle(0, 0, 88, 28, 6, 0xfff7ed).setStrokeStyle(3, 0x78350f));
+    sign.add(scene.add.text(-34, -8, route.profile === 'track' ? 'TRACK' : '365', { fontSize: '13px', color: '#78350f', fontStyle: 'bold' }));
   }
 
   const ground = scene.add.graphics();
@@ -36,17 +73,31 @@ export function drawRouteScene(scene, route) {
   ground.fillPath();
 
   const road = scene.add.graphics();
-  road.lineStyle(26, route.road, 1);
+  road.lineStyle(route.profile === 'track' ? 34 : 28, route.road, 1);
   road.beginPath();
   road.moveTo(0, routeY(route, 0));
-  for (let x = 0; x <= maxX; x += 14) road.lineTo(x, routeY(route, x));
+  for (let x = 0; x <= maxX; x += 12) road.lineTo(x, routeY(route, x));
   road.strokePath();
 
-  road.lineStyle(3, 0xf8fafc, 0.5);
-  for (let x = 0; x <= maxX; x += 90) {
+  road.lineStyle(4, 0xf8fafc, 0.58);
+  for (let x = 0; x <= maxX; x += 120) {
     road.beginPath();
     road.moveTo(x, routeY(route, x) - 2);
-    road.lineTo(x + 42, routeY(route, x + 42) - 2);
+    road.lineTo(x + 56, routeY(route, x + 56) - 2);
     road.strokePath();
+  }
+
+  if (route.profile === 'track') {
+    const curb = scene.add.graphics();
+    curb.lineStyle(4, 0xef4444, 0.9);
+    curb.beginPath();
+    curb.moveTo(0, routeY(route, 0) - 19);
+    for (let x = 0; x <= maxX; x += 22) curb.lineTo(x, routeY(route, x) - 19);
+    curb.strokePath();
+    curb.lineStyle(4, 0xffffff, 0.9);
+    curb.beginPath();
+    curb.moveTo(0, routeY(route, 0) + 19);
+    for (let x = 0; x <= maxX; x += 22) curb.lineTo(x, routeY(route, x) + 19);
+    curb.strokePath();
   }
 }
