@@ -10,6 +10,7 @@ const DAMAGE_BANDS = [
 let lastMeters = null;
 let lastTime = null;
 let smoothKmh = 0;
+let smoothRpm = 850;
 
 function parseMeters(text) {
   const match = String(text || '').replace(/,/g, '').match(/([0-9.]+)/);
@@ -30,7 +31,10 @@ function ensureTelemetry() {
   panel.className = 'rrTelemetry';
   panel.dataset.rrTelemetry = 'true';
   panel.innerHTML = `
-    <div class="rrTelemetrySpeed"><b data-rr-speed-value>0</b><span>KM/H</span></div>
+    <div class="rrTelemetryGauges">
+      <div class="rrGaugeBox rrTelemetrySpeed"><b data-rr-speed-value>0</b><span>KM/H</span></div>
+      <div class="rrGaugeBox rrTelemetryRpm"><div><b data-rr-rpm-value>850</b><span>RPM</span><div class="rrRpmBar"><div data-rr-rpm-bar></div></div></div></div>
+    </div>
     <div class="rrDamageRisk rrRiskZero" data-rr-damage-band>ZERO DMG</div>
     <div class="rrDamageHelp" data-rr-damage-help>Safe &lt; 8 km/h</div>
   `;
@@ -48,23 +52,36 @@ function fallbackTextSpeed(now) {
     smoothKmh = 0;
     return 0;
   }
-  const dt = Math.max(0.001, (now - lastTime) / 1000);
+  const dt = Math.max(0.05, (now - lastTime) / 1000);
   const dm = Math.max(0, meters - lastMeters);
-  const instantKmh = (dm / dt) * 3.6;
-  smoothKmh = smoothKmh * 0.55 + instantKmh * 0.45;
+  const instantKmh = Math.min(140, (dm / dt) * 3.6);
+  smoothKmh = smoothKmh * 0.45 + instantKmh * 0.55;
   lastMeters = meters;
   lastTime = now;
   return smoothKmh;
 }
 
+function gasIsPressed() {
+  return Boolean(document.querySelector('#screen-race.active [data-rr-control="gas"].active'));
+}
+
 function currentTelemetrySpeed(now) {
   const live = window.__rrTelemetry;
   if (live && typeof live.speedKmh === 'number') {
-    smoothKmh = smoothKmh * 0.35 + Math.max(0, live.speedKmh) * 0.65;
+    smoothKmh = smoothKmh * 0.25 + Math.max(0, live.speedKmh) * 0.75;
     lastTime = now;
     return smoothKmh;
   }
   return fallbackTextSpeed(now);
+}
+
+function calculateRpm(kmh) {
+  const live = window.__rrTelemetry;
+  if (live && typeof live.rpm === 'number') return live.rpm;
+  const throttle = gasIsPressed() ? 1500 : 0;
+  const roadLoad = Math.min(4600, kmh * 58);
+  const idle = kmh < 2 && !gasIsPressed() ? 850 : 1050;
+  return Math.max(780, Math.min(7200, idle + throttle + roadLoad));
 }
 
 function tickTelemetry() {
@@ -76,14 +93,21 @@ function tickTelemetry() {
 
   const now = performance.now();
   const kmh = currentTelemetrySpeed(now);
+  const rpmRaw = calculateRpm(kmh);
+  smoothRpm = smoothRpm * 0.55 + rpmRaw * 0.45;
   const live = window.__rrTelemetry || {};
   const rounded = Math.max(0, Math.round(kmh));
+  const rpm = Math.max(0, Math.round(smoothRpm));
   const band = damageBand(live.hazardSpeedKmh || rounded);
   const speedNode = panel.querySelector('[data-rr-speed-value]');
+  const rpmNode = panel.querySelector('[data-rr-rpm-value]');
+  const rpmBar = panel.querySelector('[data-rr-rpm-bar]');
   const bandNode = panel.querySelector('[data-rr-damage-band]');
   const helpNode = panel.querySelector('[data-rr-damage-help]');
 
   if (speedNode) speedNode.textContent = String(rounded);
+  if (rpmNode) rpmNode.textContent = String(rpm);
+  if (rpmBar) rpmBar.style.width = `${Math.max(0, Math.min(100, rpm / 7200 * 100))}%`;
   if (bandNode) {
     bandNode.className = `rrDamageRisk ${band.className}`;
     bandNode.textContent = live.damageLabel || band.label;
@@ -104,6 +128,7 @@ function resetOnRestartClicks() {
     lastMeters = null;
     lastTime = null;
     smoothKmh = 0;
+    smoothRpm = 850;
   });
 }
 
