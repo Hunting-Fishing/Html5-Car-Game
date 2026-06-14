@@ -1,3 +1,8 @@
+const css = document.createElement('link');
+css.rel = 'stylesheet';
+css.href = '/racerVehicleSprites.css';
+document.head.appendChild(css);
+
 const VEHICLE_CARD_ASSETS = {
   'Starter Hatchback': {
     png: '/assets/vehicles/racer/sprite_0000.png',
