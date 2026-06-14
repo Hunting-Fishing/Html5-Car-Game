@@ -1,16 +1,52 @@
 const VEHICLE_CARD_ASSETS = {
-  'Starter Hatchback': '/assets/vehicles/racer/starter-hatchback.svg',
-  'Compact Sport': '/assets/vehicles/racer/compact-sport.svg',
-  'City Taxi': '/assets/vehicles/racer/city-taxi.svg',
-  'Parts Pickup': '/assets/vehicles/racer/parts-pickup.svg',
-  'Rally Lite': '/assets/vehicles/racer/rally-lite.svg',
-  'Service Van': '/assets/vehicles/racer/service-van.svg',
-  'Desert Runner': '/assets/vehicles/racer/desert-runner.svg',
-  'Off-Road Truck': '/assets/vehicles/racer/off-road-truck.svg',
-  'Export Support Van': '/assets/vehicles/racer/export-support-van.svg',
-  'Purple Race Coupe': '/assets/vehicles/racer/purple-race-coupe.svg',
-  'Mountain Courier': '/assets/vehicles/racer/mountain-courier.svg',
-  '365 Super Coupe': '/assets/vehicles/racer/super-coupe.svg'
+  'Starter Hatchback': {
+    png: '/assets/vehicles/racer/sprite_0000.png',
+    fallback: '/assets/vehicles/racer/starter-hatchback.svg'
+  },
+  'Compact Sport': {
+    png: '/assets/vehicles/racer/sprite_0010.png',
+    fallback: '/assets/vehicles/racer/compact-sport.svg'
+  },
+  'City Taxi': {
+    png: '/assets/vehicles/racer/sprite_0002.png',
+    fallback: '/assets/vehicles/racer/city-taxi.svg'
+  },
+  'Parts Pickup': {
+    png: '/assets/vehicles/racer/sprite_0011.png',
+    fallback: '/assets/vehicles/racer/parts-pickup.svg'
+  },
+  'Rally Lite': {
+    png: '/assets/vehicles/racer/sprite_0012.png',
+    fallback: '/assets/vehicles/racer/rally-lite.svg'
+  },
+  'Service Van': {
+    png: '/assets/vehicles/racer/sprite_0007.png',
+    fallback: '/assets/vehicles/racer/service-van.svg'
+  },
+  'Desert Runner': {
+    png: '/assets/vehicles/racer/sprite_0015.png',
+    fallback: '/assets/vehicles/racer/desert-runner.svg'
+  },
+  'Off-Road Truck': {
+    png: '/assets/vehicles/racer/sprite_0006.png',
+    fallback: '/assets/vehicles/racer/off-road-truck.svg'
+  },
+  'Export Support Van': {
+    png: '/assets/vehicles/racer/sprite_0013.png',
+    fallback: '/assets/vehicles/racer/export-support-van.svg'
+  },
+  'Purple Race Coupe': {
+    png: '/assets/vehicles/racer/sprite_0005.png',
+    fallback: '/assets/vehicles/racer/purple-race-coupe.svg'
+  },
+  'Mountain Courier': {
+    png: '/assets/vehicles/racer/sprite_0014.png',
+    fallback: '/assets/vehicles/racer/mountain-courier.svg'
+  },
+  '365 Super Coupe': {
+    png: '/assets/vehicles/racer/sprite_0009.png',
+    fallback: '/assets/vehicles/racer/super-coupe.svg'
+  }
 };
 
 function applyRacerVehicleAssets() {
@@ -21,9 +57,15 @@ function applyRacerVehicleAssets() {
     const asset = VEHICLE_CARD_ASSETS[title];
     if (!asset) return;
     const thumb = card.querySelector('.vehicleThumb');
-    if (!thumb || thumb.dataset.racerAsset === asset) return;
-    thumb.dataset.racerAsset = asset;
-    thumb.innerHTML = `<img src="${asset}" alt="${title}" loading="lazy">`;
+    if (!thumb || thumb.dataset.racerAsset === asset.png) return;
+    thumb.dataset.racerAsset = asset.png;
+    thumb.innerHTML = `<img class="racerVehicleSprite" src="${asset.png}" alt="${title}" loading="lazy">`;
+    const img = thumb.querySelector('img');
+    img.addEventListener('error', () => {
+      if (img.dataset.usedFallback === 'true') return;
+      img.dataset.usedFallback = 'true';
+      img.src = asset.fallback;
+    }, { once: true });
   });
 }
 
@@ -31,4 +73,4 @@ const observer = new MutationObserver(() => requestAnimationFrame(applyRacerVehi
 observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
 window.addEventListener('load', applyRacerVehicleAssets);
 document.addEventListener('click', () => requestAnimationFrame(applyRacerVehicleAssets));
-setInterval(applyRacerVehicleAssets, 900);
+setInterval(applyRacerVehicleAssets, 600);
