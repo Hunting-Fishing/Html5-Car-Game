@@ -93,11 +93,15 @@ function renderActiveScreen() {
   const el = document.querySelector(`#screen-${state.activeScreen}`);
   if (!el) return;
   if (state.activeScreen === 'hub') el.innerHTML = renderHub();
-  if (state.activeScreen === 'world') el.innerHTML = renderWorld();
+  if (state.activeScreen === 'world') {
+    if (!el.querySelector('.pixiWorldShell')) el.innerHTML = renderWorld();
+  }
   if (state.activeScreen === 'race') {
-    el.innerHTML = renderRace();
-    const host = el.querySelector('#raceCanvas');
-    if (host) mountRaceCanvas(host).then(() => updateRaceCanvas(state));
+    if (!el.querySelector('.roadRunnerShell')) {
+      el.innerHTML = renderRace();
+      const host = el.querySelector('#raceCanvas');
+      if (host) mountRaceCanvas(host).then(() => updateRaceCanvas(state));
+    }
   }
   if (state.activeScreen === 'lines') el.innerHTML = renderLines();
   if (state.activeScreen === 'merge') el.innerHTML = renderMerge();
