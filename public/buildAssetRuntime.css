@@ -7,6 +7,11 @@
   --build-world-button-art: url("/assets/Build/ui/world-button.svg");
   --build-lines-button-art: url("/assets/Build/ui/lines-button.svg");
   --build-sync-badge: url("/assets/Build/ui/sync-badge.svg");
+  --ui-garage-room-card: url("/assets/ui/garage/garage-room-card.svg");
+  --ui-card-frame: url("/assets/ui/cards/game-card-frame.svg");
+  --ui-green-cta: url("/assets/ui/buttons/green-cta.svg");
+  --ui-orange-cta: url("/assets/ui/buttons/orange-cta.svg");
+  --ui-meter-track: url("/assets/ui/meters/segmented-meter-track.svg");
 }
 
 #screen-garage .card {
@@ -396,6 +401,168 @@
   height: 3px;
   background: linear-gradient(90deg, rgba(53,229,138,.8), rgba(255,209,102,.8));
   opacity: .65;
+}
+
+#screen-garage .buildSystemsCard .gamePanelBody {
+  padding: 9px;
+}
+
+#screen-garage .garageSystemGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+#screen-garage .garageSystemRoomCard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 9px;
+  border-radius: 24px;
+  border: 2px solid rgba(145, 235, 255, .54);
+  background:
+    var(--ui-garage-room-card),
+    radial-gradient(circle at 18% 0%, rgba(255,209,102,.17), transparent 35%),
+    linear-gradient(180deg, rgba(21,108,149,.98), rgba(5,27,43,.98));
+  background-size: 100% 100%, auto, auto;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.16), 0 8px 0 rgba(0,0,0,.18), 0 14px 22px rgba(0,0,0,.28);
+}
+
+#screen-garage .garageSystemRoomCard::after {
+  height: 5px;
+  opacity: .95;
+}
+
+.garageSystemArtWrap {
+  position: relative;
+  overflow: hidden;
+  min-height: 116px;
+  border-radius: 18px;
+  border: 2px solid rgba(126, 226, 255, .44);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.20), transparent 36%),
+    linear-gradient(180deg, rgba(41,151,194,.58), rgba(4,20,33,.92));
+}
+
+.garageSystemArt {
+  width: 100%;
+  height: 132px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  filter: drop-shadow(0 9px 12px rgba(0,0,0,.32));
+}
+
+.garageSystemLevel {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  box-shadow: 0 4px 0 rgba(0,0,0,.22), 0 8px 16px rgba(0,0,0,.22);
+}
+
+.garageSystemRoomBody {
+  display: grid;
+  gap: 8px;
+  padding: 10px 2px 1px;
+}
+
+.garageSystemRoomHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.garageSystemRoomHead h4 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.05;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0,0,0,.28);
+}
+
+.garageSystemRoomHead p,
+.garageSystemUnlock {
+  margin: 3px 0 0;
+  color: rgba(226, 248, 255, .78);
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.garageSystemCost {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 9px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 209, 102, .34);
+  background: rgba(255, 209, 102, .08);
+  color: #ffedb0;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.garageSystemMeta {
+  margin: 0;
+}
+
+.garageSystemActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr) minmax(0, .8fr);
+  gap: 7px;
+  align-items: stretch;
+}
+
+.garageSystemActions .btn {
+  min-height: 42px;
+  padding-inline: 6px;
+}
+
+.garagePrimaryBuildAction {
+  background:
+    var(--ui-green-cta),
+    linear-gradient(180deg, #64f39b, #23c868 60%, #13864a) !important;
+  background-size: 100% 100%, auto !important;
+}
+
+#screen-garage .garageSystemRoomCard .btn.gold {
+  background:
+    var(--ui-orange-cta),
+    linear-gradient(180deg, #ffe178, #ffad28 60%, #d46b0c) !important;
+  background-size: 100% 100%, auto !important;
+}
+
+#screen-garage .garageSystemRoomCard .buildSystemMeter.segMeter {
+  height: 18px;
+  background:
+    var(--ui-meter-track),
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 42%),
+    linear-gradient(180deg, #102c3d, #030b12) !important;
+  background-size: 100% 100%, auto, auto !important;
+}
+
+@media (min-width: 455px) {
+  #screen-garage .garageSystemGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .garageSystemArtWrap {
+    min-height: 98px;
+  }
+
+  .garageSystemArt {
+    height: 108px;
+  }
+
+  .garageSystemActions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .garagePrimaryBuildAction {
+    grid-column: 1 / -1;
+  }
 }
 
 #screen-garage .building .buildIcon {

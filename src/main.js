@@ -7,7 +7,12 @@ import { lineAssetForKey, LINES_GUI_ASSETS } from './data/linesAssetMap.js';
 import { BUILD_ASSET_LIST, BUILD_GUI_ASSETS, BUILD_ICON_ASSETS, buildRoomAssetForKey, buildSystemAssetForKey } from './data/buildAssetMap.js';
 import { connectionForBuilding, connectionForLine, connectionForRoom } from './data/buildLinkData.js';
 import { mergeAssetForName } from './data/mergeAssetMap.js';
-import { UI_ICONS, chainIconForKey, currencyIconForKey, screenIconForId } from './data/uiIconMap.js';
+import { chainIconForKey } from './data/uiIconMap.js';
+import { renderShellFrame } from './ui/components/Shell.js';
+import { GamePanel, GarageCard, ObjectiveCard, ProblemAlert, RewardPanel, RouteCard, renderIconImage } from './ui/components/GamePanel.js';
+import { UpgradeCard } from './ui/components/UpgradeCard.js';
+import { meterLine, segmentedMeter } from './ui/components/StatMeter.js';
+import { renderGarageSystemCard } from './ui/components/GarageCard.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, costToText, canAfford, addCurrency, addXp } from './systems/economySystem.js';
 import { getObjectiveList, applyDerivedObjectives } from './systems/objectiveSystem.js';
@@ -42,22 +47,6 @@ const PRIMARY_NAV = [
   { id: 'menu', screen: 'profile', label: 'Menu', activeScreens: ['profile', 'creator'] }
 ];
 
-function renderIconImage(src, label, className) {
-  return `<img class="${className}" src="${src}" alt="${label}" loading="eager" draggable="false">`;
-}
-
-function renderScreenIcon(screen) {
-  return renderIconImage(screenIconForId(screen.id), `${screen.label} icon`, 'tabIcon');
-}
-
-function renderPrimaryNavTab(tab) {
-  return `<button class="tab" data-action="screen" data-screen="${tab.screen}" data-nav-tab="${tab.id}" data-active-screens="${tab.activeScreens.join(',')}">${renderScreenIcon(tab)}<span>${tab.label}</span></button>`;
-}
-
-function panelIconSrc(icon) {
-  return UI_ICONS[icon] || screenIconForId(icon) || UI_ICONS.home;
-}
-
 function upgradeIconKey(def) {
   const byKey = {
     tapCrew: 'race',
@@ -68,103 +57,6 @@ function upgradeIconKey(def) {
     supplierShelf: 'parts'
   };
   return byKey[def.key] || def.resource || 'tools';
-}
-
-function renderPanelHeader({ icon = 'home', title, subtitle = '', badge = '', heading = 'h3' }) {
-  const TitleTag = heading === 'h2' ? 'h2' : 'h3';
-  return `
-    <div class="gamePanelHeader">
-      <span class="gameIconBadge">${renderIconImage(panelIconSrc(icon), `${title} icon`, 'gameIconBadgeImg')}</span>
-      <div class="gamePanelTitle"><${TitleTag}>${title}</${TitleTag}>${subtitle ? `<p>${subtitle}</p>` : ''}</div>
-      ${badge ? `<span class="pill gamePanelBadge">${badge}</span>` : ''}
-    </div>
-  `;
-}
-
-function renderGamePanelComponent(component, { icon, title, subtitle, badge = '', body = '', className = '', heading = 'h3' }) {
-  return `
-    <section class="card gamePanel ${component} ${className}" data-component="${component}">
-      <div class="gamePanelField">
-        ${renderPanelHeader({ icon, title, subtitle, badge, heading })}
-        <div class="gamePanelBody">${body}</div>
-      </div>
-    </section>
-  `;
-}
-
-function GamePanel(options) {
-  return renderGamePanelComponent('GamePanel', options);
-}
-
-function RouteCard(options) {
-  return renderGamePanelComponent('RouteCard', options);
-}
-
-function GarageCard(options) {
-  return renderGamePanelComponent('GarageCard', options);
-}
-
-function ObjectiveCard(options) {
-  return renderGamePanelComponent('ObjectiveCard', options);
-}
-
-function ProblemAlert(options) {
-  return renderGamePanelComponent('ProblemAlert', options);
-}
-
-function RewardPanel(options) {
-  return renderGamePanelComponent('RewardPanel', options);
-}
-
-function renderRowComponent(component, { icon, title, subtitle = '', badge = '', body = '', action = '', className = '' }) {
-  return `
-    <article class="gameRowCard ${component} ${className}" data-component="${component}">
-      <span class="gameIconBadge">${renderIconImage(panelIconSrc(icon), `${title} icon`, 'gameIconBadgeImg')}</span>
-      <div class="gameRowMain">
-        <div class="gameRowHead"><div><h4>${title}</h4>${subtitle ? `<p>${subtitle}</p>` : ''}</div>${badge ? `<span class="pill gamePanelBadge">${badge}</span>` : ''}</div>
-        ${body}
-      </div>
-      ${action}
-    </article>
-  `;
-}
-
-function UpgradeCard(options) {
-  return renderRowComponent('UpgradeCard', options);
-}
-
-function meterPct(value, max = 100) {
-  const safeMax = Math.max(1, Number(max) || 1);
-  return Math.max(0, Math.min(100, (Number(value) || 0) / safeMax * 100));
-}
-
-function segmentedMeter({ value, max = 100, label = 'Progress', className = '', dangerHigh = false } = {}) {
-  const pct = meterPct(value, max);
-  const fills = Array.from({ length: 5 }, (_, index) => {
-    const start = index * 20;
-    return Math.max(0, Math.min(100, ((pct - start) / 20) * 100));
-  });
-  const danger = dangerHigh ? ' dangerHigh' : '';
-  return `
-    <div class="segMeter ${className}${danger}" role="meter" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}" style="--meter-pct:${pct}%">
-      ${fills.map((fill, index) => `<span class="segMeterCell seg${index + 1}"><i style="--seg-fill:${fill}%"></i></span>`).join('')}
-      <b class="segMeterNeedle" aria-hidden="true"></b>
-    </div>
-  `;
-}
-
-function renderCurrencyIcon(key, label) {
-  return renderIconImage(currencyIconForKey(key), `${label} icon`, 'curIcon');
-}
-
-function renderCurrencyCapsule(key, label) {
-  return `
-    <div class="cur resourceCapsule" data-resource="${key}">
-      ${renderCurrencyIcon(key, label)}
-      <div class="curCopy"><b id="cur-${key}">0</b><span>${label}</span></div>
-      <button class="curPlus" data-action="resourceShop" data-resource="${key}" aria-label="Open ${label} shop link" title="${label} shop">+</button>
-    </div>
-  `;
 }
 
 function renderChainIcon(key, label, className = 'chainIconAsset') {
@@ -217,42 +109,7 @@ function gameLoop(now) {
 }
 
 function renderShell() {
-  root.innerHTML = `
-    <div class="appShell">
-      <header class="topBar">
-        <div class="topLine">
-          <div class="brand">
-            <div class="brandLogo">365</div>
-            <div class="brandText"><b>Micro Garage</b><span>Playable auto world · local save</span></div>
-          </div>
-          <div class="topActions">
-            <button class="screenControlButton" data-action="screenToggle" title="Toggle fullscreen">FS</button>
-          </div>
-        </div>
-        <div class="walletRow">
-          <div class="currencyGrid">
-            ${renderCurrencyCapsule('coins', 'Coins')}
-            ${renderCurrencyCapsule('parts', 'Parts')}
-            ${renderCurrencyCapsule('tools', 'Tools')}
-            ${renderCurrencyCapsule('scrap', 'Scrap')}
-            ${renderCurrencyCapsule('tune', 'Tune')}
-            ${renderCurrencyCapsule('rep', 'Rep')}
-          </div>
-          <div class="stagePill" aria-label="Stage 1">
-            <span class="stageTrophy" aria-hidden="true"></span>
-            <span class="stageCopy"><small>Stage</small><b id="stagePillValue">1</b></span>
-          </div>
-        </div>
-      </header>
-      <main class="screenHost">
-        ${SCREENS.map((screen) => `<section class="screen" id="screen-${screen.id}"></section>`).join('')}
-      </main>
-      <nav class="bottomNav">
-        ${PRIMARY_NAV.map(renderPrimaryNavTab).join('')}
-      </nav>
-    </div>
-    <div class="toast" id="toast"></div>
-  `;
+  root.innerHTML = renderShellFrame({ screens: SCREENS, primaryNav: PRIMARY_NAV });
 }
 
 function render() {
@@ -1039,7 +896,7 @@ function renderGarageGamePanels() {
       badge: `${buildPct}% online`,
       heading: 'h2',
       className: 'buildSystemsCard',
-      body: BUILDINGS.map(renderBuilding).join('')
+      body: `<div class="garageSystemGrid">${BUILDINGS.map(renderBuilding).join('')}</div>`
     }),
     GamePanel({
       icon: 'parts',
@@ -1134,29 +991,26 @@ function renderBuilding(building) {
   const system = connection ? getBuildCommunicationState(state).systems.find((item) => item.key === connection.key) : null;
   const asset = buildSystemAssetForKey(building.key);
   const pct = Math.round((level / Math.max(1, building.max)) * 100);
-  return `
-    <article class="building buildSystemCard GarageCard" data-component="GarageCard" data-build-system="${building.key}">
-      <img class="buildSystemAsset buildAssetImage" src="${asset}" alt="${building.name}" loading="eager">
-      <div class="buildingMain">
-        <div class="buildingHeader">
-          <div><h4>${building.name}</h4><p>${building.description}</p></div>
-          <span class="pill">Lv ${level}/${building.max}</span>
-        </div>
-        ${segmentedMeter({ value: pct, max: 100, label: `${building.name} upgrade progress`, className: 'buildSystemMeter' })}
-        <p><b>Unlocks:</b> ${building.unlocks}</p>
-        <div class="buildCommMeta">
-          <div class="roomSyncRow">${renderBuildWorldChips(system?.worldInventory)}</div>
-          <div class="lineBuildBridge">${renderBuildLineChips(system)}</div>
-          ${cost ? `<div class="cost">Next build: ${costToText(cost)}</div>` : `<div class="cost">Maxed and fully synced.</div>`}
-        </div>
-        <div class="buildActions">
-          <button class="btn small primary" data-action="building" data-key="${building.key}" ${cost && canAfford(state, cost) ? '' : 'disabled'}><img class="buildButtonAsset buildAssetImage" src="${cost ? BUILD_GUI_ASSETS.upgradeButton : BUILD_GUI_ASSETS.levelBadge}" alt="" loading="eager"><span>${cost ? (level > 0 ? 'Upgrade' : 'Build') : 'Done'}</span></button>
-          <button class="btn small" data-action="screen" data-screen="world"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.worldSync}" alt="" loading="eager"><span>World</span></button>
-          <button class="btn small gold" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Lines</span></button>
-        </div>
-      </div>
-    </article>
-  `;
+  const actionLabel = cost ? (level > 0 ? 'Upgrade' : 'Build') : 'Done';
+  const costText = cost ? costToText(cost) : 'Maxed';
+  return renderGarageSystemCard({
+    key: building.key,
+    name: building.name,
+    description: building.description,
+    imageSrc: asset,
+    level,
+    max: building.max,
+    progressHtml: segmentedMeter({ value: pct, max: 100, label: `${building.name} upgrade progress`, className: 'buildSystemMeter' }),
+    costText,
+    unlocks: building.unlocks,
+    worldChipsHtml: renderBuildWorldChips(system?.worldInventory),
+    lineChipsHtml: renderBuildLineChips(system),
+    primaryActionHtml: `<button class="btn small primary garagePrimaryBuildAction" data-action="building" data-key="${building.key}" ${cost && canAfford(state, cost) ? '' : 'disabled'}><img class="buildButtonAsset buildAssetImage" src="${cost ? BUILD_GUI_ASSETS.upgradeButton : BUILD_GUI_ASSETS.levelBadge}" alt="" loading="eager"><span>${actionLabel}</span></button>`,
+    secondaryActionsHtml: `
+      <button class="btn small" data-action="screen" data-screen="world"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.worldSync}" alt="" loading="eager"><span>World</span></button>
+      <button class="btn small gold" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Lines</span></button>
+    `
+  });
 }
 
 function renderProfile() {
@@ -1266,12 +1120,6 @@ function renderCreator() {
       </section>
     `).join('')}
   `;
-}
-
-function meterLine(label, value, max, tone) {
-  const normalizedLabel = String(label || '').toLowerCase();
-  const dangerHigh = tone === 'dangerHigh' || normalizedLabel.includes('heat') || normalizedLabel.includes('wear');
-  return `<div class="statLine meterStatLine" data-meter-kind="${normalizedLabel}"><span>${label}</span>${segmentedMeter({ value, max, label, className: 'statMeter', dangerHigh })}<strong>${Math.floor(value)}</strong></div>`;
 }
 
 function handleClick(event) {

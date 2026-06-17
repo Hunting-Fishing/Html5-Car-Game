@@ -9,6 +9,13 @@
   --game-panel-a: #1d6b9a;
   --game-panel-b: #0b2a4a;
   --game-dark: #06131d;
+  --ui-hud-resource: url("/assets/ui/hud/resource-capsule.svg");
+  --ui-panel-frame: url("/assets/ui/panels/blue-panel-frame.svg");
+  --ui-card-frame: url("/assets/ui/cards/game-card-frame.svg");
+  --ui-green-cta: url("/assets/ui/buttons/green-cta.svg");
+  --ui-orange-cta: url("/assets/ui/buttons/orange-cta.svg");
+  --ui-nav-tab: url("/assets/ui/nav/nav-tab.svg");
+  --ui-meter-track: url("/assets/ui/meters/segmented-meter-track.svg");
 }
 
 .appShell {
@@ -66,8 +73,10 @@
   border-radius: 15px;
   padding: 5px 14px 5px 5px;
   background:
+    var(--ui-hud-resource),
     radial-gradient(circle at 26% 0, rgba(255,255,255,.2), transparent 42%),
     linear-gradient(180deg, rgba(42, 130, 180, .98), rgba(8, 45, 76, .98));
+  background-size: 100% 100%, auto, auto;
   border: 2px solid rgba(255,255,255,.16);
   box-shadow: inset 0 3px 0 rgba(255,255,255,.16), 0 4px 0 rgba(0,0,0,.22);
 }
@@ -82,9 +91,10 @@
   border-radius: 24px !important;
   padding: 14px !important;
   background:
+    var(--ui-panel-frame),
     var(--ui-pack-panel),
     linear-gradient(180deg, rgba(34, 104, 146, .96), rgba(10, 35, 57, .98)) !important;
-  background-size: 100% 100%, auto !important;
+  background-size: 100% 100%, 100% 100%, auto !important;
   border: 3px solid rgba(255,255,255,.13) !important;
   box-shadow: inset 0 2px 0 rgba(255,255,255,.16), 0 10px 0 rgba(0,0,0,.18), 0 18px 28px rgba(0,0,0,.30) !important;
 }
@@ -92,7 +102,10 @@
 .gamePanel {
   padding: 4px !important;
   border: 2px solid rgba(161,231,255,.72) !important;
-  background: linear-gradient(180deg, #34bdf5 0%, #126da3 52%, #073353 100%) !important;
+  background:
+    var(--ui-card-frame),
+    linear-gradient(180deg, #34bdf5 0%, #126da3 52%, #073353 100%) !important;
+  background-size: 100% 100%, auto !important;
   box-shadow: inset 0 3px 0 rgba(255,255,255,.28), 0 6px 0 rgba(1,10,19,.62), 0 16px 28px rgba(0,0,0,.34) !important;
 }
 
@@ -110,7 +123,11 @@
 
 .segMeter {
   border-color: rgba(0,0,0,.42) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 42%), linear-gradient(180deg, #102c3d, #030b12) !important;
+  background:
+    var(--ui-meter-track),
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 42%),
+    linear-gradient(180deg, #102c3d, #030b12) !important;
+  background-size: 100% 100%, auto, auto !important;
   box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 3px 0 rgba(0,0,0,.34) !important;
 }
 
@@ -139,15 +156,19 @@
 
 .btn.primary {
   background:
+    var(--ui-green-cta),
     var(--ui-pack-button),
     linear-gradient(180deg, var(--game-green-a), var(--game-green-b)) !important;
-  background-size: 100% 100%, auto !important;
+  background-size: 100% 100%, 100% 100%, auto !important;
   color: #062313 !important;
   text-shadow: 0 1px 0 rgba(255,255,255,.28);
 }
 
 .btn.gold {
-  background: linear-gradient(180deg, var(--game-gold-a), var(--game-gold-b)) !important;
+  background:
+    var(--ui-orange-cta),
+    linear-gradient(180deg, var(--game-gold-a), var(--game-gold-b)) !important;
+  background-size: 100% 100%, auto !important;
   color: #2b1700 !important;
   text-shadow: 0 1px 0 rgba(255,255,255,.34);
 }
@@ -182,7 +203,10 @@
 }
 
 .tab.active {
-  background: linear-gradient(180deg, #fff3c4, #37d980) !important;
+  background:
+    var(--ui-nav-tab),
+    linear-gradient(180deg, #fff3c4, #37d980) !important;
+  background-size: 100% 100%, auto !important;
   color: #052213 !important;
   border: 2px solid rgba(0,0,0,.35) !important;
   box-shadow: inset 0 3px 0 rgba(255,255,255,.40), 0 5px 0 rgba(0,0,0,.28);
