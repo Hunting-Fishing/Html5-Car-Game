@@ -114,14 +114,14 @@
   height: 22px;
 }
 
-#screen-lines .lineProgress {
+#screen-lines .lineProgress:not(.segMeter) {
   position: relative;
   height: 14px;
   border: 0;
   background: transparent;
 }
 
-#screen-lines .lineProgress::before {
+#screen-lines .lineProgress:not(.segMeter)::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -129,7 +129,7 @@
   background-size: 100% 100%;
 }
 
-#screen-lines .lineProgress div {
+#screen-lines .lineProgress:not(.segMeter) div {
   position: relative;
   min-width: 10px;
   border-radius: 999px;
@@ -137,6 +137,11 @@
   background-size: 100% 100%;
   background-color: transparent;
   z-index: 1;
+}
+
+#screen-lines .lineProgress.segMeter {
+  height: 17px;
+  margin: 8px 0;
 }
 
 #screen-lines .lineButtons .btn,
@@ -190,7 +195,7 @@
   line-height: 1.25;
 }
 
-#screen-lines .lineRequirementMeter {
+#screen-lines .lineRequirementMeter:not(.segMeter) {
   grid-column: 1 / -1;
   height: 8px;
   overflow: hidden;
@@ -199,11 +204,17 @@
   border: 1px solid rgba(255,255,255,.10);
 }
 
-#screen-lines .lineRequirementMeter span {
+#screen-lines .lineRequirementMeter:not(.segMeter) span {
   display: block;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #ffd166, #35e58a);
+}
+
+#screen-lines .lineRequirementMeter.segMeter {
+  grid-column: 1 / -1;
+  height: 14px;
+  margin-top: 1px;
 }
 
 #screen-lines .lineManagerGrid,

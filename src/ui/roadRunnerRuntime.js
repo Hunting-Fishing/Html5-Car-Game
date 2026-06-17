@@ -8,11 +8,11 @@ import { RACER_VEHICLE_ASSETS } from '../data/racerVehicleAssetMap.js';
 const SAVE_KEY = '365_canvas_road_runner_v4';
 
 const ROUTES = {
-  track: { label: '365 Test Track', profile: 'track', length: 9800, meters: 3200, reward: 1.05, difficulty: 0.70, skyA: '#7ddcff', skyB: '#d9fbff', grass: '#58b957', road: '#2d3748', seed: 4, unlock: 0 },
-  barangay: { label: 'Barangay Route', profile: 'barangay', length: 10800, meters: 3500, reward: 1.0, difficulty: 0.95, skyA: '#8bdcff', skyB: '#e1fbff', grass: '#5fbf57', road: '#3a4555', seed: 1, unlock: 600 },
-  farm: { label: 'Farm Supply Run', profile: 'farm', length: 11800, meters: 3900, reward: 1.15, difficulty: 1.08, skyA: '#9ee8ff', skyB: '#e7fcff', grass: '#66bd45', road: '#554537', seed: 3, unlock: 1200 },
-  mountain: { label: 'Mountain Parts Run', profile: 'mountain', length: 13800, meters: 4600, reward: 1.25, difficulty: 1.35, skyA: '#86d4ff', skyB: '#e0f7ff', grass: '#4f9e52', road: '#39414d', seed: 2, unlock: 1900 },
-  port: { label: 'Port Export Route', profile: 'port', length: 15000, meters: 5000, reward: 1.35, difficulty: 1.45, skyA: '#93dfff', skyB: '#e4fbff', grass: '#49a985', road: '#36414d', seed: 5, unlock: 2700 }
+  track: { label: '365 Test Track', profile: 'track', length: 9800, meters: 3200, reward: 1.05, difficulty: 0.70, skyA: '#7ddcff', skyB: '#d9fbff', grass: '#58b957', road: '#2d3748', seed: 4, unlock: 0, bgAsset: 'routeTrack' },
+  barangay: { label: 'Barangay Route', profile: 'barangay', length: 10800, meters: 3500, reward: 1.0, difficulty: 0.95, skyA: '#8bdcff', skyB: '#e1fbff', grass: '#5fbf57', road: '#3a4555', seed: 1, unlock: 600, bgAsset: 'routeBarangay' },
+  farm: { label: 'Farm Supply Run', profile: 'farm', length: 11800, meters: 3900, reward: 1.15, difficulty: 1.08, skyA: '#9ee8ff', skyB: '#e7fcff', grass: '#66bd45', road: '#554537', seed: 3, unlock: 1200, bgAsset: 'routeFarm' },
+  mountain: { label: 'Mountain Parts Run', profile: 'mountain', length: 13800, meters: 4600, reward: 1.25, difficulty: 1.35, skyA: '#86d4ff', skyB: '#e0f7ff', grass: '#4f9e52', road: '#39414d', seed: 2, unlock: 1900, bgAsset: 'routeMountain' },
+  port: { label: 'Port Export Route', profile: 'port', length: 15000, meters: 5000, reward: 1.35, difficulty: 1.45, skyA: '#93dfff', skyB: '#e4fbff', grass: '#49a985', road: '#36414d', seed: 5, unlock: 2700, bgAsset: 'routePort' }
 };
 
 const GHOST_MODES = {
@@ -92,7 +92,12 @@ const ASSET_PATHS = {
   fuelStation: '/assets/road-runner/fuel-station.svg',
   partsStore: '/assets/road-runner/parts-store.svg',
   mechanicShop: '/assets/road-runner/mechanic-shop.svg',
-  wreck: '/assets/road-runner/wrecked-car.svg'
+  wreck: '/assets/road-runner/wrecked-car.svg',
+  routeTrack: '/assets/race/routes/track.svg',
+  routeBarangay: '/assets/race/routes/barangay.svg',
+  routeFarm: '/assets/race/routes/farm.svg',
+  routeMountain: '/assets/race/routes/mountain.svg',
+  routePort: '/assets/race/routes/port.svg'
 };
 
 let canvas = null;
@@ -552,6 +557,75 @@ function evaluateMissionSets() {
   return completed;
 }
 
+function raceUpgradeSummary() {
+  const levels = normalizeUpgrades(saveData.upgrades);
+  const keys = Object.keys(UPGRADES);
+  const total = keys.reduce((sum, key) => sum + (levels[key] || 1), 0);
+  const max = keys.reduce((sum, key) => sum + UPGRADES[key].max, 0);
+  const pct = Math.round((total / Math.max(1, max)) * 100);
+  return { total, max, pct };
+}
+
+function nextRouteUnlockLabel() {
+  const best = saveData.bestDistance || 0;
+  const next = Object.entries(ROUTES).find(([, route]) => best < (route.unlock || 0));
+  if (!next) return 'All routes open';
+  const [, route] = next;
+  return `${formatSmall(Math.max(0, (route.unlock || 0) - best))}m to ${route.label}`;
+}
+
+function raceCommandKey() {
+  const upgrades = normalizeUpgrades(saveData.upgrades);
+  return [
+    saveData.selectedVehicle,
+    activeRoute,
+    activeGhostMode,
+    Math.floor(saveData.bestDistance || 0),
+    currentProgressionMission()?.key || 'done',
+    Object.keys(UPGRADES).map((key) => upgrades[key] || 1).join('-')
+  ].join('|');
+}
+
+function raceCommandHtml() {
+  const route = ROUTES[activeRoute];
+  const vehicle = selectedVehicle();
+  const stats = vehicleStats();
+  const mission = currentProgressionMission();
+  const upgrades = raceUpgradeSummary();
+  const missionText = mission ? mission.label : 'All progression done';
+  return `
+    <div class="rrRaceCommand RouteCard" data-component="RouteCard" data-rr-command data-rr-command-key="${raceCommandKey()}">
+      <span class="gameIconBadge rrRaceCommandBadge"><img class="gameIconBadgeImg" src="/assets/ui/icons/race.png" alt="Race icon" loading="eager" draggable="false"></span>
+      <div class="rrRaceVehicleMini">
+        <div class="rrRaceVehiclePortrait"><b>${vehicle.cls}</b><span>Car</span></div>
+        <div class="rrRaceVehicleCopy">
+          <span>Selected Vehicle</span>
+          <b>${vehicle.label}</b>
+          <small>${route.label} - ${GHOST_MODES[activeGhostMode].label}</small>
+        </div>
+      </div>
+      <div class="rrRaceCommandStats">
+        <div><b>${Math.round(stats.topSpeed)}</b><span>Top km/h</span></div>
+        <div><b>${formatSmall(saveData.bestDistance)}m</b><span>Best</span></div>
+        <div><b>${upgrades.pct}%</b><span>Garage</span></div>
+      </div>
+      <div class="rrRaceMissionStrip">
+        <span>Next Goal</span>
+        <b>${missionText}</b>
+        <small>${nextRouteUnlockLabel()}</small>
+      </div>
+    </div>
+  `;
+}
+
+function refreshRaceCommand() {
+  const command = document.querySelector('[data-rr-command]');
+  if (!command) return;
+  const key = raceCommandKey();
+  if (command.dataset.rrCommandKey === key) return;
+  command.outerHTML = raceCommandHtml();
+}
+
 function resetRun() {
   ensureMissionState(saveData);
   const route = { ...ROUTES[activeRoute] };
@@ -592,6 +666,8 @@ function resetRun() {
     finishReason: '',
     eventText: '',
     eventTimer: 0,
+    floaters: [],
+    boostPulse: 0,
     hazardsCleared: 0,
     usedRepair: false,
     ghostColors: ['#22c55e', '#f97316', '#e5e7eb']
@@ -602,11 +678,18 @@ function resetRun() {
 }
 
 function shellHtml() {
-  const tabs = [['drive', 'Drive'], ['garage', 'Garage'], ['vehicles', 'Vehicles'], ['routes', 'Routes'], ['missions', 'Missions']];
-  return `<section class="card roadRunnerShell" data-rr-active-tab="${activeTab}">
+  const tabs = [
+    ['drive', 'Drive', 'run'],
+    ['garage', 'Garage', 'tune'],
+    ['vehicles', 'Vehicles', 'cars'],
+    ['routes', 'Routes', 'map'],
+    ['missions', 'Missions', 'goals']
+  ];
+  return `<section class="card roadRunnerShell GamePanel" data-component="GamePanel" data-rr-active-tab="${activeTab}">
     <div class="roadRunnerHeader"><h2>365 Hill Route</h2><p>Drive, repair, upgrade, and unlock vehicles across five routes.</p></div>
     <div class="roadRunnerHud"><div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div><div class="roadRunnerStat"><b data-rr-speed>0 km/h</b><span>Speed</span></div><div class="roadRunnerStat"><b data-rr-fuel>100% · 0m</b><span>Fuel / Next</span></div><div class="roadRunnerStat"><b data-rr-wear>0%</b><span>Wear</span></div><div class="roadRunnerStat"><b data-rr-coins>${formatSmall(saveData.coins)} +0</b><span>Coins / Run</span></div><div class="roadRunnerStat"><b data-rr-parts>${formatSmall(saveData.parts)} +0</b><span>Parts / Run</span></div><div class="roadRunnerStat"><b data-rr-tools>${formatSmall(saveData.tools || 0)} +0</b><span>Tools / Run</span></div><div class="roadRunnerStat"><b data-rr-best>${formatSmall(saveData.bestDistance)}m</b><span>Best</span></div></div>
-    <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" onclick="window.rrSetTab?.('${key}')">${label}</button>`).join('')}</nav>
+    ${raceCommandHtml()}
+    <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label, meta]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" onclick="window.rrSetTab?.('${key}')"><b>${label}</b><span>${meta}</span></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
         <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="roadRunnerBadge rrGhostCycle" data-rr-mode onclick="window.rrCycleGhosts?.()" aria-label="Change ghost racers">${GHOST_MODES[activeGhostMode].label}</button><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
@@ -627,6 +710,7 @@ function setText(selector, value) {
 function updateHud() {
   if (!game) return;
   publishRoadRunnerAssetState();
+  refreshRaceCommand();
   const fuelPct = clamp(Math.floor(game.fuel / game.stats.maxFuel * 100), 0, 100);
   const nextFuel = nextFuelMeters();
   setText('[data-rr-distance]', `${Math.floor(game.distanceM)}m`);
@@ -811,15 +895,27 @@ function draw() {
   drawSpeedStreaks(width, height, route, cameraX);
   drawHazards(width, height, route, cameraX);
   drawCheckpoints(width, height, route, cameraX);
+  drawMilestoneCheckpoints(width, height, route, cameraX);
   drawPickups(width, height, route, cameraX);
   drawGhosts(width, height, route, cameraX);
   drawPlayer(width, height, route, cameraX);
   drawFinish(width, height, route, cameraX);
   drawNextFuelGuide(width, height, route, cameraX);
+  drawFloatingRewards(width, height, route, cameraX);
+  drawProblemWarning(width, height);
   drawRunMeters(width, height);
 }
 
 function drawBackground(width, height, route, cameraX) {
+  const bg = images[route.bgAsset];
+  if (bg?.ready && bg.naturalWidth > 0) {
+    const parallax = (cameraX * 0.09) % width;
+    for (let x = -parallax; x < width + 1; x += width) {
+      ctx.drawImage(bg, x, 0, width, height);
+    }
+    return;
+  }
+
   const sky = ctx.createLinearGradient(0, 0, 0, height);
   sky.addColorStop(0, route.skyA);
   sky.addColorStop(0.58, route.skyB);
@@ -928,6 +1024,34 @@ function drawCheckpoints(width, height, route, cameraX) {
   }
 }
 
+function drawMilestoneCheckpoints(width, height, route, cameraX) {
+  const milestones = [0.25, 0.5, 0.75, 1];
+  for (const pct of milestones) {
+    const worldX = 80 + route.length * pct;
+    const x = worldX - cameraX;
+    if (x < -90 || x > width + 90) continue;
+    const y = routeY(route, worldX, height) - 76;
+    const reached = game.distancePx >= route.length * pct;
+    ctx.save();
+    ctx.globalAlpha = reached ? 1 : 0.58;
+    ctx.fillStyle = reached ? '#35e58a' : '#ffd166';
+    roundRect(x - 29, y - 22, 58, 28, 10);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(4,17,29,.72)';
+    ctx.lineWidth = 3;
+    roundRect(x - 29, y - 22, 58, 28, 10);
+    ctx.stroke();
+    ctx.fillStyle = '#06131d';
+    ctx.font = '900 11px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.round(pct * 100)}%`, x, y - 4);
+    ctx.fillStyle = '#082033';
+    roundRect(x - 3, y + 4, 6, 46, 3);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
 function drawPickups(width, height, route, cameraX) {
   for (const pickup of game.pickups) {
     if (pickup.collected) continue;
@@ -975,7 +1099,26 @@ function ghostPoint(index, height) {
 function drawPlayer(width, height, route, cameraX) {
   const x = game.x - cameraX;
   const y = routeY(route, game.x, height) - 30;
+  drawBoostGlow(x, y);
   drawCar(x, y, game.pitch, images[selectedVehicle().asset], 'You', 1, '#3b82f6');
+}
+
+function drawBoostGlow(x, y) {
+  const speedRatio = clamp(Math.abs(game.speed) / Math.max(1, game.stats.topSpeed), 0, 1);
+  const glow = clamp((input.gas ? 0.34 : 0) + speedRatio * 0.32 + (game.boostPulse || 0), 0, 1);
+  if (glow <= 0.04) return;
+  ctx.save();
+  ctx.globalAlpha = glow;
+  const pulse = 1 + Math.sin(game.elapsed * 20) * 0.08;
+  const grad = ctx.createRadialGradient(x - 36, y + 18, 4, x - 36, y + 18, 68 * pulse);
+  grad.addColorStop(0, 'rgba(109,255,159,.65)');
+  grad.addColorStop(0.42, 'rgba(56,189,248,.32)');
+  grad.addColorStop(1, 'rgba(56,189,248,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.ellipse(x - 26, y + 17, 82 * pulse, 30 * pulse, game.pitch * 0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 function drawCar(x, y, angle, img, label, alpha, color) {
@@ -983,12 +1126,17 @@ function drawCar(x, y, angle, img, label, alpha, color) {
   ctx.translate(x, y);
   ctx.rotate(angle);
   ctx.globalAlpha = alpha;
+  const hasSprite = Boolean(img && img.ready);
   ctx.fillStyle = 'rgba(0,0,0,.22)';
   ctx.beginPath();
   ctx.ellipse(0, 22, 48, 10, 0, 0, Math.PI * 2);
   ctx.fill();
-  if (img && img.ready) ctx.drawImage(img, -56, -31, 112, 56);
-  else {
+  if (hasSprite) {
+    const aspect = Math.max(0.6, Math.min(2.4, img.naturalWidth / Math.max(1, img.naturalHeight)));
+    const targetW = alpha < 1 ? 88 : 100;
+    const targetH = clamp(targetW / aspect, 46, 76);
+    ctx.drawImage(img, -targetW / 2, 27 - targetH, targetW, targetH);
+  } else {
     ctx.fillStyle = color;
     roundRect(-36, -15, 72, 30, 9);
     ctx.fill();
@@ -996,17 +1144,19 @@ function drawCar(x, y, angle, img, label, alpha, color) {
     ctx.lineWidth = 3;
     ctx.stroke();
   }
-  ctx.strokeStyle = '#111827';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(-28, 18 + game.suspensionTravel);
-  ctx.lineTo(-28, 30);
-  ctx.moveTo(28, 18 - game.suspensionTravel);
-  ctx.lineTo(28, 30);
-  ctx.stroke();
-  drawWheelSpinOverlay(game.wheelRotation + x * 0.01, alpha);
+  if (!hasSprite) {
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-28, 18 + game.suspensionTravel);
+    ctx.lineTo(-28, 30);
+    ctx.moveTo(28, 18 - game.suspensionTravel);
+    ctx.lineTo(28, 30);
+    ctx.stroke();
+    drawWheelSpinOverlay(game.wheelRotation + x * 0.01, alpha);
+  }
   ctx.restore();
-  drawOutlinedText(label, x, y - 46, '11px', alpha);
+  drawOutlinedText(label, x, y - (alpha >= 1 ? 58 : 46), '11px', alpha);
 }
 
 function drawWheelSpinOverlay(rotation, alpha = 1) {
@@ -1107,20 +1257,114 @@ function drawRunMeters(width, height) {
   const fuelPct = game.fuel / game.stats.maxFuel;
   const wearPct = Math.min(1, game.wear / game.stats.wearLimit);
   const lowFuelY = width <= 430 ? 154 : 124;
-  const eventY = width <= 430 ? 172 : 142;
-  drawBar(14, 42, 150, 11, 'Fuel', fuelPct, '#22c55e');
-  drawBar(14, 58, 150, 11, 'Wear', wearPct, wearPct > 0.75 ? '#ef4444' : '#f59e0b');
+  drawBar(14, 42, 150, 12, 'Fuel', fuelPct);
+  drawBar(14, 59, 150, 12, 'Wear', wearPct, true);
   if (game.fuel / game.stats.maxFuel < 0.18 && nextFuelMeters() > 220) drawOutlinedText('LOW FUEL - COAST OR FIND STATION', width / 2, lowFuelY, '13px');
-  if (game.eventTimer > 0) drawOutlinedText(game.eventText, width / 2, eventY, '14px');
 }
 
-function drawBar(x, y, width, height, label, pct, color) {
-  ctx.fillStyle = 'rgba(4,17,29,.72)';
-  roundRect(x, y, width, height, 6);
+function drawProblemWarning(width, height) {
+  if (!game.eventTimer || game.eventTimer <= 0 || !game.eventText) return;
+  const danger = /slow|hazard|pothole|mud|gravel|rough|out|low|worn/i.test(game.eventText);
+  const w = Math.min(width - 28, 304);
+  const h = 42;
+  const x = (width - w) / 2;
+  const y = width <= 430 ? 82 : 74;
+  const alpha = clamp(game.eventTimer / 0.25, 0, 1);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = danger ? 'rgba(89,22,32,.88)' : 'rgba(4,31,49,.86)';
+  roundRect(x, y, w, h, 16);
   ctx.fill();
-  ctx.fillStyle = color;
-  roundRect(x, y, width * clamp(pct, 0, 1), height, 6);
+  ctx.strokeStyle = danger ? '#ffd166' : '#7ddcff';
+  ctx.lineWidth = 3;
+  roundRect(x, y, w, h, 16);
+  ctx.stroke();
+  ctx.fillStyle = danger ? '#ffd166' : '#6dff9f';
+  roundRect(x + 8, y + 8, 31, 26, 10);
   ctx.fill();
+  ctx.fillStyle = '#06131d';
+  ctx.font = '900 18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(danger ? '!' : '+', x + 23.5, y + 28);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 13px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(game.eventText, x + 48, y + 17);
+  ctx.fillStyle = '#bfe9f5';
+  ctx.font = '800 9px Arial';
+  ctx.fillText(danger ? 'React fast to protect wear and speed.' : 'Reward collected during the run.', x + 48, y + 31);
+  ctx.restore();
+}
+
+function spawnFloatingReward(text, color = '#ffffff', worldX = game?.x || 80, yOffset = -72) {
+  if (!game) return;
+  game.floaters.push({ text, color, x: worldX, yOffset, life: 1 });
+}
+
+function drawFloatingRewards(width, height, route, cameraX) {
+  for (const floater of game.floaters || []) {
+    const x = floater.x - cameraX;
+    if (x < -80 || x > width + 80) continue;
+    const age = 1 - floater.life;
+    const y = routeY(route, floater.x, height) + floater.yOffset - age * 36;
+    ctx.save();
+    ctx.globalAlpha = clamp(floater.life, 0, 1);
+    ctx.font = '900 18px Arial';
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#06131d';
+    ctx.strokeText(floater.text, x, y);
+    ctx.fillStyle = floater.color;
+    ctx.fillText(floater.text, x, y);
+    ctx.restore();
+  }
+}
+
+function drawBar(x, y, width, height, label, pct, dangerHigh = false) {
+  const value = clamp(pct, 0, 1);
+  const pad = 2;
+  const gap = 3;
+  const segments = 5;
+  const cellW = (width - pad * 2 - gap * (segments - 1)) / segments;
+  const colors = dangerHigh
+    ? ['#26e872', '#a9f43c', '#ffe05f', '#ff8f1f', '#ff4667']
+    : ['#ff4667', '#ff8f1f', '#ffe05f', '#a9f43c', '#26e872'];
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(4,17,29,.82)';
+  roundRect(x, y, width, height, height / 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.26)';
+  ctx.lineWidth = 1;
+  roundRect(x + 0.5, y + 0.5, width - 1, height - 1, height / 2);
+  ctx.stroke();
+
+  for (let i = 0; i < segments; i += 1) {
+    const sx = x + pad + i * (cellW + gap);
+    const sy = y + pad;
+    const sh = height - pad * 2;
+    const fill = clamp(value * segments - i, 0, 1);
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = colors[i];
+    roundRect(sx, sy, cellW, sh, sh / 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    if (fill > 0) {
+      ctx.fillStyle = colors[i];
+      roundRect(sx, sy, cellW * fill, sh, sh / 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.36)';
+      roundRect(sx + 2, sy + 1, Math.max(0, cellW * fill - 4), 2, 2);
+      ctx.fill();
+    }
+  }
+
+  const needleX = x + clamp(value, 0.02, 0.98) * width;
+  ctx.fillStyle = '#ffe08a';
+  roundRect(needleX - 2, y - 2, 4, height + 4, 3);
+  ctx.fill();
+  ctx.restore();
+
   ctx.fillStyle = '#fff';
   ctx.font = '800 9px Arial';
   ctx.textAlign = 'left';
@@ -1179,6 +1423,7 @@ function update(dt) {
   if (gasForce > 0) {
     game.speed += gasForce * dt;
     game.fuel -= game.stats.fuelUse * dt * (1 + Math.max(0, slope) * 0.55 + speedRatio * 0.18);
+    game.boostPulse = Math.min(0.8, (game.boostPulse || 0) + dt * 0.65);
   }
   game.speed += gravityForce * dt;
   if (input.brake) {
@@ -1220,6 +1465,12 @@ function update(dt) {
     game.lastSample = game.elapsed;
   }
   if (game.eventTimer > 0) game.eventTimer -= dt;
+  if (game.boostPulse > 0) game.boostPulse = Math.max(0, game.boostPulse - dt * 1.9);
+  if (game.floaters?.length) {
+    game.floaters = game.floaters
+      .map((floater) => ({ ...floater, life: floater.life - dt * 1.15 }))
+      .filter((floater) => floater.life > 0);
+  }
   game.finishedRoute = game.distancePx >= game.route.length;
   evaluateRunMissionsLive();
   if (game.fuel <= 0 || game.wear >= game.stats.wearLimit || game.finishedRoute) finishRun(game.finishedRoute);
@@ -1235,11 +1486,13 @@ function collectPickupsAndCheckpoints() {
       game.fuel = Math.min(game.stats.maxFuel + 24, game.fuel + amount);
       saveData.lifetimeFuel += amount;
       triggerEvent('Fuel +');
+      spawnFloatingReward('+Fuel', '#38bdf8', pickup.x);
     }
     if (pickup.type === 'parts') {
       game.parts += 1;
       saveData.parts += 1;
       triggerEvent('Part +1');
+      spawnFloatingReward('+1 Part', '#c4b5fd', pickup.x);
     }
     if (pickup.type === 'tools') {
       game.tools += 1;
@@ -1248,11 +1501,13 @@ function collectPickupsAndCheckpoints() {
       game.usedRepair = true;
       saveData.lifetimeRepairs += 1;
       triggerEvent('Tool repair');
+      spawnFloatingReward('Repair', '#fb923c', pickup.x);
     }
     if (pickup.type === 'coin') {
       const coins = Math.round((pickup.value || 4) * game.route.reward);
       game.coins += coins;
       saveData.coins += coins;
+      spawnFloatingReward(`+${coins}`, '#facc15', pickup.x);
     }
     saveGameData();
   }
@@ -1264,11 +1519,13 @@ function collectPickupsAndCheckpoints() {
       game.fuel = Math.min(game.stats.maxFuel + 36, game.fuel + amount);
       saveData.lifetimeFuel += Math.floor(amount);
       triggerEvent('Fuel Station + Range');
+      spawnFloatingReward('+Fuel Stop', '#38bdf8', checkpoint.x, -92);
     }
     if (checkpoint.type === 'partsStore') {
       game.parts += 3;
       saveData.parts += 3;
       triggerEvent('Auto Parts +3');
+      spawnFloatingReward('+3 Parts', '#c4b5fd', checkpoint.x, -92);
     }
     if (checkpoint.type === 'mechanicShop') {
       const repair = game.stats.wearLimit * 0.45;
@@ -1276,6 +1533,7 @@ function collectPickupsAndCheckpoints() {
       game.usedRepair = true;
       saveData.lifetimeRepairs += 1;
       triggerEvent('Mechanic Repair');
+      spawnFloatingReward('Repair', '#6dff9f', checkpoint.x, -92);
     }
     if (checkpoint.type === 'wreck') {
       game.parts += 2;
@@ -1283,6 +1541,7 @@ function collectPickupsAndCheckpoints() {
       game.wear = Math.max(0, game.wear - 8);
       game.usedRepair = true;
       triggerEvent('Salvage +2 Parts');
+      spawnFloatingReward('+2 Parts', '#f97316', checkpoint.x, -92);
     }
     saveGameData();
   }
@@ -1472,6 +1731,8 @@ window.render_game_to_text = () => {
     vehicleAsset: ASSET_PATHS[selectedVehicle().asset] || '',
     vehicleAssetReady: Boolean(images[selectedVehicle().asset]?.ready && images[selectedVehicle().asset]?.naturalWidth > 0),
     route: activeRoute,
+    routeBackgroundAsset: ASSET_PATHS[game.route.bgAsset] || '',
+    routeBackgroundReady: Boolean(images[game.route.bgAsset]?.ready && images[game.route.bgAsset]?.naturalWidth > 0),
     elapsedSeconds: Number(game.elapsed.toFixed(1)),
     distanceMeters: Math.floor(game.distanceM),
     speedKmh: Number(game.telemetry.kmh.toFixed(1)),
@@ -1484,6 +1745,7 @@ window.render_game_to_text = () => {
     wearPct: Math.floor(Math.min(100, game.wear / game.stats.wearLimit * 100)),
     tractionPct: Math.round((game.traction || 1) * 100),
     openPickups: game.pickups.filter((pickup) => !pickup.collected).length,
+    floatingRewards: game.floaters.length,
     damageThresholdKmh: DAMAGE_SPEED_KMH,
     hazard: hazard ? {
       type: hazard.type,

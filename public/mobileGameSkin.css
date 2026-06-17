@@ -13,27 +13,33 @@
 
 .appShell {
   max-width: 520px;
+  grid-template-rows: 114px minmax(0, 1fr) 84px;
   background:
     radial-gradient(circle at 50% -10%, rgba(79, 209, 255, .22), transparent 40%),
     linear-gradient(180deg, #092a45, #06131d 74%);
 }
 
 .topBar {
-  min-height: 104px;
-  padding: 10px 10px 8px;
+  min-height: 114px;
+  padding: 8px 10px 7px;
   background:
+    radial-gradient(circle at 18% -22%, rgba(255,255,255,.22), transparent 34%),
     linear-gradient(180deg, rgba(55, 154, 207, .98), rgba(8, 47, 78, .98));
   border-bottom: 3px solid rgba(0,0,0,.34);
   box-shadow: inset 0 -2px 0 rgba(255,255,255,.14), 0 5px 12px rgba(0,0,0,.32);
 }
 
+.topLine {
+  margin-bottom: 7px;
+}
+
 .brandLogo {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #52ffe2, #19bd9f);
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #9affef 0%, #33f0b0 48%, #1297d6 100%);
   border: 2px solid rgba(255,255,255,.45);
-  box-shadow: inset 0 3px 0 rgba(255,255,255,.35), 0 5px 0 rgba(0,0,0,.22), 0 8px 18px rgba(0,0,0,.28);
+  box-shadow: inset 0 4px 0 rgba(255,255,255,.38), inset 0 -5px 0 rgba(0,0,0,.14), 0 7px 0 rgba(0,0,0,.22), 0 11px 20px rgba(0,0,0,.28);
 }
 
 .brandText b {
@@ -42,28 +48,33 @@
 }
 
 .stagePill {
-  background: linear-gradient(180deg, #ffffff, #c9e4f3);
-  color: #17364a;
-  border: 2px solid rgba(0,0,0,.26);
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.75), 0 4px 0 rgba(0,0,0,.22);
+  min-height: 42px;
+  background:
+    radial-gradient(circle at 30% 0, rgba(255,255,255,.48), transparent 42%),
+    linear-gradient(180deg, #ffe79a, #f5aa1f 68%, #b45f08);
+  color: #2b1700;
+  border: 2px solid rgba(70, 35, 0, .42);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.48), 0 5px 0 rgba(0,0,0,.24), 0 8px 14px rgba(0,0,0,.22);
 }
 
 .currencyGrid {
-  gap: 6px;
+  gap: 5px;
 }
 
 .cur {
-  min-height: 40px;
-  border-radius: 14px;
+  min-height: 42px;
+  border-radius: 15px;
+  padding: 5px 14px 5px 5px;
   background:
-    linear-gradient(180deg, rgba(21, 50, 70, .98), rgba(5, 17, 28, .98));
-  border: 2px solid rgba(255,255,255,.14);
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 4px 0 rgba(0,0,0,.18);
+    radial-gradient(circle at 26% 0, rgba(255,255,255,.2), transparent 42%),
+    linear-gradient(180deg, rgba(42, 130, 180, .98), rgba(8, 45, 76, .98));
+  border: 2px solid rgba(255,255,255,.16);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.16), 0 4px 0 rgba(0,0,0,.22);
 }
 
 .cur b {
   color: #ffffff;
-  font-size: 12px;
+  font-size: clamp(8px, 2.2vw, 11px);
   text-shadow: 0 2px 0 rgba(0,0,0,.28);
 }
 
@@ -76,6 +87,31 @@
   background-size: 100% 100%, auto !important;
   border: 3px solid rgba(255,255,255,.13) !important;
   box-shadow: inset 0 2px 0 rgba(255,255,255,.16), 0 10px 0 rgba(0,0,0,.18), 0 18px 28px rgba(0,0,0,.30) !important;
+}
+
+.gamePanel {
+  padding: 4px !important;
+  border: 2px solid rgba(161,231,255,.72) !important;
+  background: linear-gradient(180deg, #34bdf5 0%, #126da3 52%, #073353 100%) !important;
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.28), 0 6px 0 rgba(1,10,19,.62), 0 16px 28px rgba(0,0,0,.34) !important;
+}
+
+.gamePanel.RouteCard,
+.gamePanel.GarageCard,
+.gamePanel.ObjectiveCard,
+.gamePanel.RewardPanel {
+  background: linear-gradient(180deg, #45d2ff 0%, #147fba 48%, #073353 100%) !important;
+}
+
+.gamePanel.ProblemAlert {
+  border-color: rgba(255,184,102,.85) !important;
+  background: linear-gradient(180deg, #ffcd76 0%, #f97316 34%, #7f1d1d 100%) !important;
+}
+
+.segMeter {
+  border-color: rgba(0,0,0,.42) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 42%), linear-gradient(180deg, #102c3d, #030b12) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 3px 0 rgba(0,0,0,.34) !important;
 }
 
 .pixiWorldHeader {
@@ -185,4 +221,36 @@
 .notice.good {
   border: 2px solid rgba(75, 255, 155, .35);
   background: linear-gradient(180deg, rgba(53, 229, 138, .16), rgba(8, 65, 52, .82));
+}
+
+@media (max-width: 380px) {
+  .appShell {
+    grid-template-rows: 100px minmax(0, 1fr) 70px;
+  }
+
+  .topBar {
+    min-height: 100px;
+    padding: 7px 8px 6px;
+  }
+
+  .brandLogo {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+  }
+
+  .currencyGrid {
+    gap: 3px;
+  }
+
+  .cur {
+    min-height: 35px;
+    border-radius: 12px;
+    padding: 4px 12px 4px 4px;
+  }
+
+  .stagePill {
+    min-height: 35px;
+    border-radius: 13px;
+  }
 }

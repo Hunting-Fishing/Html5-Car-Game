@@ -1,5 +1,5 @@
 export const RACER_VEHICLE_ASSETS = {
-  hatchback: '/assets/vehicles/racer/starter-hatchback.svg',
+  hatchback: '/assets/vehicles/racer/sprite_0000.png',
   greenCompact: '/assets/vehicles/racer/compact-sport.svg',
   cityTaxi: '/assets/vehicles/racer/city-taxi.svg',
   pickup: '/assets/vehicles/racer/parts-pickup.svg',

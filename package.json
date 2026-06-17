@@ -10,13 +10,15 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
+    "@juggle/resize-observer": "^3.4.0",
     "@vitejs/plugin-legacy": "latest",
     "canvas-confetti": "latest",
     "gsap": "latest",
     "howler": "latest",
     "lucide-static": "latest",
     "phaser": "latest",
-    "pixi.js": "latest"
+    "pixi.js": "latest",
+    "screenfull": "^6.0.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",

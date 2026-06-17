@@ -25,7 +25,7 @@ html.rrRaceViewport #screen-race.active {
   margin: 0;
   padding: 5px !important;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: var(--ui-race-command-h, 64px) auto minmax(0, 1fr);
   gap: 5px;
 }
 
@@ -49,6 +49,9 @@ html.rrRaceViewport #screen-race.active {
   min-width: 0;
   min-height: 30px;
   padding: 3px 2px;
+  display: grid;
+  place-items: center;
+  gap: 0;
   border-radius: 10px;
   font-size: clamp(6px, 1.8vw, 9px);
   background: var(--rr-ui-blue) center / 100% 100% no-repeat;
@@ -56,8 +59,238 @@ html.rrRaceViewport #screen-race.active {
   box-shadow: none;
 }
 
+#screen-race .racerInnerNav button b,
+#screen-race .racerInnerNav button span {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#screen-race .racerInnerNav button b {
+  color: inherit;
+  font-size: clamp(7px, 1.9vw, 10px);
+}
+
+#screen-race .racerInnerNav button span {
+  margin-top: 1px;
+  color: rgba(255,255,255,.72);
+  font-size: clamp(5px, 1.45vw, 7px);
+  text-transform: uppercase;
+}
+
 #screen-race .racerInnerNav button.active {
   background-image: var(--rr-ui-yellow);
+}
+
+#screen-race .racerInnerNav button.active span {
+  color: rgba(43, 23, 0, .72);
+}
+
+#screen-race .rrRaceCommand {
+  height: var(--ui-race-command-h, 64px);
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1.15fr) minmax(112px, .85fr);
+  grid-template-areas:
+    "badge vehicle stats";
+  gap: 6px;
+  padding: 6px;
+  overflow: hidden;
+  contain: layout paint;
+  border-radius: 15px;
+  border: 2px solid rgba(125, 220, 255, .22);
+  background:
+    radial-gradient(circle at 12% 0, rgba(255, 209, 102, .18), transparent 35%),
+    linear-gradient(180deg, rgba(16, 52, 75, .94), rgba(5, 19, 32, .96));
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.10), 0 5px 0 rgba(0,0,0,.18);
+}
+
+#screen-race .rrRaceCommand::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: -2px;
+  width: 42px;
+  height: 13px;
+  border-radius: 0 0 12px 0;
+  background: linear-gradient(180deg,#ffe08a,#f59e0b);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.42), 0 3px 0 rgba(0,0,0,.2);
+  pointer-events: none;
+}
+
+#screen-race .rrRaceCommandBadge {
+  grid-area: badge;
+  width: 36px;
+  height: 36px;
+  align-self: center;
+  justify-self: center;
+}
+
+#screen-race .rrRaceCommandBadge .gameIconBadgeImg {
+  width: 22px;
+  height: 22px;
+}
+
+#screen-race .rrRaceVehicleMini {
+  grid-area: vehicle;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+
+#screen-race .rrRaceVehiclePortrait {
+  width: 44px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  align-content: center;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(125,220,255,.18), rgba(53,229,138,.10)),
+    rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+#screen-race .rrRaceVehiclePortrait b,
+#screen-race .rrRaceVehiclePortrait span {
+  display: block;
+  max-width: 38px;
+  overflow: hidden;
+  line-height: 1;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#screen-race .rrRaceVehiclePortrait b {
+  color: #fff;
+  font-size: 8px;
+}
+
+#screen-race .rrRaceVehiclePortrait span {
+  margin-top: 2px;
+  color: #9ddcf1;
+  font-size: 6px;
+  font-weight: 1000;
+}
+
+#screen-race .rrRaceVehicleCopy {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+#screen-race .rrRaceVehicleCopy span,
+#screen-race .rrRaceMissionStrip span {
+  color: #ffd166;
+  font-size: 6px;
+  font-weight: 1000;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+#screen-race .rrRaceVehicleCopy b,
+#screen-race .rrRaceMissionStrip b {
+  min-width: 0;
+  overflow: hidden;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2px 0 rgba(0,0,0,.32);
+}
+
+#screen-race .rrRaceVehicleCopy small,
+#screen-race .rrRaceMissionStrip small {
+  min-width: 0;
+  overflow: hidden;
+  color: #bfe9f5;
+  font-size: 7px;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#screen-race .rrRaceCommandStats {
+  grid-area: stats;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#screen-race .rrRaceCommandStats div {
+  min-width: 0;
+  padding: 5px 3px;
+  border-radius: 11px;
+  display: grid;
+  align-content: center;
+  text-align: center;
+  background: rgba(0,0,0,.24);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+#screen-race .rrRaceCommandStats b {
+  overflow: hidden;
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#screen-race .rrRaceCommandStats span {
+  margin-top: 2px;
+  color: #9ddcf1;
+  font-size: 6px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+#screen-race .rrRaceMissionStrip {
+  display: none;
+  grid-area: mission;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 7px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.23);
+  border: 1px solid rgba(255,255,255,.09);
+}
+
+#screen-race .roadRunnerShell[data-rr-active-tab="garage"] .rrRaceCommand,
+#screen-race .roadRunnerShell[data-rr-active-tab="vehicles"] .rrRaceCommand,
+#screen-race .roadRunnerShell[data-rr-active-tab="routes"] .rrRaceCommand,
+#screen-race .roadRunnerShell[data-rr-active-tab="missions"] .rrRaceCommand {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "vehicle"
+    "mission";
+}
+
+#screen-race .roadRunnerShell[data-rr-active-tab="garage"] .rrRaceCommandStats,
+#screen-race .roadRunnerShell[data-rr-active-tab="vehicles"] .rrRaceCommandStats,
+#screen-race .roadRunnerShell[data-rr-active-tab="routes"] .rrRaceCommandStats,
+#screen-race .roadRunnerShell[data-rr-active-tab="missions"] .rrRaceCommandStats {
+  display: none;
+}
+
+#screen-race .roadRunnerShell[data-rr-active-tab="garage"] .rrRaceMissionStrip,
+#screen-race .roadRunnerShell[data-rr-active-tab="vehicles"] .rrRaceMissionStrip,
+#screen-race .roadRunnerShell[data-rr-active-tab="routes"] .rrRaceMissionStrip,
+#screen-race .roadRunnerShell[data-rr-active-tab="missions"] .rrRaceMissionStrip {
+  display: grid;
 }
 
 #screen-race .racerPages,
@@ -496,15 +729,31 @@ html.rrRaceViewport #screen-race.active {
     display: none;
   }
 
+  html.rrRaceViewport .walletRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
   html.rrRaceViewport .currencyGrid {
     gap: 3px;
   }
 
   html.rrRaceViewport .cur {
     min-height: 25px;
-    padding: 2px;
+    grid-template-columns: 11px minmax(0, 1fr);
+    gap: 1px;
+    padding: 2px 3px;
     border-width: 1px;
     border-radius: 8px;
+  }
+
+  html.rrRaceViewport .curIcon {
+    width: 11px;
+    height: 11px;
+  }
+
+  html.rrRaceViewport .curPlus {
+    display: none;
   }
 
   html.rrRaceViewport .cur b {
@@ -527,11 +776,42 @@ html.rrRaceViewport #screen-race.active {
   }
 
   html.rrRaceViewport .tabIcon {
-    font-size: 13px;
+    width: 16px;
+    height: 16px;
   }
 
   #screen-race .racerInnerNav button {
     min-height: 25px;
+  }
+
+  #screen-race .rrRaceCommand {
+    height: var(--ui-race-command-h, 48px);
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "vehicle";
+    padding: 4px;
+  }
+
+  #screen-race .rrRaceCommandBadge {
+    display: none;
+  }
+
+  #screen-race .rrRaceVehicleMini {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  #screen-race .rrRaceVehiclePortrait {
+    width: 38px;
+    height: 34px;
+  }
+
+  #screen-race .rrRaceCommandStats {
+    display: none;
+  }
+
+  #screen-race .rrRaceMissionStrip {
+    display: none !important;
+    padding: 3px 5px;
   }
 
   .roadRunnerControls {

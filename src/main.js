@@ -1,4 +1,5 @@
 import './styles.css';
+import './ui/screenControlRuntime.js';
 import { gsap } from 'gsap';
 import { SCREENS, RACE_MODES, CHAINS, UPGRADES, BUILDINGS, PROBLEMS, CREATOR_RULES, IDLE_LINES } from './data/gameData.js';
 import { AUTO_SHOP_ROOMS, AUTO_WORLD_LOCATIONS, WORLD_TRAFFIC, WORLD_PEOPLE } from './data/visualData.js';
@@ -6,6 +7,7 @@ import { lineAssetForKey, LINES_GUI_ASSETS } from './data/linesAssetMap.js';
 import { BUILD_ASSET_LIST, BUILD_GUI_ASSETS, BUILD_ICON_ASSETS, buildRoomAssetForKey, buildSystemAssetForKey } from './data/buildAssetMap.js';
 import { connectionForBuilding, connectionForLine, connectionForRoom } from './data/buildLinkData.js';
 import { mergeAssetForName } from './data/mergeAssetMap.js';
+import { UI_ICONS, chainIconForKey, currencyIconForKey, screenIconForId } from './data/uiIconMap.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, costToText, canAfford, addCurrency, addXp } from './systems/economySystem.js';
 import { getObjectiveList, applyDerivedObjectives } from './systems/objectiveSystem.js';
@@ -31,6 +33,147 @@ const WORLD_BUILDING_LABELS = {
   towDispatch: 'Tow Dispatch',
   testTrack: 'Test Track'
 };
+
+const PRIMARY_NAV = [
+  { id: 'home', screen: 'hub', label: 'Home', activeScreens: ['hub', 'world'] },
+  { id: 'race', screen: 'race', label: 'Race', activeScreens: ['race'] },
+  { id: 'parts', screen: 'merge', label: 'Parts', activeScreens: ['merge'] },
+  { id: 'garage', screen: 'garage', label: 'Garage', activeScreens: ['garage', 'lines'] },
+  { id: 'menu', screen: 'profile', label: 'Menu', activeScreens: ['profile', 'creator'] }
+];
+
+function renderIconImage(src, label, className) {
+  return `<img class="${className}" src="${src}" alt="${label}" loading="eager" draggable="false">`;
+}
+
+function renderScreenIcon(screen) {
+  return renderIconImage(screenIconForId(screen.id), `${screen.label} icon`, 'tabIcon');
+}
+
+function renderPrimaryNavTab(tab) {
+  return `<button class="tab" data-action="screen" data-screen="${tab.screen}" data-nav-tab="${tab.id}" data-active-screens="${tab.activeScreens.join(',')}">${renderScreenIcon(tab)}<span>${tab.label}</span></button>`;
+}
+
+function panelIconSrc(icon) {
+  return UI_ICONS[icon] || screenIconForId(icon) || UI_ICONS.home;
+}
+
+function upgradeIconKey(def) {
+  const byKey = {
+    tapCrew: 'race',
+    idleDriver: 'tools',
+    routeScout: 'race',
+    fuelPlan: 'coin',
+    pitKit: 'tools',
+    supplierShelf: 'parts'
+  };
+  return byKey[def.key] || def.resource || 'tools';
+}
+
+function renderPanelHeader({ icon = 'home', title, subtitle = '', badge = '', heading = 'h3' }) {
+  const TitleTag = heading === 'h2' ? 'h2' : 'h3';
+  return `
+    <div class="gamePanelHeader">
+      <span class="gameIconBadge">${renderIconImage(panelIconSrc(icon), `${title} icon`, 'gameIconBadgeImg')}</span>
+      <div class="gamePanelTitle"><${TitleTag}>${title}</${TitleTag}>${subtitle ? `<p>${subtitle}</p>` : ''}</div>
+      ${badge ? `<span class="pill gamePanelBadge">${badge}</span>` : ''}
+    </div>
+  `;
+}
+
+function renderGamePanelComponent(component, { icon, title, subtitle, badge = '', body = '', className = '', heading = 'h3' }) {
+  return `
+    <section class="card gamePanel ${component} ${className}" data-component="${component}">
+      <div class="gamePanelField">
+        ${renderPanelHeader({ icon, title, subtitle, badge, heading })}
+        <div class="gamePanelBody">${body}</div>
+      </div>
+    </section>
+  `;
+}
+
+function GamePanel(options) {
+  return renderGamePanelComponent('GamePanel', options);
+}
+
+function RouteCard(options) {
+  return renderGamePanelComponent('RouteCard', options);
+}
+
+function GarageCard(options) {
+  return renderGamePanelComponent('GarageCard', options);
+}
+
+function ObjectiveCard(options) {
+  return renderGamePanelComponent('ObjectiveCard', options);
+}
+
+function ProblemAlert(options) {
+  return renderGamePanelComponent('ProblemAlert', options);
+}
+
+function RewardPanel(options) {
+  return renderGamePanelComponent('RewardPanel', options);
+}
+
+function renderRowComponent(component, { icon, title, subtitle = '', badge = '', body = '', action = '', className = '' }) {
+  return `
+    <article class="gameRowCard ${component} ${className}" data-component="${component}">
+      <span class="gameIconBadge">${renderIconImage(panelIconSrc(icon), `${title} icon`, 'gameIconBadgeImg')}</span>
+      <div class="gameRowMain">
+        <div class="gameRowHead"><div><h4>${title}</h4>${subtitle ? `<p>${subtitle}</p>` : ''}</div>${badge ? `<span class="pill gamePanelBadge">${badge}</span>` : ''}</div>
+        ${body}
+      </div>
+      ${action}
+    </article>
+  `;
+}
+
+function UpgradeCard(options) {
+  return renderRowComponent('UpgradeCard', options);
+}
+
+function meterPct(value, max = 100) {
+  const safeMax = Math.max(1, Number(max) || 1);
+  return Math.max(0, Math.min(100, (Number(value) || 0) / safeMax * 100));
+}
+
+function segmentedMeter({ value, max = 100, label = 'Progress', className = '', dangerHigh = false } = {}) {
+  const pct = meterPct(value, max);
+  const fills = Array.from({ length: 5 }, (_, index) => {
+    const start = index * 20;
+    return Math.max(0, Math.min(100, ((pct - start) / 20) * 100));
+  });
+  const danger = dangerHigh ? ' dangerHigh' : '';
+  return `
+    <div class="segMeter ${className}${danger}" role="meter" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}" style="--meter-pct:${pct}%">
+      ${fills.map((fill, index) => `<span class="segMeterCell seg${index + 1}"><i style="--seg-fill:${fill}%"></i></span>`).join('')}
+      <b class="segMeterNeedle" aria-hidden="true"></b>
+    </div>
+  `;
+}
+
+function renderCurrencyIcon(key, label) {
+  return renderIconImage(currencyIconForKey(key), `${label} icon`, 'curIcon');
+}
+
+function renderCurrencyCapsule(key, label) {
+  return `
+    <div class="cur resourceCapsule" data-resource="${key}">
+      ${renderCurrencyIcon(key, label)}
+      <div class="curCopy"><b id="cur-${key}">0</b><span>${label}</span></div>
+      <button class="curPlus" data-action="resourceShop" data-resource="${key}" aria-label="Open ${label} shop link" title="${label} shop">+</button>
+    </div>
+  `;
+}
+
+function renderChainIcon(key, label, className = 'chainIconAsset') {
+  return renderIconImage(chainIconForKey(key), `${label} icon`, className);
+}
+
+function renderChainLabel(key, chain) {
+  return `<span class="chainLabel">${renderChainIcon(key, chain.label, 'chainLabelIcon')}<span>${chain.label}</span></span>`;
+}
 
 applyInitialScreenParam();
 boot();
@@ -82,22 +225,30 @@ function renderShell() {
             <div class="brandLogo">365</div>
             <div class="brandText"><b>Micro Garage</b><span>Playable auto world · local save</span></div>
           </div>
-          <div class="stagePill" id="stagePill">Stage 1</div>
+          <div class="topActions">
+            <button class="screenControlButton" data-action="screenToggle" title="Toggle fullscreen">FS</button>
+          </div>
         </div>
-        <div class="currencyGrid">
-          <div class="cur"><b id="cur-coins">0</b><span>Coins</span></div>
-          <div class="cur"><b id="cur-parts">0</b><span>Parts</span></div>
-          <div class="cur"><b id="cur-tools">0</b><span>Tools</span></div>
-          <div class="cur"><b id="cur-scrap">0</b><span>Scrap</span></div>
-          <div class="cur"><b id="cur-tune">0</b><span>Tune</span></div>
-          <div class="cur"><b id="cur-rep">0</b><span>Rep</span></div>
+        <div class="walletRow">
+          <div class="currencyGrid">
+            ${renderCurrencyCapsule('coins', 'Coins')}
+            ${renderCurrencyCapsule('parts', 'Parts')}
+            ${renderCurrencyCapsule('tools', 'Tools')}
+            ${renderCurrencyCapsule('scrap', 'Scrap')}
+            ${renderCurrencyCapsule('tune', 'Tune')}
+            ${renderCurrencyCapsule('rep', 'Rep')}
+          </div>
+          <div class="stagePill" aria-label="Stage 1">
+            <span class="stageTrophy" aria-hidden="true"></span>
+            <span class="stageCopy"><small>Stage</small><b id="stagePillValue">1</b></span>
+          </div>
         </div>
       </header>
       <main class="screenHost">
         ${SCREENS.map((screen) => `<section class="screen" id="screen-${screen.id}"></section>`).join('')}
       </main>
       <nav class="bottomNav">
-        ${SCREENS.map((screen) => `<button class="tab" data-action="screen" data-screen="${screen.id}"><span class="tabIcon">${screen.icon}</span><span>${screen.label}</span></button>`).join('')}
+        ${PRIMARY_NAV.map(renderPrimaryNavTab).join('')}
       </nav>
     </div>
     <div class="toast" id="toast"></div>
@@ -110,34 +261,38 @@ function render() {
   updateTopBar();
   document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
   document.querySelector(`#screen-${state.activeScreen}`)?.classList.add('active');
-  document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.screen === state.activeScreen));
+  document.querySelectorAll('.tab').forEach((tab) => {
+    const activeScreens = (tab.dataset.activeScreens || tab.dataset.screen || '').split(',');
+    tab.classList.toggle('active', activeScreens.includes(state.activeScreen));
+  });
   renderActiveScreen();
 }
 
 function renderActiveScreen() {
   const el = document.querySelector(`#screen-${state.activeScreen}`);
   if (!el) return;
-  if (state.activeScreen === 'hub') el.innerHTML = renderHub();
+  if (state.activeScreen === 'hub') el.innerHTML = renderHubGamePanels();
   if (state.activeScreen === 'world') {
     if (!el.querySelector('.pixiWorldShell')) el.innerHTML = renderWorld();
   }
   if (state.activeScreen === 'race') {
     if (!el.querySelector('.roadRunnerShell')) {
-      el.innerHTML = renderRace();
+      el.innerHTML = renderRaceGamePanels();
       const host = el.querySelector('#raceCanvas');
       if (host) mountRaceCanvas(host).then(() => updateRaceCanvas(state));
     }
   }
   if (state.activeScreen === 'lines') el.innerHTML = renderLines();
-  if (state.activeScreen === 'merge') el.innerHTML = renderMerge();
-  if (state.activeScreen === 'garage') el.innerHTML = renderGarage();
-  if (state.activeScreen === 'profile') el.innerHTML = renderProfile();
+  if (state.activeScreen === 'merge') el.innerHTML = renderMergeGamePanels();
+  if (state.activeScreen === 'garage') el.innerHTML = renderGarageGamePanels();
+  if (state.activeScreen === 'profile') el.innerHTML = renderProfileGamePanels();
   if (state.activeScreen === 'creator') el.innerHTML = renderCreator();
 }
 
 function updateTopBar() {
   const c = state.currencies;
-  setText('stagePill', `Stage ${state.stage}`);
+  setText('stagePillValue', state.stage);
+  document.querySelector('.stagePill')?.setAttribute('aria-label', `Stage ${state.stage}`);
   ['coins', 'parts', 'tools', 'scrap', 'tune', 'rep'].forEach((key) => setText(`cur-${key}`, fmt(c[key])));
 }
 
@@ -187,6 +342,67 @@ function renderHub() {
       ${state.log.slice(0, 5).map((line) => `<div class="logLine">${line}</div>`).join('')}
     </section>
   `;
+}
+
+function renderHubGamePanels() {
+  const objectives = getObjectiveList(state);
+  const next = objectives.find((item) => !item.done);
+  const stats = getRaceStats(state);
+  const totals = getTotalIdlePerMinute(state);
+  const idleOutput = Object.entries(totals).length
+    ? Object.entries(totals).map(([key, value]) => `<div class="notice good"><b>${fmt(value)}</b><br>${key}/min</div>`).join('')
+    : `<div class="notice">Upgrade an idle line to begin output.</div>`;
+
+  return [
+    ObjectiveCard({
+      icon: 'home',
+      title: "Today's Goal",
+      subtitle: 'Clear objectives keep this feeling like a mobile idle game.',
+      badge: next ? 'Next' : 'Complete',
+      heading: 'h2',
+      body: next
+        ? `<div class="notice good"><b>${next.title}</b><br>${next.body}</div>`
+        : `<div class="notice good"><b>Objective set complete.</b><br>Continue building resources, upgrades, and routes.</div>`
+    }),
+    GamePanel({
+      icon: 'home',
+      title: 'Playable Auto World',
+      subtitle: 'Tap buildings, roads, repair shops, dealers, and roadside events.',
+      heading: 'h2',
+      body: `
+        <div class="grid2">
+          <button class="btn primary" data-action="screen" data-screen="world">Open World Map</button>
+          <button class="btn gold" data-action="screen" data-screen="lines">Upgrade Lines</button>
+          <button class="btn" data-action="screen" data-screen="garage">Auto Shop</button>
+          <button class="btn ghost" data-action="screen" data-screen="merge">Merge Parts</button>
+        </div>
+      `
+    }),
+    RewardPanel({
+      icon: 'coin',
+      title: 'Idle Output / Minute',
+      subtitle: 'Managers automate lines. Manual collect is required until then.',
+      body: `<div class="grid2">${idleOutput}</div>`
+    }),
+    RouteCard({
+      icon: 'race',
+      title: 'Route Status',
+      subtitle: `${RACE_MODES[state.race.mode].label} - ${RACE_MODES[state.race.mode].description}`,
+      badge: `${Math.floor(state.race.progress)}/${stats.mode.stageLength}m`,
+      body: `
+        ${meterLine('Progress', state.race.progress, stats.mode.stageLength, '')}
+        ${meterLine('Fuel', state.race.fuel, stats.fuelMax, state.race.fuel < 25 ? 'red' : 'yellow')}
+        ${meterLine('Condition', state.race.condition, stats.conditionMax, state.race.condition < 25 ? 'red' : '')}
+        ${meterLine('Heat', state.race.heat, 100, state.race.heat > 70 ? 'red' : 'yellow')}
+      `
+    }),
+    GamePanel({
+      icon: 'menu',
+      title: 'Activity Log',
+      subtitle: 'Short feedback only. Mobile games need fast readable feedback.',
+      body: state.log.slice(0, 5).map((line) => `<div class="logLine">${line}</div>`).join('')
+    })
+  ].join('');
 }
 
 function renderWorld() {
@@ -273,6 +489,56 @@ function renderRace() {
       <div class="cardTitle"><div><h3>Fast Upgrades</h3><p>These modify the race route. Main economy upgrades are in Lines.</p></div></div>
       ${UPGRADES.filter((u) => !['supplierShelf'].includes(u.key)).map(renderUpgrade).join('')}
     </section>
+  `;
+}
+
+function renderRaceGamePanels() {
+  const mode = RACE_MODES[state.race.mode];
+  const stats = getRaceStats(state);
+  const problem = state.race.problem ? PROBLEMS[state.race.problem] : null;
+  return `
+    ${RouteCard({
+      icon: 'race',
+      title: 'Idle Racing',
+      subtitle: 'The enemy is fuel, breakdowns, heat, traffic, and route cost.',
+      badge: mode.label,
+      heading: 'h2',
+      body: `
+        <div class="raceCanvas" id="raceCanvas"></div>
+        ${meterLine('Progress', state.race.progress, stats.mode.stageLength, '')}
+        ${meterLine('Fuel', state.race.fuel, stats.fuelMax, state.race.fuel < 25 ? 'red' : 'yellow')}
+        ${meterLine('Condition', state.race.condition, stats.conditionMax, state.race.condition < 25 ? 'red' : '')}
+        ${meterLine('Heat', state.race.heat, 100, state.race.heat > 70 ? 'red' : 'yellow')}
+        <button class="tapButton" data-action="tapRace">TAP RACE BOOST</button>
+      `
+    })}
+
+    ${problem ? renderProblem(problem) : RewardPanel({
+      icon: 'coin',
+      title: 'Route Clear',
+      subtitle: 'Tap for burst income or let idle systems continue.',
+      badge: 'Ready',
+      body: `<div class="notice good"><b>No active hazard.</b><br>Keep the route running and collect steady rewards.</div>`
+    })}
+
+    ${RouteCard({
+      icon: 'race',
+      title: 'Route Modes',
+      subtitle: '2D idle modes only. No real-time PVP.',
+      body: `
+        <div class="modeChips">
+          ${Object.entries(RACE_MODES).map(([key, m]) => `<button class="chip ${key === state.race.mode ? 'active' : ''}" data-action="raceMode" data-mode="${key}">${m.icon} ${m.label}</button>`).join('')}
+        </div>
+      `
+    })}
+
+    ${GamePanel({
+      icon: 'tune',
+      title: 'Fast Upgrades',
+      subtitle: 'These modify the race route. Main economy upgrades are in Lines.',
+      className: 'upgradePanelStack',
+      body: UPGRADES.filter((u) => !['supplierShelf'].includes(u.key)).map(renderUpgrade).join('')
+    })}
   `;
 }
 
@@ -375,7 +641,6 @@ function getLineRequirementInfo(line) {
 
 function renderLineRequirement(line) {
   const req = getLineRequirementInfo(line);
-  const pct = Math.max(0, Math.min(100, (req.current / Math.max(1, req.required)) * 100));
   const action = !req.met && req.actionScreen
     ? `<button class="btn small ghost" data-action="screen" data-screen="${req.actionScreen}">Go</button>`
     : '';
@@ -387,7 +652,7 @@ function renderLineRequirement(line) {
       </div>
       <strong>${req.detail}</strong>
       ${action}
-      <div class="lineRequirementMeter"><span style="width:${pct}%"></span></div>
+      ${segmentedMeter({ value: req.current, max: req.required, label: `${req.label} unlock progress`, className: 'lineRequirementMeter' })}
     </div>
   `;
 }
@@ -409,7 +674,6 @@ function renderManagerRequirement(line, level, managerOwned, managerCost, autoEn
   }
 
   const managerReady = level >= line.manager.unlockLevel;
-  const pct = Math.max(0, Math.min(100, (level / line.manager.unlockLevel) * 100));
   return `
     <div class="lineManagerNeed">
       <div class="lineRequirement ${managerReady ? 'met' : 'open'}">
@@ -418,7 +682,7 @@ function renderManagerRequirement(line, level, managerOwned, managerCost, autoEn
           <span>${line.manager.name} unlocks at Lv ${line.manager.unlockLevel}</span>
         </div>
         <strong>Lv ${level}/${line.manager.unlockLevel}</strong>
-        <div class="lineRequirementMeter"><span style="width:${pct}%"></span></div>
+        ${segmentedMeter({ value: level, max: line.manager.unlockLevel, label: `${line.manager.name} unlock progress`, className: 'lineRequirementMeter' })}
       </div>
       <button class="btn small" data-action="buyManager" data-line="${line.key}" ${managerReady && canAfford(state, managerCost) ? '' : 'disabled'}>
         <img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.hireManagerButton}" alt="" loading="eager">
@@ -433,7 +697,6 @@ function renderLineCard(line) {
   const unlocked = isLineUnlocked(state, line);
   const level = current.level;
   const cycleMs = getLineCycleMs(state, line);
-  const pct = level > 0 ? Math.max(0, Math.min(100, (current.cycle / cycleMs) * 100)) : 0;
   const income = getLineIncome(state, line);
   const upgradeCost = getLineUpgradeCost(state, line);
   const managerCost = getManagerCost(state, line);
@@ -476,7 +739,7 @@ function renderLineCard(line) {
         <div><b>${(cycleMs / 1000).toFixed(1)}s</b><span>Cycle</span></div>
         <div><b>${fmt(current.collected)}</b><span>Collects</span></div>
       </div>
-      <div class="lineProgress"><div style="width:${pct}%"></div></div>
+      ${segmentedMeter({ value: current.cycle, max: cycleMs, label: `${line.name} cycle progress`, className: 'lineProgress' })}
       <div class="lineButtons">
         <button class="btn small ${collectReady ? 'gold' : 'ghost'}" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.collectButton}" alt="" loading="eager"><span>${managerOwned && autoEnabled ? 'Auto Running' : 'Collect'}</span></button>
         <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}" ${canAfford(state, upgradeCost) ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.upgradeButton}" alt="" loading="eager"><span>Upgrade<br><small>${costToText(upgradeCost)}</small></span></button>
@@ -490,16 +753,18 @@ function renderLineCard(line) {
 }
 
 function renderProblem(problem) {
-  return `
-    <section class="card problemCard">
-      <div class="cardTitle">
-        <div><h3>${problem.icon} ${problem.label}</h3><p>${problem.description}</p></div>
-      </div>
+  return ProblemAlert({
+    icon: 'tools',
+    title: problem.label,
+    subtitle: problem.description,
+    badge: 'Alert',
+    className: 'problemCard',
+    body: `
       <div class="grid2">
         ${problem.fixes.map((fix, index) => `<button class="btn red" data-action="fixProblem" data-fix="${index}">${fix.label}<br><small>${fix.amount} ${fix.resource}</small></button>`).join('')}
       </div>
-    </section>
-  `;
+    `
+  });
 }
 
 function renderMerge() {
@@ -537,6 +802,47 @@ function renderMerge() {
   `;
 }
 
+function renderMergeGamePanels() {
+  normalizeMergeState(state);
+  const active = activeBoardCount(state);
+  const limit = boardLimit(state);
+  return [
+    RewardPanel({
+      icon: 'parts',
+      title: 'Merge Bay',
+      subtitle: 'Supplier drops Level 1 only. Every higher item must be earned by merging.',
+      badge: `${active}/${limit} permit`,
+      heading: 'h2',
+      className: 'mergeBayPanel',
+      body: `
+        <div class="notice">Next supplier item in <b>${Math.ceil(state.merge.supplierTimer)}s</b>. Shelf capacity: ${shelfCapacity(state)}.</div>
+        <div class="shelf" style="margin-top:8px;">
+          ${state.merge.supplierSlots.map((item, index) => renderShelfSlot(item, index)).join('')}
+        </div>
+        <div class="grid3" style="margin-top:8px;">
+          <button class="btn small primary" data-action="placeAll">Place All</button>
+          <button class="btn small" data-action="autoMerge">Auto Merge</button>
+          <button class="btn small red" data-action="sellSelected">Sell Selected</button>
+        </div>
+      `
+    }),
+    GamePanel({
+      icon: 'parts',
+      title: 'Merge Board',
+      subtitle: 'Tap one item, then tap a matching level item to merge.',
+      className: 'mergeBoardPanel',
+      body: `<div class="board">${state.merge.board.map((item, index) => renderBoardCell(item, index)).join('')}</div>`
+    }),
+    GamePanel({
+      icon: 'tools',
+      title: 'Merge Recipes',
+      subtitle: 'Two matching items combine into the next item. Locked sets show the exact requirement.',
+      className: 'mergeGuideCard',
+      body: Object.entries(CHAINS).map(([key, chain]) => renderMergeChainGuide(key, chain)).join('')
+    })
+  ].join('');
+}
+
 function renderShelfSlot(item, index) {
   if (!item) return `<button class="shelfSlot"><span class="emptyText">Empty<br>slot</span></button>`;
   return `<button class="shelfSlot ready" data-action="placeShelf" data-index="${index}">${renderItem(item)}</button>`;
@@ -554,16 +860,16 @@ function renderItem(item) {
   const asset = mergeAssetForName(name);
   const icon = asset
     ? `<img class="mergeItemArt" src="${asset}" alt="${name}" draggable="false">`
-    : chain.icon;
+    : renderChainIcon(item.chain, chain.label, 'mergeItemArt chainFallbackArt');
   return `<div><span class="lvl">L${item.level}</span><div class="itemIcon">${icon}</div><div class="itemName">${name}</div><span class="chainTag">${chain.short}</span></div>`;
 }
 
-function renderMergeChainPreview(chain, unlocked) {
+function renderMergeChainPreview(key, chain, unlocked) {
   const preview = chain.items.slice(0, 4).map((name) => {
     const asset = mergeAssetForName(name);
     return asset
       ? `<span class="mergeChainAsset"><img class="mergeItemArt" src="${asset}" alt="${name}" loading="eager" draggable="false"></span>`
-      : `<span class="mergeChainAsset">${chain.icon}</span>`;
+      : `<span class="mergeChainAsset">${renderChainIcon(key, chain.label, 'mergeItemArt chainFallbackArt')}</span>`;
   }).join('');
   return `<div class="mergeChainPreview ${unlocked ? '' : 'locked'}" aria-label="${chain.label} asset preview">${preview}</div>`;
 }
@@ -595,11 +901,11 @@ function renderMergeChainGuide(key, chain) {
     return `
       <div class="mergeRecipe locked">
         <div class="mergeRecipeHead">
-          <div><b>${chain.icon} ${chain.label}</b><span>${chain.description}</span></div>
+          <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
           <span class="pill">Locked</span>
         </div>
         <div class="notice">Requirement: ${req.text}</div>
-        ${renderMergeChainPreview(chain, false)}
+        ${renderMergeChainPreview(key, chain, false)}
         ${req.actionScreen ? `<button class="btn small gold mergeRecipeAction" data-action="screen" data-screen="${req.actionScreen}">Open Build Requirements</button>` : ''}
       </div>
     `;
@@ -608,23 +914,23 @@ function renderMergeChainGuide(key, chain) {
   return `
     <div class="mergeRecipe good">
       <div class="mergeRecipeHead">
-        <div><b>${chain.icon} ${chain.label}</b><span>${chain.description}</span></div>
+        <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
         <span class="pill">Unlocked</span>
       </div>
       <div class="mergeRecipeRule">Recipe rule: <b>2 matching items</b> make the next level.</div>
       <div class="mergeChainLadder" aria-label="${chain.label} merge progression">
-        ${chain.items.map((name, index) => renderMergeChainStep(chain, name, index)).join('')}
+        ${chain.items.map((name, index) => renderMergeChainStep(key, chain, name, index)).join('')}
       </div>
     </div>
   `;
 }
 
-function renderMergeChainStep(chain, name, index) {
+function renderMergeChainStep(key, chain, name, index) {
   const asset = mergeAssetForName(name);
   const next = chain.items[index + 1];
   const art = asset
     ? `<img class="mergeItemArt" src="${asset}" alt="${name}" loading="eager" draggable="false">`
-    : `<span>${chain.icon}</span>`;
+    : renderChainIcon(key, chain.label, 'mergeItemArt chainFallbackArt');
   return `
     <div class="mergeChainStep">
       <div class="mergeChainLevel">L${index + 1}</div>
@@ -637,16 +943,26 @@ function renderMergeChainStep(chain, name, index) {
 
 function renderGarage() {
   const buildComm = publishBuildCommunicationState(state);
+  const buildPct = Math.round((buildComm.builtCount / Math.max(1, buildComm.totalSystems)) * 100);
   return `
-    <section class="card buildHubCard">
-      <div class="cardTitle">
-        <div><h2>Build Hub</h2><p>Build systems, World placements, and Lines now share one communication snapshot.</p></div>
+    <section class="card buildHubCard buildCommandCenter">
+      <div class="buildCommandHero">
+        <div class="buildCommandIcon" aria-hidden="true"><b>365</b><span>Build</span></div>
+        <div class="buildCommandCopy">
+          <span>365 Construction</span>
+          <h2>Build Hub</h2>
+          <p>Upgrade rooms, feed World inventory, and unlock Lines from one control board.</p>
+        </div>
         <span class="pill buildSyncBadge">Live Sync</span>
       </div>
       <div class="buildAssetPreload" aria-hidden="true">
         ${BUILD_ASSET_LIST.map((item) => `<img class="buildAssetPreloadImage" data-build-asset="${item.category}:${item.key}" src="${item.src}" alt="" loading="eager">`).join('')}
       </div>
-      <div class="buildHubButtons">
+      <div class="buildCommandProgress">
+        <div><b>${buildPct}%</b><span>Systems online</span></div>
+        ${segmentedMeter({ value: buildPct, max: 100, label: 'Garage systems online', className: 'buildEfficiencyMeter' })}
+      </div>
+      <div class="buildHubButtons buildCommandActions">
         <button class="btn gold" data-action="screen" data-screen="garage"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.buildMode}" alt="" loading="eager"><span>Build</span></button>
         <button class="btn primary" data-action="screen" data-screen="world"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.worldSync}" alt="" loading="eager"><span>World</span></button>
         <button class="btn" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Lines</span></button>
@@ -658,15 +974,15 @@ function renderGarage() {
       </div>
     </section>
 
-    <section class="card">
-      <div class="cardTitle"><div><h2>365 Auto Shop Floor</h2><p>Each room links to a Line and adds World inventory when its Build system exists.</p></div><span class="pill">Build View</span></div>
+    <section class="card buildFloorCard">
+      <div class="cardTitle"><div><h2>365 Auto Shop Floor</h2><p>Each room links to a Line and adds World inventory when its Build system exists.</p></div><span class="pill">Room Map</span></div>
       <div class="shopFloor">
         ${AUTO_SHOP_ROOMS.map(renderShopRoom).join('')}
       </div>
     </section>
 
-    <section class="card">
-      <div class="cardTitle"><div><h2>Build Garage Systems</h2><p>Buildings unlock mechanics and city inventory. They are not just cosmetics.</p></div></div>
+    <section class="card buildSystemsCard">
+      <div class="cardTitle"><div><h2>Garage Systems</h2><p>Buildings unlock mechanics, city inventory, resident support, and line requirements.</p></div><span class="pill">${buildPct}% online</span></div>
       ${BUILDINGS.map(renderBuilding).join('')}
     </section>
     <section class="card">
@@ -674,6 +990,65 @@ function renderGarage() {
       ${UPGRADES.filter((u) => u.key === 'supplierShelf').map(renderUpgrade).join('')}
     </section>
   `;
+}
+
+function renderGarageGamePanels() {
+  const buildComm = publishBuildCommunicationState(state);
+  const buildPct = Math.round((buildComm.builtCount / Math.max(1, buildComm.totalSystems)) * 100);
+  return [
+    GarageCard({
+      icon: 'garage',
+      title: 'Build Hub',
+      subtitle: 'Upgrade rooms, feed World inventory, and unlock Lines from one control board.',
+      badge: 'Live Sync',
+      heading: 'h2',
+      className: 'buildHubCard buildCommandCenter',
+      body: `
+        <div class="buildAssetPreload" aria-hidden="true">
+          ${BUILD_ASSET_LIST.map((item) => `<img class="buildAssetPreloadImage" data-build-asset="${item.category}:${item.key}" src="${item.src}" alt="" loading="eager">`).join('')}
+        </div>
+        <div class="buildCommandProgress">
+          <div><b>${buildPct}%</b><span>Systems online</span></div>
+          ${segmentedMeter({ value: buildPct, max: 100, label: 'Garage systems online', className: 'buildEfficiencyMeter' })}
+        </div>
+        <div class="buildHubButtons buildCommandActions">
+          <button class="btn gold" data-action="screen" data-screen="garage"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.buildMode}" alt="" loading="eager"><span>Build</span></button>
+          <button class="btn primary" data-action="screen" data-screen="world"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.worldSync}" alt="" loading="eager"><span>World</span></button>
+          <button class="btn" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Lines</span></button>
+        </div>
+        <div class="buildBridgeGrid">
+          ${renderBuildHubStat(`${buildComm.builtCount}/${buildComm.totalSystems}`, 'Systems Built')}
+          ${renderBuildHubStat(`+${buildComm.totalWorldInventory}`, 'World Placements')}
+          ${renderBuildHubStat(`${buildComm.unlockedLineCount}/${buildComm.totalLineCount}`, 'Linked Lines')}
+        </div>
+      `
+    }),
+    GarageCard({
+      icon: 'garage',
+      title: '365 Auto Shop Floor',
+      subtitle: 'Each room links to a Line and adds World inventory when its Build system exists.',
+      badge: 'Room Map',
+      heading: 'h2',
+      className: 'buildFloorCard',
+      body: `<div class="shopFloor">${AUTO_SHOP_ROOMS.map(renderShopRoom).join('')}</div>`
+    }),
+    GarageCard({
+      icon: 'tools',
+      title: 'Garage Systems',
+      subtitle: 'Buildings unlock mechanics, city inventory, resident support, and line requirements.',
+      badge: `${buildPct}% online`,
+      heading: 'h2',
+      className: 'buildSystemsCard',
+      body: BUILDINGS.map(renderBuilding).join('')
+    }),
+    GamePanel({
+      icon: 'parts',
+      title: 'Supplier / Merge Upgrades',
+      subtitle: 'These support the merge board instead of replacing it.',
+      className: 'supplierUpgradePanel',
+      body: UPGRADES.filter((u) => u.key === 'supplierShelf').map(renderUpgrade).join('')
+    })
+  ].join('');
 }
 
 function renderBuildHubStat(value, label) {
@@ -708,19 +1083,22 @@ function renderShopRoom(room) {
   const manager = line ? hasManager(state, line.key) : false;
   const lockedText = room.buildingKey ? `Build ${BUILDINGS.find((item) => item.key === room.buildingKey)?.name || 'required system'} to open.` : 'Open from start.';
   const roomAsset = buildRoomAssetForKey(room.key) || room.asset;
+  const roomStatus = unlocked ? (manager ? 'Auto' : 'Manual') : 'Locked';
 
   return `
-    <article class="shopRoom ${unlocked ? '' : 'lockedRoom'}" data-build-room="${room.key}">
+    <article class="shopRoom GarageCard ${unlocked ? '' : 'lockedRoom'}" data-component="GarageCard" data-build-room="${room.key}">
       <div class="roomArtWrap">
         <img class="roomArt buildAssetImage" src="${roomAsset}" alt="${room.name}" loading="eager">
+        <span class="roomLevelBadge">${unlocked ? `Lv ${level}` : 'Locked'}</span>
+        <span class="roomStatusBadge">${roomStatus}</span>
       </div>
       <div class="roomInfo">
-        <div class="roomHead"><h3>${room.icon} ${room.name}</h3><span class="pill">${unlocked ? `Lv ${level}` : 'Locked'}</span></div>
+        <div class="roomHead"><h3>${room.icon} ${room.name}</h3><span class="pill">${line ? line.outputLabel : 'Room'}</span></div>
         <p>${unlocked ? room.description : lockedText}</p>
-        <div class="roomProgress"><div style="width:${progress}%"></div></div>
+        ${segmentedMeter({ value: progress, max: 100, label: `${room.name} room progress`, className: 'roomProgress' })}
         <div class="roomMeta">
           <span>${line ? `${fmt(income)} ${line.outputLabel}` : 'No line'}</span>
-          <span>${manager ? 'Manager Active' : 'Manual'}</span>
+          <span>${roomStatus}</span>
         </div>
         <div class="roomSyncRow">${renderBuildWorldChips(system?.worldInventory)}</div>
         <div class="roomActions">
@@ -738,13 +1116,15 @@ function renderShopRoom(room) {
 function renderUpgrade(def) {
   const level = state.upgrades[def.key] || 0;
   const cost = upgradeCost(state, def);
-  return `
-    <div class="upgrade">
-      <div class="upIcon">${def.icon}</div>
-      <div><h4>${def.name} <span class="pill">Lv ${level}</span></h4><p>${def.description}</p><div class="cost">Cost: ${costToText(cost)}</div></div>
-      <button class="btn small primary" data-action="upgrade" data-key="${def.key}" ${canAfford(state, cost) ? '' : 'disabled'}>Buy</button>
-    </div>
-  `;
+  return UpgradeCard({
+    icon: upgradeIconKey(def),
+    title: def.name,
+    subtitle: def.description,
+    badge: `Lv ${level}`,
+    className: 'upgrade',
+    body: `<div class="cost">Cost: ${costToText(cost)}</div>`,
+    action: `<button class="btn small primary" data-action="upgrade" data-key="${def.key}" ${canAfford(state, cost) ? '' : 'disabled'}>Buy</button>`
+  });
 }
 
 function renderBuilding(building) {
@@ -753,14 +1133,16 @@ function renderBuilding(building) {
   const connection = connectionForBuilding(building.key);
   const system = connection ? getBuildCommunicationState(state).systems.find((item) => item.key === connection.key) : null;
   const asset = buildSystemAssetForKey(building.key);
+  const pct = Math.round((level / Math.max(1, building.max)) * 100);
   return `
-    <div class="building" data-build-system="${building.key}">
+    <article class="building buildSystemCard GarageCard" data-component="GarageCard" data-build-system="${building.key}">
       <img class="buildSystemAsset buildAssetImage" src="${asset}" alt="${building.name}" loading="eager">
       <div class="buildingMain">
         <div class="buildingHeader">
           <div><h4>${building.name}</h4><p>${building.description}</p></div>
           <span class="pill">Lv ${level}/${building.max}</span>
         </div>
+        ${segmentedMeter({ value: pct, max: 100, label: `${building.name} upgrade progress`, className: 'buildSystemMeter' })}
         <p><b>Unlocks:</b> ${building.unlocks}</p>
         <div class="buildCommMeta">
           <div class="roomSyncRow">${renderBuildWorldChips(system?.worldInventory)}</div>
@@ -773,7 +1155,7 @@ function renderBuilding(building) {
           <button class="btn small gold" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Lines</span></button>
         </div>
       </div>
-    </div>
+    </article>
   `;
 }
 
@@ -793,6 +1175,17 @@ function renderProfile() {
       </div>
     </section>
 
+    <section class="card menuHubCard">
+      <div class="cardTitle"><div><h3>Menu</h3><p>Secondary screens live here so the main nav stays player-focused.</p></div><span class="pill">Profile + Tools</span></div>
+      <div class="grid2">
+        <button class="btn primary" data-action="screen" data-screen="world">World Map</button>
+        <button class="btn gold" data-action="screen" data-screen="lines">Lines</button>
+        <button class="btn" data-action="screen" data-screen="creator">Creator Tools</button>
+        <button class="btn ghost" data-action="screen" data-screen="hub">Back Home</button>
+      </div>
+      <div class="notice">Creator Tools are tucked here for dev/design work instead of living in the player-facing bottom nav.</div>
+    </section>
+
     <section class="card">
       <div class="cardTitle"><div><h3>Objective Checklist</h3><p>The player always needs a clear reason to continue.</p></div></div>
       ${objectives.map((o) => `<div class="objective"><div class="checkIcon">${o.done ? '✅' : '⬜'}</div><div><h4>${o.title}</h4><p>${o.body}</p></div><span class="pill">${o.done ? 'Done' : 'Open'}</span></div>`).join('')}
@@ -802,6 +1195,59 @@ function renderProfile() {
       <button class="btn red" data-action="reset">Reset Local Save</button>
     </section>
   `;
+}
+
+function renderProfileGamePanels() {
+  const objectives = getObjectiveList(state);
+  const garageValue = Math.round(state.currencies.coins + state.stage * 100 + state.merge.totalMerges * 18 + Object.values(state.buildings).reduce((a, b) => a + b, 0) * 500 + state.idleLines.lifetimeCollections * 12);
+  return [
+    GamePanel({
+      icon: 'profile',
+      title: state.playerName,
+      subtitle: 'Local-only profile. Git repo stage. No Supabase yet.',
+      badge: `Lv ${state.level}`,
+      heading: 'h2',
+      className: 'profilePanel',
+      body: `
+        ${meterLine('XP', state.xp, state.level * 80, '')}
+        <div class="grid2">
+          <div class="notice good"><b>${fmt(garageValue)}</b><br>Garage Value</div>
+          <div class="notice good"><b>${fmt(state.race.lifetimeMeters)}</b><br>Lifetime Meters</div>
+          <div class="notice"><b>${state.merge.totalMerges}</b><br>Total Merges</div>
+          <div class="notice"><b>${fmt(state.idleLines.lifetimeCollections)}</b><br>Line Collects</div>
+        </div>
+      `
+    }),
+    GamePanel({
+      icon: 'menu',
+      title: 'Menu',
+      subtitle: 'Secondary screens live here so the main nav stays player-focused.',
+      badge: 'Profile + Tools',
+      className: 'menuHubCard',
+      body: `
+        <div class="grid2">
+          <button class="btn primary" data-action="screen" data-screen="world">World Map</button>
+          <button class="btn gold" data-action="screen" data-screen="lines">Lines</button>
+          <button class="btn" data-action="screen" data-screen="creator">Creator Tools</button>
+          <button class="btn ghost" data-action="screen" data-screen="hub">Back Home</button>
+        </div>
+        <div class="notice">Creator Tools are tucked here for dev/design work instead of living in the player-facing bottom nav.</div>
+      `
+    }),
+    ObjectiveCard({
+      icon: 'home',
+      title: 'Objective Checklist',
+      subtitle: 'The player always needs a clear reason to continue.',
+      body: objectives.map((o) => `<div class="objective"><div class="checkIcon">${o.done ? 'âœ…' : 'â¬œ'}</div><div><h4>${o.title}</h4><p>${o.body}</p></div><span class="pill">${o.done ? 'Done' : 'Open'}</span></div>`).join('')
+    }),
+    ProblemAlert({
+      icon: 'tools',
+      title: 'Reset Local Save',
+      subtitle: 'Use carefully. This clears the local test profile.',
+      badge: 'Danger',
+      body: `<button class="btn red" data-action="reset">Reset Local Save</button>`
+    })
+  ].join('');
 }
 
 function renderCreator() {
@@ -823,8 +1269,9 @@ function renderCreator() {
 }
 
 function meterLine(label, value, max, tone) {
-  const pct = Math.max(0, Math.min(100, (value / max) * 100));
-  return `<div class="statLine"><span>${label}</span><div class="meter"><div class="fill ${tone}" style="width:${pct}%"></div></div><strong>${Math.floor(value)}</strong></div>`;
+  const normalizedLabel = String(label || '').toLowerCase();
+  const dangerHigh = tone === 'dangerHigh' || normalizedLabel.includes('heat') || normalizedLabel.includes('wear');
+  return `<div class="statLine meterStatLine" data-meter-kind="${normalizedLabel}"><span>${label}</span>${segmentedMeter({ value, max, label, className: 'statMeter', dangerHigh })}<strong>${Math.floor(value)}</strong></div>`;
 }
 
 function handleClick(event) {
@@ -832,6 +1279,17 @@ function handleClick(event) {
   if (!target) return;
   const action = target.dataset.action;
   let result = null;
+
+  if (action === 'screenToggle') {
+    window.toggleGameFullscreen?.();
+    return;
+  }
+
+  if (action === 'resourceShop') {
+    const label = target.dataset.resource || 'resource';
+    toast(`${label[0].toUpperCase()}${label.slice(1)} shop link is ready for a future store hook.`);
+    return;
+  }
 
   if (action === 'screen') {
     state.activeScreen = target.dataset.screen;

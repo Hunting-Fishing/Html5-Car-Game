@@ -234,3 +234,100 @@ Follow-up prompt: Improve the resident selected-window GUI/UX with a tabbed layo
 - Browser probe verified all four tabs, the problem support sub-menu, no body scroll, and stable resident state updates.
 - Visual QA screenshots were reviewed for Mood, Fix, City, and People tabs.
 - Ran `npm run build`, `git diff --check`, and the standard web-game client against `?screen=world`; all passed.
+
+Follow-up prompt: Improve the Race and Build GUI/UX using Clash of Clans, Need for Speed: No Limits, and Hill Climb Racing references.
+
+- Reviewed the reference pages for mobile construction overlays, car/status menus, route/event maps, progress cards, and in-game race HUD patterns.
+- Added a compact Race command card above the live road-runner screen showing selected vehicle, active route/ghost mode, top-speed estimate, best distance, garage completion, next mission, and next route unlock.
+- Reworked the Race tab rail into two-line game buttons so Drive, Garage, Vehicles, Routes, and Missions read as a proper mobile racer navigation strip.
+- Added a keyed Race command refresh so route, vehicle, ghost, mission, best-distance, and upgrade changes update without rebuilding the drive canvas.
+- Rebuilt the Build top card into a construction dashboard with Build/World/Lines actions, systems-online progress, rooms open, world placements, linked lines, line power, and tool bank.
+- Added visible room level/status badges and system progress meters using the existing Build asset folder.
+- Browser probes verified Race has no body or Race-screen scroll, the drive frame keeps usable height, Build dashboard/room/system elements render, and no new console errors appeared.
+- Visual QA screenshots were reviewed for Race and Build: `output/race-build-ui-race.png` and `output/race-build-ui-build.png`.
+- Ran `npm run build`, `git diff --check`, and the standard web-game client against `?screen=race` and `?screen=garage`; all passed, with only existing LF/CRLF and chunk-size warnings.
+
+Follow-up prompt: Race and Build UI still not handling properly; add more control over UI/screen and find packages.
+
+- Added `@juggle/resize-observer` for measured screen/layout control and `screenfull` for safe app-shell fullscreen toggling.
+- Added `screenControlRuntime.js`, which observes the app shell and active screen, publishes `window.__uiScreenState`, sets compact/tiny/short/fullscreen classes, and exposes `window.toggleGameFullscreen()`.
+- Added a small `FS` top-bar control wired to the new fullscreen runtime.
+- Removed visible large command-strip art from Race and Build; Race now uses a small vehicle class badge and Build uses a fixed 365 Build chip.
+- Hard-clamped Race command height to 64px/56px/48px by screen state and protected the playfield with a fixed command row plus tab row.
+- Hard-clamped Build command card to a measured max height and trimmed the top dashboard to three honest stats so no hidden second stat row gets clipped.
+- Browser probes verified the reported problem sizes: Race command 64px, Race frame 698-747px, Build icon 48px, Build command 227px, no body scroll, no Race screen scroll, and no giant command images.
+- Visual QA screenshots were reviewed for narrow and wide Race/Build: `output/screen-control-race-narrow.png`, `output/screen-control-race-wide.png`, `output/screen-control-build-narrow.png`, and `output/screen-control-build-wide.png`.
+- Ran `npm run build`, `git diff --check`, and the standard web-game client against Race and Build; all passed, with only existing LF/CRLF and chunk-size warnings.
+
+Follow-up prompt: Replace emoji icons in the bottom nav, resource counters, and Merge chain UI with real asset icons.
+
+- Created real PNG UI icon assets under `public/assets/ui/icons` for home, race, parts, garage, profile, coin, tools, scrap, tune, and rep.
+- Added `src/data/uiIconMap.js` so screens, currencies, and Merge chain families resolve through one asset map instead of inline emoji.
+- Updated the shell header resource counters and bottom navigation to render `<img>` icons from `/assets/ui/icons`.
+- Updated Merge item fallbacks, chain previews, recipe headers, and chain steps to use asset icons when item art is not available.
+- Added fixed image sizing for `.tabIcon`, `.curIcon`, and Merge chain labels so the new assets do not inherit old emoji font sizing.
+- Browser DOM probe verified all bottom-nav, wallet, and Merge chain label icons load as real 128x128 PNG images with no emoji text left in the targeted icon slots.
+- Visual QA screenshots were reviewed for `output/ui-icons-hub.png`, `output/ui-icons-merge.png`, and `output/ui-icons-standard-merge/shot-0.png`.
+- Ran `npm run build`, `git diff --check`, and the standard web-game client against `?screen=merge`; all passed, with only existing LF/CRLF and chunk-size warnings.
+
+Follow-up prompt: Redesign the top HUD to feel more like the route menu mockup.
+
+- Reworked the top shell HUD into a stronger mobile-game command bar: glossy larger 365 badge on the brand row, resource wallet row beneath it, and the stage indicator moved into the wallet row.
+- Converted the stage pill into a gold trophy-style badge with a CSS trophy mark and live stage value.
+- Converted the six currency cells into rounded blue resource capsules with asset icon, value, label, and a tiny plus button for future store/monetization hooks.
+- Added a placeholder `resourceShop` click action so plus buttons currently show a non-destructive future-shop toast.
+- Updated the stronger `mobileGameSkin.css` layer and the short Road Runner override so the new HUD does not regress compact race layouts.
+- Browser probes verified 6 plus buttons, loaded resource icons, live stage value, no body scroll, and working plus-button toast at 390x844, 360x720, and Race 390x844.
+- Visual QA screenshots were reviewed for `output/top-hud-hub-390.png`, `output/top-hud-hub-360.png`, `output/top-hud-race-390.png`, and `output/top-hud-standard/shot-0.png`.
+- Ran `npm run build`, `git diff --check`, and the standard web-game client against `?screen=hub`; all passed, with only existing LF/CRLF and chunk-size warnings.
+
+Follow-up prompt: Reduce the bottom navigation to 5 main mobile-game tabs and move Creator into Menu/Profile.
+
+- Added a dedicated `PRIMARY_NAV` model so the bottom nav no longer renders every screen from `SCREENS`.
+- Bottom nav now shows exactly five tabs: Home, Race, Parts, Garage, and Menu.
+- Kept secondary screens routeable but nested them under primary tabs: World stays under Home, Lines stays under Garage, and Creator stays under Menu.
+- Added a real `public/assets/ui/icons/menu.png` asset and mapped Menu/Creator to it.
+- Updated Parts/Merge nav mapping to use the parts asset instead of the old tools fallback.
+- Added a Menu card inside Profile with World Map, Lines, Creator Tools, and Back Home actions so Creator is accessible without being a primary player tab.
+- Browser probes verified 5 loaded tab icons, no old World/Lines/Creator/Profile/Build/Merge/Hub primary tab labels, correct active tab grouping for World/Lines/Profile/Creator, and Creator opening from Menu.
+- Visual QA screenshots were reviewed for `output/bottom-nav-hub-final.png`, `output/bottom-nav-profile-final.png`, `output/bottom-nav-creator-final.png`, and `output/bottom-nav-standard/shot-0.png`.
+- Ran `npm run build`, `git diff --check`, and the standard web-game client against `?screen=profile`; all passed, with only existing LF/CRLF and chunk-size warnings.
+
+Follow-up prompt: Replace generic CSS cards with reusable game-card components.
+
+- Added reusable HTML render helpers for `GamePanel`, `RouteCard`, `GarageCard`, `UpgradeCard`, `ObjectiveCard`, `ProblemAlert`, and `RewardPanel`.
+- Converted Hub, Race fallback content, Merge, Garage/Build, and Profile/Menu screens away from generic `<section class="card">` output and into component-specific panels with `data-component` hooks.
+- Reworked upgrade rows, shop rooms, and building system rows to use card component classes while preserving their existing click actions and data attributes.
+- Added a shared visual language in `src/styles.css`: bright blue frames, dark navy content fields, gold corner caps, icon badges, bold titles, and chunky green/orange/red CTA buttons.
+- Added stronger runtime CSS overrides in `public/mobileGameSkin.css` so the game-card treatment wins over the broad legacy `.card` skin.
+- Hooked the Road Runner runtime Race command shell into the component system with `GamePanel`/`RouteCard` markers and a real race icon badge without disrupting the live drive canvas.
+- Browser probes verified expected components on Hub, Race, Parts/Merge, Garage, and Menu/Profile, confirmed all component icons loaded, and captured `output/game-panels-*.png` screenshots.
+- Ran the standard web-game client against `?screen=race`; the Road Runner runtime stayed active and reported valid runtime state.
+
+Follow-up prompt: Rebuild the meter system as cartoon segmented meters.
+
+- Added a reusable `segmentedMeter` renderer with five chunky red, orange, yellow, lime, and green segments plus a small pointer.
+- Replaced the old single-fill `meterLine` output for route progress, fuel, condition, heat, and XP.
+- Added a danger-high meter mode so heat and wear still communicate risk correctly while sharing the same segmented meter language.
+- Converted Lines unlock requirements, manager unlock requirements, and line cycle/card progress to segmented meters.
+- Converted Garage systems-online efficiency, room progress, and building upgrade progress to segmented meters.
+- Rebuilt the live Road Runner canvas Fuel and Wear bars with the same segmented visual logic.
+- Updated Lines and Build asset-runtime CSS so old progress-track selectors no longer override the new multi-segment markup.
+- Browser probes verified five-cell meters on Hub, Lines, Garage, and Profile, with Heat marked as danger-high and Garage efficiency present.
+- Visual QA screenshots were reviewed for `output/meter-system-hub.png`, `output/meter-system-lines.png`, `output/meter-system-garage.png`, `output/meter-system-profile.png`, and `output/meter-system-race.png`.
+- Ran `npm run build` and the standard web-game client against Garage and Race; both passed.
+
+Follow-up prompt: Upgrade Race screen visuals from Graphics prototype to asset-driven mobile-game visuals.
+
+- Added override-friendly route background assets under `public/assets/race/routes` plus a README explaining replacement filenames.
+- Rebuilt the Pixi fallback `racePixi.js` scene around sprites: route background sprites, starter car sprite, speed streaks, boost glow, warning banner, floating reward text, and milestone flags.
+- Swapped the starter hatchback asset to the richer existing PNG sprite at `/assets/vehicles/racer/sprite_0000.png`.
+- Added route background image loading to the live Road Runner canvas with gradient fallback.
+- Added live route milestone checkpoint flags at 25/50/75/100%.
+- Added boost glow behind the player car when gas/speed/boost is active.
+- Added floating reward numbers for coins, fuel, parts, tools, repairs, and checkpoints.
+- Replaced the old plain event text with a game-style warning/reward banner.
+- Updated the Road Runner text-state probe to report route background readiness and active floating reward count.
+- Browser probes verified vehicle sprite readiness, route background readiness, floating rewards, and Pixi fallback canvas rendering.
+- Visual QA screenshots were reviewed for `output/race-visual-live.png`, `output/race-visual-live-sized.png`, `output/race-visual-pixi-fallback.png`, and `output/race-visual-standard-final/shot-0.png`.
+- Ran `npm run build` and the standard web-game client against Race; both passed.
