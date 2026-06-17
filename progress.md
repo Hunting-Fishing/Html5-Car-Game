@@ -222,3 +222,15 @@ Follow-up prompt: Fix resident happiness not improving after repairing buildings
 - Added selected resident mood/factor details to `window.__worldOpenWorldState` so repair effects can be verified directly in browser probes.
 - Browser probe verified a support-building repair moved resident happiness immediately and improved the specific issue factor score.
 - Ran `npm run build`, `git diff --check`, and the standard web-game client against `?screen=world`; all passed, with only existing LF/CRLF and chunk-size warnings.
+
+Follow-up prompt: Improve the resident selected-window GUI/UX with a tabbed layout inspired by Need for Speed: No Limits and Clash of Clans.
+
+- Reviewed Interface In Game references for Need for Speed: No Limits and Clash of Clans, focusing on compact map/card navigation, top tab rails, strong status cards, and bottom action controls.
+- Reworked the resident panel from one stacked long page into a four-tab game card: Mood, Fix, City, and People.
+- Added a NFS-style compact tab rail with per-tab status values and active-state treatment.
+- Added a Clash-style bottom action row so Build and Close stay anchored while tab content changes above.
+- Moved the resident happiness face/meter into a hero card and moved factor/status details into the Mood tab.
+- Kept repair/restock building rows, city issue rows, and other-resident rows inside tab panels so the whole resident window stays anchored without body/page scrolling.
+- Browser probe verified all four tabs, the problem support sub-menu, no body scroll, and stable resident state updates.
+- Visual QA screenshots were reviewed for Mood, Fix, City, and People tabs.
+- Ran `npm run build`, `git diff --check`, and the standard web-game client against `?screen=world`; all passed.
