@@ -331,3 +331,15 @@ Follow-up prompt: Upgrade Race screen visuals from Graphics prototype to asset-d
 - Browser probes verified vehicle sprite readiness, route background readiness, floating rewards, and Pixi fallback canvas rendering.
 - Visual QA screenshots were reviewed for `output/race-visual-live.png`, `output/race-visual-live-sized.png`, `output/race-visual-pixi-fallback.png`, and `output/race-visual-standard-final/shot-0.png`.
 - Ran `npm run build` and the standard web-game client against Race; both passed.
+
+Follow-up prompt: Improve Garage / Build UI with room-card upgrade cards and UI asset folders.
+
+- Added the override folder skeleton under `public/assets/ui/` for `hud`, `nav`, `panels`, `buttons`, `meters`, `cards`, `merge`, `garage`, `race`, `icons`, and `fx`.
+- Added replaceable SVG UI frames for resource capsules, nav tabs, blue panels, game cards, green/orange buttons, segmented meters, and Garage room cards.
+- Split presentation helpers into `src/ui/components/` modules for Shell, TopHud, BottomNav, GamePanel, StatMeter, ResourcePill, RouteCard, MergeSlot, GarageCard, UpgradeCard, ProblemAlert, and RewardToast.
+- Cleaned `main.js` so the shell, top HUD, bottom nav, panels, meters, upgrade rows, and Garage system cards render through the new component helpers.
+- Rebuilt the four Garage systems as compact room-style cards with large asset art, room name, level badge, description, segmented progress, cost, sync chips, and Build/World/Lines actions.
+- Updated `public/mobileGameSkin.css` and `public/buildAssetRuntime.css` to use the new asset backgrounds where useful and to keep the Garage system cards in a tighter 2x2 layout on the normal game frame.
+- Browser probe verified four active `.garageSystemRoomCard` cards, loaded system art, five bottom nav tabs, ASCII-safe HUD subtitle, and no app console errors beyond the existing missing `favicon.ico`.
+- Visual QA screenshots were reviewed during the Playwright pass for both the top of Garage and the scrolled Garage Systems section.
+- Ran `npm run build`; production build passed with the existing large-chunk warning only.

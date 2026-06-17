@@ -448,13 +448,17 @@
   width: 100%;
   height: 132px;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
+  box-sizing: border-box;
+  padding: 10px;
   filter: drop-shadow(0 9px 12px rgba(0,0,0,.32));
 }
 
 .garageSystemLevel {
   position: absolute;
+  top: auto;
+  left: auto;
   right: 8px;
   bottom: 8px;
   box-shadow: 0 4px 0 rgba(0,0,0,.22), 0 8px 16px rgba(0,0,0,.22);
@@ -462,8 +466,8 @@
 
 .garageSystemRoomBody {
   display: grid;
-  gap: 8px;
-  padding: 10px 2px 1px;
+  gap: 6px;
+  padding: 8px 2px 1px;
 }
 
 .garageSystemRoomHead {
@@ -489,6 +493,13 @@
   line-height: 1.3;
 }
 
+.garageSystemRoomHead p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
 .garageSystemCost {
   display: flex;
   align-items: center;
@@ -504,36 +515,36 @@
   font-weight: 900;
 }
 
-.garageSystemMeta {
+#screen-garage .garageSystemMeta {
   margin: 0;
   padding: 6px;
 }
 
-.garageSystemMeta .roomSyncRow,
-.garageSystemMeta .lineBuildBridge {
+#screen-garage .garageSystemMeta .roomSyncRow,
+#screen-garage .garageSystemMeta .lineBuildBridge {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
   margin: 0;
 }
 
-.garageSystemMeta .roomSyncRow {
+#screen-garage .garageSystemMeta .roomSyncRow {
   grid-template-columns: 1fr;
   margin-bottom: 4px;
 }
 
-.garageSystemMeta .buildWorldChip,
-.garageSystemMeta .buildLineChip {
+#screen-garage .garageSystemMeta .buildWorldChip,
+#screen-garage .garageSystemMeta .buildLineChip {
   min-width: 0;
   padding: 4px 5px;
   border-radius: 10px;
   line-height: 1.05;
 }
 
-.garageSystemMeta .buildWorldChip b,
-.garageSystemMeta .buildLineChip b,
-.garageSystemMeta .buildWorldChip span,
-.garageSystemMeta .buildLineChip span {
+#screen-garage .garageSystemMeta .buildWorldChip b,
+#screen-garage .garageSystemMeta .buildLineChip b,
+#screen-garage .garageSystemMeta .buildWorldChip span,
+#screen-garage .garageSystemMeta .buildLineChip span {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -549,8 +560,14 @@
 }
 
 .garageSystemActions .btn {
-  min-height: 42px;
-  padding-inline: 6px;
+  min-height: 38px !important;
+  padding: 5px 6px !important;
+  font-size: 9px;
+}
+
+.garageSystemActions .buildButtonAsset {
+  width: 16px;
+  height: 16px;
 }
 
 .garagePrimaryBuildAction {
@@ -581,16 +598,84 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  #screen-garage .garageSystemRoomCard {
+    padding: 7px;
+    border-radius: 20px;
+  }
+
   .garageSystemArtWrap {
-    min-height: 98px;
+    min-height: 62px;
+    border-radius: 14px;
   }
 
   .garageSystemArt {
-    height: 108px;
+    height: 68px;
+    padding: 6px;
+  }
+
+  .garageSystemRoomBody {
+    gap: 4px;
+    padding-top: 6px;
+  }
+
+  .garageSystemRoomHead {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .garageSystemRoomHead h4 {
+    font-size: 14px;
+  }
+
+  .garageSystemRoomHead p {
+    -webkit-line-clamp: 1;
+    font-size: 9px;
+  }
+
+  .garageSystemRoomHead .pill {
+    display: none;
+  }
+
+  .garageSystemCost {
+    min-height: 28px;
+    padding: 5px 7px;
+    font-size: 9px;
+  }
+
+  .garageSystemUnlock {
+    font-size: 9px;
+  }
+
+  #screen-garage .garageSystemMeta {
+    max-height: 52px;
+    padding: 4px;
+    overflow: hidden;
+  }
+
+  #screen-garage .garageSystemMeta .buildWorldChip,
+  #screen-garage .garageSystemMeta .buildLineChip {
+    padding: 3px 4px;
+  }
+
+  #screen-garage .garageSystemMeta .buildWorldChip b,
+  #screen-garage .garageSystemMeta .buildLineChip b,
+  #screen-garage .garageSystemMeta .buildWorldChip span,
+  #screen-garage .garageSystemMeta .buildLineChip span {
+    font-size: 7px;
   }
 
   .garageSystemActions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .garageSystemActions .btn {
+    min-height: 34px !important;
+    padding: 4px !important;
+  }
+
+  .garageSystemActions .buildButtonAsset {
+    width: 14px;
+    height: 14px;
   }
 }
 
