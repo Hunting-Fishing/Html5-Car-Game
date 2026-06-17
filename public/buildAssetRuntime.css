@@ -506,6 +506,39 @@
 
 .garageSystemMeta {
   margin: 0;
+  padding: 6px;
+}
+
+.garageSystemMeta .roomSyncRow,
+.garageSystemMeta .lineBuildBridge {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+}
+
+.garageSystemMeta .roomSyncRow {
+  grid-template-columns: 1fr;
+  margin-bottom: 4px;
+}
+
+.garageSystemMeta .buildWorldChip,
+.garageSystemMeta .buildLineChip {
+  min-width: 0;
+  padding: 4px 5px;
+  border-radius: 10px;
+  line-height: 1.05;
+}
+
+.garageSystemMeta .buildWorldChip b,
+.garageSystemMeta .buildLineChip b,
+.garageSystemMeta .buildWorldChip span,
+.garageSystemMeta .buildLineChip span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 8px;
 }
 
 .garageSystemActions {
@@ -557,11 +590,7 @@
   }
 
   .garageSystemActions {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .garagePrimaryBuildAction {
-    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
