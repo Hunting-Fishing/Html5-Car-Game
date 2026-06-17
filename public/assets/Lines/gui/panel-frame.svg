@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 240" preserveAspectRatio="none" role="img" aria-label="Lines panel frame">
+  <rect x="8" y="8" width="944" height="224" rx="42" fill="#0b2130" stroke="#7ddcff" stroke-width="14"/>
+  <rect x="28" y="28" width="904" height="184" rx="32" fill="#123247" stroke="#35e58a" stroke-width="5" opacity=".85"/>
+  <path d="M54 58h852" stroke="#eaf8ff" stroke-width="4" opacity=".22"/>
+  <path d="M54 188h852" stroke="#000" stroke-width="8" opacity=".25"/>
+</svg>

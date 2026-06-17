@@ -1,0 +1,224 @@
+Original prompt: Html5 .JS.Css , Please make the assets i put in for merge Shown in the merge game section.
+
+- Located 48 mapped merge item assets under `public/assets/Merge`.
+- Found asset URLs use lowercase `/assets/merge`, which does not match the actual folder casing.
+- Confirmed the broken URLs produced completed images with zero natural dimensions.
+- Corrected all asset URLs to `/assets/Merge`, rendered images directly in `renderItem()`, and removed the observer runtime from `index.html`.
+- Verified all 48 asset URLs return HTTP 200 and the production build succeeds.
+- Verified `Place All` and `Auto Merge`: Bolt Pack art changes to Washer Set art with valid image dimensions.
+- Removed the global crate texture from Merge cards so item artwork stays readable.
+- Final mobile visual check passed with shelf and board artwork visible at the intended size.
+- No browser console or page errors were reported.
+
+Current prompt: Update the Road Runner drive HUD: combine wallet/run resource values, show next fuel distance, place Ghost beside Route, raise gauges, move gear to GAS, and remove the brake instruction banner.
+
+- Restored `src/ui/roadRunnerRuntimeWorldMapsHudLoader.js` as a direct HUD enhancer for the current runtime.
+- Runtime now publishes live coins, parts, tools, fuel range, speed, RPM, and gear state.
+- Removed the drive-screen brake instruction banner.
+- Found and fixed a hidden post-run panel rule that was darkening the active drive screen.
+- 537x612 layout check passed: route/ghost gap 6px, gauge/counter gap 12px, gear updates on GAS, and no console errors.
+- Shortened the fuel card to keep next-stop distance fully visible.
+- Added a 2x2 resource grid below 430px so totals and run gains remain readable.
+- 390x844 check passed with 153px resource cards, live G2 gear feedback, no instruction banner, and the post-run panel hidden correctly.
+- Final production build passed. TODOs: none for this request.
+## Road Runner physics and damage
+
+- Terrain hazard wear now starts at 50 km/h; potholes, gravel, rough road, and mud cause zero wear below the threshold.
+- Braking and suspension upgrades reduce terrain hazard damage above 50 km/h.
+- Speed, gears, RPM, redline, and gauge ranges now derive from the selected vehicle, route scale, and engine/tire/transmission upgrades.
+- The HUD uses dynamic speedometer and tachometer maxima and supports reverse gear on the GAS pedal.
+- Terrain wear is time-scaled so high-speed impacts are progressive instead of ending a run instantly.
+- Added `render_game_to_text()` and `advanceTime(ms)` hooks for deterministic Road Runner playtests.
+- Verified pure physics assertions, mobile playtests for starter and upgraded race vehicles, `git diff --check`, and `npm run build`.
+
+Current prompt: Correct the speed/RPM gauge behavior and fix the clipped after-race card.
+
+- Baseline measurement found the starter reached 98 km/h in 1 second and redlined first gear within 0.25 seconds.
+- Retuned acceleration, drag, braking, hill force, and high-speed power taper for a more believable speed build.
+- Widened gear bands and added RPM inertia so the tach no longer snaps through the range.
+- Made the post-race overlay vertically scroll-safe and compacted its mobile reward/detail/action layout.
+- Verified the maximum nine-reward result layout fits with all details and actions visible, and clamped displayed fuel to 100%.
+- Added shift hysteresis so terrain speed changes do not chatter between adjacent gears.
+- 634x987 result-card test passed: nine rewards, all four details, and all three actions fit without scrolling or clipping.
+- Starter test: about 95 km/h after 7 seconds. Max race test: about 205 km/h after 6 seconds. No browser console errors.
+
+Current prompt: Remove all Race/result scrolling and enhance the GUI with assets already in the HTML5 folder.
+
+- Located the bundled Kenney UI pack and selected scalable blue/green/yellow/red button SVGs plus filled/outline star assets.
+- Converted Drive into a fixed viewport with compact tabs, in-frame Ghost cycling, and an in-frame Restart control.
+- Converted the result overlay to a fixed grid with overflow disabled rather than a scrollable card.
+- Applied Kenney GUI art to Race tabs, route/ghost badges, restart, pedals, result stars, percentage plate, and result actions.
+- Verified zero scrolling at 390x844 and 466x456: body height equals viewport height, result scroll height equals client height, and all nine rewards/details/actions fit.
+- Verified Retry, Restart, and Ghost cycling interactions; no browser console errors.
+
+Follow-up prompt: Fix the ugly post-run result card where reward tiles stretched into vertical pillars.
+
+- Reworked the no-scroll result overlay from a stretching CSS grid into a compact flex card with fixed reward, detail, and action heights.
+- Kept short viewports full-frame for fit, but made taller screens use an auto-height centered result card to remove the empty dark slab below the buttons.
+- Verified the three-reward case at 634x987, 466x456, and 390x844 with zero page scroll and zero panel scroll.
+- Verified a nine-reward stress case at 634x987; all reward chips, detail chips, and action buttons fit without scroll or clipping.
+- Production build passed. Only observed browser warning was a Playwright/WebGL driver performance warning during automated capture, not an app error.
+
+Follow-up prompt: Use the same collection/token assets on the post-run rewards and GUI assets for Retry/Garage/Missions.
+
+- Updated post-run reward tiles to use the race HUD token assets for coins, parts, and tools.
+- Added a tools reward tile when a run collects tools, matching the drive collection HUD.
+- Grouped mission rewards by Progress/Day/Week so the result card stays compact while still showing parts add-ons as `+1P`/`+5P`.
+- Added asset icons to Retry, Garage, and Missions buttons, using the Kenney repeat/check assets plus the existing mechanic-shop asset.
+- Verified tall, narrow, and short race result screens: seven reward tiles, all reward/action icons loaded, zero page scroll, and zero panel scroll.
+- Production build passed. The only automated-browser warning observed was the known WebGL driver performance warning during capture.
+
+Follow-up prompt: Retune Road Runner vehicle speed and RPM so the km/h gauge matches the on-screen speed better.
+
+- Calibrated the km/h gauge conversion so stock and upgraded vehicles report believable road speeds for the visible screen motion.
+- Telemetry now uses actual traveled distance per frame after hazard slowdown and clamping, so the speedometer reflects what the car is really doing on screen.
+- Reduced throttle RPM boost and slowed RPM smoothing so the tach no longer snaps as quickly through shifts.
+- Verified sample curves: stock hatchback top speed now reads about 110 km/h, max hatchback about 178 km/h, and max super coupe about 240 km/h.
+- Captured and inspected starter/max/super drive screenshots; gauges and HUD remained readable.
+- `git diff --check` passed for touched files, and production build passed.
+
+Follow-up prompt: Compare against Hill Climb Racing references and make Road Runner speed more responsive.
+
+- Reviewed `gllms/Hill`, which uses Matter.js bodies, direct wheel angular velocity for throttle, camera follow, non-wireframe rendering, and continuously generated road segments from noise.
+- Confirmed `seanpm2001/SeansLifeArchive_Images_Hill-Climb-Racing` is an image/archive reference rather than runnable physics or map-generation code.
+- Added a sampled terrain profile per route so road height is generated in chunks with clamped slope changes instead of relying only on live sine formulas.
+- Increased launch/low-speed torque, reduced drag/gravity braking, and added a top-end power band so vehicles respond quickly without instantly snapping to maximum speed.
+- Recalibrated km/h output again so starter, upgraded hatchback, and upgraded super coupe feel faster and better match the visible road motion.
+- Probe results after the tuning: stock hatchback reaches about 51 km/h at 2.8s and 114 km/h at 7.8s; max hatchback reaches about 181 km/h at 5.6s; max super coupe reaches about 260 km/h at 6.6s.
+- Inspected starter/max/super screenshots, ran `git diff --check`, and production build passed.
+
+Follow-up prompt: Make cars move faster and make engine/other upgrades matter more.
+
+- Retuned Road Runner vehicle stats so engine upgrades add stronger real acceleration, tires and transmission raise true top speed, suspension/tires reduce hazard slowdown, and brakes/fuel/durability still balance faster runs.
+- Updated the live drive loop with stronger launch torque, mid-range/top-end pull, lower gravity drag on climbs, speed-aware fuel use, and upgrade-based hazard speed resistance.
+- Verified deterministic speed samples: stock hatchback reaches about 80.8 km/h at 2.1s and 130.5 km/h by 5.1s; engine-8 hatchback reaches about 151.4 km/h at 2.1s; max hatchback reaches about 239.7 km/h by 2.1s; max super coupe reaches about 323.6 km/h by 2.1s.
+- Ran the standard web-game client through a temporary project-local copy after the skill client could not resolve Playwright from its install folder; the captured state showed stock hatchback at 125.3 km/h after a short GAS burst with no console errors.
+- Inspected stock/mid/super screenshots, ran `git diff --check`, and production build passed.
+
+Follow-up prompt: Use Hill Climb Racing topic repos for code/wireframe ideas only, with no copied images.
+
+- Reviewed code patterns from `gllms/Hill`, `0ql/AI-Hill-Climb-Racing`, `veprogames/hill-climb-fanmade`, `joelgomes1994/hill-climb-racing`, `Acemany/hill-climb-driving`, `kosero/FlipFlip`, and `alexzh3/hillclimbracing` without importing any external images.
+- Adapted the useful code ideas into Road Runner in our own runtime: procedural coin formations, special pickup spacing, nearest-fuel targeting, speed streaks, next-fuel canvas guide, wheel-spin overlays, and terrain-contact traction.
+- Added traction, next-fuel, and open-pickup data to `render_game_to_text()` for playtest verification.
+- Focused probe passed: generated 104 open pickups at run start, dropped to 90 after driving/collection, reached 185.6 km/h, showed nearest fuel distance, and reported no console errors.
+- Standard web-game client pass completed after moving the temporary client copy under `node_modules` to avoid a Windows/Vite watcher lock; captured state reported pothole contact, traction at 91%, 94 open pickups, and no client errors.
+- Inspected the wireframe drive screenshots, ran `git diff --check`, and production build passed.
+
+Follow-up prompt: Make sure Car assets and Merge assets from the repo folders are used.
+
+- Centralized Road Runner vehicle art on `src/data/racerVehicleAssetMap.js` so Race uses the repo car files from `public/assets/vehicles/racer`.
+- Loaded `public/racerVehicleSprites.css` and applied `racerVehicleSprite` to vehicle cards so the car asset styling is active.
+- Loaded the Merge asset runtime from `index.html`, corrected the Merge asset console note to `public/assets/Merge`, and added `window.__mergeAssetState`.
+- Added `window.__rrAssetState` plus active vehicle asset fields in `render_game_to_text()` for browser verification.
+- Added Merge chain preview icons using the real `public/assets/Merge` item art, without changing merge progression rules.
+- Filesystem check passed: 48/48 Merge asset paths and 12/12 racer vehicle asset paths exist.
+- Browser check passed: 12/12 racer vehicle images rendered with nonzero dimensions, and 16 Merge preview images rendered with nonzero dimensions and zero failures.
+- Ran `git diff --check` and production build; both passed.
+
+Follow-up prompt: Build the Lines mode assets folder so GUI/interface art can be overridden later.
+
+- Added `public/assets/Lines` with replaceable placeholders for 8 business line icons, 8 GUI/button/frame files, and 3 status badges, plus README/path list docs.
+- Added `src/data/linesAssetMap.js` so Lines mode has stable public asset paths.
+- Wired Lines cards in `src/main.js` to render the new line icons, status badges, and action button art.
+- Added `public/linesAssetRuntime.css` to give Lines mode its own clean frame styling without the noisy global panel texture.
+- Added `src/ui/linesAssetRuntime.js` and loaded it from `index.html`; it publishes `window.__linesAssetState` for verification.
+- Verified filesystem paths: 19/19 Lines override files exist.
+- Browser probe passed: 8/8 line icons and 22/22 rendered GUI images loaded, with no browser console or page errors.
+- Ran the standard web-game client, inspected the Lines screenshot, ran `git diff --check`, and production build passed. Only warnings were existing CRLF notices and Vite chunk-size/plugin timing warnings.
+
+Follow-up prompt: Build the World/open-world asset folder and wire override art for people, cars, buildings, wants, upgrades, and restock.
+
+- Added `public/assets/World` with 40 replaceable placeholder files across terrain, buildings, people, vehicles, UI, and props, plus README/path list docs.
+- Added `src/data/worldAssetMap.js` for stable public World asset paths and fixed-building label overrides.
+- Wired `src/ui/worldMobileCityRuntimeSafe.js` to preload Pixi assets, render override art for terrain, roads, buildings, cars, walkers, want bubbles, and props, while keeping the old geometry as fallback shapes.
+- Added tap/inspect surfaces for resident wants and placed-building management; placed buildings now track level and stock, with upgrade/restock actions updating local placed-building state.
+- Added `window.__worldAssetState` and `window.__worldOpenWorldState` for browser verification, plus dev/test helpers for deterministic placement and sheet inspection.
+- Added `public/worldAssetRuntime.css` and `src/ui/worldAssetRuntime.js`, loaded from `index.html`.
+- Added `?screen=world` deep-link support in `src/main.js` so browser tests can start directly on the World screen.
+- Enabled `preserveDrawingBuffer` for the World Pixi app so the standard web-game client can capture the WebGL canvas.
+- Verified filesystem paths: 40/40 World override files exist.
+- Browser probe passed: 40/40 World assets loaded, 8 traffic vehicles, 6 walkers/resident wants, one placed kiosk, upgrade to level 2, and restock to 100%. Only observed browser warnings were WebGL readback performance warnings during screenshot capture.
+- Standard web-game client captured the World canvas successfully via `?screen=world`; `git diff --check` and production build passed with only existing CRLF/chunk-size/plugin-timing warnings.
+
+Follow-up prompt: Setup the Build page properly with folders, files, assets, and communication between Build, World, and Lines.
+
+- Added the replaceable `public/assets/Build` override pack with room art, system art, UI frame/button art, icons, README, and path list.
+- Added Build asset mapping/runtime state so `window.__buildAssetState` reports rendered and loaded Build assets.
+- Added a shared Build communication snapshot in `src/systems/buildCommunicationSystem.js`, published to `window.__buildCommunicationState` and local storage.
+- Reworked the Build page into a Build Hub with live sync stats, asset-backed room cards, system cards, and direct buttons to World and Lines.
+- Added a Lines Build Links bridge and direct Build buttons for building-locked lines.
+- Connected World building inventory to the Build snapshot, including placeable Tow Dispatch and Mini Test Track entries.
+- Fixed the Lines Build Links card so it no longer inherits the oversized Kenney preview background.
+- Verified seeded Build sync: 26/26 Build assets loaded, 5/5 systems built, 6/7 linked lines, and +9 World inventory published.
+- Verified World consumes the Build sync: owned counts include Build bonuses and a Mini Test Track can be placed/persisted from the Build-unlocked inventory.
+- Ran the standard web-game client against `?screen=garage`, inspected the Build screenshot, ran `git diff --check`, and production build passed.
+
+Follow-up prompt: Improve Lines requirements, allow auto-collect to be turned off, and show Merge item progression for each unlocked set.
+
+- Split manager ownership from auto-collect state with `idleLines.autoCollect`, keeping existing managers while allowing per-line auto collection to be paused/resumed.
+- Added Lines requirement panels for starter, line-level, building, and stage requirements with current/needed progress and direct navigation where useful.
+- Added manager requirement panels and an Auto ON/OFF toggle for hired managers; when auto is off, the cycle stops ready for manual collection.
+- Replaced the small Merge chain preview with full unlocked chain recipe ladders showing each item and the next item it merges into.
+- Locked Merge chains now show their exact Build requirement and a Build navigation button.
+- Verified with browser probes: Street Route toggled AUTO ON to AUTO OFF and saved; Merge showed 12-step ladders for unlocked Original, Tools, and Performance chains plus locked Racing requirements.
+
+Follow-up prompt: Build World building assets and make World buildings upgrade/collect entities instead of route shortcuts.
+
+- Added six World UI override assets for building collection and upgrade presentation: collect-ready, collect-timer, upgrade-ready, requirement-badge, bonus-badge, and level-badge.
+- Expanded the World building catalog with output type, yield, collection cycle, stock drain, bonus text, max level, and per-building upgrade state.
+- Converted fixed map buildings, including the Breakdown Center, into clickable city buildings with their own stored level, stock, collection count, timer, power, and upgrade requirements.
+- Added overhead building badges on the Pixi map for collect-ready/timer, level, and upgrade-ready states using the new World UI assets.
+- Replaced the old placed-building sheet with a compact building management card showing stats, bonus, requirements, collect, upgrade, restock, and move/close actions.
+- Moved the World HUD/card into a bottom overlay so the building card and action buttons are visible in one mobile viewport instead of sitting below the map.
+- Verified with browser probes: 46/46 World assets loaded, 9 fixed buildings available, fixed building collection reduced ready count from 9 to 8, restock worked, upgrade moved Dealer Row to level 2, and the action row stayed visible in the 900px viewport.
+- Ran the standard web-game client against `?screen=world`; it captured the World WebGL canvas with no error artifact. `git diff --check` and production build passed with only existing CRLF/chunk-size/plugin-timing warnings.
+
+Follow-up prompt: Let World overhead icons collect directly, add upgrade-level building assets, and fix the half-developed Build Mode panel.
+
+- Made ready overhead collect badges clickable on the Pixi map; tapping the badge collects immediately, updates stock/timer/state, and does not open the building card.
+- Added 30 replaceable upgrade-tier building files under `public/assets/World/buildings/levels`, with lv1/lv2/lv3 slots for every current World building type plus fixed-label art variants like Garage and Parts Hub.
+- Updated the World asset map so building art swaps by level tier: levels 1-3 use lv1, levels 4-6 use lv2, and levels 7+ use lv3.
+- Updated the building card hero image to use the same level-tier art as the map sprite.
+- Fixed World hidden rows/panels with a scoped `[hidden]` rule so Confirm/Cancel and other hidden World panels no longer leak into the UI.
+- Reworked Build Mode styling into a compact 4x2 building chooser and hid extra sync/navigation rows while placing, resolving the clipped half-developed drawer.
+- Browser probes passed: one-tap Breakdown Center collect reduced ready count from 9 to 8 while keeping the card closed; Build Mode drawer fit in the viewport with Confirm/Cancel hidden until placement preview; level 7 Dealer Row used `dealer-showroom-lv3.svg`.
+- Verified 76/76 World assets loaded, all `_ASSET_PATHS.txt` entries exist, ran the standard web-game client against `?screen=world`, `git diff --check`, and production build passed.
+
+Follow-up prompt: Fix person selection opening a half-cut UI that makes World unplayable.
+
+- Added a dedicated `resident-open` World HUD state so tapping a person opens a compact resident want card instead of stacking under the normal HUD controls.
+- Hid Build Sync and normal World action buttons while the resident card is open, keeping only the resident want text plus Build and Close buttons visible.
+- Ensured `resident-open` is cleared when opening Build Mode, opening building cards, closing resident cards, cancelling placement, confirming placement, or clearing placements.
+- Browser probe passed: resident card stayed within the 900px viewport, Close restored the normal HUD, and Build Mode still opened after closing the resident card.
+- Ran the standard web-game client against `?screen=world`, `git diff --check`, and production build passed.
+
+Follow-up prompt: Add resident happiness that communicates with World building levels, building stock, and other resident needs.
+
+- Added a resident happiness model driven by matching service buildings, average service building level, building stock/supply, city-wide need coverage, and World service diversity.
+- Published the happiness rollup through `window.__worldOpenWorldState`, including selected resident, average resident happiness, needs met, and strained needs.
+- Reworked the resident information panel with a 0-100 mood meter, color-changing silly face, mood status, want text, and supporting chips for matching buildings, level, stock, and other resident needs.
+- Added green/yellow/orange/red mood states so resident feedback changes visibly as buildings are upgraded, stocked, or missing.
+- Refreshed the open resident panel after collection/timer changes so the happiness display stays connected to the live World state.
+- Browser probes verified red, orange, yellow, and green resident mood states by changing building levels and stock; the panel fit in the viewport.
+- Ran the standard web-game client against `?screen=world`, `git diff --check`, and production build passed.
+
+Follow-up prompt: Make resident needs actionable, add more World happiness factors, and allow rotated building placement.
+
+- Added resident-specific happiness factors for map build-out, vehicle breakdowns, stuck vehicles, potholes, traffic jams, and traffic lights.
+- Added building health as a saved World building stat; service happiness now depends on coverage, level, stock, and health.
+- Added a selectable resident needs menu: service/repair buildings, restock, map issues, and other residents.
+- The resident menu now lists poor matching buildings and lets the user Inspect, Repair, or Restock without leaving the resident screen.
+- Added map issue markers for potholes, breakdowns, stuck vehicles, traffic jams, and traffic lights; tapping a marker opens the related resident/problem menu.
+- Added rotation-aware Build Mode placement. Rotating swaps the footprint, rotates the building art, validates against roads/buildings, and saves rotation with placed buildings.
+- Browser probe verified: poor repair building appeared in Nico's resident menu, Repair and Restock updated it, incident menus opened, city condition counts published, and a rotated 3x2 repair shop saved as an 80x120 footprint.
+- Visual QA screenshots were reviewed for the resident repair menu, incident menu, and visible rotated placement.
+- Ran the standard web-game client against `?screen=world`, `git diff --check`, and production build passed.
+
+Follow-up prompt: Fix resident happiness not improving after repairing buildings tied to the resident's upset need.
+
+- Found the issue: city problem factors used rounded issue counts as the happiness score, so repairing a building could improve the hidden support math while the visible resident percentage stayed frozen until the issue count crossed a threshold.
+- Changed potholes, breakdowns, stuck vehicles, traffic jams, and traffic lights to publish continuous 0-100 scores while keeping rounded counts only for map markers.
+- Expanded issue support menus so problems can list all contributing building types, e.g. potholes now use repair, tire, and parts support buildings.
+- Added selected resident mood/factor details to `window.__worldOpenWorldState` so repair effects can be verified directly in browser probes.
+- Browser probe verified a support-building repair moved resident happiness immediately and improved the specific issue factor score.
+- Ran `npm run build`, `git diff --check`, and the standard web-game client against `?screen=world`; all passed, with only existing LF/CRLF and chunk-size warnings.

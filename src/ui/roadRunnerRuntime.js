@@ -1,3 +1,10 @@
+import {
+  DAMAGE_SPEED_KMH,
+  calculateHazardEffect,
+  computeVehicleTelemetry
+} from '../game/roadRunner/physics.js';
+import { RACER_VEHICLE_ASSETS } from '../data/racerVehicleAssetMap.js';
+
 const SAVE_KEY = '365_canvas_road_runner_v4';
 
 const ROUTES = {
@@ -41,8 +48,6 @@ const UPGRADES = {
   repairKit: { label: 'Repair Kit', description: 'Tools repair more wear during the run.', max: 10, baseCoins: 85, baseParts: 1, growth: 1.48, partsEvery: 2 }
 };
 
-const DAMAGE_SPEED_KMH = 50;
-const GEAR_COUNT = 5;
 const DAILY_PICK_COUNT = 3;
 const WEEKLY_PICK_COUNT = 2;
 const VEHICLE_FILTERS = ['all', 'starter', 'utility', 'offroad', 'endurance', 'race'];
@@ -76,21 +81,10 @@ const WEEKLY_MISSION_POOL = [
 ];
 
 const ASSET_PATHS = {
-  hatchback: '/assets/vehicles/racer/starter-hatchback.svg',
-  greenCompact: '/assets/vehicles/racer/compact-sport.svg',
-  cityTaxi: '/assets/vehicles/racer/city-taxi.svg',
-  pickup: '/assets/vehicles/racer/parts-pickup.svg',
-  rallyLite: '/assets/vehicles/racer/rally-lite.svg',
-  serviceVan: '/assets/vehicles/racer/service-van.svg',
-  desertRunner: '/assets/vehicles/racer/desert-runner.svg',
-  offroad: '/assets/vehicles/racer/off-road-truck.svg',
-  exportVan: '/assets/vehicles/racer/export-support-van.svg',
-  race: '/assets/vehicles/racer/purple-race-coupe.svg',
-  mountainCourier: '/assets/vehicles/racer/mountain-courier.svg',
-  superCoupe: '/assets/vehicles/racer/super-coupe.svg',
-  ghostA: '/assets/vehicles/racer/compact-sport.svg',
-  ghostB: '/assets/vehicles/racer/parts-pickup.svg',
-  ghostC: '/assets/vehicles/racer/service-van.svg',
+  ...RACER_VEHICLE_ASSETS,
+  ghostA: RACER_VEHICLE_ASSETS.greenCompact,
+  ghostB: RACER_VEHICLE_ASSETS.pickup,
+  ghostC: RACER_VEHICLE_ASSETS.serviceVan,
   coin: '/assets/road-runner/token-coin.svg',
   fuel: '/assets/road-runner/token-energy.svg',
   parts: '/assets/road-runner/token-parts.svg',
@@ -272,22 +266,34 @@ function routeUnlocked(key) {
 function vehicleStats() {
   const u = normalizeUpgrades(saveData.upgrades);
   const vehicle = selectedVehicle();
+  const engineUpgrade = u.engine - 1;
+  const tireUpgrade = u.tires - 1;
+  const fuelUpgrade = u.fuelTank - 1;
+  const suspensionUpgrade = u.suspension - 1;
+  const transmissionUpgrade = u.transmission - 1;
   return {
-    acceleration: (82 + u.engine * 8) * vehicle.accel,
-    topSpeed: (132 + u.tires * 6) * vehicle.speed,
-    reverseTop: 24 + u.transmission * 3,
-    drag: Math.max(3, 11 - u.tires * 0.35),
-    grip: 0.78 + u.tires * 0.022,
-    maxFuel: (95 + u.fuelTank * 20) * vehicle.fuel,
-    fuelUse: Math.max(1.6, 4.0 - u.fuelTank * 0.08),
-    handling: (0.08 + u.suspension * 0.014) * vehicle.handling,
-    spring: 4.8 + u.suspension * 0.42,
-    damping: 2.7 + u.suspension * 0.18,
+    vehicleClass: vehicle.cls,
+    engineLevel: u.engine,
+    transmissionLevel: u.transmission,
+    acceleration: (36 + engineUpgrade * 2.55 + transmissionUpgrade * 1.15 + tireUpgrade * 0.5) * vehicle.accel,
+    topSpeed: (150 + tireUpgrade * 6.2 + engineUpgrade * 2.0 + transmissionUpgrade * 1.2) * vehicle.speed,
+    reverseTop: 28 + transmissionUpgrade * 3.8,
+    drag: Math.max(0.65, 3.25 - tireUpgrade * 0.12 - suspensionUpgrade * 0.04 - transmissionUpgrade * 0.04),
+    grip: 0.82 + tireUpgrade * 0.026 + suspensionUpgrade * 0.012,
+    maxFuel: (105 + fuelUpgrade * 24) * vehicle.fuel,
+    fuelUse: Math.max(1.55, 3.75 - fuelUpgrade * 0.11 + engineUpgrade * 0.045 + tireUpgrade * 0.015),
+    handling: (0.1 + suspensionUpgrade * 0.017 + tireUpgrade * 0.004) * vehicle.handling,
+    spring: 5.2 + suspensionUpgrade * 0.48,
+    damping: 2.9 + suspensionUpgrade * 0.19,
     durability: (1 + u.durability * 0.1) * vehicle.durability,
     wearLimit: 100 + u.durability * 12,
-    climb: 1 + u.transmission * 0.045,
-    brakePower: 170 + u.brakes * 11,
-    repairPower: 6 + u.repairKit * 2
+    climb: 1 + transmissionUpgrade * 0.07 + engineUpgrade * 0.024 + suspensionUpgrade * 0.012,
+    brakePower: 54 + u.brakes * 5.4,
+    repairPower: 6 + u.repairKit * 2,
+    launchBonus: 0.52 + engineUpgrade * 0.022 + transmissionUpgrade * 0.018,
+    midRangePull: 1 + engineUpgrade * 0.022 + tireUpgrade * 0.01 + transmissionUpgrade * 0.012,
+    topEndPull: 1 + engineUpgrade * 0.012 + tireUpgrade * 0.018 + transmissionUpgrade * 0.012,
+    hazardSpeedResistance: clamp(tireUpgrade * 0.01 + suspensionUpgrade * 0.014, 0, 0.34)
   };
 }
 
@@ -295,14 +301,49 @@ function routeMeters(route, pixels) {
   return Math.floor(Math.max(0, pixels) * (route.meters / route.length));
 }
 
+function terrainOffset(route, x) {
+  const seed = route.seed || 1;
+  if (route.profile === 'track') return Math.sin((x + seed * 90) / 430) * 14 + Math.sin((x + seed * 40) / 190) * 6 + Math.sin((x + seed * 20) / 820) * 16;
+  if (route.profile === 'mountain') return Math.sin((x + seed * 160) / 180) * 42 + Math.sin((x + seed * 85) / 74) * 13 - Math.sin((x + seed * 60) / 520) * 46;
+  if (route.profile === 'farm') return Math.sin((x + seed * 120) / 240) * 26 + Math.sin((x + seed * 70) / 96) * 10 - Math.sin((x + seed * 30) / 680) * 22;
+  if (route.profile === 'port') return Math.sin((x + seed * 110) / 360) * 20 + Math.sin((x + seed * 55) / 155) * 7 - Math.sin((x + seed * 40) / 940) * 24;
+  return Math.sin((x + seed * 120) / 175) * 24 + Math.sin((x + seed * 70) / 78) * 9 - Math.sin((x + seed * 30) / 540) * 26;
+}
+
+function makeTerrainProfile(route) {
+  const step = route.profile === 'track' ? 56 : 64;
+  const roughness = route.profile === 'track' ? 5 : route.profile === 'mountain' ? 18 : 11;
+  const maxStep = route.profile === 'track' ? 6 : route.profile === 'mountain' ? 16 : 11;
+  const maxOffset = route.profile === 'mountain' ? 92 : route.profile === 'track' ? 34 : 62;
+  const points = [];
+  let previous = terrainOffset(route, 0);
+  for (let x = 0; x <= route.length + 360; x += step) {
+    const chunkNoise = (seededNoise(x * 0.41 + 97, route.seed + 11) - 0.5) * roughness;
+    const longNoise = (seededNoise(x * 0.13 + 401, route.seed + 23) - 0.5) * roughness * 1.45;
+    const target = terrainOffset(route, x) + chunkNoise + longNoise;
+    previous = clamp(previous + clamp(target - previous, -maxStep, maxStep), -maxOffset, maxOffset);
+    points.push({ x, y: previous });
+  }
+  return { step, points };
+}
+
+function sampledTerrainOffset(route, x) {
+  const points = route.terrain?.points;
+  if (!points?.length) return terrainOffset(route, x);
+  if (x <= points[0].x) return points[0].y;
+  const last = points[points.length - 1];
+  if (x >= last.x) return last.y;
+  const step = route.terrain.step || 64;
+  const index = clamp(Math.floor(x / step), 0, points.length - 2);
+  const left = points[index];
+  const right = points[index + 1];
+  const t = clamp((x - left.x) / Math.max(1, right.x - left.x), 0, 1);
+  return left.y + (right.y - left.y) * t;
+}
+
 function routeY(route, x, height) {
   const base = Math.max(170, Math.min(height - 130, height * 0.61));
-  const seed = route.seed || 1;
-  if (route.profile === 'track') return base + Math.sin((x + seed * 90) / 430) * 14 + Math.sin((x + seed * 40) / 190) * 6 + Math.sin((x + seed * 20) / 820) * 16;
-  if (route.profile === 'mountain') return base + Math.sin((x + seed * 160) / 180) * 42 + Math.sin((x + seed * 85) / 74) * 13 - Math.sin((x + seed * 60) / 520) * 46;
-  if (route.profile === 'farm') return base + Math.sin((x + seed * 120) / 240) * 26 + Math.sin((x + seed * 70) / 96) * 10 - Math.sin((x + seed * 30) / 680) * 22;
-  if (route.profile === 'port') return base + Math.sin((x + seed * 110) / 360) * 20 + Math.sin((x + seed * 55) / 155) * 7 - Math.sin((x + seed * 40) / 940) * 24;
-  return base + Math.sin((x + seed * 120) / 175) * 24 + Math.sin((x + seed * 70) / 78) * 9 - Math.sin((x + seed * 30) / 540) * 26;
+  return base + sampledTerrainOffset(route, x);
 }
 
 function routeAngle(route, x, height) {
@@ -314,27 +355,74 @@ function loadImages() {
   const result = {};
   Object.entries(ASSET_PATHS).forEach(([key, path]) => {
     const img = new Image();
-    img.onload = () => { img.ready = true; };
-    img.onerror = () => { img.ready = false; };
+    img.onload = () => { img.ready = true; publishRoadRunnerAssetState(); };
+    img.onerror = () => { img.ready = false; publishRoadRunnerAssetState(); };
     img.src = path;
     result[key] = img;
   });
   return result;
 }
 
+function publishRoadRunnerAssetState() {
+  if (!images) return;
+  const vehicleAssets = Object.entries(VEHICLES).map(([key, vehicle]) => {
+    const assetKey = vehicle.asset;
+    const img = images[assetKey];
+    return {
+      key,
+      asset: ASSET_PATHS[assetKey] || '',
+      ready: Boolean(img?.ready && img.naturalWidth > 0)
+    };
+  });
+  window.__rrAssetState = {
+    vehicleCount: vehicleAssets.length,
+    vehicleReadyCount: vehicleAssets.filter((item) => item.ready).length,
+    activeVehicle: saveData.selectedVehicle,
+    activeVehicleAsset: ASSET_PATHS[selectedVehicle().asset] || '',
+    activeVehicleReady: Boolean(images[selectedVehicle().asset]?.ready && images[selectedVehicle().asset]?.naturalWidth > 0),
+    missingVehicles: vehicleAssets.filter((item) => !item.asset || !item.ready)
+  };
+}
+
 function seededNoise(x, seed) {
   return Math.abs(Math.sin(x * 0.013 + seed * 9.17) * 43758.5453) % 1;
 }
 
+function addCoinFormation(pickups, route, startX, formationIndex) {
+  const roll = seededNoise(startX + formationIndex * 41, route.seed + 31);
+  const count = 3 + Math.floor(roll * 4);
+  const spacing = 35 + Math.floor(seededNoise(startX + 11, route.seed) * 14);
+  const arch = roll > 0.56;
+  for (let i = 0; i < count; i += 1) {
+    const center = (count - 1) / 2;
+    const yOffset = arch ? -Math.sin((i / Math.max(1, count - 1)) * Math.PI) * (24 + route.difficulty * 16) : (i % 2) * -12;
+    const value = Math.max(1, Math.round((2 + Math.abs(i - center) * 0.25) * route.reward));
+    pickups.push({
+      x: startX + i * spacing,
+      yOffset,
+      value,
+      type: 'coin',
+      formation: formationIndex,
+      collected: false
+    });
+  }
+}
+
 function makePickups(route) {
   const pickups = [];
-  const spacing = route.profile === 'track' ? 260 : 230;
-  for (let x = 360; x < route.length - 260; x += spacing) {
-    const roll = seededNoise(x, route.seed);
-    const type = roll > 0.90 ? 'tools' : roll > 0.72 ? 'parts' : roll > 0.55 ? 'fuel' : 'coin';
-    pickups.push({ x, type, collected: false });
+  const coinGap = route.profile === 'track' ? 360 : route.profile === 'mountain' ? 460 : 400;
+  let formation = 0;
+  for (let x = 330; x < route.length - 360; x += coinGap + seededNoise(x, route.seed + 5) * 170) {
+    addCoinFormation(pickups, route, x, formation);
+    formation += 1;
   }
-  return pickups;
+  const specialGap = route.profile === 'track' ? 760 : route.profile === 'mountain' ? 940 : 860;
+  for (let x = 620; x < route.length - 400; x += specialGap + seededNoise(x + 75, route.seed) * 260) {
+    const roll = seededNoise(x, route.seed + 17);
+    const type = roll > 0.88 ? 'tools' : roll > 0.66 ? 'parts' : 'fuel';
+    pickups.push({ x, yOffset: type === 'fuel' ? -4 : -16, value: 1, type, collected: false });
+  }
+  return pickups.sort((a, b) => a.x - b.x);
 }
 
 function makeDirector(route) {
@@ -363,15 +451,45 @@ function currentProgressionMission() {
   return PROGRESSION_MISSIONS.find((mission) => !saveData.completedMissions.includes(mission.key)) || null;
 }
 
-function computeTelemetry() {
-  if (!game) return { kmh: 0, gear: 1, rpm: 900, rpmPct: 0 };
-  const kmh = Math.abs(game.speed) * (game.route.meters / game.route.length) * 3.6;
-  const speedFrac = clamp(Math.abs(game.speed) / game.stats.topSpeed, 0, 1);
-  const gearSpan = 1 / GEAR_COUNT;
-  const gear = speedFrac <= 0.001 ? 1 : Math.min(GEAR_COUNT, Math.floor(speedFrac / gearSpan) + 1);
-  const within = gearSpan > 0 ? clamp((speedFrac - (gear - 1) * gearSpan) / gearSpan, 0, 1) : 0;
-  const rpm = Math.round(900 + within * 6100);
-  return { kmh, gear, rpm, rpmPct: clamp((rpm - 900) / 6100, 0, 1) };
+function computeTelemetry(dt = 0, speed = game?.speed || 0) {
+  if (!game) {
+    return {
+      kmh: 0,
+      gear: 1,
+      gearLabel: 'G1',
+      rpm: 900,
+      rpmPct: 0,
+      topSpeedKmh: 0,
+      speedometerMaxKmh: 180,
+      redlineRpm: 7000
+    };
+  }
+  const target = computeVehicleTelemetry({
+    speed,
+    topSpeed: game.stats.topSpeed,
+    reverseTop: game.stats.reverseTop,
+    route: game.route,
+    vehicleClass: game.stats.vehicleClass,
+    engineLevel: game.stats.engineLevel,
+    transmissionLevel: game.stats.transmissionLevel,
+    currentGear: game.telemetry?.gear,
+    throttle: input.gas,
+    braking: input.brake
+  });
+  if (!game.telemetry || dt <= 0) return target;
+
+  const rpmRate = target.rpm >= game.telemetry.rpm ? 1.45 : 2.35;
+  const rpmAlpha = 1 - Math.exp(-rpmRate * dt);
+  const rpm = Math.round(game.telemetry.rpm + (target.rpm - game.telemetry.rpm) * rpmAlpha);
+  return {
+    ...target,
+    rpm,
+    rpmPct: clamp(
+      (rpm - target.idleRpm) / Math.max(1, target.redlineRpm - target.idleRpm),
+      0,
+      1
+    )
+  };
 }
 
 function missionRunMatches(mission) {
@@ -436,7 +554,8 @@ function evaluateMissionSets() {
 
 function resetRun() {
   ensureMissionState(saveData);
-  const route = ROUTES[activeRoute];
+  const route = { ...ROUTES[activeRoute] };
+  route.terrain = makeTerrainProfile(route);
   const stats = vehicleStats();
   const director = makeDirector(route);
   game = {
@@ -455,13 +574,15 @@ function resetRun() {
     pitch: 0,
     pitchVel: 0,
     suspensionTravel: 0,
+    wheelRotation: 0,
+    traction: 1,
     elapsed: 0,
     finished: false,
     finishedRoute: false,
     maxKmh: 0,
     earnedProgression: false,
     earnedDaily: new Set(),
-    telemetry: { kmh: 0, gear: 1, rpm: 900, rpmPct: 0 },
+    telemetry: null,
     pickups: makePickups(route),
     checkpoints: director.checkpoints,
     hazards: director.hazards,
@@ -475,21 +596,20 @@ function resetRun() {
     usedRepair: false,
     ghostColors: ['#22c55e', '#f97316', '#e5e7eb']
   };
+  game.telemetry = computeTelemetry();
   hidePostRunPanel();
   updateHud();
 }
 
 function shellHtml() {
   const tabs = [['drive', 'Drive'], ['garage', 'Garage'], ['vehicles', 'Vehicles'], ['routes', 'Routes'], ['missions', 'Missions']];
-  return `<section class="card roadRunnerShell">
+  return `<section class="card roadRunnerShell" data-rr-active-tab="${activeTab}">
     <div class="roadRunnerHeader"><h2>365 Hill Route</h2><p>Drive, repair, upgrade, and unlock vehicles across five routes.</p></div>
-    <div class="roadRunnerHud"><div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div><div class="roadRunnerStat"><b data-rr-speed>0 km/h</b><span>Speed</span></div><div class="roadRunnerStat"><b data-rr-gear>1 · 900rpm</b><span>Gear</span></div><div class="roadRunnerStat"><b data-rr-fuel>100%</b><span>Fuel</span></div><div class="roadRunnerStat"><b data-rr-wear>0%</b><span>Wear</span></div><div class="roadRunnerStat"><b data-rr-coins>${formatSmall(saveData.coins)}</b><span>Coins</span></div><div class="roadRunnerStat"><b data-rr-parts>${formatSmall(saveData.parts)}</b><span>Parts</span></div><div class="roadRunnerStat"><b data-rr-best>${formatSmall(saveData.bestDistance)}m</b><span>Best</span></div></div>
+    <div class="roadRunnerHud"><div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div><div class="roadRunnerStat"><b data-rr-speed>0 km/h</b><span>Speed</span></div><div class="roadRunnerStat"><b data-rr-fuel>100% · 0m</b><span>Fuel / Next</span></div><div class="roadRunnerStat"><b data-rr-wear>0%</b><span>Wear</span></div><div class="roadRunnerStat"><b data-rr-coins>${formatSmall(saveData.coins)} +0</b><span>Coins / Run</span></div><div class="roadRunnerStat"><b data-rr-parts>${formatSmall(saveData.parts)} +0</b><span>Parts / Run</span></div><div class="roadRunnerStat"><b data-rr-tools>${formatSmall(saveData.tools || 0)} +0</b><span>Tools / Run</span></div><div class="roadRunnerStat"><b data-rr-best>${formatSmall(saveData.bestDistance)}m</b><span>Best</span></div></div>
     <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" onclick="window.rrSetTab?.('${key}')">${label}</button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
-        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><div class="roadRunnerBadge" data-rr-mode>${GHOST_MODES[activeGhostMode].label}</div></div><div class="roadRunnerControlHint">BRAKE slows. Hold BRAKE when stopped to reverse. Stay under ${DAMAGE_SPEED_KMH}km/h on hazards to limit damage.</div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
-        <div class="roadRunnerPanel"><div class="roadRunnerPanelTitle"><h3>Ghost Race</h3><span class="roadRunnerNotice">Computer ghosts or saved best trail.</span></div><div class="roadRunnerModeGrid">${Object.entries(GHOST_MODES).map(([key, value]) => `<button class="btn ${key === activeGhostMode ? 'primary' : 'ghost'}" onclick="window.setHillGhosts?.('${key}')">${value.label}</button>`).join('')}</div></div>
-        <div class="roadRunnerPanel"><button class="btn primary" style="width:100%" onclick="window.restartHillRoute?.()">Restart Run</button></div>
+        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="roadRunnerBadge rrGhostCycle" data-rr-mode onclick="window.rrCycleGhosts?.()" aria-label="Change ghost racers">${GHOST_MODES[activeGhostMode].label}</button><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
       </section>
       <section class="racerPage ${activeTab === 'garage' ? 'active' : ''}" data-rr-page="garage"><div data-road-runner-garage></div></section>
       <section class="racerPage ${activeTab === 'vehicles' ? 'active' : ''}" data-rr-page="vehicles"><div data-road-runner-vehicles></div></section>
@@ -506,14 +626,35 @@ function setText(selector, value) {
 
 function updateHud() {
   if (!game) return;
+  publishRoadRunnerAssetState();
+  const fuelPct = clamp(Math.floor(game.fuel / game.stats.maxFuel * 100), 0, 100);
+  const nextFuel = nextFuelMeters();
   setText('[data-rr-distance]', `${Math.floor(game.distanceM)}m`);
   setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)} km/h`);
-  setText('[data-rr-gear]', `${game.telemetry.gear} · ${game.telemetry.rpm}rpm`);
-  setText('[data-rr-fuel]', `${Math.max(0, Math.floor(game.fuel / game.stats.maxFuel * 100))}%`);
+  setText('[data-rr-fuel]', `${fuelPct}% · ${nextFuel}m`);
   setText('[data-rr-wear]', `${Math.floor(Math.min(100, game.wear / game.stats.wearLimit * 100))}%`);
-  setText('[data-rr-coins]', formatSmall(saveData.coins));
-  setText('[data-rr-parts]', formatSmall(saveData.parts));
+  setText('[data-rr-coins]', `${formatSmall(saveData.coins)} +${game.coins}`);
+  setText('[data-rr-parts]', `${formatSmall(saveData.parts)} +${game.parts}`);
+  setText('[data-rr-tools]', `${formatSmall(saveData.tools || 0)} +${game.tools}`);
   setText('[data-rr-best]', `${formatSmall(saveData.bestDistance)}m`);
+  window.__rrHudState = {
+    coins: saveData.coins,
+    runCoins: game.coins,
+    parts: saveData.parts,
+    runParts: game.parts,
+    tools: saveData.tools || 0,
+    runTools: game.tools,
+    fuelPct,
+    nextFuelMeters: nextFuel,
+    speedKmh: game.telemetry.kmh,
+    rpm: game.telemetry.rpm,
+    gear: game.telemetry.gear,
+    gearLabel: game.telemetry.gearLabel,
+    topSpeedKmh: game.telemetry.topSpeedKmh,
+    speedometerMaxKmh: game.telemetry.speedometerMaxKmh,
+    rpmMax: game.telemetry.redlineRpm,
+    damageThresholdKmh: DAMAGE_SPEED_KMH
+  };
 }
 
 function refreshPanels() {
@@ -525,8 +666,16 @@ function refreshPanels() {
 
 function nextFuelMeters() {
   if (!game) return 0;
-  const next = game.checkpoints.find((checkpoint) => !checkpoint.used && checkpoint.type === 'fuelStation' && checkpoint.x > game.x);
+  const next = nextFuelTarget();
   return next ? Math.max(0, routeMeters(game.route, next.x - game.x)) : 0;
+}
+
+function nextFuelTarget() {
+  if (!game) return null;
+  const checkpoint = game.checkpoints.find((item) => !item.used && item.type === 'fuelStation' && item.x > game.x);
+  const pickup = game.pickups.find((item) => !item.collected && item.type === 'fuel' && item.x > game.x);
+  if (checkpoint && pickup) return checkpoint.x < pickup.x ? checkpoint : pickup;
+  return checkpoint || pickup || null;
 }
 
 function renderMissionPanel() {
@@ -569,7 +718,7 @@ function vehicleCard(key, item) {
   const canUnlock = saveData.coins >= item.unlock.coins && saveData.parts >= item.unlock.parts;
   const action = unlocked ? `window.selectRoadRunnerVehicle?.('${key}')` : `window.unlockRoadRunnerVehicle?.('${key}')`;
   const img = ASSET_PATHS[item.asset];
-  return `<div class="roadRunnerVehicleCard ${selected ? 'selected' : ''}"><div class="vehicleThumb">${img ? `<img src="${img}" alt="${item.label}"/>` : ''}</div><h4>${item.label}</h4><p>${item.description}</p><div class="vehicleStats">SPD ${item.speed.toFixed(2)} • FUEL ${item.fuel.toFixed(2)} • DUR ${item.durability.toFixed(2)}</div><button class="btn ${selected ? 'gold' : unlocked || canUnlock ? 'primary' : 'ghost'}" ${selected || (!unlocked && !canUnlock) ? 'disabled' : ''} onclick="${action}">${selected ? 'Selected' : unlocked ? 'Select' : canUnlock ? `Unlock ${formatSmall(item.unlock.coins)}C / ${item.unlock.parts}P` : `Locked ${formatSmall(item.unlock.coins)}C / ${item.unlock.parts}P`}</button></div>`;
+  return `<div class="roadRunnerVehicleCard ${selected ? 'selected' : ''}"><div class="vehicleThumb">${img ? `<img class="racerVehicleSprite" src="${img}" alt="${item.label}" loading="lazy" draggable="false">` : ''}</div><h4>${item.label}</h4><p>${item.description}</p><div class="vehicleStats">SPD ${item.speed.toFixed(2)} • FUEL ${item.fuel.toFixed(2)} • DUR ${item.durability.toFixed(2)}</div><button class="btn ${selected ? 'gold' : unlocked || canUnlock ? 'primary' : 'ghost'}" ${selected || (!unlocked && !canUnlock) ? 'disabled' : ''} onclick="${action}">${selected ? 'Selected' : unlocked ? 'Select' : canUnlock ? `Unlock ${formatSmall(item.unlock.coins)}C / ${item.unlock.parts}P` : `Locked ${formatSmall(item.unlock.coins)}C / ${item.unlock.parts}P`}</button></div>`;
 }
 
 function renderRoutesPanel() {
@@ -608,8 +757,41 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
   const stars = completed && wearPct < 40 ? 3 : completed || wearPct < 75 ? 2 : 1;
   const title = completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
   const subtitle = completed ? `${game.route.label} finished` : `${game.route.label} - ${pct}% complete`;
-  const missionHtml = missionRewards.map((m) => `<div class="rrPostRunReward"><b>+${m.rewardCoins}</b><span>${m.kind} Bonus</span></div>`).join('');
-  panel.innerHTML = `<div class="rrPostRunHero"><div class="rrPostRunStars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div><div class="rrPostRunPlace">${pct}%</div><h3 class="rrPostRunTitle">${title}</h3><p class="rrPostRunSubtitle">${subtitle}</p></div><div class="rrPostRunGrid"><div class="rrPostRunReward"><b>+${game.coins}</b><span>Run Coins</span></div><div class="rrPostRunReward"><b>+${bonus}</b><span>Bonus</span></div><div class="rrPostRunReward"><b>+${game.parts}</b><span>Parts</span></div>${missionHtml}</div><div class="rrPostRunDetails"><div class="rrPostRunDetail"><b>${Math.floor(game.distanceM)}m</b>Distance</div><div class="rrPostRunDetail"><b>${Math.round(game.maxKmh)} km/h</b>Top Speed</div><div class="rrPostRunDetail"><b>${wearPct}%</b>Wear</div><div class="rrPostRunDetail"><b>${formatSmall(saveData.bestDistance)}m</b>Best Distance</div></div><div class="rrPostRunActions"><button onclick="window.restartHillRoute?.()">Retry</button><button class="primary" onclick="window.rrSetTab?.('garage')">Garage</button><button class="gold" onclick="window.rrSetTab?.('missions')">Missions</button></div>`;
+  const starAsset = '/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/star.svg';
+  const emptyStarAsset = '/assets/vendor/kenney/kenney_ui-pack/Vector/Grey/star_outline.svg';
+  const starHtml = Array.from({ length: 3 }, (_, index) => `<img src="${index < stars ? starAsset : emptyStarAsset}" alt="">`).join('');
+  const rewardTile = ({ type, amount, label, detail = '' }) => {
+    const icon = { coins: ASSET_PATHS.coin, parts: ASSET_PATHS.parts, tools: ASSET_PATHS.tools }[type] || ASSET_PATHS.coin;
+    return `<div class="rrPostRunReward" data-rr-reward="${type}">
+      <img class="rrPostRunRewardIcon" src="${icon}" alt="">
+      <div class="rrPostRunRewardCopy"><b>+${formatSmall(amount)}</b><span>${label}</span>${detail ? `<small>${detail}</small>` : ''}</div>
+    </div>`;
+  };
+  const missionBuckets = missionRewards.reduce((buckets, reward) => {
+    const key = reward.kind || 'Mission';
+    if (!buckets[key]) buckets[key] = { kind: key, coins: 0, parts: 0 };
+    buckets[key].coins += reward.rewardCoins || 0;
+    buckets[key].parts += reward.rewardParts || 0;
+    return buckets;
+  }, {});
+  const missionHtml = Object.values(missionBuckets).map((reward) => {
+    const primaryType = reward.coins > 0 ? 'coins' : 'parts';
+    const primaryAmount = reward.coins > 0 ? reward.coins : reward.parts;
+    const kindLabel = { Progression: 'Prog', Daily: 'Day', Weekly: 'Week' }[reward.kind] || reward.kind;
+    const detailText = reward.coins > 0 && reward.parts > 0 ? `+${formatSmall(reward.parts)}P` : '';
+    return primaryAmount > 0 ? rewardTile({ type: primaryType, amount: primaryAmount, label: `${kindLabel} Bonus`, detail: detailText }) : '';
+  }).join('');
+  const rewardHtml = [
+    rewardTile({ type: 'coins', amount: game.coins, label: 'Run Coins' }),
+    rewardTile({ type: 'coins', amount: bonus, label: 'Bonus' }),
+    rewardTile({ type: 'parts', amount: game.parts, label: 'Parts' }),
+    game.tools > 0 ? rewardTile({ type: 'tools', amount: game.tools, label: 'Tools' }) : '',
+    missionHtml
+  ].join('');
+  const retryIcon = '/assets/vendor/kenney/kenney_ui-pack/Vector/Extra/icon_repeat_light.svg';
+  const garageIcon = ASSET_PATHS.mechanicShop;
+  const missionsIcon = '/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/icon_checkmark.svg';
+  panel.innerHTML = `<div class="rrPostRunHero"><div class="rrPostRunStars">${starHtml}</div><div class="rrPostRunPlace">${pct}%</div><div class="rrPostRunHeading"><h3 class="rrPostRunTitle">${title}</h3><p class="rrPostRunSubtitle">${subtitle}</p></div></div><div class="rrPostRunGrid">${rewardHtml}</div><div class="rrPostRunDetails"><div class="rrPostRunDetail"><b>${Math.floor(game.distanceM)}m</b>Distance</div><div class="rrPostRunDetail"><b>${Math.round(game.maxKmh)} km/h</b>Top Speed</div><div class="rrPostRunDetail"><b>${wearPct}%</b>Wear</div><div class="rrPostRunDetail"><b>${formatSmall(saveData.bestDistance)}m</b>Best Distance</div></div><div class="rrPostRunActions"><button class="rrPostRunActionRetry" onclick="window.restartHillRoute?.()" aria-label="Retry route"><img class="rrPostRunActionIcon" src="${retryIcon}" alt=""><span>Retry</span></button><button class="primary rrPostRunActionGarage" onclick="window.rrSetTab?.('garage')" aria-label="Open garage"><img class="rrPostRunActionIcon" src="${garageIcon}" alt=""><span>Garage</span></button><button class="gold rrPostRunActionMissions" onclick="window.rrSetTab?.('missions')" aria-label="Open missions"><img class="rrPostRunActionIcon" src="${missionsIcon}" alt=""><span>Missions</span></button></div>`;
   panel.hidden = false;
 }
 
@@ -626,12 +808,14 @@ function draw() {
   const cameraX = clamp(game.x - width * 0.34, 0, Math.max(0, route.length - width + 260));
   drawBackground(width, height, route, cameraX);
   drawRoad(width, height, route, cameraX);
+  drawSpeedStreaks(width, height, route, cameraX);
   drawHazards(width, height, route, cameraX);
   drawCheckpoints(width, height, route, cameraX);
   drawPickups(width, height, route, cameraX);
   drawGhosts(width, height, route, cameraX);
   drawPlayer(width, height, route, cameraX);
   drawFinish(width, height, route, cameraX);
+  drawNextFuelGuide(width, height, route, cameraX);
   drawRunMeters(width, height);
 }
 
@@ -690,6 +874,31 @@ function drawRoad(width, height, route, cameraX) {
   }
 }
 
+function drawSpeedStreaks(width, height, route, cameraX) {
+  const kmh = game.telemetry?.kmh || 0;
+  const intensity = clamp((kmh - 95) / 170, 0, 1);
+  if (intensity <= 0.02) return;
+  ctx.save();
+  ctx.globalAlpha = 0.1 + intensity * 0.28;
+  ctx.strokeStyle = '#f8fafc';
+  ctx.lineWidth = 1.5 + intensity * 1.5;
+  ctx.lineCap = 'round';
+  const baseX = game.x - cameraX - 30;
+  const roadY = routeY(route, game.x, height);
+  for (let i = 0; i < 7; i += 1) {
+    const offsetSeed = seededNoise(game.elapsed * 420 + i * 83, route.seed + 91);
+    const x = baseX - 45 - i * 36 - offsetSeed * 42;
+    const y = roadY - 54 + (i % 4) * 18 + offsetSeed * 12;
+    const len = 24 + intensity * 42 + offsetSeed * 20;
+    if (x < -80 || x > width + 40) continue;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - len, y + Math.sin(game.pitch) * 8);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawHazards(width, height, route, cameraX) {
   for (const hazard of game.hazards) {
     const x = hazard.x - cameraX;
@@ -724,13 +933,14 @@ function drawPickups(width, height, route, cameraX) {
     if (pickup.collected) continue;
     const x = pickup.x - cameraX;
     if (x < -60 || x > width + 60) continue;
-    const y = routeY(route, pickup.x, height) - 34;
+    const y = routeY(route, pickup.x, height) - 34 + (pickup.yOffset || 0);
     const img = images[pickup.type];
-    if (img && img.ready) ctx.drawImage(img, x - 20, y - 20, 40, 40);
+    const size = pickup.type === 'coin' ? 32 : 40;
+    if (img && img.ready) ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
     else {
       ctx.fillStyle = pickup.type === 'fuel' ? '#38bdf8' : pickup.type === 'parts' ? '#a78bfa' : pickup.type === 'tools' ? '#f97316' : '#facc15';
       ctx.beginPath();
-      ctx.arc(x, y, 17, 0, Math.PI * 2);
+      ctx.arc(x, y, size / 2 - 3, 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -794,8 +1004,33 @@ function drawCar(x, y, angle, img, label, alpha, color) {
   ctx.moveTo(28, 18 - game.suspensionTravel);
   ctx.lineTo(28, 30);
   ctx.stroke();
+  drawWheelSpinOverlay(game.wheelRotation + x * 0.01, alpha);
   ctx.restore();
   drawOutlinedText(label, x, y - 46, '11px', alpha);
+}
+
+function drawWheelSpinOverlay(rotation, alpha = 1) {
+  const wheelY = 22;
+  const traction = game?.traction ?? 1;
+  const stroke = traction < 0.82 ? '#facc15' : '#e0f2fe';
+  for (const wheelX of [-30, 29]) {
+    ctx.save();
+    ctx.translate(wheelX, wheelY);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = 0.28 * alpha + (1 - traction) * 0.34;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 10, 0.18, Math.PI * 1.25);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-8, 0);
+    ctx.lineTo(8, 0);
+    ctx.moveTo(0, -8);
+    ctx.lineTo(0, 8);
+    ctx.stroke();
+    ctx.restore();
+  }
 }
 
 function roundRect(x, y, width, height, radius) {
@@ -833,13 +1068,50 @@ function drawFinish(width, height, route, cameraX) {
   for (let i = 0; i < 6; i++) ctx.fillRect(x - 5 + (i % 2) * 5, y - 70 + i * 10, 5, 10);
 }
 
+function drawNextFuelGuide(width, height, route, cameraX) {
+  const target = nextFuelTarget();
+  if (!target) return;
+  const meters = routeMeters(route, target.x - game.x);
+  if (meters <= 0 || meters > 650) return;
+  const targetX = target.x - cameraX;
+  const onScreen = targetX >= 36 && targetX <= width - 36;
+  const x = onScreen ? targetX : width - 42;
+  const y = Math.max(92, Math.min(height - 134, routeY(route, game.x + Math.min(520, target.x - game.x), height) - 88));
+  ctx.save();
+  ctx.globalAlpha = 0.92;
+  ctx.fillStyle = 'rgba(2, 14, 24, .72)';
+  roundRect(x - 34, y - 18, 68, 34, 14);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(125, 220, 255, .65)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  const img = images.fuel;
+  if (img && img.ready) ctx.drawImage(img, x - 28, y - 11, 22, 22);
+  ctx.fillStyle = '#e0faff';
+  ctx.font = '900 9px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${meters}m`, x - 2, y + 4);
+  if (!onScreen) {
+    ctx.beginPath();
+    ctx.moveTo(x + 27, y);
+    ctx.lineTo(x + 18, y - 7);
+    ctx.lineTo(x + 18, y + 7);
+    ctx.closePath();
+    ctx.fillStyle = '#7ddcff';
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawRunMeters(width, height) {
   const fuelPct = game.fuel / game.stats.maxFuel;
   const wearPct = Math.min(1, game.wear / game.stats.wearLimit);
+  const lowFuelY = width <= 430 ? 154 : 124;
+  const eventY = width <= 430 ? 172 : 142;
   drawBar(14, 42, 150, 11, 'Fuel', fuelPct, '#22c55e');
   drawBar(14, 58, 150, 11, 'Wear', wearPct, wearPct > 0.75 ? '#ef4444' : '#f59e0b');
-  if (game.fuel / game.stats.maxFuel < 0.18 && nextFuelMeters() > 220) drawOutlinedText('LOW FUEL - COAST OR FIND STATION', width / 2, 72, '14px');
-  if (game.eventTimer > 0) drawOutlinedText(game.eventText, width / 2, 96, '16px');
+  if (game.fuel / game.stats.maxFuel < 0.18 && nextFuelMeters() > 220) drawOutlinedText('LOW FUEL - COAST OR FIND STATION', width / 2, lowFuelY, '13px');
+  if (game.eventTimer > 0) drawOutlinedText(game.eventText, width / 2, eventY, '14px');
 }
 
 function drawBar(x, y, width, height, label, pct, color) {
@@ -866,20 +1138,19 @@ function triggerEvent(text) {
 
 function hazardDamage(hazard) {
   if (!hazard) return { slow: 1, wear: 0 };
-  const kmh = Math.abs(game.speed) * (game.route.meters / game.route.length) * 3.6;
-  const carefulFactor = input.brake ? 0.38 : 1;
-  const overLimit = Math.max(0, kmh - DAMAGE_SPEED_KMH);
-  const speedDamageScale = 0.18 + clamp(kmh / DAMAGE_SPEED_KMH, 0, 1) * 0.32 + Math.pow(overLimit / DAMAGE_SPEED_KMH, 1.5) * 1.0;
-  const suspensionReduction = clamp(1.12 - saveData.upgrades.suspension * 0.035, 0.48, 1.0);
-  const baseWear = hazard.type === 'pothole' ? 1.55 : hazard.type === 'rough' ? 0.75 : hazard.type === 'gravel' ? 0.42 : 0.24;
-  const slow = hazard.type === 'mud' ? 0.72 : hazard.type === 'gravel' ? 0.86 : hazard.type === 'rough' ? 0.90 : 0.80;
-  return { slow, wear: baseWear * speedDamageScale * carefulFactor * suspensionReduction };
+  return calculateHazardEffect({
+    type: hazard.type,
+    kmh: game.telemetry.kmh,
+    braking: input.brake,
+    suspensionLevel: saveData.upgrades.suspension
+  });
 }
 
 function update(dt) {
   if (!game || game.finished) return;
   const height = canvas.height;
   const route = game.route;
+  const previousX = game.x;
   const targetPitch = routeAngle(route, game.x, height);
   const slope = Math.sin(targetPitch);
   const hazard = activeHazard();
@@ -890,12 +1161,24 @@ function update(dt) {
     triggerEvent(`${hazard.type.toUpperCase()} - slow down!`);
   }
 
-  const gasForce = input.gas && game.fuel > 0 ? game.stats.acceleration * game.stats.climb : 0;
-  const gravityForce = -slope * 92;
-  const rollingDrag = game.stats.drag + Math.abs(game.speed) * 0.018;
+  const speedRatio = clamp(Math.abs(game.speed) / game.stats.topSpeed, 0, 1);
+  const rearPitch = routeAngle(route, Math.max(0, game.x - 42), height);
+  const frontPitch = routeAngle(route, game.x + 42, height);
+  const terrainChatter = clamp(Math.abs(frontPitch - rearPitch) * 1.75 + (hazard ? 0.16 : 0), 0, 1);
+  const tractionPenalty = terrainChatter * clamp(1.08 - game.stats.grip * 0.62, 0.04, 0.42);
+  const tractionFactor = clamp(1 - tractionPenalty, 0.68, 1);
+  game.traction += (tractionFactor - game.traction) * Math.min(1, dt * 8);
+  const lowSpeedGrip = 1 + Math.max(0, 0.38 - speedRatio) * game.stats.grip;
+  const powerBand = 1 - Math.pow(speedRatio, 2.15) * 0.38;
+  const launchTorque = 1 + Math.pow(Math.max(0, 1 - speedRatio), 1.15) * game.stats.launchBonus;
+  const rangePull = speedRatio < 0.72 ? game.stats.midRangePull : game.stats.topEndPull;
+  const hillTorque = 1 + Math.max(0, slope) * (0.8 + (game.stats.climb - 1) * 3.2);
+  const gasForce = input.gas && game.fuel > 0 ? game.stats.acceleration * hillTorque * powerBand * launchTorque * rangePull * lowSpeedGrip * game.traction : 0;
+  const gravityForce = -slope * 28 / game.stats.climb;
+  const rollingDrag = game.stats.drag + Math.abs(game.speed) * 0.0065;
   if (gasForce > 0) {
     game.speed += gasForce * dt;
-    game.fuel -= game.stats.fuelUse * dt * (1 + Math.max(0, slope) * 0.8);
+    game.fuel -= game.stats.fuelUse * dt * (1 + Math.max(0, slope) * 0.55 + speedRatio * 0.18);
   }
   game.speed += gravityForce * dt;
   if (input.brake) {
@@ -905,8 +1188,11 @@ function update(dt) {
   if (game.speed > 0) game.speed -= rollingDrag * dt;
   if (game.speed < 0) game.speed += rollingDrag * 0.55 * dt;
   game.speed = clamp(game.speed, -game.stats.reverseTop, game.stats.topSpeed);
-  game.x += game.speed * dt * hazardEffect.slow;
+  const hazardMoveFactor = hazardEffect.slow + (1 - hazardEffect.slow) * game.stats.hazardSpeedResistance;
+  game.x += game.speed * dt * hazardMoveFactor;
   game.x = Math.max(80, game.x);
+  const actualSpeed = dt > 0 ? (game.x - previousX) / dt : game.speed * hazardEffect.slow;
+  game.wheelRotation = (game.wheelRotation + (actualSpeed * dt) / 16) % (Math.PI * 2);
   game.distancePx = Math.max(0, game.x - 80);
   game.distanceM = routeMeters(route, game.distancePx);
 
@@ -915,13 +1201,18 @@ function update(dt) {
   game.pitch += game.pitchVel * dt;
   game.suspensionTravel = Math.sin(game.elapsed * 18) * Math.min(6, Math.abs(game.speed) / 38) + targetPitch * 6;
 
-  game.telemetry = computeTelemetry();
+  game.telemetry = computeTelemetry(dt, actualSpeed);
   game.maxKmh = Math.max(game.maxKmh, game.telemetry.kmh);
 
+  const damageSpeedScale = game.telemetry.kmh > DAMAGE_SPEED_KMH
+    ? clamp((game.telemetry.kmh - DAMAGE_SPEED_KMH) / DAMAGE_SPEED_KMH, 0, 2.5)
+    : 0;
   const pitchStress = Math.abs(targetPitch - game.pitch);
+  const pitchWear = pitchStress * Math.abs(game.speed) * 0.014 * damageSpeedScale;
   const overspeedStress = Math.max(0, Math.abs(game.speed) - game.stats.topSpeed * 0.86) * 0.002;
-  const overLimitWear = Math.max(0, game.telemetry.kmh - DAMAGE_SPEED_KMH) * 0.006;
-  game.wear += (pitchStress * Math.abs(game.speed) * 0.014 + overspeedStress + hazardEffect.wear + overLimitWear) * dt * 60 / game.stats.durability;
+  const chassisWear = (pitchWear + overspeedStress) * dt * 60;
+  const terrainWear = hazardEffect.wear * dt * 8;
+  game.wear += (chassisWear + terrainWear) / game.stats.durability;
 
   collectPickupsAndCheckpoints();
   if (game.elapsed - game.lastSample > 0.18) {
@@ -959,7 +1250,7 @@ function collectPickupsAndCheckpoints() {
       triggerEvent('Tool repair');
     }
     if (pickup.type === 'coin') {
-      const coins = Math.round(4 * game.route.reward);
+      const coins = Math.round((pickup.value || 4) * game.route.reward);
       game.coins += coins;
       saveData.coins += coins;
     }
@@ -1107,6 +1398,11 @@ window.setHillGhosts = (mode) => {
   activeGhostMode = mode;
   mountRoadRunner(true);
 };
+window.rrCycleGhosts = () => {
+  const modes = Object.keys(GHOST_MODES);
+  activeGhostMode = modes[(modes.indexOf(activeGhostMode) + 1) % modes.length];
+  setText('[data-rr-mode]', GHOST_MODES[activeGhostMode].label);
+};
 window.setHillRoute = (route) => {
   if (!ROUTES[route] || !routeUnlocked(route)) return;
   activeRoute = route;
@@ -1153,6 +1449,7 @@ window.buyRoadRunnerUpgrade = (key) => {
 window.rrSetTab = (tab) => {
   if (!['drive', 'garage', 'vehicles', 'routes', 'missions'].includes(tab)) return;
   activeTab = tab;
+  document.querySelector('.roadRunnerShell')?.setAttribute('data-rr-active-tab', tab);
   document.querySelectorAll('[data-rr-tab]').forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-rr-tab') === tab));
   document.querySelectorAll('[data-rr-page]').forEach((page) => page.classList.toggle('active', page.getAttribute('data-rr-page') === tab));
   if (tab === 'garage') renderGaragePanel();
@@ -1165,8 +1462,50 @@ window.rrSetVehicleFilter = (filter) => {
   activeVehicleFilter = filter;
   renderVehiclePanel();
 };
+window.render_game_to_text = () => {
+  if (!game) return JSON.stringify({ mode: 'road-runner', active: false });
+  const hazard = activeHazard();
+  return JSON.stringify({
+    mode: 'road-runner',
+    active: true,
+    vehicle: saveData.selectedVehicle,
+    vehicleAsset: ASSET_PATHS[selectedVehicle().asset] || '',
+    vehicleAssetReady: Boolean(images[selectedVehicle().asset]?.ready && images[selectedVehicle().asset]?.naturalWidth > 0),
+    route: activeRoute,
+    elapsedSeconds: Number(game.elapsed.toFixed(1)),
+    distanceMeters: Math.floor(game.distanceM),
+    speedKmh: Number(game.telemetry.kmh.toFixed(1)),
+    topSpeedKmh: Number(game.telemetry.topSpeedKmh.toFixed(1)),
+    gear: game.telemetry.gearLabel,
+    rpm: game.telemetry.rpm,
+    redlineRpm: game.telemetry.redlineRpm,
+    fuelPct: clamp(Math.floor(game.fuel / game.stats.maxFuel * 100), 0, 100),
+    nextFuelMeters: nextFuelMeters(),
+    wearPct: Math.floor(Math.min(100, game.wear / game.stats.wearLimit * 100)),
+    tractionPct: Math.round((game.traction || 1) * 100),
+    openPickups: game.pickups.filter((pickup) => !pickup.collected).length,
+    damageThresholdKmh: DAMAGE_SPEED_KMH,
+    hazard: hazard ? {
+      type: hazard.type,
+      damageActive: game.telemetry.kmh >= DAMAGE_SPEED_KMH
+    } : null,
+    controls: { gas: input.gas, brake: input.brake }
+  });
+};
+window.advanceTime = (milliseconds) => {
+  if (!game) return;
+  const seconds = clamp(Number(milliseconds) / 1000, 0, 10);
+  const steps = Math.ceil(seconds * 60);
+  const dt = steps ? seconds / steps : 0;
+  for (let step = 0; step < steps; step += 1) {
+    game.elapsed += dt;
+    update(dt);
+  }
+  draw();
+};
 
 function inject() {
+  document.documentElement.classList.toggle('rrRaceViewport', Boolean(document.querySelector('#screen-race.active')));
   const screen = document.querySelector('#screen-race.active');
   if (!screen) return;
   requestAnimationFrame(() => mountRoadRunner(false));

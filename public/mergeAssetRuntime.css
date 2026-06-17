@@ -1,1 +1,128 @@
-.itemIcon{display:grid;place-items:center}.mergeItemArt{width:54px;height:54px;object-fit:contain;display:block;filter:drop-shadow(0 4px 0 rgba(0,0,0,.16))}.shelfSlot .mergeItemArt{width:44px;height:44px}.cell.selected .mergeItemArt{filter:drop-shadow(0 0 8px rgba(250,204,21,.75)) drop-shadow(0 4px 0 rgba(0,0,0,.16))}@media(max-width:430px){.mergeItemArt{width:46px;height:46px}.shelfSlot .mergeItemArt{width:38px;height:38px}}
+#screen-merge .card{background:linear-gradient(180deg,rgba(34,104,146,.96),rgba(10,35,57,.98))!important}.itemIcon{display:grid;place-items:center;min-height:54px}.mergeItemArt{width:54px;height:54px;max-width:100%;object-fit:contain;display:block;pointer-events:none;user-select:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.16))}.shelfSlot .itemIcon{min-height:44px}.shelfSlot .mergeItemArt{width:44px;height:44px}.cell.selected .mergeItemArt{filter:drop-shadow(0 0 8px rgba(250,204,21,.75)) drop-shadow(0 4px 0 rgba(0,0,0,.16))}.mergeChainNotice{overflow:hidden}.mergeChainPreview{display:flex;gap:7px;align-items:center;margin-top:8px;padding:7px;border-radius:14px;background:rgba(3,14,24,.24);border:1px solid rgba(255,255,255,.12)}.mergeChainPreview.locked{opacity:.58;filter:saturate(.7)}.mergeChainAsset{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}.mergeChainAsset .mergeItemArt{width:34px;height:34px}@media(max-width:430px){.itemIcon{min-height:46px}.mergeItemArt{width:46px;height:46px}.shelfSlot .itemIcon{min-height:38px}.shelfSlot .mergeItemArt{width:38px;height:38px}.mergeChainPreview{gap:5px;padding:5px}.mergeChainAsset{width:34px;height:34px}.mergeChainAsset .mergeItemArt{width:28px;height:28px}}
+
+#screen-merge .mergeGuideCard {
+  overflow: hidden;
+}
+
+#screen-merge .mergeRecipe {
+  margin: 9px 0;
+  padding: 10px;
+  border-radius: 17px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(2,12,20,.32);
+}
+
+#screen-merge .mergeRecipe.good {
+  border-color: rgba(53,229,138,.25);
+  background: rgba(53,229,138,.07);
+}
+
+#screen-merge .mergeRecipe.locked {
+  border-color: rgba(255,209,102,.22);
+  background: rgba(255,209,102,.06);
+}
+
+#screen-merge .mergeRecipeHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 7px;
+}
+
+#screen-merge .mergeRecipeHead b {
+  display: block;
+  font-size: 13px;
+}
+
+#screen-merge .mergeRecipeHead span:not(.pill) {
+  display: block;
+  margin-top: 2px;
+  color: #b7d5e3;
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+#screen-merge .mergeRecipeRule {
+  margin-bottom: 8px;
+  padding: 7px 8px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.24);
+  border: 1px solid rgba(255,255,255,.09);
+  color: #dff6ff;
+  font-size: 10px;
+}
+
+#screen-merge .mergeChainLadder {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(96px, 112px);
+  gap: 7px;
+  overflow-x: auto;
+  padding: 3px 1px 8px;
+  scrollbar-width: thin;
+}
+
+#screen-merge .mergeChainStep {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  align-content: start;
+  min-height: 134px;
+  padding: 8px 7px;
+  border-radius: 15px;
+  background: rgba(1,10,17,.42);
+  border: 1px solid rgba(255,255,255,.10);
+  text-align: center;
+}
+
+#screen-merge .mergeChainLevel {
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  padding: 2px 5px;
+  border-radius: 8px;
+  background: rgba(0,0,0,.45);
+  color: #ffd166;
+  font-size: 8px;
+  font-weight: 1000;
+}
+
+#screen-merge .mergeChainNode {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 15px;
+  background: rgba(255,255,255,.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+#screen-merge .mergeChainNode .mergeItemArt {
+  width: 46px;
+  height: 46px;
+}
+
+#screen-merge .mergeChainStep b {
+  color: #ffffff;
+  font-size: 9px;
+  line-height: 1.05;
+}
+
+#screen-merge .mergeChainArrow {
+  display: block;
+  color: #aee7f5;
+  font-size: 8px;
+  line-height: 1.15;
+}
+
+#screen-merge .mergeChainArrow.final {
+  color: #ffd166;
+  font-weight: 1000;
+}
+
+#screen-merge .mergeRecipeAction {
+  margin-top: 8px;
+  width: 100%;
+}

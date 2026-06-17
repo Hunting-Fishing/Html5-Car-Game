@@ -5,6 +5,7 @@ export function ensureIdleLineState(state) {
   if (!state.idleLines) state.idleLines = {};
   if (!state.idleLines.lines) state.idleLines.lines = {};
   if (!state.idleLines.managers) state.idleLines.managers = {};
+  if (!state.idleLines.autoCollect) state.idleLines.autoCollect = {};
   if (typeof state.idleLines.lifetimeCollections !== 'number') state.idleLines.lifetimeCollections = 0;
 
   IDLE_LINES.forEach((line) => {
@@ -16,6 +17,7 @@ export function ensureIdleLineState(state) {
     if (typeof current.cycle !== 'number') current.cycle = 0;
     if (typeof current.collected !== 'number') current.collected = 0;
     if (typeof state.idleLines.managers[line.key] !== 'boolean') state.idleLines.managers[line.key] = false;
+    if (typeof state.idleLines.autoCollect[line.key] !== 'boolean') state.idleLines.autoCollect[line.key] = true;
   });
 }
 
@@ -26,7 +28,7 @@ export function tickIdleLines(state, dt) {
     if (!current || current.level <= 0) return;
     const cycleMs = getLineCycleMs(state, line);
     current.cycle += dt * 1000;
-    if (!hasManager(state, line.key)) {
+    if (!hasManager(state, line.key) || !isAutoCollectEnabled(state, line.key)) {
       current.cycle = Math.min(current.cycle, cycleMs);
       return;
     }
@@ -112,6 +114,22 @@ export function getNextMilestone(state, line) {
 export function hasManager(state, lineKey) {
   ensureIdleLineState(state);
   return Boolean(state.idleLines.managers[lineKey]);
+}
+
+export function isAutoCollectEnabled(state, lineKey) {
+  ensureIdleLineState(state);
+  return state.idleLines.autoCollect[lineKey] !== false;
+}
+
+export function toggleLineAutoCollect(state, lineKey) {
+  const line = getLineDef(lineKey);
+  if (!line) return { ok: false, message: 'Unknown income line.' };
+  if (!hasManager(state, lineKey)) return { ok: false, message: `Hire ${line.manager.name} before toggling auto collect.` };
+  state.idleLines.autoCollect[lineKey] = !isAutoCollectEnabled(state, lineKey);
+  return {
+    ok: true,
+    message: `${line.name} auto collect ${state.idleLines.autoCollect[lineKey] ? 'enabled' : 'paused'}.`
+  };
 }
 
 export function canCollectLine(state, line) {

@@ -47,7 +47,14 @@
   background: #fff;
   transform-origin: 50% 88%;
   transform: translate(-50%, -88%) rotate(var(--needle, -135deg));
+  transition: transform 90ms linear;
   box-shadow: 0 0 8px rgba(255,255,255,.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rrNeedle {
+    transition: none;
+  }
 }
 
 .rrNeedleHub {

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" preserveAspectRatio="none" role="img" aria-label="World panel frame">
+  <rect x="7" y="7" width="706" height="196" rx="34" fill="#0b2130" stroke="#7ddcff" stroke-width="12"/>
+  <rect x="26" y="26" width="668" height="158" rx="24" fill="#123247" stroke="#35e58a" stroke-width="5" opacity=".88"/>
+  <path d="M48 54h624" stroke="#fff" stroke-width="4" opacity=".2"/>
+</svg>

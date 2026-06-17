@@ -1,0 +1,280 @@
+#screen-garage {
+  --build-panel-art: url("/assets/Build/ui/panel-frame.svg");
+  --build-room-card-art: url("/assets/Build/ui/room-card.svg");
+  --build-progress-track: url("/assets/Build/ui/progress-track.svg");
+  --build-progress-fill: url("/assets/Build/ui/progress-fill.svg");
+  --build-button-art: url("/assets/Build/ui/build-button.svg");
+  --build-world-button-art: url("/assets/Build/ui/world-button.svg");
+  --build-lines-button-art: url("/assets/Build/ui/lines-button.svg");
+  --build-sync-badge: url("/assets/Build/ui/sync-badge.svg");
+}
+
+#screen-garage .card {
+  position: relative;
+  overflow: hidden;
+}
+
+#screen-garage .card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--build-panel-art);
+  background-size: 100% 100%;
+  opacity: .16;
+  pointer-events: none;
+}
+
+#screen-garage .card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.buildAssetPreload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: .01;
+  pointer-events: none;
+}
+
+.buildHubCard {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,209,102,.22), transparent 34%),
+    linear-gradient(180deg, rgba(20,86,112,.98), rgba(7,26,40,.98)) !important;
+}
+
+.buildHubButtons,
+.roomActions,
+.buildActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.buildHubButtons {
+  margin: 10px 0 8px;
+}
+
+.buildBridgeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.buildBridgeStat,
+.buildWorldChip,
+.buildLineChip {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  background: rgba(2,12,20,.34);
+  padding: 8px;
+  min-width: 0;
+}
+
+.buildBridgeStat b,
+.buildWorldChip b,
+.buildLineChip b {
+  display: block;
+  color: #f8fbff;
+  font-size: 13px;
+  line-height: 1.05;
+}
+
+.buildBridgeStat span,
+.buildWorldChip span,
+.buildLineChip span {
+  display: block;
+  margin-top: 2px;
+  color: #b7d5e3;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+#screen-garage .shopRoom {
+  background:
+    linear-gradient(180deg, rgba(10,27,40,.18), rgba(2,9,15,.62)),
+    var(--build-room-card-art);
+  background-size: cover, 100% 100%;
+  border-color: rgba(111,220,255,.26);
+}
+
+#screen-garage .roomArtWrap {
+  position: relative;
+  min-height: 112px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(4,14,21,.2), rgba(4,14,21,.5));
+}
+
+#screen-garage .roomArt {
+  height: 100%;
+  min-height: 112px;
+  object-fit: cover;
+}
+
+#screen-garage .roomProgress {
+  background-image: var(--build-progress-track);
+  background-size: 100% 100%;
+}
+
+#screen-garage .roomProgress div {
+  background-image: var(--build-progress-fill);
+  background-size: 100% 100%;
+}
+
+.buildAssetIcon,
+.roomButtonAsset,
+.buildButtonAsset,
+.buildSystemAsset {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.buildSystemAsset {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.08);
+  padding: 3px;
+}
+
+.roomActions .btn,
+.buildActions .btn,
+.buildHubButtons .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.roomSyncRow,
+.buildSyncRow,
+.lineBuildBridge {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 7px 0;
+}
+
+.buildWorldChip,
+.buildLineChip {
+  padding: 5px 7px;
+  border-radius: 999px;
+}
+
+.buildSyncBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.buildSyncBadge::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background-image: var(--build-sync-badge);
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+#screen-garage .building {
+  grid-template-columns: auto 1fr;
+  align-items: stretch;
+}
+
+#screen-garage .building .buildIcon {
+  display: none;
+}
+
+.buildingMain {
+  min-width: 0;
+}
+
+.buildingHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.buildingHeader h4 {
+  margin: 0;
+}
+
+.buildingHeader p {
+  margin: 2px 0 0;
+}
+
+.buildCommMeta {
+  margin: 7px 0;
+  padding: 7px;
+  border-radius: 13px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+
+.buildLineBridgeCard {
+  border-color: rgba(53,229,138,.24);
+}
+
+#screen-lines .buildLineBridgeCard {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(53,229,138,.18), transparent 34%),
+    linear-gradient(180deg, rgba(19,73,102,.98), rgba(7,26,42,.98)) !important;
+}
+
+#screen-lines .buildLineBridgeCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/assets/Build/ui/panel-frame.svg");
+  background-size: 100% 100%;
+  opacity: .18;
+  pointer-events: none;
+}
+
+#screen-lines .buildLineBridgeCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+#screen-lines .buildLineBridgeCard .buildLineChip {
+  background: rgba(2, 12, 20, .58);
+  border-color: rgba(125, 220, 255, .18);
+}
+
+#screen-lines .buildLineBridgeCard .buildLineChip b {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.buildLineBridgeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.lockedLineActions {
+  margin-top: 8px;
+}
+
+@media (max-width: 390px) {
+  .buildBridgeGrid,
+  .buildLineBridgeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .buildHubButtons,
+  .roomActions,
+  .buildActions {
+    grid-template-columns: 1fr;
+  }
+}

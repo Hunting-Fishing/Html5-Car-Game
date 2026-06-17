@@ -40,6 +40,16 @@ export function defaultState() {
         performanceBay: false,
         raceEvent: false
       },
+      autoCollect: {
+        streetRoute: true,
+        partsDelivery: true,
+        mobileMechanic: true,
+        fuelRun: true,
+        towingJob: true,
+        dealerShowcase: true,
+        performanceBay: true,
+        raceEvent: true
+      },
       lines: {
         streetRoute: { level: 1, cycle: 0, collected: 0 },
         partsDelivery: { level: 0, cycle: 0, collected: 0 },

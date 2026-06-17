@@ -2,13 +2,18 @@ import './styles.css';
 import { gsap } from 'gsap';
 import { SCREENS, RACE_MODES, CHAINS, UPGRADES, BUILDINGS, PROBLEMS, CREATOR_RULES, IDLE_LINES } from './data/gameData.js';
 import { AUTO_SHOP_ROOMS, AUTO_WORLD_LOCATIONS, WORLD_TRAFFIC, WORLD_PEOPLE } from './data/visualData.js';
+import { lineAssetForKey, LINES_GUI_ASSETS } from './data/linesAssetMap.js';
+import { BUILD_ASSET_LIST, BUILD_GUI_ASSETS, BUILD_ICON_ASSETS, buildRoomAssetForKey, buildSystemAssetForKey } from './data/buildAssetMap.js';
+import { connectionForBuilding, connectionForLine, connectionForRoom } from './data/buildLinkData.js';
+import { mergeAssetForName } from './data/mergeAssetMap.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, costToText, canAfford, addCurrency, addXp } from './systems/economySystem.js';
 import { getObjectiveList, applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, itemDisplayName, boardLimit, activeBoardCount, shelfCapacity, normalizeMergeState, unlockedChainKeys } from './systems/mergeSystem.js';
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
 import { buyUpgrade, upgradeCost, buyBuilding, nextBuildingCost } from './systems/upgradeSystem.js';
-import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, getLineState, getLineIncome, getLineCycleMs, getLineUpgradeCost, getManagerCost, getNextMilestone, canCollectLine, hasManager, isLineUnlocked, unlockText, getTotalIdlePerMinute } from './systems/idleLineSystem.js';
+import { getBuildCommunicationState, publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
+import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, toggleLineAutoCollect, getLineState, getLineIncome, getLineCycleMs, getLineUpgradeCost, getManagerCost, getNextMilestone, canCollectLine, hasManager, isAutoCollectEnabled, isLineUnlocked, unlockText, getTotalIdlePerMinute } from './systems/idleLineSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
 let state = loadState();
@@ -16,8 +21,26 @@ let lastTime = performance.now();
 let renderLock = false;
 let saveQueued = false;
 const root = document.querySelector('#app');
+const WORLD_BUILDING_LABELS = {
+  streetKiosk: 'Kiosk',
+  tireRepair: 'Tire Shop',
+  privateShop: 'Repair Shop',
+  partsWarehouse: 'Parts WH',
+  dealerShowroom: 'Dealer',
+  salvageBlock: 'Salvage',
+  towDispatch: 'Tow Dispatch',
+  testTrack: 'Test Track'
+};
 
+applyInitialScreenParam();
 boot();
+
+function applyInitialScreenParam() {
+  const requested = new URLSearchParams(window.location.search).get('screen');
+  if (requested && SCREENS.some((screen) => screen.id === requested)) {
+    state.activeScreen = requested;
+  }
+}
 
 function boot() {
   normalizeMergeState(state);
@@ -35,6 +58,7 @@ function gameLoop(now) {
   tickIdleLines(state, dt);
   tickSupplier(state, dt);
   applyDerivedObjectives(state);
+  publishBuildCommunicationState(state);
   updateRaceCanvas(state);
   updateTopBar();
 
@@ -82,6 +106,7 @@ function renderShell() {
 
 function render() {
   ensureIdleLineState(state);
+  publishBuildCommunicationState(state);
   updateTopBar();
   document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
   document.querySelector(`#screen-${state.activeScreen}`)?.classList.add('active');
@@ -252,15 +277,154 @@ function renderRace() {
 }
 
 function renderLines() {
+  const buildComm = getBuildCommunicationState(state);
   return `
-    <section class="card">
+    <section class="card linesIntroCard">
       <div class="cardTitle">
         <div><h2>Idle Business Lines</h2><p>Upgrade each automotive line. Hire managers at Lv 10 to auto-collect.</p></div>
         <span class="pill">Phase 10</span>
       </div>
       <div class="notice good"><b>Goal:</b> Street Route → Parts Delivery → Mobile Mechanic → Fuel/Towing → Dealer/Performance/Race.</div>
+      <div class="linesAssetPreload" aria-hidden="true">
+        ${Object.entries(LINES_GUI_ASSETS).map(([key, src]) => `<img class="linesGuiAsset" data-lines-gui="${key}" src="${src}" alt="" loading="eager">`).join('')}
+      </div>
     </section>
+    ${renderBuildLineBridge(buildComm)}
     ${IDLE_LINES.map(renderLineCard).join('')}
+  `;
+}
+
+function renderBuildLineBridge(snapshot) {
+  const systems = snapshot.systems.filter((system) => system.lineKeys.length);
+  return `
+    <section class="card buildLineBridgeCard">
+      <div class="cardTitle">
+        <div><h3>Build Links</h3><p>Garage systems now publish to Lines and World inventory together.</p></div>
+        <span class="pill buildSyncBadge">${snapshot.unlockedLineCount}/${snapshot.totalLineCount} lines</span>
+      </div>
+      <div class="buildLineBridgeGrid">
+        ${systems.map((system) => {
+          const icon = buildSystemAssetForKey(system.buildingKey || system.key) || BUILD_ICON_ASSETS.buildMode;
+          const lineText = system.lines.map((line) => `${line.name} ${line.unlocked ? `Lv ${line.level}` : 'locked'}`).join(' / ');
+          return `
+            <div class="buildLineChip">
+              <b><img class="buildAssetIcon buildAssetImage" src="${icon}" alt="" loading="eager"> ${system.title}</b>
+              <span>${system.built ? lineText : 'Build this system to activate the linked line.'}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderLineIcon(line) {
+  const asset = lineAssetForKey(line.key);
+  return `
+    <div class="lineIcon">
+      <img class="lineIconAsset" src="${asset}" alt="${line.name}" loading="eager">
+      <span class="lineEmojiFallback">${line.icon}</span>
+    </div>
+  `;
+}
+
+function renderLineStatusPill(label, asset) {
+  return `<span class="pill lineStatusPill"><img class="lineStatusAsset linesGuiAsset" src="${asset}" alt="" loading="eager">${label}</span>`;
+}
+
+function getLineRequirementInfo(line) {
+  const unlock = line.unlock || { type: 'starter' };
+  if (unlock.type === 'starter') {
+    return { met: true, label: 'Open from start', detail: 'Ready', current: 1, required: 1, actionScreen: null };
+  }
+  if (unlock.type === 'lineLevel') {
+    const current = getLineState(state, unlock.key)?.level || 0;
+    return {
+      met: current >= unlock.level,
+      label: `Upgrade ${unlock.label} to Lv ${unlock.level}`,
+      detail: `Lv ${current}/${unlock.level}`,
+      current,
+      required: unlock.level,
+      actionScreen: 'lines'
+    };
+  }
+  if (unlock.type === 'building') {
+    const current = state.buildings?.[unlock.key] || 0;
+    return {
+      met: current >= unlock.level,
+      label: `Build ${unlock.label} Lv ${unlock.level}`,
+      detail: `Lv ${current}/${unlock.level}`,
+      current,
+      required: unlock.level,
+      actionScreen: 'garage'
+    };
+  }
+  if (unlock.type === 'stage') {
+    const current = state.stage || 1;
+    return {
+      met: current >= unlock.stage,
+      label: `Reach Stage ${unlock.stage}`,
+      detail: `Stage ${current}/${unlock.stage}`,
+      current,
+      required: unlock.stage,
+      actionScreen: 'hub'
+    };
+  }
+  return { met: false, label: 'Requirement unknown', detail: 'Locked', current: 0, required: 1, actionScreen: null };
+}
+
+function renderLineRequirement(line) {
+  const req = getLineRequirementInfo(line);
+  const pct = Math.max(0, Math.min(100, (req.current / Math.max(1, req.required)) * 100));
+  const action = !req.met && req.actionScreen
+    ? `<button class="btn small ghost" data-action="screen" data-screen="${req.actionScreen}">Go</button>`
+    : '';
+  return `
+    <div class="lineRequirement ${req.met ? 'met' : 'open'}">
+      <div class="lineRequirementText">
+        <b>${req.met ? 'Requirement met' : 'Requirement'}</b>
+        <span>${req.label}</span>
+      </div>
+      <strong>${req.detail}</strong>
+      ${action}
+      <div class="lineRequirementMeter"><span style="width:${pct}%"></span></div>
+    </div>
+  `;
+}
+
+function renderManagerRequirement(line, level, managerOwned, managerCost, autoEnabled) {
+  if (managerOwned) {
+    return `
+      <div class="lineManagerGrid">
+        <div class="notice good">
+          <b>${line.manager.name}</b> hired.<br>
+          Auto collect is <b>${autoEnabled ? 'ON' : 'OFF'}</b>. ${autoEnabled ? 'Rewards collect automatically.' : 'Cycle stops when ready for manual collection.'}
+        </div>
+        <button class="btn small ${autoEnabled ? 'red' : 'primary'}" data-action="toggleLineAuto" data-line="${line.key}">
+          <img class="lineButtonAsset linesGuiAsset" src="${autoEnabled ? LINES_GUI_ASSETS.manualBadge : LINES_GUI_ASSETS.autoBadge}" alt="" loading="eager">
+          <span>${autoEnabled ? 'Pause Auto' : 'Turn Auto On'}</span>
+        </button>
+      </div>
+    `;
+  }
+
+  const managerReady = level >= line.manager.unlockLevel;
+  const pct = Math.max(0, Math.min(100, (level / line.manager.unlockLevel) * 100));
+  return `
+    <div class="lineManagerNeed">
+      <div class="lineRequirement ${managerReady ? 'met' : 'open'}">
+        <div class="lineRequirementText">
+          <b>Manager requirement</b>
+          <span>${line.manager.name} unlocks at Lv ${line.manager.unlockLevel}</span>
+        </div>
+        <strong>Lv ${level}/${line.manager.unlockLevel}</strong>
+        <div class="lineRequirementMeter"><span style="width:${pct}%"></span></div>
+      </div>
+      <button class="btn small" data-action="buyManager" data-line="${line.key}" ${managerReady && canAfford(state, managerCost) ? '' : 'disabled'}>
+        <img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.hireManagerButton}" alt="" loading="eager">
+        <span>Hire ${line.manager.name}<br><small>${managerReady ? costToText(managerCost) : `Needs Lv ${line.manager.unlockLevel}`}</small></span>
+      </button>
+    </div>
   `;
 }
 
@@ -274,29 +438,39 @@ function renderLineCard(line) {
   const upgradeCost = getLineUpgradeCost(state, line);
   const managerCost = getManagerCost(state, line);
   const managerOwned = hasManager(state, line.key);
+  const autoEnabled = isAutoCollectEnabled(state, line.key);
   const nextMilestone = getNextMilestone(state, line);
   const collectReady = canCollectLine(state, line);
+  const statusAsset = !unlocked ? LINES_GUI_ASSETS.lockedBadge : managerOwned && autoEnabled ? LINES_GUI_ASSETS.autoBadge : LINES_GUI_ASSETS.manualBadge;
+  const statusLabel = !unlocked ? 'Locked' : managerOwned ? (autoEnabled ? 'AUTO ON' : 'AUTO OFF') : 'MANUAL';
 
   if (!unlocked) {
+    const buildConnection = connectionForLine(line.key);
+    const buildLink = buildConnection?.buildingKey
+      ? `<div class="lockedLineActions"><button class="btn small gold" data-action="screen" data-screen="garage"><img class="roomButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.buildMode}" alt="" loading="eager"><span>Open Build</span></button></div>`
+      : '';
     return `
-      <section class="lineCard lockedLine">
+      <section class="lineCard lockedLine" data-line-key="${line.key}">
         <div class="lineHead">
-          <div class="lineIcon">${line.icon}</div>
+          ${renderLineIcon(line)}
           <div><h3>${line.name}</h3><p>${line.description}</p></div>
-          <span class="pill">Locked</span>
+          ${renderLineStatusPill(statusLabel, statusAsset)}
         </div>
+        ${renderLineRequirement(line)}
         <div class="notice">${unlockText(line)}</div>
+        ${buildLink}
       </section>
     `;
   }
 
   return `
-    <section class="lineCard">
+    <section class="lineCard" data-line-key="${line.key}">
       <div class="lineHead">
-        <div class="lineIcon">${line.icon}</div>
+        ${renderLineIcon(line)}
         <div><h3>${line.name} <span class="pill">Lv ${level}</span></h3><p>${line.description}</p></div>
-        <span class="pill">${managerOwned ? 'AUTO' : 'MANUAL'}</span>
+        ${renderLineStatusPill(statusLabel, statusAsset)}
       </div>
+      ${renderLineRequirement(line)}
       <div class="lineStats">
         <div><b>${fmt(income)}</b><span>${line.outputLabel}/cycle</span></div>
         <div><b>${(cycleMs / 1000).toFixed(1)}s</b><span>Cycle</span></div>
@@ -304,11 +478,11 @@ function renderLineCard(line) {
       </div>
       <div class="lineProgress"><div style="width:${pct}%"></div></div>
       <div class="lineButtons">
-        <button class="btn small ${collectReady ? 'gold' : 'ghost'}" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}>${managerOwned ? 'Auto Running' : 'Collect'}</button>
-        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}" ${canAfford(state, upgradeCost) ? '' : 'disabled'}>Upgrade<br><small>${costToText(upgradeCost)}</small></button>
+        <button class="btn small ${collectReady ? 'gold' : 'ghost'}" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.collectButton}" alt="" loading="eager"><span>${managerOwned && autoEnabled ? 'Auto Running' : 'Collect'}</span></button>
+        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}" ${canAfford(state, upgradeCost) ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.upgradeButton}" alt="" loading="eager"><span>Upgrade<br><small>${costToText(upgradeCost)}</small></span></button>
       </div>
       <div class="lineManager">
-        ${managerOwned ? `<div class="notice good"><b>${line.manager.name}</b> hired. This line auto-collects.</div>` : `<button class="btn small" data-action="buyManager" data-line="${line.key}" ${level >= line.manager.unlockLevel && canAfford(state, managerCost) ? '' : 'disabled'}>Hire ${line.manager.name}<br><small>${level < line.manager.unlockLevel ? `Needs Lv ${line.manager.unlockLevel}` : costToText(managerCost)}</small></button>`}
+        ${renderManagerRequirement(line, level, managerOwned, managerCost, autoEnabled)}
       </div>
       <div class="cost">Next milestone: ${nextMilestone ? `Lv ${nextMilestone.level} · ${nextMilestone.label}` : 'All early milestones reached.'}</div>
     </section>
@@ -356,12 +530,9 @@ function renderMerge() {
       </div>
     </section>
 
-    <section class="card">
-      <div class="cardTitle"><div><h3>Unlocked Chains</h3><p>Performance and Racing stay locked until the garage systems exist.</p></div></div>
-      ${Object.entries(CHAINS).map(([key, chain]) => {
-        const unlocked = unlockedChainKeys(state).includes(key);
-        return `<div class="notice ${unlocked ? 'good' : ''}" style="margin-bottom:7px;"><b>${chain.icon} ${chain.label}</b><br>${unlocked ? chain.description : 'Locked. Build the required garage system first.'}</div>`;
-      }).join('')}
+    <section class="card mergeGuideCard">
+      <div class="cardTitle"><div><h3>Merge Recipes</h3><p>Two matching items combine into the next item. Locked sets show the exact requirement.</p></div></div>
+      ${Object.entries(CHAINS).map(([key, chain]) => renderMergeChainGuide(key, chain)).join('')}
     </section>
   `;
 }
@@ -379,20 +550,123 @@ function renderBoardCell(item, index) {
 
 function renderItem(item) {
   const chain = CHAINS[item.chain];
-  return `<div><span class="lvl">L${item.level}</span><div class="itemIcon">${chain.icon}</div><div class="itemName">${itemDisplayName(item)}</div><span class="chainTag">${chain.short}</span></div>`;
+  const name = itemDisplayName(item);
+  const asset = mergeAssetForName(name);
+  const icon = asset
+    ? `<img class="mergeItemArt" src="${asset}" alt="${name}" draggable="false">`
+    : chain.icon;
+  return `<div><span class="lvl">L${item.level}</span><div class="itemIcon">${icon}</div><div class="itemName">${name}</div><span class="chainTag">${chain.short}</span></div>`;
+}
+
+function renderMergeChainPreview(chain, unlocked) {
+  const preview = chain.items.slice(0, 4).map((name) => {
+    const asset = mergeAssetForName(name);
+    return asset
+      ? `<span class="mergeChainAsset"><img class="mergeItemArt" src="${asset}" alt="${name}" loading="eager" draggable="false"></span>`
+      : `<span class="mergeChainAsset">${chain.icon}</span>`;
+  }).join('');
+  return `<div class="mergeChainPreview ${unlocked ? '' : 'locked'}" aria-label="${chain.label} asset preview">${preview}</div>`;
+}
+
+function mergeChainRequirement(key) {
+  if (key === 'performance') {
+    const level = state.buildings?.tuningCorner || 0;
+    return {
+      met: level > 0,
+      text: `Build Tuning Corner Lv 1 (${level}/1)`,
+      actionScreen: 'garage'
+    };
+  }
+  if (key === 'racing') {
+    const level = state.buildings?.testTrack || 0;
+    return {
+      met: level > 0,
+      text: `Build 2D Test Track Lv 1 (${level}/1)`,
+      actionScreen: 'garage'
+    };
+  }
+  return { met: true, text: 'Unlocked from start', actionScreen: null };
+}
+
+function renderMergeChainGuide(key, chain) {
+  const unlocked = unlockedChainKeys(state).includes(key);
+  const req = mergeChainRequirement(key);
+  if (!unlocked) {
+    return `
+      <div class="mergeRecipe locked">
+        <div class="mergeRecipeHead">
+          <div><b>${chain.icon} ${chain.label}</b><span>${chain.description}</span></div>
+          <span class="pill">Locked</span>
+        </div>
+        <div class="notice">Requirement: ${req.text}</div>
+        ${renderMergeChainPreview(chain, false)}
+        ${req.actionScreen ? `<button class="btn small gold mergeRecipeAction" data-action="screen" data-screen="${req.actionScreen}">Open Build Requirements</button>` : ''}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="mergeRecipe good">
+      <div class="mergeRecipeHead">
+        <div><b>${chain.icon} ${chain.label}</b><span>${chain.description}</span></div>
+        <span class="pill">Unlocked</span>
+      </div>
+      <div class="mergeRecipeRule">Recipe rule: <b>2 matching items</b> make the next level.</div>
+      <div class="mergeChainLadder" aria-label="${chain.label} merge progression">
+        ${chain.items.map((name, index) => renderMergeChainStep(chain, name, index)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderMergeChainStep(chain, name, index) {
+  const asset = mergeAssetForName(name);
+  const next = chain.items[index + 1];
+  const art = asset
+    ? `<img class="mergeItemArt" src="${asset}" alt="${name}" loading="eager" draggable="false">`
+    : `<span>${chain.icon}</span>`;
+  return `
+    <div class="mergeChainStep">
+      <div class="mergeChainLevel">L${index + 1}</div>
+      <div class="mergeChainNode">${art}</div>
+      <b>${name}</b>
+      ${next ? `<span class="mergeChainArrow">2x -> ${next}</span>` : `<span class="mergeChainArrow final">Top item</span>`}
+    </div>
+  `;
 }
 
 function renderGarage() {
+  const buildComm = publishBuildCommunicationState(state);
   return `
+    <section class="card buildHubCard">
+      <div class="cardTitle">
+        <div><h2>Build Hub</h2><p>Build systems, World placements, and Lines now share one communication snapshot.</p></div>
+        <span class="pill buildSyncBadge">Live Sync</span>
+      </div>
+      <div class="buildAssetPreload" aria-hidden="true">
+        ${BUILD_ASSET_LIST.map((item) => `<img class="buildAssetPreloadImage" data-build-asset="${item.category}:${item.key}" src="${item.src}" alt="" loading="eager">`).join('')}
+      </div>
+      <div class="buildHubButtons">
+        <button class="btn gold" data-action="screen" data-screen="garage"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.buildMode}" alt="" loading="eager"><span>Build</span></button>
+        <button class="btn primary" data-action="screen" data-screen="world"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.worldSync}" alt="" loading="eager"><span>World</span></button>
+        <button class="btn" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Lines</span></button>
+      </div>
+      <div class="buildBridgeGrid">
+        ${renderBuildHubStat(`${buildComm.builtCount}/${buildComm.totalSystems}`, 'Systems Built')}
+        ${renderBuildHubStat(`+${buildComm.totalWorldInventory}`, 'World Placements')}
+        ${renderBuildHubStat(`${buildComm.unlockedLineCount}/${buildComm.totalLineCount}`, 'Linked Lines')}
+      </div>
+    </section>
+
     <section class="card">
-      <div class="cardTitle"><div><h2>365 Auto Shop Floor</h2><p>Visual workshop expansion. Rooms map to idle lines and unlock through garage systems.</p></div><span class="pill">Tycoon View</span></div>
+      <div class="cardTitle"><div><h2>365 Auto Shop Floor</h2><p>Each room links to a Line and adds World inventory when its Build system exists.</p></div><span class="pill">Build View</span></div>
       <div class="shopFloor">
         ${AUTO_SHOP_ROOMS.map(renderShopRoom).join('')}
       </div>
     </section>
 
     <section class="card">
-      <div class="cardTitle"><div><h2>Build Garage Systems</h2><p>Buildings unlock mechanics. They are not just cosmetics.</p></div></div>
+      <div class="cardTitle"><div><h2>Build Garage Systems</h2><p>Buildings unlock mechanics and city inventory. They are not just cosmetics.</p></div></div>
       ${BUILDINGS.map(renderBuilding).join('')}
     </section>
     <section class="card">
@@ -402,8 +676,29 @@ function renderGarage() {
   `;
 }
 
+function renderBuildHubStat(value, label) {
+  return `<div class="buildBridgeStat"><b>${value}</b><span>${label}</span></div>`;
+}
+
+function worldTypeLabel(key) {
+  return WORLD_BUILDING_LABELS[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, (char) => char.toUpperCase());
+}
+
+function renderBuildWorldChips(inventory) {
+  const entries = Object.entries(inventory || {});
+  if (!entries.length) return `<span class="buildWorldChip"><b>Pending</b><span>Build to sync World</span></span>`;
+  return entries.map(([key, amount]) => `<span class="buildWorldChip"><b>+${amount}</b><span>${worldTypeLabel(key)}</span></span>`).join('');
+}
+
+function renderBuildLineChips(system) {
+  if (!system?.lines?.length) return `<span class="buildLineChip"><b>No line</b><span>Standalone room</span></span>`;
+  return system.lines.map((line) => `<span class="buildLineChip"><b>${line.unlocked ? `Lv ${line.level}` : 'Locked'}</b><span>${line.name}</span></span>`).join('');
+}
+
 function renderShopRoom(room) {
   const unlocked = !room.buildingKey || (state.buildings[room.buildingKey] || 0) > 0;
+  const connection = connectionForRoom(room.key);
+  const system = connection ? getBuildCommunicationState(state).systems.find((item) => item.key === connection.key) : null;
   const line = IDLE_LINES.find((item) => item.key === room.lineKey);
   const lineState = line ? getLineState(state, line.key) : null;
   const level = lineState?.level || 0;
@@ -412,10 +707,13 @@ function renderShopRoom(room) {
   const progress = lineState && level > 0 ? Math.max(0, Math.min(100, (lineState.cycle / cycleMs) * 100)) : 0;
   const manager = line ? hasManager(state, line.key) : false;
   const lockedText = room.buildingKey ? `Build ${BUILDINGS.find((item) => item.key === room.buildingKey)?.name || 'required system'} to open.` : 'Open from start.';
+  const roomAsset = buildRoomAssetForKey(room.key) || room.asset;
 
   return `
-    <article class="shopRoom ${unlocked ? '' : 'lockedRoom'}">
-      <img class="roomArt" src="${room.asset}" alt="${room.name}" loading="lazy">
+    <article class="shopRoom ${unlocked ? '' : 'lockedRoom'}" data-build-room="${room.key}">
+      <div class="roomArtWrap">
+        <img class="roomArt buildAssetImage" src="${roomAsset}" alt="${room.name}" loading="eager">
+      </div>
       <div class="roomInfo">
         <div class="roomHead"><h3>${room.icon} ${room.name}</h3><span class="pill">${unlocked ? `Lv ${level}` : 'Locked'}</span></div>
         <p>${unlocked ? room.description : lockedText}</p>
@@ -424,7 +722,12 @@ function renderShopRoom(room) {
           <span>${line ? `${fmt(income)} ${line.outputLabel}` : 'No line'}</span>
           <span>${manager ? 'Manager Active' : 'Manual'}</span>
         </div>
-        <button class="btn small ${unlocked ? 'primary' : 'ghost'}" data-action="screen" data-screen="lines">${unlocked ? 'Upgrade Line' : 'View Requirements'}</button>
+        <div class="roomSyncRow">${renderBuildWorldChips(system?.worldInventory)}</div>
+        <div class="roomActions">
+          <button class="btn small ${unlocked ? 'primary' : 'ghost'}" data-action="screen" data-screen="lines"><img class="roomButtonAsset buildAssetImage" src="${BUILD_GUI_ASSETS.linesButton}" alt="" loading="eager"><span>${unlocked ? 'Line' : 'Reqs'}</span></button>
+          <button class="btn small" data-action="screen" data-screen="world"><img class="roomButtonAsset buildAssetImage" src="${BUILD_GUI_ASSETS.worldButton}" alt="" loading="eager"><span>World</span></button>
+          <button class="btn small gold" data-action="screen" data-screen="garage"><img class="roomButtonAsset buildAssetImage" src="${BUILD_GUI_ASSETS.buildButton}" alt="" loading="eager"><span>Build</span></button>
+        </div>
       </div>
       ${unlocked && line && canCollectLine(state, line) && !manager ? `<div class="incomeBubble">Collect</div>` : ''}
       ${!unlocked ? `<div class="roomLock">🔒</div>` : ''}
@@ -447,11 +750,29 @@ function renderUpgrade(def) {
 function renderBuilding(building) {
   const level = state.buildings[building.key] || 0;
   const cost = nextBuildingCost(state, building);
+  const connection = connectionForBuilding(building.key);
+  const system = connection ? getBuildCommunicationState(state).systems.find((item) => item.key === connection.key) : null;
+  const asset = buildSystemAssetForKey(building.key);
   return `
-    <div class="building">
-      <div class="buildIcon">${building.icon}</div>
-      <div><h4>${building.name} <span class="pill">Lv ${level}/${building.max}</span></h4><p>${building.description}</p><p><b>Unlocks:</b> ${building.unlocks}</p>${cost ? `<div class="cost">Cost: ${costToText(cost)}</div>` : `<div class="cost">Maxed</div>`}</div>
-      <button class="btn small primary" data-action="building" data-key="${building.key}" ${cost && canAfford(state, cost) ? '' : 'disabled'}>${cost ? 'Build' : 'Done'}</button>
+    <div class="building" data-build-system="${building.key}">
+      <img class="buildSystemAsset buildAssetImage" src="${asset}" alt="${building.name}" loading="eager">
+      <div class="buildingMain">
+        <div class="buildingHeader">
+          <div><h4>${building.name}</h4><p>${building.description}</p></div>
+          <span class="pill">Lv ${level}/${building.max}</span>
+        </div>
+        <p><b>Unlocks:</b> ${building.unlocks}</p>
+        <div class="buildCommMeta">
+          <div class="roomSyncRow">${renderBuildWorldChips(system?.worldInventory)}</div>
+          <div class="lineBuildBridge">${renderBuildLineChips(system)}</div>
+          ${cost ? `<div class="cost">Next build: ${costToText(cost)}</div>` : `<div class="cost">Maxed and fully synced.</div>`}
+        </div>
+        <div class="buildActions">
+          <button class="btn small primary" data-action="building" data-key="${building.key}" ${cost && canAfford(state, cost) ? '' : 'disabled'}><img class="buildButtonAsset buildAssetImage" src="${cost ? BUILD_GUI_ASSETS.upgradeButton : BUILD_GUI_ASSETS.levelBadge}" alt="" loading="eager"><span>${cost ? (level > 0 ? 'Upgrade' : 'Build') : 'Done'}</span></button>
+          <button class="btn small" data-action="screen" data-screen="world"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.worldSync}" alt="" loading="eager"><span>World</span></button>
+          <button class="btn small gold" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Lines</span></button>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -529,6 +850,7 @@ function handleClick(event) {
   if (action === 'collectLine') result = collectIdleLine(state, target.dataset.line);
   if (action === 'upgradeLine') result = buyLineUpgrade(state, target.dataset.line);
   if (action === 'buyManager') result = buyLineManager(state, target.dataset.line);
+  if (action === 'toggleLineAuto') result = toggleLineAutoCollect(state, target.dataset.line);
   if (action === 'worldLocation') result = handleWorldLocation(target.dataset.location);
   if (action === 'worldTow') result = completeTowEvent();
   if (action === 'placeShelf') result = placeSupplierItem(state, Number(target.dataset.index));
