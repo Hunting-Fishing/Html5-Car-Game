@@ -4,6 +4,13 @@ import { fmt, labelCurrency } from '../../systems/economySystem.js';
 import { unlockedChainKeys } from '../../systems/mergeSystem.js';
 import { showFloatingReward, showRewardToast } from '../components/RewardToast.js';
 
+const AUTO_COLLECT_TOAST_COOLDOWN_MS = 20000;
+const AUTO_COLLECT_FLOAT_COOLDOWN_MS = 6000;
+
+let lastAutoCollectToastAt = 0;
+let lastAutoCollectFloatAt = 0;
+const autoCollectBucket = new Map();
+
 export function feedbackSnapshot(source) {
   return {
     stage: source.stage || 1,
@@ -43,6 +50,66 @@ function positiveCurrencyRewards(before, after) {
       };
     })
     .filter(Boolean);
+}
+
+function bucketAutoRewards(rewards) {
+  rewards.forEach((reward) => {
+    const existing = autoCollectBucket.get(reward.resource) || {
+      ...reward,
+      amount: 0
+    };
+    existing.amount += reward.amount;
+    existing.text = `+${fmt(existing.amount)}`;
+    autoCollectBucket.set(reward.resource, existing);
+  });
+}
+
+function getAutoCollectRewards() {
+  return [...autoCollectBucket.values()]
+    .filter((reward) => reward.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
+}
+
+function clearAutoCollectRewards() {
+  autoCollectBucket.clear();
+}
+
+function autoCollectMessage(rewards) {
+  return rewards.map((reward) => `${reward.text} ${reward.label}`).join(', ');
+}
+
+function maybeEmitAutoCollectFeedback({ addLog } = {}) {
+  const rewards = getAutoCollectRewards();
+  if (!rewards.length) return;
+
+  const now = Date.now();
+  if (now - lastAutoCollectToastAt >= AUTO_COLLECT_TOAST_COOLDOWN_MS) {
+    const message = autoCollectMessage(rewards);
+    showRewardToast({
+      title: 'Auto Collected',
+      message,
+      tone: 'gold',
+      icon: UI_ICONS.coin,
+      rewards: rewards.slice(0, 4),
+      duration: 1800
+    });
+    addLog?.(`Auto collected ${message}.`);
+    clearAutoCollectRewards();
+    lastAutoCollectToastAt = now;
+    lastAutoCollectFloatAt = now;
+    return;
+  }
+
+  if (now - lastAutoCollectFloatAt >= AUTO_COLLECT_FLOAT_COOLDOWN_MS) {
+    const top = rewards[0];
+    showFloatingReward(`${top.text} ${top.label}`, {
+      tone: 'gold',
+      resource: top.resource,
+      x: 50,
+      y: 58
+    });
+    lastAutoCollectFloatAt = now;
+  }
 }
 
 function rewardFeedbackMeta(action, result, before, after) {
@@ -225,23 +292,9 @@ export function emitPassiveRewardFeedback({ state, before, addLog }) {
   if (after.idleCollections > before.idleCollections) {
     const rewards = positiveCurrencyRewards(before, after);
     if (rewards.length) {
-      const message = rewards.map((reward) => `${reward.text} ${reward.label}`).join(', ');
-      showRewardToast({
-        title: 'Auto Collected',
-        message,
-        tone: 'gold',
-        icon: UI_ICONS.coin,
-        rewards
-      });
-      rewards.slice(0, 3).forEach((reward, index) => {
-        showFloatingReward(`${reward.text} ${reward.label}`, {
-          tone: 'gold',
-          resource: reward.resource,
-          x: 42 + index * 8,
-          y: 56 - index * 4
-        });
-      });
-      addLog?.(`Auto collected ${message}.`);
+      bucketAutoRewards(rewards);
     }
   }
+
+  maybeEmitAutoCollectFeedback({ addLog });
 }

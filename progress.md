@@ -486,3 +486,10 @@ Follow-up prompt: Audit and stabilize v10 with ghost racing allowed only as asyn
 - Updated README and `docs/ghost-racing-model.md` with the ghost race system facade, v10 test commands, Hub screen, and the 365motorsales.com Supabase boundary.
 - Initial `npm run test:ghost-race` failed because negative sample times were clamped to `0`; fixed `serializeGhostRun` to reject invalid negative samples before normalization.
 - Verified `npm run test:ghost-race`, `npm run test:v10`, `npm run build`, a standard web-game client capture, and a focused browser probe that completed the Preview Ghost Race objective with no console errors.
+
+Follow-up prompt: Reduce excessive auto-collect toast notifications.
+
+- Changed passive manager auto-collect feedback in `src/ui/feedback/rewardFeedback.js` from one toast per collection burst into an aggregated reward bucket.
+- Auto-collect now shows at most one compact toast every 20 seconds, with a lighter floating reward summary at most every 6 seconds while additional collections are accumulating.
+- Manual collect, upgrades, stage completion, merge success, and route problem toasts still use the normal reward feedback path.
+- Verified `npm run test:v10`, `npm run build`, the standard web-game client capture, and a focused browser probe with repeated auto-collections. The probe created only one `Auto Collected` toast over 9 seconds and produced no console errors.
