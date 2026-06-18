@@ -202,6 +202,7 @@ function renderLineCard(state, line) {
   const collectReady = canCollectLine(state, line);
   const statusAsset = !unlocked ? LINES_GUI_ASSETS.lockedBadge : managerOwned && autoEnabled ? LINES_GUI_ASSETS.autoBadge : LINES_GUI_ASSETS.manualBadge;
   const statusLabel = !unlocked ? 'Locked' : managerOwned ? (autoEnabled ? 'AUTO ON' : 'AUTO OFF') : 'MANUAL';
+  const guideTarget = line.key === 'streetRoute' && !state.objectives?.idleLineUpgrade ? ' data-guide-target="upgradeStreetRoute"' : '';
 
   if (!unlocked) {
     const buildConnection = connectionForLine(line.key);
@@ -238,7 +239,7 @@ function renderLineCard(state, line) {
       ${segmentedMeter({ value: current.cycle, max: cycleMs, label: `${line.name} cycle progress`, className: 'lineProgress' })}
       <div class="lineButtons">
         <button class="btn small ${collectReady ? 'gold' : 'ghost'}" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.collectButton}" alt="" loading="eager"><span>${managerOwned && autoEnabled ? 'Auto Running' : 'Collect'}</span></button>
-        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}" ${canAfford(state, upgradeCost) ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.upgradeButton}" alt="" loading="eager"><span>Upgrade<br><small>${costToText(upgradeCost)}</small></span></button>
+        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${canAfford(state, upgradeCost) ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.upgradeButton}" alt="" loading="eager"><span>Upgrade<br><small>${costToText(upgradeCost)}</small></span></button>
       </div>
       <div class="lineManager">
         ${renderManagerRequirement(state, line, level, managerOwned, managerCost, autoEnabled)}

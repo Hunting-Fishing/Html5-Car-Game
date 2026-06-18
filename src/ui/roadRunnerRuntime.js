@@ -799,7 +799,7 @@ function shellHtml() {
     <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label, meta]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" onclick="window.rrSetTab?.('${key}')"><b>${label}</b><span>${meta}</span></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
-        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="roadRunnerBadge rrGhostCycle" data-rr-mode onclick="window.rrCycleGhosts?.()" aria-label="Change ghost racers">${GHOST_MODES[activeGhostMode].label}</button><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas" data-guide-target="raceBoost">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
+        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="roadRunnerBadge rrGhostCycle" data-rr-mode data-guide-target="previewGhostRace" onclick="window.rrCycleGhosts?.()" aria-label="Change ghost racers">${GHOST_MODES[activeGhostMode].label}</button><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas" data-guide-target="raceBoost">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
       </section>
       <section class="racerPage ${activeTab === 'garage' ? 'active' : ''}" data-rr-page="garage"><div data-road-runner-garage></div></section>
       <section class="racerPage ${activeTab === 'vehicles' ? 'active' : ''}" data-rr-page="vehicles"><div data-road-runner-vehicles></div></section>
@@ -1862,6 +1862,7 @@ window.rrCycleGhosts = () => {
   activeGhostMode = modes[(modes.indexOf(activeGhostMode) + 1) % modes.length];
   setText('[data-rr-mode]', GHOST_MODES[activeGhostMode].label);
   refreshActiveGhosts();
+  window.dispatchEvent(new CustomEvent('roadRunnerGhostPreview'));
 };
 window.setHillRoute = (route) => {
   if (!ROUTES[route] || !routeUnlocked(route)) return;

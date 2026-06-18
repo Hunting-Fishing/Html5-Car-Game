@@ -459,3 +459,30 @@ Follow-up prompt: Add a first-session guide funnel so new players are not overwh
 - Lowered the first Parts Storage cost to 70 coins and 4 parts so the starter funnel can complete after the first boost and starter merge.
 - Added `tests/firstSessionGuide.test.mjs` and `npm run test:first-session-guide`.
 - Verified the guide screenshot, targeted Playwright transitions, `npm run test:first-session-guide`, `npm run test:ghost-model`, `npm run test:race-progress`, `npm run build`, and `git diff --check`.
+
+Follow-up prompt: Add explicit Ghost Racing creator rules.
+
+- Added a `Ghost Racing` block to `CREATOR_RULES` with local best-time ghosts, replay-data wording, small reward guidance, and guardrails against live matchmaking, realtime physics sync, and heavy economy rewards.
+- Verified `npm run build`.
+- Ran the standard web-game Playwright client against `?screen=creator`, then scrolled to the Ghost Racing rule block with a focused browser probe and confirmed the replay/live-matchmaking copy is present with no console errors.
+
+Follow-up prompt: Reconcile the V10 playability verdict and close remaining quality-gate gaps.
+
+- Confirmed the audit list was partly stale: README correction, ghost racing contract, first-session guide flow, main.js screen extraction, and build/test coverage already exist locally.
+- Added `tests/assetPaths.test.mjs` and `npm run test:assets` to validate referenced `/assets/...` files against `public/assets`.
+- Added `npm run test:v10` to run race progress, ghost model, first-session guide, and asset validation checks together.
+- The new asset validator found dead Kenney fallback candidate paths in `worldAssetPackRuntime.js` and `worldMobileCityRuntime.js`; removed those missing references.
+- Updated `README.md` with the full V10 test list, current playability verdict, current quality gates, and the real remaining market-ready gaps.
+- Verified `npm run test:assets`, `npm run test:v10`, `npm run build`, standard web-game client capture, and a 390x844 mobile viewport sweep across Home, Race, Parts, Garage, and Menu with no body overflow or console errors.
+
+Follow-up prompt: Audit and stabilize v10 with ghost racing allowed only as asynchronous replay racing.
+
+- Kept the no-live-PVP scope explicit: no live matchmaking, no live player sync, no server-authoritative racing, and no Supabase until a future www.365motorsales.com connection.
+- Added `src/systems/ghostRaceSystem.js` as the app-level localStorage ghost race facade with `saveLocalGhostRun`, `getBestLocalGhost`, `compareGhostTime`, `serializeGhostRun`, and `validateGhostRunShape`.
+- Added `tests/ghostRace.test.mjs`, `npm run test:ghost-race`, and included it in `npm run test:v10`.
+- Tightened the Creator Ghost Racing rules to require saved best-time ghosts, replay/sample data, local ghosts first, small rewards, and no anti-cheat-heavy/live multiplayer systems.
+- Updated the first-session guide to the requested five-goal chain: Tap Race -> Merge Parts -> Build Parts Storage -> Upgrade Street Route -> Preview Ghost Race.
+- Added objective state and guide targets for Street Route upgrades and the Road Runner ghost selector. The ghost selector now dispatches `roadRunnerGhostPreview` to complete that onboarding step.
+- Updated README and `docs/ghost-racing-model.md` with the ghost race system facade, v10 test commands, Hub screen, and the 365motorsales.com Supabase boundary.
+- Initial `npm run test:ghost-race` failed because negative sample times were clamped to `0`; fixed `serializeGhostRun` to reject invalid negative samples before normalization.
+- Verified `npm run test:ghost-race`, `npm run test:v10`, `npm run build`, a standard web-game client capture, and a focused browser probe that completed the Preview Ghost Race objective with no console errors.

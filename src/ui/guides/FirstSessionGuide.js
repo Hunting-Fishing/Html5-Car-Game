@@ -11,40 +11,40 @@ const GUIDE_STEPS = [
     targetSelectors: ['[data-guide-target="raceBoost"]', '.roadRunnerPedal.gas', '[data-nav-tab="race"]']
   },
   {
-    key: 'openParts',
+    key: 'mergePair',
     number: 2,
     screen: 'merge',
-    title: 'Open Parts',
+    title: 'Merge Parts',
     label: 'Parts',
     icon: UI_ICONS.parts,
-    targetSelectors: ['[data-nav-tab="parts"]', '[data-action="screen"][data-screen="merge"]']
-  },
-  {
-    key: 'mergePair',
-    number: 3,
-    screen: 'merge',
-    title: 'Merge Pair',
-    label: '2 Match',
-    icon: UI_ICONS.parts,
-    targetSelectors: ['[data-guide-target="mergePair"]', '[data-guide-target="supplierReady"]', '[data-guide-target="placeAll"]', '[data-guide-target="mergeBoard"]']
-  },
-  {
-    key: 'openGarage',
-    number: 4,
-    screen: 'garage',
-    title: 'Open Garage',
-    label: 'Garage',
-    icon: UI_ICONS.garage,
-    targetSelectors: ['[data-nav-tab="garage"]', '[data-action="screen"][data-screen="garage"]']
+    targetSelectors: ['[data-guide-target="mergePair"]', '[data-guide-target="supplierReady"]', '[data-guide-target="placeAll"]', '[data-guide-target="mergeBoard"]', '[data-nav-tab="parts"]', '[data-action="screen"][data-screen="merge"]']
   },
   {
     key: 'buildPartsStorage',
-    number: 5,
+    number: 3,
     screen: 'garage',
     title: 'Build Storage',
-    label: 'Parts',
+    label: 'Garage',
     icon: UI_ICONS.garage,
     targetSelectors: ['[data-guide-target="buildPartsStorage"]', '[data-build-system="partsStorage"]', '[data-nav-tab="garage"]']
+  },
+  {
+    key: 'upgradeStreetRoute',
+    number: 4,
+    screen: 'lines',
+    title: 'Upgrade Route',
+    label: 'Lines',
+    icon: UI_ICONS.garage,
+    targetSelectors: ['[data-guide-target="upgradeStreetRoute"]', '[data-action="screen"][data-screen="lines"]', '[data-nav-tab="garage"]']
+  },
+  {
+    key: 'previewGhostRace',
+    number: 5,
+    screen: 'race',
+    title: 'Preview Ghost',
+    label: 'Race',
+    icon: UI_ICONS.race,
+    targetSelectors: ['[data-guide-target="previewGhostRace"]', '[data-rr-mode]', '[data-nav-tab="race"]']
   }
 ];
 
@@ -52,7 +52,7 @@ let lastGuideKey = '';
 
 export function getFirstSessionGuideState(state) {
   const objectives = state?.objectives || {};
-  if (objectives.buildStorage) {
+  if (objectives.previewGhostRace) {
     return { complete: true, step: null, stepIndex: GUIDE_STEPS.length, steps: GUIDE_STEPS };
   }
 
@@ -61,10 +61,18 @@ export function getFirstSessionGuideState(state) {
   }
 
   if (!objectives.firstMerge) {
-    return guidePayload(state, state.activeScreen === 'merge' ? 'mergePair' : 'openParts');
+    return guidePayload(state, 'mergePair');
   }
 
-  return guidePayload(state, state.activeScreen === 'garage' ? 'buildPartsStorage' : 'openGarage');
+  if (!objectives.buildStorage) {
+    return guidePayload(state, 'buildPartsStorage');
+  }
+
+  if (!objectives.idleLineUpgrade) {
+    return guidePayload(state, 'upgradeStreetRoute');
+  }
+
+  return guidePayload(state, 'previewGhostRace');
 }
 
 export function updateFirstSessionGuide(state, root = document) {

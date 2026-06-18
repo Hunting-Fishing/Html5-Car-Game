@@ -45,12 +45,7 @@ const DIRECT_VEHICLE_CANDIDATES = [
   '/assets/vendor/kenney/car-kit/Previews/taxi.png',
   '/assets/vendor/kenney/car-kit/Previews/truck.png',
   '/assets/vendor/kenney/car-kit/Previews/van.png',
-  '/assets/vendor/kenney/car-kit/Previews/delivery.png',
-  '/assets/vendor/kenney/car-kit/kenney_car-kit/Previews/sedan.png',
-  '/assets/vendor/kenney/car-kit/kenney_car-kit/Previews/hatchback-sports.png',
-  '/assets/vendor/kenney/kenney_racing-kit/Previews/car.png',
-  '/assets/vendor/kenney/kenney_racing-kit/Previews/race-car.png',
-  '/assets/vendor/kenney/kenney_racing-kit/Previews/truck.png'
+  '/assets/vendor/kenney/car-kit/Previews/delivery.png'
 ];
 
 let app = null;

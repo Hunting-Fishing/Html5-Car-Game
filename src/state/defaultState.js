@@ -88,6 +88,7 @@ export function defaultState() {
       firstTap: false,
       firstMerge: false,
       idleLineUpgrade: false,
+      previewGhostRace: false,
       firstManager: false,
       buildStorage: false,
       unlockPerformance: false,

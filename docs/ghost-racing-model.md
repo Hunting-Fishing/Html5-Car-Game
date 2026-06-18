@@ -10,6 +10,16 @@ The current implementation is local-first:
 - seeded AI ghosts are generated locally and deterministically
 - future friend/remote ghosts should use the same shape with `source: "remote_best"`
 
+The app-level utility facade lives in `src/systems/ghostRaceSystem.js`:
+
+- `saveLocalGhostRun(routeKey, stage, runData)`
+- `getBestLocalGhost(routeKey, stage?)`
+- `compareGhostTime(playerTimeMs, ghostTimeMs)`
+- `serializeGhostRun(samples)`
+- `validateGhostRunShape(ghost)`
+
+This facade must stay localStorage-based until server validation is intentionally added.
+
 ## Ghost Record Contract
 
 ```json

@@ -49,6 +49,7 @@ function boot() {
   render();
   root.addEventListener('click', handleClick);
   window.addEventListener('roadRunnerFirstGas', handleRoadRunnerFirstGas);
+  window.addEventListener('roadRunnerGhostPreview', handleRoadRunnerGhostPreview);
   requestAnimationFrame(gameLoop);
 }
 
@@ -187,6 +188,13 @@ function handleClick(event) {
 function handleRoadRunnerFirstGas() {
   if (state.objectives.firstTap) return;
   state.objectives.firstTap = true;
+  updateGuide();
+  queueSave();
+}
+
+function handleRoadRunnerGhostPreview() {
+  if (state.objectives.previewGhostRace) return;
+  state.objectives.previewGhostRace = true;
   updateGuide();
   queueSave();
 }

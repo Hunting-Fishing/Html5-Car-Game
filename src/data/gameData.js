@@ -227,6 +227,11 @@ export const CREATOR_RULES = [
     dont: ['Do not require steering controls.', 'Do not promise realistic physics.', 'Do not punish players so hard that idle progress stops for too long.']
   },
   {
+    mode: 'Ghost Racing',
+    do: ['Use saved best-time ghosts.', 'Store ghost runs as replay/sample data.', 'Keep rewards small until server validation exists.', 'Use local ghosts first.'],
+    dont: ['Do not add live matchmaking.', 'Do not sync live players.', 'Do not make ghost rewards economy-critical.', 'Do not add anti-cheat-heavy systems yet.']
+  },
+  {
     mode: 'Idle Lines',
     do: ['Use upgradeable income lines.', 'Show cycle progress and output clearly.', 'Unlock automation with managers.'],
     dont: ['Do not show every advanced line as playable at the start.', 'Do not hide upgrade costs.', 'Do not make line cards too large for mobile.']
