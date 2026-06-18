@@ -412,3 +412,21 @@ Follow-up prompt: Add a RewardToast and FloatingReward system so the Hub activit
 - Removed duplicate manual line-collection logging from `idleLineSystem.js`; the central action handler now owns the feed entry.
 - Verified with `npm run build`, the standard web-game Playwright client, and a browser probe that a ready Line collection produces a gold reward toast, coin chip, floating `+Coins`, and one clean Reward Feed entry.
 - Existing non-blocking issues observed: Vite chunk-size warning, LF/CRLF warnings, and the existing missing `favicon.ico` browser 404.
+
+Follow-up prompt: Move screen renderers out of the oversized `main.js`.
+
+- Added `src/ui/screens/HubScreen.js`, `WorldScreen.js`, `RaceScreen.js`, `LinesScreen.js`, `MergeScreen.js`, `GarageScreen.js`, `ProfileScreen.js`, and `CreatorScreen.js`.
+- Moved each screen's render helpers and presentation imports into its screen module.
+- Reduced `main.js` from 1471 lines to 454 lines and narrowed it to state, game loop, routing, action dispatch, reward feedback, and save queue ownership.
+- Updated the active-screen router to call imported screen renderers with current state.
+- Verified `npm run build`, `npm run test:race-progress`, standard web-game client screenshot capture, and a browser route sweep across Hub, World, Race, Lines, Merge, Garage, Profile, and Creator.
+- Console review during the route sweep showed only normal app info logs.
+
+Follow-up prompt: Make the internal 8-screen grouping obvious while keeping the 5-tab bottom nav.
+
+- Added Home section controls for Today and World Map on Hub and the active Pixi World runtime.
+- Added Garage section controls for Build Rooms and Business Lines on Garage and Lines.
+- Added Menu section controls for Profile, Creator Rules, Settings, and Reset Save on Profile/Menu.
+- Added a Settings panel for local save/fullscreen/creator/reset context.
+- Added shared `screenSubTabs`, `screenGroupPanel`, and World switcher CSS so the internal controls read as grouped tabs.
+- Verified `npm run build`, `npm run test:race-progress`, standard web-game client passes on Profile and World, and a browser DOM sweep for Hub, World, Garage, Lines, and Profile group labels/buttons.

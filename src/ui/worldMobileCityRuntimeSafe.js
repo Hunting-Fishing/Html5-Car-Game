@@ -478,6 +478,13 @@ function targetFromToken(token) {
 function html() {
   return `
     <section class="card pixiWorldShell">
+      <div class="worldHomeSwitcher screenGroupPanel">
+        <div class="worldHomeSwitcherCopy"><b>Home</b><span>Home is grouped into Today and the World Map.</span></div>
+        <div class="screenSubTabs" role="tablist" aria-label="Home sections">
+          <button class="btn" type="button" data-action="screen" data-screen="hub">Today</button>
+          <button class="btn primary active" type="button" data-action="screen" data-screen="world" aria-current="page">World Map</button>
+        </div>
+      </div>
       <div class="pixiWorldHeader">
         <h2>365 Auto City - World Buildings</h2>
         <p>Tap buildings for collection timers, bonuses, levels, and upgrade requirements.</p>

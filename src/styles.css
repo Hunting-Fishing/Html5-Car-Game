@@ -134,12 +134,23 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
 .btn { border-radius: 15px; padding: 10px 11px; background: var(--ui-blue-cta), linear-gradient(180deg,#1f6488,#164761); background-size: 100% 100%, auto; border: 1px solid rgba(255,255,255,.12); font-weight: 1000; min-height: 42px; box-shadow: 0 8px 16px rgba(0,0,0,.2); }
+a.btn { display: inline-grid; place-items: center; color: inherit; text-align: center; text-decoration: none; }
 .btn:disabled { opacity: .48; filter: grayscale(.5); box-shadow: none; }
 .btn.primary { background: var(--ui-green-cta), linear-gradient(180deg, var(--green), #12975c); background-size: 100% 100%, auto; color: #04140c; }
 .btn.gold { background: var(--ui-orange-cta), linear-gradient(180deg, var(--yellow), #cc7f12); background-size: 100% 100%, auto; color: #1f1200; }
 .btn.red { background: var(--ui-red-cta), linear-gradient(180deg, var(--red), #b2253c); background-size: 100% 100%, auto; }
 .btn.ghost { background: var(--ui-blue-cta), rgba(255,255,255,.07); background-size: 100% 100%, auto; box-shadow: none; }
 .btn.small { font-size: 11px; padding: 7px 9px; min-height: 32px; border-radius: 12px; }
+.screenGroupPanel { border-color: rgba(255,209,102,.40) !important; }
+.screenSubTabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.screenSubTabs.menuSubTabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.screenSubTabs .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; }
+.screenSubTabs .btn.active, .screenSubTabs .btn[aria-current="page"] { outline: 2px solid rgba(255,255,255,.32); box-shadow: inset 0 3px 0 rgba(255,255,255,.30), 0 5px 0 rgba(0,0,0,.26), 0 0 0 3px rgba(53,229,138,.14) !important; }
+.settingsGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; scroll-margin-top: 100px; }
+.worldHomeSwitcher { display: grid; gap: 8px; margin-bottom: 10px; padding: 9px; border-radius: 16px; border: 1px solid rgba(255,209,102,.36); background: rgba(3,17,29,.58); }
+.worldHomeSwitcherCopy { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: var(--text); }
+.worldHomeSwitcherCopy b { font-size: 13px; }
+.worldHomeSwitcherCopy span { color: var(--muted); font-size: 9px; }
 .segMeter { --meter-red: #ff4667; --meter-orange: #ff8f1f; --meter-yellow: #ffe05f; --meter-lime: #a9f43c; --meter-green: #26e872; position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; height: 22px; padding: 4px 34px 4px 5px; overflow: visible; border-radius: 14px; border: 2px solid rgba(0,0,0,.58); background: var(--ui-meter-track), linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,0) 48%), linear-gradient(180deg, #163d54, #06111c); background-size: 100% 100%, auto, auto; box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -3px 0 rgba(0,0,0,.28), 0 4px 0 rgba(0,0,0,.34), 0 8px 14px rgba(0,0,0,.22); }
 .segMeter::before { content: ''; position: absolute; inset: 2px 6px 50% 6px; border-radius: 12px 12px 4px 4px; background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0)); pointer-events: none; z-index: 2; }
 .segMeterCell { position: relative; min-width: 0; overflow: hidden; border-radius: 9px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.18)), rgba(2,11,18,.82); border: 1px solid rgba(0,0,0,.42); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 -2px 0 rgba(0,0,0,.32); }
