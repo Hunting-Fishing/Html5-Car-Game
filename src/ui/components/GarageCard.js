@@ -11,10 +11,12 @@ export function renderGarageSystemCard({
   worldChipsHtml,
   lineChipsHtml,
   primaryActionHtml,
-  secondaryActionsHtml = ''
+  secondaryActionsHtml = '',
+  guideTarget = ''
 }) {
+  const guideAttr = guideTarget ? ` data-guide-target="${guideTarget}"` : '';
   return `
-    <article class="building buildSystemCard garageSystemRoomCard GarageCard" data-component="GarageCard" data-build-system="${key}">
+    <article class="building buildSystemCard garageSystemRoomCard GarageCard" data-component="GarageCard" data-build-system="${key}"${guideAttr}>
       <div class="garageSystemArtWrap">
         <img class="garageSystemArt buildAssetImage" src="${imageSrc}" alt="${name}" loading="eager">
         <span class="roomLevelBadge garageSystemLevel">Lv ${level}/${max}</span>

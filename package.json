@@ -8,7 +8,9 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test:race-progress": "node tests/raceProgress.test.mjs"
+    "test:race-progress": "node tests/raceProgress.test.mjs",
+    "test:ghost-model": "node tests/ghostModel.test.mjs",
+    "test:first-session-guide": "node tests/firstSessionGuide.test.mjs"
   },
   "dependencies": {
     "@juggle/resize-observer": "^3.4.0",

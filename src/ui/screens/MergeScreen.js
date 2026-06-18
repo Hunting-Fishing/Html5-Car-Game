@@ -24,6 +24,9 @@ export function renderMergeScreen(state) {
   normalizeMergeState(state);
   const active = activeBoardCount(state);
   const limit = boardLimit(state);
+  const firstPair = firstMatchingPairIndexes(state);
+  const pairSet = new Set(firstPair);
+  const guideNeedsPair = !state.objectives?.firstMerge;
   return [
     RewardPanel({
       icon: 'parts',
@@ -38,8 +41,8 @@ export function renderMergeScreen(state) {
           ${state.merge.supplierSlots.map((item, index) => renderShelfSlot(item, index)).join('')}
         </div>
         <div class="grid3" style="margin-top:8px;">
-          <button class="btn small primary" data-action="placeAll">Place All</button>
-          <button class="btn small" data-action="autoMerge">Auto Merge</button>
+          <button class="btn small primary" data-action="placeAll" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="placeAll"' : ''}>Place All</button>
+          <button class="btn small" data-action="autoMerge" ${guideNeedsPair && pairSet.size ? 'data-guide-target="mergePair"' : ''}>Auto Merge</button>
           <button class="btn small red" data-action="sellSelected">Sell Selected</button>
         </div>
       `
@@ -49,7 +52,7 @@ export function renderMergeScreen(state) {
       title: 'Merge Board',
       subtitle: 'Tap one item, then tap a matching level item to merge.',
       className: 'mergeBoardPanel',
-      body: `<div class="board">${state.merge.board.map((item, index) => renderBoardCell(state, item, index)).join('')}</div>`
+      body: `<div class="board" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => renderBoardCell(state, item, index, pairSet)).join('')}</div>`
     }),
     GamePanel({
       icon: 'tools',
@@ -61,15 +64,29 @@ export function renderMergeScreen(state) {
   ].join('');
 }
 
-function renderShelfSlot(item, index) {
-  if (!item) return `<button class="shelfSlot"><span class="emptyText">Empty<br>slot</span></button>`;
-  return `<button class="shelfSlot ready" data-action="placeShelf" data-index="${index}">${renderItem(item)}</button>`;
+function firstMatchingPairIndexes(state) {
+  const board = state.merge.board || [];
+  for (let i = 0; i < board.length; i += 1) {
+    const source = board[i];
+    if (!source) continue;
+    for (let j = i + 1; j < board.length; j += 1) {
+      const target = board[j];
+      if (target && source.chain === target.chain && source.level === target.level) return [i, j];
+    }
+  }
+  return [];
 }
 
-function renderBoardCell(state, item, index) {
+function renderShelfSlot(item, index) {
+  if (!item) return `<button class="shelfSlot"><span class="emptyText">Empty<br>slot</span></button>`;
+  return `<button class="shelfSlot ready" data-action="placeShelf" data-index="${index}" data-guide-target="supplierReady">${renderItem(item)}</button>`;
+}
+
+function renderBoardCell(state, item, index, pairSet = new Set()) {
   if (!item) return `<button class="cell" data-action="cell" data-index="${index}"><span class="emptyText">Open</span></button>`;
   const selected = state.merge.selectedIndex === index ? 'selected' : '';
-  return `<button class="cell ${selected}" data-action="cell" data-index="${index}">${renderItem(item)}</button>`;
+  const guideTarget = !state.objectives?.firstMerge && pairSet.has(index) ? 'data-guide-target="mergePair"' : '';
+  return `<button class="cell ${selected}" data-action="cell" data-index="${index}" ${guideTarget}>${renderItem(item)}</button>`;
 }
 
 function renderItem(item) {

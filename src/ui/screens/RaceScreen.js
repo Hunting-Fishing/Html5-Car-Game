@@ -43,7 +43,7 @@ export function renderRaceScreen(state) {
         ${meterLine('Fuel', state.race.fuel, stats.fuelMax, state.race.fuel < 25 ? 'red' : 'yellow')}
         ${meterLine('Condition', state.race.condition, stats.conditionMax, state.race.condition < 25 ? 'red' : '')}
         ${meterLine('Heat', state.race.heat, 100, state.race.heat > 70 ? 'red' : 'yellow')}
-        <button class="tapButton" data-action="tapRace">TAP RACE BOOST</button>
+        <button class="tapButton" data-action="tapRace" data-guide-target="raceBoost">TAP RACE BOOST</button>
       `
     })}
 

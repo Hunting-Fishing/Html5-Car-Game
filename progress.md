@@ -430,3 +430,32 @@ Follow-up prompt: Make the internal 8-screen grouping obvious while keeping the 
 - Added a Settings panel for local save/fullscreen/creator/reset context.
 - Added shared `screenSubTabs`, `screenGroupPanel`, and World switcher CSS so the internal controls read as grouped tabs.
 - Verified `npm run build`, `npm run test:race-progress`, standard web-game client passes on Profile and World, and a browser DOM sweep for Hub, World, Garage, Lines, and Profile group labels/buttons.
+
+Follow-up prompt: Confirm and finish Problem B around the oversized `main.js` architecture.
+
+- Confirmed the screen renderer part of the audit was stale locally: Hub, World, Race, Lines, Merge, Garage, Profile, and Creator renderers already live in `src/ui/screens/`.
+- Moved reward feedback snapshot/meta/toast/floating-reward logic out of `main.js` into `src/ui/feedback/rewardFeedback.js`.
+- Kept `main.js` focused on boot, game loop, state coordination, routing, action dispatch, save queue, and feedback dispatch calls.
+- Reduced `main.js` from 454 lines to 212 lines after the feedback extraction.
+- Verified `npm run build` and `npm run test:race-progress`.
+- Ran the standard web-game client against the Hub screen, reviewed `output/web-game/shot-0.png`, and confirmed no generated browser error file.
+
+Follow-up prompt: Add an explicit local-first ghost racing domain model.
+
+- Added `src/game/roadRunner/ghostModel.js` with the ghost record contract, `localStorage` key `365_road_runner_ghosts_v1`, route/stage bucket keys, local-best upsert, route/stage best-time indexes, seeded AI ghost generation, and replay sampling.
+- Documented the contract in `docs/ghost-racing-model.md`, including the sample shape `{ t, x, speed }`, local-only storage, async replay behavior, and future `remote_best` source.
+- Linked the ghost racing model from `README.md` and kept the wording explicit that ghost racing is asynchronous best-time/replay racing, not live PVP.
+- Wired the active Road Runner canvas runtime to load the ghost store, migrate legacy `bestTrail` into `track::stage_1`, record route-local ghost samples, save completed-route local bests by route/stage when faster, and fill ghost races with local best first plus seeded AI ghosts.
+- Exposed ghost model state through `render_game_to_text()` including `ghostStorageKey`, `stage`, `localBestGhost`, and `activeGhosts`.
+- Added `tests/ghostModel.test.mjs` and `npm run test:ghost-model`.
+- Verified `npm run test:ghost-model`, `npm run test:race-progress`, `npm run build`, `git diff --check`, and a Race-screen web-game client pass with one seeded AI ghost and no generated browser error file.
+
+Follow-up prompt: Add a first-session guide funnel so new players are not overwhelmed.
+
+- Added `src/ui/guides/FirstSessionGuide.js` to derive a five-step visual guide from existing objectives: Race Boost -> Open Parts -> Merge Pair -> Open Garage -> Build Parts Storage.
+- Added a shell guide host and compact guide styling with step dots, a jump CTA, and pulsing target highlights.
+- Tagged the Race/Road Runner GAS controls, Merge supplier/pair/board controls, and Parts Storage Garage card/build button with `data-guide-target` hooks.
+- Road Runner GAS now dispatches `roadRunnerFirstGas` so the guide advances from Race even when Road Runner replaces the companion idle race button.
+- Lowered the first Parts Storage cost to 70 coins and 4 parts so the starter funnel can complete after the first boost and starter merge.
+- Added `tests/firstSessionGuide.test.mjs` and `npm run test:first-session-guide`.
+- Verified the guide screenshot, targeted Playwright transitions, `npm run test:first-session-guide`, `npm run test:ghost-model`, `npm run test:race-progress`, `npm run build`, and `git diff --check`.

@@ -181,7 +181,7 @@ export const BUILDINGS = [
     key: 'partsStorage', icon: iconPath(BUILD_SYSTEM_ICON_BASE, 'parts-storage.svg'), fallbackIcon: '\u{1F3DA}\uFE0F', name: 'Parts Storage', max: 3,
     description: 'Increases active board permit. This should be the first build objective.',
     unlocks: 'More board capacity',
-    costs: [{ coins: 120, parts: 18 }, { coins: 420, parts: 55, tools: 18 }, { coins: 1200, parts: 140, tools: 60 }]
+    costs: [{ coins: 70, parts: 4 }, { coins: 420, parts: 55, tools: 18 }, { coins: 1200, parts: 140, tools: 60 }]
   },
   {
     key: 'tuningCorner', icon: iconPath(BUILD_SYSTEM_ICON_BASE, 'tuning-corner.svg'), fallbackIcon: '\u{1F52C}', name: 'Tuning Corner', max: 2,

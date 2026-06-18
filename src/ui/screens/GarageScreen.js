@@ -198,6 +198,7 @@ function renderBuilding(state, building) {
   const pct = Math.round((level / Math.max(1, building.max)) * 100);
   const actionLabel = cost ? (level > 0 ? 'Upgrade' : 'Build') : 'Done';
   const costText = cost ? costToText(cost) : 'Maxed';
+  const guideTarget = building.key === 'partsStorage' && !(state.objectives?.buildStorage) ? 'buildPartsStorage' : '';
   return renderGarageSystemCard({
     key: building.key,
     name: building.name,
@@ -210,10 +211,11 @@ function renderBuilding(state, building) {
     unlocks: building.unlocks,
     worldChipsHtml: renderBuildWorldChips(system?.worldInventory),
     lineChipsHtml: renderBuildLineChips(system),
-    primaryActionHtml: `<button class="btn small primary garagePrimaryBuildAction" data-action="building" data-key="${building.key}" ${cost && canAfford(state, cost) ? '' : 'disabled'}><img class="buildButtonAsset buildAssetImage" src="${cost ? BUILD_GUI_ASSETS.upgradeButton : BUILD_GUI_ASSETS.levelBadge}" alt="" loading="eager"><span>${actionLabel}</span></button>`,
+    primaryActionHtml: `<button class="btn small primary garagePrimaryBuildAction" data-action="building" data-key="${building.key}" ${guideTarget ? 'data-guide-target="buildPartsStorage"' : ''} ${cost && canAfford(state, cost) ? '' : 'disabled'}><img class="buildButtonAsset buildAssetImage" src="${cost ? BUILD_GUI_ASSETS.upgradeButton : BUILD_GUI_ASSETS.levelBadge}" alt="" loading="eager"><span>${actionLabel}</span></button>`,
     secondaryActionsHtml: `
       <button class="btn small" data-action="screen" data-screen="world"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.worldSync}" alt="" loading="eager"><span>World</span></button>
       <button class="btn small gold" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Lines</span></button>
-    `
+    `,
+    guideTarget
   });
 }

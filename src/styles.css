@@ -281,6 +281,27 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 ul { margin: 6px 0 0 17px; padding: 0; color: var(--muted); font-size: 10px; line-height: 1.35; }
 .logLine { font-size: 11px; color: var(--muted); padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
 .toast { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.firstSessionGuide { position: fixed; z-index: 10060; left: 50%; bottom: calc(82px + env(safe-area-inset-bottom)); width: min(342px, calc(100vw - 22px)); transform: translateX(-50%); pointer-events: none; }
+.firstSessionGuide[hidden] { display: none !important; }
+.firstGuideCard { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 9px; border-radius: 19px; border: 2px solid rgba(255,209,102,.66); background: radial-gradient(circle at 18% 0, rgba(255,255,255,.20), transparent 32%), linear-gradient(180deg, rgba(18,91,124,.96), rgba(4,22,37,.98)); box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 6px 0 rgba(0,0,0,.28), 0 14px 24px rgba(0,0,0,.34); pointer-events: auto; }
+.firstGuideIcon { width: 42px; height: 42px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(180deg, #ffe08a, #f59e0b); border: 2px solid rgba(0,0,0,.34); box-shadow: inset 0 2px 0 rgba(255,255,255,.34), 0 4px 0 rgba(0,0,0,.24); }
+.firstGuideIcon img { width: 27px; height: 27px; object-fit: contain; filter: drop-shadow(0 2px 0 rgba(0,0,0,.24)); }
+.firstGuideCopy { min-width: 0; display: grid; gap: 4px; }
+.firstGuideCopy b { color: #fff; font-size: 14px; line-height: 1; text-shadow: 0 2px 0 rgba(0,0,0,.34); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.firstGuideDots { display: flex; gap: 4px; align-items: center; }
+.firstGuideDots span { width: 15px; height: 7px; border-radius: 999px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); }
+.firstGuideDots span.done { background: linear-gradient(180deg, #86ffc0, #22c55e); border-color: rgba(53,229,138,.56); }
+.firstGuideDots span.active { width: 24px; background: linear-gradient(180deg, #fff3a6, #f59e0b); border-color: rgba(255,209,102,.72); box-shadow: 0 0 12px rgba(255,209,102,.42); animation: guideDotPulse 1s ease-in-out infinite alternate; }
+.firstGuideJump, .firstGuideNow { min-width: 54px; min-height: 34px; display: inline-grid; place-items: center; border-radius: 14px; padding: 6px 9px; background: var(--ui-green-cta), linear-gradient(180deg, #6dff9f, #20bf63); background-size: 100% 100%, auto; color: #04140c; font-size: 10px; font-weight: 1000; border: 2px solid rgba(0,0,0,.32); box-shadow: inset 0 2px 0 rgba(255,255,255,.28), 0 4px 0 rgba(0,0,0,.24); }
+.firstGuideNow { background: rgba(0,0,0,.24); color: #c7f9ff; border-color: rgba(255,255,255,.13); box-shadow: inset 0 1px 0 rgba(255,255,255,.10); }
+.guideTargetActive { position: relative; z-index: 8; outline: 3px solid rgba(255,209,102,.92) !important; outline-offset: 4px; box-shadow: 0 0 0 7px rgba(255,209,102,.16), 0 0 28px rgba(53,229,138,.38), inset 0 0 0 2px rgba(255,255,255,.20) !important; animation: guideTargetPulse 1s ease-in-out infinite alternate; }
+.bottomNav .guideTargetActive { z-index: 2; }
+.cell.guideTargetActive, .shelfSlot.guideTargetActive { overflow: visible; }
+@keyframes guideTargetPulse {
+  from { filter: brightness(1); transform: translateY(0) scale(1); }
+  to { filter: brightness(1.12) saturate(1.12); transform: translateY(-1px) scale(1.015); }
+}
+@keyframes guideDotPulse { from { transform: scaleX(1); } to { transform: scaleX(1.08); } }
 .rewardToastStack { position: fixed; z-index: 10080; left: 50%; bottom: calc(82px + env(safe-area-inset-bottom)); width: min(438px, calc(100vw - 20px)); display: grid; gap: 8px; pointer-events: none; transform: translateX(-50%); }
 .rewardToastCard { position: relative; overflow: hidden; display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 8px; align-items: center; padding: 8px 10px; border-radius: 18px; border: 2px solid rgba(125,220,255,.34); background: radial-gradient(circle at 12% 0, rgba(255,255,255,.18), transparent 30%), linear-gradient(180deg, rgba(12,55,82,.96), rgba(2,15,28,.98)); box-shadow: inset 0 2px 0 rgba(255,255,255,.13), 0 6px 0 rgba(0,0,0,.26), 0 12px 22px rgba(0,0,0,.32); opacity: 0; transform: translateY(16px) scale(.98); transition: opacity .18s ease, transform .18s ease; }
 .rewardToastCard.show { opacity: 1; transform: translateY(0) scale(1); }

@@ -3,9 +3,22 @@ import {
   calculateHazardEffect,
   computeVehicleTelemetry
 } from '../game/roadRunner/physics.js';
+import {
+  GHOST_SAMPLE_INTERVAL_MS,
+  GHOST_STORAGE_KEY,
+  createGhostFromLegacyTrail,
+  createLocalBestGhost,
+  getLocalBestGhost,
+  loadGhostStore,
+  sampleGhostAt,
+  saveGhostStore,
+  selectGhostsForRace,
+  upsertLocalBestGhost
+} from '../game/roadRunner/ghostModel.js';
 import { RACER_VEHICLE_ASSETS } from '../data/racerVehicleAssetMap.js';
 
 const SAVE_KEY = '365_canvas_road_runner_v4';
+const COMPANION_SAVE_KEY = 'autoMergeGarageV10LocalOnly';
 
 const ROUTES = {
   track: { label: '365 Test Track', profile: 'track', length: 9800, meters: 3200, reward: 1.05, difficulty: 0.70, skyA: '#7ddcff', skyB: '#d9fbff', grass: '#58b957', road: '#2d3748', seed: 4, unlock: 0, bgAsset: 'routeTrack' },
@@ -113,6 +126,7 @@ let frameId = 0;
 let mountedScreen = null;
 let activeRoute = 'track';
 let activeGhostMode = 'ghost2';
+let ghostStore = loadGhostStore();
 let saveData = loadSave();
 let images = loadImages();
 let input = { gas: false, brake: false };
@@ -172,6 +186,7 @@ function loadSave() {
       missions: parsed.missions || null
     };
     ensureMissionState(result);
+    migrateLegacyBestTrail(result);
     return result;
   } catch {
     const fallback = { coins: 0, parts: 0, tools: 0, bestDistance: 0, bestTrail: [], upgrades: defaultUpgrades(), unlockedVehicles: ['hatchback'], selectedVehicle: 'hatchback', completedMissions: [], lifetimeFuel: 0, lifetimeWear: 0, lifetimeRepairs: 0, lifetime: { distance: 0, coinsEarned: 0, partsEarned: 0, runs: 0 }, missions: null };
@@ -182,6 +197,71 @@ function loadSave() {
 
 function saveGameData() {
   localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+}
+
+function companionProfile() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(COMPANION_SAVE_KEY) || '{}');
+    return {
+      playerName: parsed.playerName || 'Garage Rookie',
+      stage: Math.max(1, Math.floor(Number(parsed.stage) || 1))
+    };
+  } catch {
+    return { playerName: 'Garage Rookie', stage: 1 };
+  }
+}
+
+function currentGhostStage() {
+  return companionProfile().stage;
+}
+
+function currentPlayerName() {
+  return companionProfile().playerName;
+}
+
+function migrateLegacyBestTrail(data) {
+  if (!Array.isArray(data.bestTrail) || data.bestTrail.length <= 5 || !data.bestDistance) return;
+  if (getLocalBestGhost(ghostStore, 'track', 1)) return;
+  const ghost = createGhostFromLegacyTrail({
+    trail: data.bestTrail,
+    route: 'track',
+    stage: 1,
+    distance: data.bestDistance,
+    carKey: data.selectedVehicle || 'hatchback',
+    playerName: currentPlayerName()
+  });
+  const result = upsertLocalBestGhost(ghostStore, ghost);
+  ghostStore = result.store;
+  if (result.changed) saveGhostStore(ghostStore);
+}
+
+function ghostsForRun(route, stage) {
+  const mode = GHOST_MODES[activeGhostMode] || GHOST_MODES.ghost2;
+  return selectGhostsForRace({
+    store: ghostStore,
+    route: activeRoute,
+    stage,
+    count: mode.count,
+    routeLength: route.length
+  });
+}
+
+function refreshActiveGhosts() {
+  if (!game) return;
+  game.activeGhosts = ghostsForRun(game.route, game.stage || currentGhostStage());
+}
+
+function recordGhostSample(force = false) {
+  if (!game?.telemetry) return;
+  if (!force && (game.elapsed - game.lastSample) * 1000 < GHOST_SAMPLE_INTERVAL_MS) return;
+  const sample = {
+    t: Math.round(game.elapsed * 1000),
+    x: Number(game.distancePx.toFixed(1)),
+    speed: Number(game.telemetry.kmh.toFixed(1))
+  };
+  const previous = game.samples[game.samples.length - 1];
+  if (!previous || previous.t !== sample.t || previous.x !== sample.x) game.samples.push(sample);
+  game.lastSample = game.elapsed;
 }
 
 function dayKey(date = new Date()) {
@@ -600,7 +680,9 @@ function raceCommandKey() {
   return [
     saveData.selectedVehicle,
     activeRoute,
+    currentGhostStage(),
     activeGhostMode,
+    ghostStore.updatedAt || 0,
     Math.floor(saveData.bestDistance || 0),
     currentProgressionMission()?.key || 'done',
     Object.keys(UPGRADES).map((key) => upgrades[key] || 1).join('-')
@@ -653,8 +735,11 @@ function resetRun() {
   route.terrain = makeTerrainProfile(route);
   const stats = vehicleStats();
   const director = makeDirector(route);
+  const stage = currentGhostStage();
   game = {
     route,
+    routeKey: activeRoute,
+    stage,
     stats,
     mission: currentProgressionMission(),
     x: 80,
@@ -681,7 +766,7 @@ function resetRun() {
     pickups: makePickups(route),
     checkpoints: director.checkpoints,
     hazards: director.hazards,
-    samples: [],
+    samples: [{ t: 0, x: 0, speed: 0 }],
     lastSample: 0,
     message: '',
     finishReason: '',
@@ -691,6 +776,7 @@ function resetRun() {
     boostPulse: 0,
     hazardsCleared: 0,
     usedRepair: false,
+    activeGhosts: ghostsForRun(route, stage),
     ghostColors: ['#22c55e', '#f97316', '#e5e7eb']
   };
   game.telemetry = computeTelemetry();
@@ -713,7 +799,7 @@ function shellHtml() {
     <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label, meta]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" onclick="window.rrSetTab?.('${key}')"><b>${label}</b><span>${meta}</span></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
-        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="roadRunnerBadge rrGhostCycle" data-rr-mode onclick="window.rrCycleGhosts?.()" aria-label="Change ghost racers">${GHOST_MODES[activeGhostMode].label}</button><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
+        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="roadRunnerBadge rrGhostCycle" data-rr-mode onclick="window.rrCycleGhosts?.()" aria-label="Change ghost racers">${GHOST_MODES[activeGhostMode].label}</button><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas" data-guide-target="raceBoost">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
       </section>
       <section class="racerPage ${activeTab === 'garage' ? 'active' : ''}" data-rr-page="garage"><div data-road-runner-garage></div></section>
       <section class="racerPage ${activeTab === 'vehicles' ? 'active' : ''}" data-rr-page="vehicles"><div data-road-runner-vehicles></div></section>
@@ -1141,29 +1227,24 @@ function drawPickups(width, height, route, cameraX) {
 }
 
 function drawGhosts(width, height, route, cameraX) {
-  const mode = GHOST_MODES[activeGhostMode];
   const keys = ['ghostA', 'ghostB', 'ghostC'];
-  for (let i = 0; i < mode.count; i++) {
-    const point = ghostPoint(i, height);
+  const ghosts = game.activeGhosts || [];
+  for (let i = 0; i < ghosts.length; i++) {
+    const ghost = ghosts[i];
+    const point = ghostPoint(ghost, height);
     const x = point.x - cameraX;
     if (x < -100 || x > width + 120) continue;
-    drawCar(x, point.y, routeAngle(route, point.x, height) * 0.65, images[keys[i]], i === 0 && saveData.bestTrail.length ? 'Best Ghost' : `Computer ${i + 1}`, 0.5, game.ghostColors[i]);
+    const imageKey = images[ghost.carKey]?.ready ? ghost.carKey : keys[i] || 'ghostA';
+    const label = ghost.source === 'local_best' ? 'Best Ghost' : ghost.playerName || `Computer ${i + 1}`;
+    drawCar(x, point.y, routeAngle(route, point.x, height) * 0.65, images[imageKey], label, 0.5, game.ghostColors[i] || '#e5e7eb');
   }
 }
 
-function ghostPoint(index, height) {
+function ghostPoint(ghost, height) {
   const route = game.route;
-  if (index === 0 && saveData.bestTrail.length > 5) {
-    const target = Math.max(0, game.elapsed - index * 0.8);
-    let sample = saveData.bestTrail[saveData.bestTrail.length - 1];
-    for (const item of saveData.bestTrail) {
-      if (item.t >= target) { sample = item; break; }
-    }
-    return { x: sample.x, y: routeY(route, sample.x, height) - 30 };
-  }
-  const pace = 0.9 + index * 0.08;
-  const x = 80 + Math.max(0, game.elapsed - index * 0.75) * (game.stats.topSpeed * pace * 0.58);
-  return { x, y: routeY(route, x, height) - 30 };
+  const sample = sampleGhostAt(ghost, game.elapsed * 1000);
+  const x = 80 + Math.max(0, sample.x || 0);
+  return { x, y: routeY(route, x, height) - 30, speed: sample.speed || 0 };
 }
 
 function drawPlayer(width, height, route, cameraX) {
@@ -1560,10 +1641,7 @@ function update(dt) {
   game.wear += (chassisWear + terrainWear) / game.stats.durability;
 
   collectPickupsAndCheckpoints();
-  if (game.elapsed - game.lastSample > 0.18) {
-    game.samples.push({ t: Number(game.elapsed.toFixed(2)), x: Math.round(game.x) });
-    game.lastSample = game.elapsed;
-  }
+  recordGhostSample();
   if (game.eventTimer > 0) game.eventTimer -= dt;
   if (game.boostPulse > 0) game.boostPulse = Math.max(0, game.boostPulse - dt * 1.9);
   if (game.floaters?.length) {
@@ -1661,10 +1739,27 @@ function finishRun(completed) {
     saveData.bestDistance = Math.floor(game.distanceM);
     saveData.bestTrail = game.samples.slice(-520);
   }
+  let newGhostBest = false;
+  if (completed) {
+    recordGhostSample(true);
+    const ghost = createLocalBestGhost({
+      playerName: currentPlayerName(),
+      route: game.routeKey || activeRoute,
+      stage: game.stage,
+      bestTimeMs: Math.round(game.elapsed * 1000),
+      carKey: saveData.selectedVehicle,
+      recordedAt: Date.now(),
+      samples: game.samples.slice(-520)
+    });
+    const result = upsertLocalBestGhost(ghostStore, ghost);
+    ghostStore = result.store;
+    newGhostBest = result.changed;
+    if (result.changed) saveGhostStore(ghostStore);
+  }
   const missionRewards = evaluateMissionSets();
   saveGameData();
   const reason = game.wear >= game.stats.wearLimit ? 'wear' : completed ? 'complete' : 'fuel';
-  game.message = completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
+  game.message = completed && newGhostBest ? 'New Ghost Best' : completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
   game.finishReason = reason;
   showPostRunPanel(completed, reason, bonus, missionRewards);
   refreshPanels();
@@ -1706,6 +1801,7 @@ function bindControls() {
       if (event) event.preventDefault();
       if (control === 'gas') input.gas = value;
       if (control === 'brake') input.brake = value;
+      if (control === 'gas' && value) window.dispatchEvent(new CustomEvent('roadRunnerFirstGas'));
       button.classList.toggle('active', value);
     };
     button.addEventListener('pointerdown', (event) => { button.setPointerCapture?.(event.pointerId); set(true, event); }, { passive: false });
@@ -1715,7 +1811,10 @@ function bindControls() {
   });
   window.onkeydown = (event) => {
     if (!document.querySelector('#screen-race.active')) return;
-    if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') input.gas = true;
+    if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') {
+      input.gas = true;
+      window.dispatchEvent(new CustomEvent('roadRunnerFirstGas'));
+    }
     if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') input.brake = true;
   };
   window.onkeyup = (event) => {
@@ -1755,12 +1854,14 @@ window.restartHillRoute = () => {
 window.setHillGhosts = (mode) => {
   if (!GHOST_MODES[mode]) return;
   activeGhostMode = mode;
+  refreshActiveGhosts();
   mountRoadRunner(true);
 };
 window.rrCycleGhosts = () => {
   const modes = Object.keys(GHOST_MODES);
   activeGhostMode = modes[(modes.indexOf(activeGhostMode) + 1) % modes.length];
   setText('[data-rr-mode]', GHOST_MODES[activeGhostMode].label);
+  refreshActiveGhosts();
 };
 window.setHillRoute = (route) => {
   if (!ROUTES[route] || !routeUnlocked(route)) return;
@@ -1824,6 +1925,7 @@ window.rrSetVehicleFilter = (filter) => {
 window.render_game_to_text = () => {
   if (!game) return JSON.stringify({ mode: 'road-runner', active: false });
   const hazard = activeHazard();
+  const localBestGhost = getLocalBestGhost(ghostStore, activeRoute, game.stage);
   return JSON.stringify({
     mode: 'road-runner',
     active: true,
@@ -1831,8 +1933,25 @@ window.render_game_to_text = () => {
     vehicleAsset: ASSET_PATHS[selectedVehicle().asset] || '',
     vehicleAssetReady: Boolean(images[selectedVehicle().asset]?.ready && images[selectedVehicle().asset]?.naturalWidth > 0),
     route: activeRoute,
+    stage: game.stage,
     routeBackgroundAsset: ASSET_PATHS[game.route.bgAsset] || '',
     routeBackgroundReady: Boolean(images[game.route.bgAsset]?.ready && images[game.route.bgAsset]?.naturalWidth > 0),
+    ghostStorageKey: GHOST_STORAGE_KEY,
+    localBestGhost: localBestGhost ? {
+      ghostId: localBestGhost.ghostId,
+      bestTimeMs: localBestGhost.bestTimeMs,
+      samples: localBestGhost.samples.length
+    } : null,
+    activeGhosts: (game.activeGhosts || []).map((ghost) => ({
+      ghostId: ghost.ghostId,
+      source: ghost.source,
+      playerName: ghost.playerName,
+      route: ghost.route,
+      stage: ghost.stage,
+      bestTimeMs: ghost.bestTimeMs,
+      carKey: ghost.carKey,
+      samples: ghost.samples.length
+    })),
     elapsedSeconds: Number(game.elapsed.toFixed(1)),
     distanceMeters: Math.floor(game.distanceM),
     speedKmh: Number(game.telemetry.kmh.toFixed(1)),

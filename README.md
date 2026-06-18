@@ -5,7 +5,7 @@ Mobile-first HTML5/PWA companion game for 365 Motor Sales. The current build com
 ## Current Game Modes
 
 - **World** - Mini open-world city view with buildings, residents, traffic, collection timers, restock/repair needs, and upgrade hooks.
-- **Race** - Drive mode with route progress, fuel/wear/heat pressure, route problems, ghost/race HUD work, sprite-backed visuals, and fullscreen support.
+- **Race** - Drive mode with route progress, fuel/wear/heat pressure, route problems, ghost/race HUD work, sprite-backed visuals, and fullscreen support. Ghost racing is asynchronous best-time/replay racing, not live PVP.
 - **Lines** - Idle business lines that generate resources, unlock managers, support auto-collect toggles, and communicate with Garage/World progression.
 - **Merge** - Parts and tool-chain merge bay with unlock previews, chain guides, slot states, and asset-based merge item rendering.
 - **Garage** - Room/build hub for shop systems, room cards, building upgrades, and linked World/Lines systems.
@@ -23,6 +23,7 @@ Mobile-first HTML5/PWA companion game for 365 Motor Sales. The current build com
 - Floating reward numbers for collection and reward moments.
 - Sprite-based race canvas assets for cars, route backgrounds, speed effects, boost glow, warnings, and checkpoints.
 - Race progress helpers and `test:race-progress` coverage for stage-length based progress.
+- Local-first ghost racing model for route/stage best-time replays, local best ghosts, and seeded AI ghosts. See [Ghost Racing Model](docs/ghost-racing-model.md).
 - Fullscreen support through the screen control runtime.
 - Local browser save only while the core loop, UI, and balance are still changing quickly.
 
@@ -65,6 +66,7 @@ npm run test:race-progress
 - Asset folders are designed for manual replacement/override as better production art arrives
 - No Supabase/cloud save yet
 - No real-time PVP yet
+- Ghost racing uses asynchronous saved best-time/replay data and computer ghost pacing; it is not live PVP.
 - No trademarked vehicle brands or manufacturer logos
 
 ## Why no Supabase yet?
