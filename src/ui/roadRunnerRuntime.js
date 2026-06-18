@@ -82,6 +82,7 @@ const WEEKLY_MISSION_POOL = [
 
 const ASSET_PATHS = {
   ...RACER_VEHICLE_ASSETS,
+  hatchback: '/assets/race/cars/starter_compact.png',
   ghostA: RACER_VEHICLE_ASSETS.greenCompact,
   ghostB: RACER_VEHICLE_ASSETS.pickup,
   ghostC: RACER_VEHICLE_ASSETS.serviceVan,
@@ -93,11 +94,17 @@ const ASSET_PATHS = {
   partsStore: '/assets/road-runner/parts-store.svg',
   mechanicShop: '/assets/road-runner/mechanic-shop.svg',
   wreck: '/assets/road-runner/wrecked-car.svg',
-  routeTrack: '/assets/race/routes/track.svg',
-  routeBarangay: '/assets/race/routes/barangay.svg',
-  routeFarm: '/assets/race/routes/farm.svg',
-  routeMountain: '/assets/race/routes/mountain.svg',
-  routePort: '/assets/race/routes/port.svg'
+  routeTrack: '/assets/race/backgrounds/street_loop.png',
+  routeBarangay: '/assets/race/backgrounds/street_loop.png',
+  routeFarm: '/assets/race/backgrounds/parts_delivery.png',
+  routeMountain: '/assets/race/backgrounds/rough_road.png',
+  routePort: '/assets/race/backgrounds/dealer_showcase.png',
+  roadStrip: '/assets/race/fx/road_strip.png',
+  speedStreaks: '/assets/race/fx/speed_streaks.png',
+  boostRing: '/assets/race/fx/tap_boost_ring.png',
+  checkpointFlag: '/assets/race/fx/checkpoint_flag.png',
+  warningPanel: '/assets/race/fx/warning_panel.png',
+  warningBadge: '/assets/race/fx/warning_badge.png'
 };
 
 let canvas = null;
@@ -385,6 +392,20 @@ function publishRoadRunnerAssetState() {
     activeVehicle: saveData.selectedVehicle,
     activeVehicleAsset: ASSET_PATHS[selectedVehicle().asset] || '',
     activeVehicleReady: Boolean(images[selectedVehicle().asset]?.ready && images[selectedVehicle().asset]?.naturalWidth > 0),
+    routeBackgrounds: Object.fromEntries(Object.entries(ROUTES).map(([key, route]) => [
+      key,
+      {
+        asset: ASSET_PATHS[route.bgAsset] || '',
+        ready: Boolean(images[route.bgAsset]?.ready && images[route.bgAsset]?.naturalWidth > 0)
+      }
+    ])),
+    sceneFx: Object.fromEntries(['roadStrip', 'speedStreaks', 'boostRing', 'checkpointFlag', 'warningPanel', 'warningBadge'].map((key) => [
+      key,
+      {
+        asset: ASSET_PATHS[key],
+        ready: Boolean(images[key]?.ready && images[key]?.naturalWidth > 0)
+      }
+    ])),
     missingVehicles: vehicleAssets.filter((item) => !item.asset || !item.ready)
   };
 }
@@ -909,9 +930,11 @@ function draw() {
 function drawBackground(width, height, route, cameraX) {
   const bg = images[route.bgAsset];
   if (bg?.ready && bg.naturalWidth > 0) {
-    const parallax = (cameraX * 0.09) % width;
-    for (let x = -parallax; x < width + 1; x += width) {
-      ctx.drawImage(bg, x, 0, width, height);
+    const scale = height / Math.max(1, bg.naturalHeight);
+    const drawW = Math.max(width, bg.naturalWidth * scale);
+    const parallax = (cameraX * 0.09) % drawW;
+    for (let x = -parallax; x < width + drawW; x += drawW) {
+      ctx.drawImage(bg, x, 0, drawW, height);
     }
     return;
   }
@@ -942,6 +965,26 @@ function roundedCloud(x, y) {
 function drawRoad(width, height, route, cameraX) {
   const start = Math.max(0, cameraX - 80);
   const end = Math.min(route.length + 260, cameraX + width + 140);
+  const roadSprite = images.roadStrip;
+  if (roadSprite?.ready && roadSprite.naturalWidth > 0) {
+    const spacing = route.profile === 'track' ? 154 : 132;
+    const spriteW = route.profile === 'track' ? 236 : 210;
+    const spriteH = route.profile === 'track' ? 58 : 52;
+    ctx.save();
+    for (let worldX = Math.floor(start / spacing) * spacing - spacing; worldX <= end + spacing; worldX += spacing) {
+      const x = worldX - cameraX;
+      const y = routeY(route, worldX, height);
+      const angle = routeAngle(route, worldX, height) * 0.72;
+      ctx.save();
+      ctx.translate(x + spriteW * 0.44, y + 1);
+      ctx.rotate(angle);
+      ctx.drawImage(roadSprite, -spriteW * 0.55, -spriteH * 0.47, spriteW, spriteH);
+      ctx.restore();
+    }
+    ctx.restore();
+    return;
+  }
+
   ctx.fillStyle = route.grass;
   ctx.beginPath();
   ctx.moveTo(0, height);
@@ -974,8 +1017,24 @@ function drawSpeedStreaks(width, height, route, cameraX) {
   const kmh = game.telemetry?.kmh || 0;
   const intensity = clamp((kmh - 95) / 170, 0, 1);
   if (intensity <= 0.02) return;
+  const streakSprite = images.speedStreaks;
   ctx.save();
   ctx.globalAlpha = 0.1 + intensity * 0.28;
+  if (streakSprite?.ready && streakSprite.naturalWidth > 0) {
+    const baseX = game.x - cameraX - 30;
+    const roadY = routeY(route, game.x, height);
+    for (let i = 0; i < 7; i += 1) {
+      const offsetSeed = seededNoise(game.elapsed * 420 + i * 83, route.seed + 91);
+      const x = baseX - 58 - i * 35 - offsetSeed * 42;
+      const y = roadY - 62 + (i % 4) * 18 + offsetSeed * 12;
+      const len = 58 + intensity * 62 + offsetSeed * 18;
+      if (x < -100 || x > width + 60) continue;
+      ctx.drawImage(streakSprite, x - len, y - 10, len, 22);
+    }
+    ctx.restore();
+    return;
+  }
+
   ctx.strokeStyle = '#f8fafc';
   ctx.lineWidth = 1.5 + intensity * 1.5;
   ctx.lineCap = 'round';
@@ -1026,6 +1085,7 @@ function drawCheckpoints(width, height, route, cameraX) {
 
 function drawMilestoneCheckpoints(width, height, route, cameraX) {
   const milestones = [0.25, 0.5, 0.75, 1];
+  const flagSprite = images.checkpointFlag;
   for (const pct of milestones) {
     const worldX = 80 + route.length * pct;
     const x = worldX - cameraX;
@@ -1034,6 +1094,16 @@ function drawMilestoneCheckpoints(width, height, route, cameraX) {
     const reached = game.distancePx >= route.length * pct;
     ctx.save();
     ctx.globalAlpha = reached ? 1 : 0.58;
+    if (flagSprite?.ready && flagSprite.naturalWidth > 0) {
+      ctx.drawImage(flagSprite, x - 29, y - 28, 58, 54);
+      ctx.fillStyle = '#06131d';
+      ctx.font = '900 10px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${Math.round(pct * 100)}%`, x + 8, y - 8);
+      ctx.restore();
+      continue;
+    }
+
     ctx.fillStyle = reached ? '#35e58a' : '#ffd166';
     roundRect(x - 29, y - 22, 58, 28, 10);
     ctx.fill();
@@ -1110,6 +1180,15 @@ function drawBoostGlow(x, y) {
   ctx.save();
   ctx.globalAlpha = glow;
   const pulse = 1 + Math.sin(game.elapsed * 20) * 0.08;
+  const boostSprite = images.boostRing;
+  if (boostSprite?.ready && boostSprite.naturalWidth > 0) {
+    ctx.translate(x - 28, y + 17);
+    ctx.rotate(game.pitch * 0.22);
+    ctx.drawImage(boostSprite, -82 * pulse, -38 * pulse, 164 * pulse, 76 * pulse);
+    ctx.restore();
+    return;
+  }
+
   const grad = ctx.createRadialGradient(x - 36, y + 18, 4, x - 36, y + 18, 68 * pulse);
   grad.addColorStop(0, 'rgba(109,255,159,.65)');
   grad.addColorStop(0.42, 'rgba(56,189,248,.32)');
@@ -1268,10 +1347,27 @@ function drawProblemWarning(width, height) {
   const w = Math.min(width - 28, 304);
   const h = 42;
   const x = (width - w) / 2;
-  const y = width <= 430 ? 82 : 74;
+  const collectionSafeY = width <= 430 ? 148 : 122;
+  const y = clamp(collectionSafeY, 88, Math.max(88, height - 168));
   const alpha = clamp(game.eventTimer / 0.25, 0, 1);
   ctx.save();
   ctx.globalAlpha = alpha;
+  const panelSprite = images.warningPanel;
+  const badgeSprite = images.warningBadge;
+  if (panelSprite?.ready && panelSprite.naturalWidth > 0) {
+    ctx.drawImage(panelSprite, x, y, w, h);
+    if (badgeSprite?.ready && badgeSprite.naturalWidth > 0) ctx.drawImage(badgeSprite, x + 8, y + 7, 32, 28);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 13px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(game.eventText, x + 48, y + 17);
+    ctx.fillStyle = '#bfe9f5';
+    ctx.font = '800 9px Arial';
+    ctx.fillText(danger ? 'React fast to protect wear and speed.' : 'Reward collected during the run.', x + 48, y + 31);
+    ctx.restore();
+    return;
+  }
+
   ctx.fillStyle = danger ? 'rgba(89,22,32,.88)' : 'rgba(4,31,49,.86)';
   roundRect(x, y, w, h, 16);
   ctx.fill();

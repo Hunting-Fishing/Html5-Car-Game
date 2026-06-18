@@ -394,3 +394,21 @@ Follow-up prompt: Strengthen the meter system into game-style segmented bars.
 - Browser probes verified Lines, Garage, and Profile meters have five cells, asset-track backgrounds, value chips, no old `.meter .fill` bars, and no console errors.
 - Visual QA screenshots were reviewed for the scrolled Lines meters and Race Fuel/Wear meters.
 - Ran `npm run build` and the standard web-game client against Lines; build passed with the existing large-chunk warning only.
+
+Follow-up prompt: Show fuel cans in the resource HUD, remove translucent icon-box treatment, and move race warning overlays below collection counters.
+
+- Added Fuel/Fuel Cans to the seven-resource top HUD so the persistent `fuelCans` currency is visible before fuel-problem fixes ask for it.
+- Mapped `fuelCans` to the existing Road Runner energy token asset and kept the Race collection HUD focused on in-run fuel percent plus next fuel distance.
+- Tightened top HUD, compact Race viewport, and mobile skin CSS so seven resource capsules fit without restoring old icon-box styling.
+- Made HUD/collection icons render as standalone transparent images.
+- Moved Road Runner canvas warning banners below the collection cards so pothole/rough-road messages no longer sit underneath the collection counters.
+
+Follow-up prompt: Add a RewardToast and FloatingReward system so the Hub activity log becomes stronger reward feedback.
+
+- Rebuilt `RewardToast.js` into a stacked reward-card system with asset badges, reward chips, a hidden legacy status fallback, debug state, and a floating reward layer.
+- Added `floatingRewardLayer` and `rewardToastStack` to the shell frame and styled reward cards/floating rewards in `styles.css`.
+- Centralized reward feedback in `main.js` by diffing before/after state for currency gains, merges, new chain unlocks, stage completion, upgrades, building/room upgrades, repairs, tow jobs, line collection, route problems, and idle auto-collection.
+- Renamed the Hub Activity Log to Reward Feed, expanded it to eight entries, and added empty-state copy.
+- Removed duplicate manual line-collection logging from `idleLineSystem.js`; the central action handler now owns the feed entry.
+- Verified with `npm run build`, the standard web-game Playwright client, and a browser probe that a ready Line collection produces a gold reward toast, coin chip, floating `+Coins`, and one clean Reward Feed entry.
+- Existing non-blocking issues observed: Vite chunk-size warning, LF/CRLF warnings, and the existing missing `favicon.ico` browser 404.

@@ -735,12 +735,13 @@ html.rrRaceViewport #screen-race.active {
   }
 
   html.rrRaceViewport .currencyGrid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 3px;
   }
 
   html.rrRaceViewport .cur {
     min-height: 25px;
-    grid-template-columns: 11px minmax(0, 1fr);
+    grid-template-columns: 10px minmax(0, 1fr);
     gap: 1px;
     padding: 2px 3px;
     border-width: 1px;
@@ -748,8 +749,13 @@ html.rrRaceViewport #screen-race.active {
   }
 
   html.rrRaceViewport .curIcon {
-    width: 11px;
-    height: 11px;
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   html.rrRaceViewport .curPlus {

@@ -12,6 +12,8 @@ export function renderShellFrame({ screens }) {
         ${renderBottomNav()}
       </nav>
     </div>
+    <div class="floatingRewardLayer" id="floatingRewardLayer" aria-hidden="true"></div>
+    <div class="rewardToastStack" id="rewardToastStack" aria-live="polite" aria-atomic="false"></div>
     <div class="toast" id="toast"></div>
   `;
 }

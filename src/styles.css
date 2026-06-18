@@ -53,9 +53,9 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .screenControlButton { width: 31px; height: 31px; border-radius: 999px; display: grid; place-items: center; background: rgba(255,255,255,.08); border: 1px solid var(--line); color: #bfe9f5; font-size: 9px; font-weight: 1000; box-shadow: inset 0 1px 0 rgba(255,255,255,.10); }
 .screenControlButton:active { transform: translateY(1px); }
 .walletRow { display: grid; grid-template-columns: minmax(0, 1fr) 66px; gap: 6px; align-items: stretch; }
-.currencyGrid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; min-width: 0; }
-.cur { position: relative; border: 1px solid rgba(125,220,255,.22); background: var(--ui-hud-resource), radial-gradient(circle at 28% 0, rgba(255,255,255,.18), transparent 40%), linear-gradient(180deg, #1f6d9b, #0c304c); background-size: 100% 100%, auto, auto; border-radius: 15px; padding: 5px 14px 5px 5px; text-align: left; min-width: 0; min-height: 42px; display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 3px; align-items: center; box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 4px 0 rgba(0,0,0,.2); }
-.curIcon { width: 16px; height: 16px; display: block; object-fit: contain; filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)); }
+.currencyGrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; min-width: 0; }
+.cur { position: relative; border: 1px solid rgba(125,220,255,.22); background: var(--ui-hud-resource), radial-gradient(circle at 28% 0, rgba(255,255,255,.18), transparent 40%), linear-gradient(180deg, #1f6d9b, #0c304c); background-size: 100% 100%, auto, auto; border-radius: 15px; padding: 5px 12px 5px 4px; text-align: left; min-width: 0; min-height: 42px; display: grid; grid-template-columns: 15px minmax(0, 1fr); gap: 2px; align-items: center; box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 4px 0 rgba(0,0,0,.2); }
+.curIcon { width: 15px; height: 15px; display: block; object-fit: contain; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)); }
 .curCopy { min-width: 0; display: grid; gap: 1px; }
 .cur b { display: block; font-size: clamp(8px, 2.2vw, 11px); line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }
 .cur span { display: block; font-size: clamp(5px, 1.45vw, 8px); line-height: 1; color: #bfe9f5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -269,8 +269,36 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .doDont { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 7px; }
 ul { margin: 6px 0 0 17px; padding: 0; color: var(--muted); font-size: 10px; line-height: 1.35; }
 .logLine { font-size: 11px; color: var(--muted); padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
-.toast { position: fixed; left: 50%; bottom: 86px; transform: translateX(-50%) translateY(16px); opacity: 0; pointer-events: none; max-width: min(440px, calc(100vw - 30px)); padding: 10px 12px; border-radius: 15px; border: 1px solid var(--line); background: rgba(4,12,19,.94); color: var(--text); font-size: 12px; font-weight: 900; transition: .2s; z-index: 50; }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.rewardToastStack { position: fixed; z-index: 10080; left: 50%; bottom: calc(82px + env(safe-area-inset-bottom)); width: min(438px, calc(100vw - 20px)); display: grid; gap: 8px; pointer-events: none; transform: translateX(-50%); }
+.rewardToastCard { position: relative; overflow: hidden; display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 8px; align-items: center; padding: 8px 10px; border-radius: 18px; border: 2px solid rgba(125,220,255,.34); background: radial-gradient(circle at 12% 0, rgba(255,255,255,.18), transparent 30%), linear-gradient(180deg, rgba(12,55,82,.96), rgba(2,15,28,.98)); box-shadow: inset 0 2px 0 rgba(255,255,255,.13), 0 6px 0 rgba(0,0,0,.26), 0 12px 22px rgba(0,0,0,.32); opacity: 0; transform: translateY(16px) scale(.98); transition: opacity .18s ease, transform .18s ease; }
+.rewardToastCard.show { opacity: 1; transform: translateY(0) scale(1); }
+.rewardToastCard.leaving { opacity: 0; transform: translateY(12px) scale(.98); }
+.rewardToastCard.good { border-color: rgba(109,255,159,.46); }
+.rewardToastCard.gold { border-color: rgba(255,209,102,.58); background: radial-gradient(circle at 12% 0, rgba(255,209,102,.24), transparent 32%), linear-gradient(180deg, rgba(20,61,77,.98), rgba(5,20,31,.98)); }
+.rewardToastCard.bad { border-color: rgba(255,93,115,.58); background: radial-gradient(circle at 12% 0, rgba(255,93,115,.20), transparent 32%), linear-gradient(180deg, rgba(86,25,36,.96), rgba(23,10,20,.98)); }
+.rewardToastBadge { width: 42px; height: 42px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(180deg, #ffe08a, #f59e0b); box-shadow: inset 0 2px 0 rgba(255,255,255,.36), 0 4px 0 rgba(0,0,0,.22); }
+.rewardToastBadge img { width: 27px; height: 27px; object-fit: contain; filter: drop-shadow(0 2px 0 rgba(0,0,0,.25)); }
+.rewardToastCopy { min-width: 0; display: grid; gap: 2px; }
+.rewardToastCopy b { overflow: hidden; color: #ffffff; font-size: 13px; line-height: 1.05; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 2px 0 rgba(0,0,0,.32); }
+.rewardToastCopy span { overflow: hidden; color: #c7f9ff; font-size: 10px; font-weight: 800; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
+.rewardToastChips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.rewardToastChip { display: inline-grid; grid-template-columns: 17px auto auto; gap: 3px; align-items: center; min-width: 0; max-width: 100%; padding: 3px 7px; border-radius: 999px; background: rgba(0,0,0,.26); border: 1px solid rgba(255,255,255,.13); color: #fff; }
+.rewardToastChip img { width: 17px; height: 17px; object-fit: contain; }
+.rewardToastChip b { font-size: 10px; line-height: 1; }
+.rewardToastChip small { overflow: hidden; color: #fff3c4; font-size: 7px; font-weight: 1000; line-height: 1; text-transform: uppercase; text-overflow: ellipsis; white-space: nowrap; }
+.floatingRewardLayer { position: fixed; inset: 0; z-index: 10070; pointer-events: none; overflow: hidden; }
+.floatingReward { position: absolute; left: var(--float-x, 50%); top: var(--float-y, 58%); display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border-radius: 999px; color: #fff; background: rgba(3,13,24,.78); border: 1px solid rgba(255,255,255,.18); box-shadow: 0 6px 0 rgba(0,0,0,.20), 0 12px 20px rgba(0,0,0,.25); font-size: 16px; font-weight: 1000; text-shadow: 0 2px 0 rgba(0,0,0,.38); transform: translate(-50%, 0); animation: floatRewardRise 1.4s ease-out forwards; }
+.floatingReward.gold { color: #2b1700; background: linear-gradient(180deg, #ffe08a, #f59e0b); border-color: rgba(79,38,0,.35); }
+.floatingReward.good { color: #052016; background: linear-gradient(180deg, #9cffc0, #26e872); border-color: rgba(6,95,70,.42); }
+.floatingReward.bad { background: linear-gradient(180deg, #ff8aa0, #ff4667); border-color: rgba(127,29,29,.42); }
+.floatingReward img { width: 22px; height: 22px; object-fit: contain; filter: drop-shadow(0 2px 0 rgba(0,0,0,.20)); }
+@keyframes floatRewardRise {
+  0% { opacity: 0; transform: translate(-50%, 18px) scale(.82); }
+  12% { opacity: 1; transform: translate(-50%, 0) scale(1.06); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -74px) scale(.96); }
+}
 @media (min-width: 420px) {
   .shopFloor { grid-template-columns: 1fr 1fr; }
 }
@@ -283,8 +311,8 @@ ul { margin: 6px 0 0 17px; padding: 0; color: var(--muted); font-size: 10px; lin
   .brandText span { font-size: 9px; }
   .walletRow { grid-template-columns: minmax(0, 1fr) 58px; gap: 4px; }
   .currencyGrid { gap: 3px; }
-  .cur { min-height: 35px; border-radius: 12px; grid-template-columns: 13px minmax(0, 1fr); padding: 4px 12px 4px 4px; gap: 2px; }
-  .curIcon { width: 13px; height: 13px; }
+  .cur { min-height: 35px; border-radius: 12px; grid-template-columns: 12px minmax(0, 1fr); padding: 4px 10px 4px 3px; gap: 1px; }
+  .curIcon { width: 12px; height: 12px; }
   .cur b { font-size: 8px; }
   .cur span { font-size: 6px; }
   .curPlus { width: 11px; height: 11px; font-size: 8px; top: 2px; right: 2px; }

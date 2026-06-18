@@ -100,6 +100,12 @@
   width: 23px;
   height: 23px;
   object-fit: contain;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.32));
 }
 
 .rrCollectionItem span {

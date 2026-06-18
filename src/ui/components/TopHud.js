@@ -1,6 +1,6 @@
 import { renderCurrencyCapsule } from './ResourcePill.js';
 
-export const HUD_RESOURCE_KEYS = ['coins', 'parts', 'tools', 'scrap', 'tune', 'rep'];
+export const HUD_RESOURCE_KEYS = ['coins', 'parts', 'tools', 'scrap', 'fuelCans', 'tune', 'rep'];
 
 export function renderTopHud() {
   return `
@@ -20,6 +20,7 @@ export function renderTopHud() {
           ${renderCurrencyCapsule('parts', 'Parts')}
           ${renderCurrencyCapsule('tools', 'Tools')}
           ${renderCurrencyCapsule('scrap', 'Scrap')}
+          ${renderCurrencyCapsule('fuelCans', 'Fuel')}
           ${renderCurrencyCapsule('tune', 'Tune')}
           ${renderCurrencyCapsule('rep', 'Rep')}
         </div>

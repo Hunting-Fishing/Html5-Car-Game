@@ -1,4 +1,5 @@
 const UI_ICON_BASE = '/assets/ui/icons';
+const ROAD_RUNNER_ICON_BASE = '/assets/road-runner';
 
 export const UI_ICONS = {
   home: `${UI_ICON_BASE}/home.png`,
@@ -11,7 +12,8 @@ export const UI_ICONS = {
   tools: `${UI_ICON_BASE}/tools.png`,
   scrap: `${UI_ICON_BASE}/scrap.png`,
   tune: `${UI_ICON_BASE}/tune.png`,
-  rep: `${UI_ICON_BASE}/rep.png`
+  rep: `${UI_ICON_BASE}/rep.png`,
+  fuel: `${ROAD_RUNNER_ICON_BASE}/token-energy.svg`
 };
 
 export const SCREEN_ICON_MAP = {
@@ -33,7 +35,8 @@ export const CURRENCY_ICON_MAP = {
   tools: UI_ICONS.tools,
   scrap: UI_ICONS.scrap,
   tune: UI_ICONS.tune,
-  rep: UI_ICONS.rep
+  rep: UI_ICONS.rep,
+  fuelCans: UI_ICONS.fuel
 };
 
 export const CHAIN_ICON_MAP = {

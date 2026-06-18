@@ -1,14 +1,29 @@
-import { Application, Assets, Container, Graphics, Sprite, Text } from 'pixi.js';
-import { RACE_MODES, PROBLEMS } from '../data/gameData.js';
+import { Application, Assets, Container, Sprite, Text } from 'pixi.js';
+import { PROBLEMS } from '../data/gameData.js';
+import { getRaceMode, getRaceProgressRatio } from './raceProgress.js';
 
-const STARTER_CAR_SPRITE = '/assets/vehicles/racer/sprite_0000.png';
+const STARTER_CAR_SPRITE = '/assets/race/cars/starter_compact.png';
 const ROUTE_BACKGROUNDS = {
-  street: '/assets/race/routes/street.svg',
-  delivery: '/assets/race/routes/delivery.svg',
-  economy: '/assets/race/routes/economy.svg',
-  rough: '/assets/race/routes/rough.svg',
-  showcase: '/assets/race/routes/showcase.svg'
+  street: '/assets/race/backgrounds/street_loop.png',
+  delivery: '/assets/race/backgrounds/parts_delivery.png',
+  economy: '/assets/race/backgrounds/fuel_saver.png',
+  rough: '/assets/race/backgrounds/rough_road.png',
+  showcase: '/assets/race/backgrounds/dealer_showcase.png'
 };
+const RACE_SCENE_ASSETS = {
+  road: '/assets/race/fx/road_strip.png',
+  speedStreaks: '/assets/race/fx/speed_streaks.png',
+  boostRing: '/assets/race/fx/tap_boost_ring.png',
+  checkpointFlag: '/assets/race/fx/checkpoint_flag.png',
+  warningPanel: '/assets/race/fx/warning_panel.png',
+  warningBadge: '/assets/race/fx/warning_badge.png'
+};
+const RACE_ASSET_MANIFEST = [
+  STARTER_CAR_SPRITE,
+  ...Object.values(ROUTE_BACKGROUNDS),
+  ...Object.values(RACE_SCENE_ASSETS)
+];
+const ROAD_SPACING = 420;
 
 let app;
 let scene;
@@ -24,7 +39,7 @@ let boostGlow;
 let warningBanner;
 let warningText;
 let warningSubText;
-let roadMarks = [];
+let roadSprites = [];
 let streaks = [];
 let floatingRewards = [];
 let hostElement;
@@ -44,7 +59,7 @@ export async function mountRaceCanvas(host) {
   app = new Application();
   await app.init({ backgroundAlpha: 0, antialias: true, resizeTo: host });
   host.appendChild(app.canvas);
-  await Assets.load([STARTER_CAR_SPRITE, ...Object.values(ROUTE_BACKGROUNDS)]);
+  await Assets.load(RACE_ASSET_MANIFEST);
 
   scene = new Container();
   app.stage.addChild(scene);
@@ -55,7 +70,7 @@ export async function mountRaceCanvas(host) {
   rewardLayer = new Container();
 
   setRouteBackground('street');
-  drawRoad();
+  createRoadSprites();
   createMilestones();
   createSpeedStreaks();
   createCar();
@@ -70,20 +85,27 @@ export async function mountRaceCanvas(host) {
     animateCar(dt);
     animateRewards(dt);
   });
+
+  window.__racePixiAssetState = {
+    car: STARTER_CAR_SPRITE,
+    backgrounds: ROUTE_BACKGROUNDS,
+    fx: RACE_SCENE_ASSETS,
+    graphicsFree: true
+  };
 }
 
 export function updateRaceCanvas(state) {
   if (!app || !car || !warningBanner) return;
-  const modeKey = state.race.mode || 'street';
-  const mode = RACE_MODES[modeKey] || RACE_MODES.street;
-  const stageLength = Math.max(1, mode.stageLength || 120);
-  const progress = Math.max(0, Number(state.race.progress) || 0);
-  const progressRatio = Math.min(1, progress / stageLength);
+  const raceState = state.race || {};
+  const modeKey = raceState.mode || 'street';
+  const mode = getRaceMode(modeKey);
+  const progress = Math.max(0, Number(raceState.progress) || 0);
+  const progressRatio = getRaceProgressRatio(raceState);
   const progressDelta = Math.max(0, progress - lastProgress);
 
   setRouteBackground(modeKey);
   car.x = 72 + progressRatio * 212;
-  car.scale.set(state.race.problem ? 0.9 : 1);
+  car.scale.set(raceState.problem ? 0.9 : 1);
   speedIntensity = Math.max(0.12, Math.min(1, progressDelta / 9 + (boostTimer > 0 ? 0.65 : 0)));
 
   if (progress - lastRewardProgress >= 18) {
@@ -92,8 +114,8 @@ export function updateRaceCanvas(state) {
   }
 
   updateMilestones(progressRatio);
-  if (state.race.problem) {
-    const problem = PROBLEMS[state.race.problem];
+  if (raceState.problem) {
+    const problem = PROBLEMS[raceState.problem];
     setWarning(problem?.label || 'Route Problem', problem?.description || 'Slow down and fix the route.');
   } else {
     setWarning(`Stage ${state.stage}`, `${mode.label} route clear`);
@@ -122,30 +144,18 @@ function setRouteBackground(key) {
   if (scene) scene.addChildAt(background, 0);
 }
 
-function drawRoad() {
+function createRoadSprites() {
   roadLayer.removeChildren();
-  const road = new Graphics();
-  road.moveTo(-20, 148)
-    .bezierCurveTo(150, 125, 250, 172, 390, 146)
-    .bezierCurveTo(535, 118, 635, 184, 920, 142)
-    .lineTo(920, 226)
-    .bezierCurveTo(710, 250, 580, 210, 424, 224)
-    .bezierCurveTo(255, 240, 155, 206, -20, 230)
-    .closePath()
-    .fill(0x242f3d);
-  road.moveTo(-20, 145)
-    .bezierCurveTo(150, 122, 250, 169, 390, 143)
-    .bezierCurveTo(535, 115, 635, 181, 920, 139)
-    .stroke({ width: 4, color: 0x9be7ff, alpha: 0.34 });
-  roadLayer.addChild(road);
-
-  roadMarks = [];
-  for (let i = 0; i < 13; i += 1) {
-    const mark = new Graphics();
-    mark.roundRect(i * 82 - 30, 177 + Math.sin(i) * 7, 46, 5, 3).fill({ color: 0xf7f2d2, alpha: 0.72 });
-    mark.rotation = Math.sin(i * 0.7) * 0.04;
-    roadMarks.push(mark);
-    roadLayer.addChild(mark);
+  roadSprites = [];
+  for (let i = 0; i < 3; i += 1) {
+    const road = Sprite.from(RACE_SCENE_ASSETS.road);
+    road.x = -24 + i * ROAD_SPACING;
+    road.y = 118 + (i % 2) * 2;
+    road.width = 512;
+    road.height = 116;
+    road.alpha = 0.98;
+    roadSprites.push(road);
+    roadLayer.addChild(road);
   }
 }
 
@@ -155,14 +165,15 @@ function createMilestones() {
     const marker = new Container();
     marker.x = 72 + i * 52;
     marker.y = 121 + Math.sin(i) * 10;
-    const pole = new Graphics();
-    pole.roundRect(-2, 0, 4, 42, 2).fill(0x082033);
-    const flag = new Graphics();
-    flag.roundRect(2, 0, 34, 20, 5).fill(i === 4 ? 0xffd166 : 0x6dff9f).stroke({ width: 2, color: 0x082033, alpha: 0.68 });
+    const flag = Sprite.from(RACE_SCENE_ASSETS.checkpointFlag);
+    flag.anchor.set(0.18, 0.24);
+    flag.width = 48;
+    flag.height = 44;
+    flag.tint = i === 4 ? 0xffffff : 0x8dffad;
     const label = new Text({ text: `${i * 25}%`, style: { fill: '#06131d', fontSize: 8, fontWeight: '900' } });
-    label.x = 6;
-    label.y = 6;
-    marker.addChild(pole, flag, label);
+    label.x = 10;
+    label.y = 4;
+    marker.addChild(flag, label);
     marker.alpha = 0.48;
     marker.scale.set(0.9);
     milestoneLayer.addChild(marker);
@@ -181,10 +192,11 @@ function createSpeedStreaks() {
   streakLayer.removeChildren();
   streaks = [];
   for (let i = 0; i < 9; i += 1) {
-    const streak = new Graphics();
-    streak.roundRect(0, 0, 42 + i * 5, 3, 2).fill(0xf8fafc);
+    const streak = Sprite.from(RACE_SCENE_ASSETS.speedStreaks);
     streak.x = 420 + i * 55;
     streak.y = 64 + (i % 5) * 22;
+    streak.width = 62 + i * 5;
+    streak.height = 18;
     streak.alpha = 0;
     streaks.push(streak);
     streakLayer.addChild(streak);
@@ -193,8 +205,11 @@ function createSpeedStreaks() {
 
 function createCar() {
   car = new Container();
-  boostGlow = new Graphics();
-  boostGlow.ellipse(0, 18, 76, 26).fill({ color: 0x6dff9f, alpha: 0.38 });
+  boostGlow = Sprite.from(RACE_SCENE_ASSETS.boostRing);
+  boostGlow.anchor.set(0.5);
+  boostGlow.width = 176;
+  boostGlow.height = 96;
+  boostGlow.y = 18;
   boostGlow.alpha = 0;
 
   carSprite = Sprite.from(STARTER_CAR_SPRITE);
@@ -212,20 +227,22 @@ function createWarningBanner() {
   warningBanner = new Container();
   warningBanner.x = 16;
   warningBanner.y = 14;
-  const bg = new Graphics();
-  bg.roundRect(0, 0, 250, 45, 16).fill({ color: 0x06131d, alpha: 0.74 }).stroke({ width: 2, color: 0x7ddcff, alpha: 0.58 });
-  const cap = new Graphics();
-  cap.roundRect(8, 7, 42, 31, 12).fill(0xffd166).stroke({ width: 2, color: 0x3b2300, alpha: 0.45 });
-  const bang = new Text({ text: '!', style: { fill: '#3b2300', fontSize: 22, fontWeight: '900' } });
-  bang.x = 25;
-  bang.y = 8;
+  const bg = Sprite.from(RACE_SCENE_ASSETS.warningPanel);
+  bg.width = 250;
+  bg.height = 48;
+  bg.alpha = 0.93;
+  const cap = Sprite.from(RACE_SCENE_ASSETS.warningBadge);
+  cap.x = 7;
+  cap.y = 5;
+  cap.width = 43;
+  cap.height = 34;
   warningText = new Text({ text: '', style: { fill: '#ffffff', fontSize: 15, fontWeight: '900' } });
   warningText.x = 58;
   warningText.y = 8;
   warningSubText = new Text({ text: '', style: { fill: '#bfe9f5', fontSize: 9, fontWeight: '800' } });
   warningSubText.x = 58;
   warningSubText.y = 27;
-  warningBanner.addChild(bg, cap, bang, warningText, warningSubText);
+  warningBanner.addChild(bg, cap, warningText, warningSubText);
 }
 
 function setWarning(title, subtitle) {
@@ -256,9 +273,9 @@ function spawnReward(text, x, y, color = 0xffffff) {
 
 function animateRoad(dt) {
   const speed = (2.1 + speedIntensity * 4.6) * dt;
-  roadMarks.forEach((mark) => {
-    mark.x -= speed;
-    if (mark.x < -110) mark.x += 82 * 13;
+  roadSprites.forEach((road) => {
+    road.x -= speed;
+    if (road.x < -ROAD_SPACING - 24) road.x += ROAD_SPACING * roadSprites.length;
   });
 }
 
