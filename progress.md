@@ -343,3 +343,54 @@ Follow-up prompt: Improve Garage / Build UI with room-card upgrade cards and UI 
 - Browser probe verified four active `.garageSystemRoomCard` cards, loaded system art, five bottom nav tabs, ASCII-safe HUD subtitle, and no app console errors beyond the existing missing `favicon.ico`.
 - Visual QA screenshots were reviewed during the Playwright pass for both the top of Garage and the scrolled Garage Systems section.
 - Ran `npm run build`; production build passed with the existing large-chunk warning only.
+
+Follow-up prompt: Reduce the high-risk `main.js` GUI architecture surface.
+
+- Confirmed the requested component files already exist under `src/ui/components`.
+- Moved the primary bottom-nav model and active-tab syncing into `BottomNav.js`.
+- Expanded `Shell.js` so shell mounting, screen section lookup, active-screen class syncing, and screen-host rendering live outside `main.js`.
+- Expanded `TopHud.js` so resource/stage DOM updates live with the HUD renderer instead of hard-coded ids in `main.js`.
+- Expanded `RewardToast.js` so toast DOM updates and timer ownership live outside `main.js`.
+- Updated `main.js` to call component-layer APIs for shell mount, HUD update, screen activation, screen content rendering, and toast display while leaving game-loop and game-system actions in place.
+- Browser probe verified all five main tabs activate the correct screen, six wallet capsules update, and resource plus buttons still show a toast.
+- Standard web-game client ran against the Garage tab with no generated error file; reviewed the screenshot and state output.
+- Ran `npm run build`; production build passed with the existing large-chunk warning only.
+
+Follow-up prompt: Make the GUI asset-driven instead of CSS-prototype-only.
+
+- Added replaceable cartoon SVG UI assets for HUD frames, stage badge, nav bar/tab states, blue/red CTA buttons, card frames, merge slot states, and cyan glow FX.
+- Wired `src/styles.css` and `public/mobileGameSkin.css` to use `/assets/ui/hud`, `/assets/ui/nav`, `/assets/ui/cards`, `/assets/ui/merge`, `/assets/ui/meters`, `/assets/ui/buttons`, `/assets/ui/icons`, and `/assets/ui/fx` backgrounds instead of relying only on gradients and plain rounded rectangles.
+- Upgraded HUD, bottom nav, stage badge, buttons, game panels, row cards, garage/build cards, merge cells, shelf slots, meters, and world/build overlays with asset-backed styling while keeping CSS fallback behavior.
+- Browser probes verified the rendered HUD, nav, tabs, buttons, merge slots, Garage cards, and panels are pulling asset URLs from the new UI folders.
+- Ran `npm run build`, `git diff --check`, and the standard web-game client against the Garage tab; all passed, with only the existing large-chunk and LF/CRLF warnings.
+
+Follow-up prompt: Keep the bottom navigation to five player-facing tabs.
+
+- Hardened `BottomNav.js` so rendering always uses the dedicated five-tab `PRIMARY_NAV` model: Home, Race, Parts, Garage, and Menu.
+- Removed the shell-level nav injection path so `SCREENS` cannot accidentally be passed into the bottom nav and expose secondary/dev screens as primary tabs.
+- Added tab `type`, `aria-label`, and `aria-current` handling so active state is clearer for the five-tab player nav.
+- Verified in browser that the bottom nav renders exactly five tabs, with screen targets `hub`, `race`, `merge`, `garage`, and `profile`.
+- Verified Creator is not a primary tab, opens from the Menu/Profile panel, and keeps the Menu tab active while on the Creator screen.
+- Ran `npm run build` and the standard web-game client against the Menu tab; build passed with the existing large-chunk warning only.
+
+Follow-up prompt: Replace emoji icons with asset-first icons and fallback emoji data.
+
+- Migrated `gameData.js` so screens, merge chains, race modes, idle lines, upgrades, buildings, and route problems now use asset paths in `icon` plus `fallbackIcon` unicode escapes.
+- Migrated visible world/build data in `visualData.js` so map locations, residents, and shop rooms also render asset icons first.
+- Expanded the shared icon renderer to support asset paths, safe fallback spans, and image-error fallback behavior.
+- Updated Race mode chips, Line icons, Merge chain labels, Problem cards, Upgrade cards, World people/locations, Garage room headings, objective markers, and locked room badges to render image assets instead of direct emoji text.
+- Fixed fallback CSS so fallback emoji spans stay hidden unless an asset fails to load.
+- Browser probes verified Lines, Merge, Garage, and Profile have no visible emoji-range text, no visible fallback spans, and no broken active-screen images.
+- Ran `npm run build` and the standard web-game client against Merge; build passed with the existing large-chunk warning only.
+
+Follow-up prompt: Strengthen the meter system into game-style segmented bars.
+
+- Upgraded `segmentedMeter` to emit five stateful cells, full/partial/empty classes, a gold needle, and a value chip.
+- Updated `meterLine` so Progress, Fuel, Condition, Heat, and XP use the segmented meter API with readable percent/value output.
+- Rebuilt meter CSS into a chunky asset-backed frame with red, orange, yellow, lime, and green segment colors, stronger outlines, gloss, shadowing, and partial-fill pulse.
+- Lifted Lines and Build/Garage runtime overrides so unlock meters, line cycle/card progress, garage efficiency, room progress, and building upgrade meters stay at the readable 22px game size.
+- Added defensive styling for any legacy `.meter > .fill` markup so it no longer appears as a plain flat bar.
+- Strengthened the live Road Runner canvas Fuel/Wear bars to match the segmented meter treatment.
+- Browser probes verified Lines, Garage, and Profile meters have five cells, asset-track backgrounds, value chips, no old `.meter .fill` bars, and no console errors.
+- Visual QA screenshots were reviewed for the scrolled Lines meters and Race Fuel/Wear meters.
+- Ran `npm run build` and the standard web-game client against Lines; build passed with the existing large-chunk warning only.

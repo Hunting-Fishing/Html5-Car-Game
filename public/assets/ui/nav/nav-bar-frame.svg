@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 86" role="img" aria-label="Bottom nav frame">
+  <defs>
+    <linearGradient id="nav" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0c3756"/>
+      <stop offset=".54" stop-color="#061a2b"/>
+      <stop offset="1" stop-color="#020a12"/>
+    </linearGradient>
+  </defs>
+  <rect width="520" height="86" fill="url(#nav)"/>
+  <path d="M0 3h520" stroke="#7fe8ff" stroke-opacity=".24" stroke-width="5"/>
+  <path d="M18 13h484" stroke="#fff" stroke-opacity=".08" stroke-width="4" stroke-linecap="round"/>
+</svg>

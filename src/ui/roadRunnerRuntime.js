@@ -1257,8 +1257,8 @@ function drawRunMeters(width, height) {
   const fuelPct = game.fuel / game.stats.maxFuel;
   const wearPct = Math.min(1, game.wear / game.stats.wearLimit);
   const lowFuelY = width <= 430 ? 154 : 124;
-  drawBar(14, 42, 150, 12, 'Fuel', fuelPct);
-  drawBar(14, 59, 150, 12, 'Wear', wearPct, true);
+  drawBar(14, 42, 154, 15, 'Fuel', fuelPct);
+  drawBar(14, 62, 154, 15, 'Wear', wearPct, true);
   if (game.fuel / game.stats.maxFuel < 0.18 && nextFuelMeters() > 220) drawOutlinedText('LOW FUEL - COAST OR FIND STATION', width / 2, lowFuelY, '13px');
 }
 
@@ -1322,7 +1322,8 @@ function drawFloatingRewards(width, height, route, cameraX) {
 
 function drawBar(x, y, width, height, label, pct, dangerHigh = false) {
   const value = clamp(pct, 0, 1);
-  const pad = 2;
+  const actualHeight = Math.max(15, height);
+  const pad = 3;
   const gap = 3;
   const segments = 5;
   const cellW = (width - pad * 2 - gap * (segments - 1)) / segments;
@@ -1332,43 +1333,46 @@ function drawBar(x, y, width, height, label, pct, dangerHigh = false) {
 
   ctx.save();
   ctx.fillStyle = 'rgba(4,17,29,.82)';
-  roundRect(x, y, width, height, height / 2);
+  roundRect(x, y, width, actualHeight, actualHeight / 2);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,.26)';
-  ctx.lineWidth = 1;
-  roundRect(x + 0.5, y + 0.5, width - 1, height - 1, height / 2);
+  ctx.fillStyle = 'rgba(255,255,255,.14)';
+  roundRect(x + 3, y + 2, width - 6, 4, 4);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.34)';
+  ctx.lineWidth = 1.5;
+  roundRect(x + 0.75, y + 0.75, width - 1.5, actualHeight - 1.5, actualHeight / 2);
   ctx.stroke();
 
   for (let i = 0; i < segments; i += 1) {
     const sx = x + pad + i * (cellW + gap);
     const sy = y + pad;
-    const sh = height - pad * 2;
+    const sh = actualHeight - pad * 2;
     const fill = clamp(value * segments - i, 0, 1);
-    ctx.globalAlpha = 0.22;
+    ctx.globalAlpha = 0.30;
     ctx.fillStyle = colors[i];
-    roundRect(sx, sy, cellW, sh, sh / 2);
+    roundRect(sx, sy, cellW, sh, 4);
     ctx.fill();
     ctx.globalAlpha = 1;
     if (fill > 0) {
       ctx.fillStyle = colors[i];
-      roundRect(sx, sy, cellW * fill, sh, sh / 2);
+      roundRect(sx, sy, cellW * fill, sh, 4);
       ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,.36)';
-      roundRect(sx + 2, sy + 1, Math.max(0, cellW * fill - 4), 2, 2);
+      ctx.fillStyle = 'rgba(255,255,255,.44)';
+      roundRect(sx + 2, sy + 1, Math.max(0, cellW * fill - 4), 3, 2);
       ctx.fill();
     }
   }
 
   const needleX = x + clamp(value, 0.02, 0.98) * width;
   ctx.fillStyle = '#ffe08a';
-  roundRect(needleX - 2, y - 2, 4, height + 4, 3);
+  roundRect(needleX - 2.5, y - 3, 5, actualHeight + 6, 3);
   ctx.fill();
   ctx.restore();
 
   ctx.fillStyle = '#fff';
   ctx.font = '800 9px Arial';
   ctx.textAlign = 'left';
-  ctx.fillText(label, x + width + 6, y + 9);
+  ctx.fillText(label, x + width + 6, y + 10);
 }
 
 function activeHazard() {

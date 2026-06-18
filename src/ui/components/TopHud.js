@@ -1,5 +1,7 @@
 import { renderCurrencyCapsule } from './ResourcePill.js';
 
+export const HUD_RESOURCE_KEYS = ['coins', 'parts', 'tools', 'scrap', 'tune', 'rep'];
+
 export function renderTopHud() {
   return `
     <header class="topBar">
@@ -28,4 +30,15 @@ export function renderTopHud() {
       </div>
     </header>
   `;
+}
+
+function setText(root, id, value) {
+  const el = root.getElementById ? root.getElementById(id) : document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+export function updateTopHud({ currencies, stage, format = (value) => value, root = document }) {
+  setText(root, 'stagePillValue', stage);
+  root.querySelector('.stagePill')?.setAttribute('aria-label', `Stage ${stage}`);
+  HUD_RESOURCE_KEYS.forEach((key) => setText(root, `cur-${key}`, format(currencies[key])));
 }

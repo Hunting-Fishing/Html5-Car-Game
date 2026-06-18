@@ -1,9 +1,9 @@
 import { panelIconSrc, renderIconImage } from './GamePanel.js';
 
-export function renderRowComponent(component, { icon, title, subtitle = '', badge = '', body = '', action = '', className = '' }) {
+export function renderRowComponent(component, { icon, fallbackIcon = '', title, subtitle = '', badge = '', body = '', action = '', className = '' }) {
   return `
     <article class="gameRowCard ${component} ${className}" data-component="${component}">
-      <span class="gameIconBadge">${renderIconImage(panelIconSrc(icon), `${title} icon`, 'gameIconBadgeImg')}</span>
+      <span class="gameIconBadge">${renderIconImage(panelIconSrc(icon), `${title} icon`, 'gameIconBadgeImg', fallbackIcon)}</span>
       <div class="gameRowMain">
         <div class="gameRowHead"><div><h4>${title}</h4>${subtitle ? `<p>${subtitle}</p>` : ''}</div>${badge ? `<span class="pill gamePanelBadge">${badge}</span>` : ''}</div>
         ${body}

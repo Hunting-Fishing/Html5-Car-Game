@@ -1,8 +1,15 @@
+const UI_ICON_BASE = '/assets/ui/icons';
+const LINE_ICON_BASE = '/assets/Lines/icons';
+const BUILD_ROOM_ICON_BASE = '/assets/Build/rooms';
+const ROAD_RUNNER_ICON_BASE = '/assets/road-runner';
+const iconPath = (base, file) => `${base}/${file}`;
+
 export const AUTO_WORLD_LOCATIONS = [
   {
     key: 'mainGarage',
     name: '365 Main Garage',
-    icon: '🏢',
+    icon: iconPath(UI_ICON_BASE, 'garage.png'),
+    fallbackIcon: '\u{1F3E2}',
     type: 'garage',
     x: 46,
     y: 46,
@@ -13,7 +20,8 @@ export const AUTO_WORLD_LOCATIONS = [
   {
     key: 'dealerRow',
     name: 'Dealer Row',
-    icon: '🚘',
+    icon: iconPath(LINE_ICON_BASE, 'dealer-showcase.svg'),
+    fallbackIcon: '\u{1F698}',
     type: 'dealer',
     x: 18,
     y: 26,
@@ -24,7 +32,8 @@ export const AUTO_WORLD_LOCATIONS = [
   {
     key: 'partsHub',
     name: 'Parts Hub',
-    icon: '📦',
+    icon: iconPath(LINE_ICON_BASE, 'parts-delivery.svg'),
+    fallbackIcon: '\u{1F4E6}',
     type: 'parts',
     x: 72,
     y: 25,
@@ -35,7 +44,8 @@ export const AUTO_WORLD_LOCATIONS = [
   {
     key: 'privateRepair',
     name: 'Private Repair Shops',
-    icon: '🔧',
+    icon: iconPath(LINE_ICON_BASE, 'mobile-mechanic.svg'),
+    fallbackIcon: '\u{1F527}',
     type: 'repair',
     x: 24,
     y: 68,
@@ -46,7 +56,8 @@ export const AUTO_WORLD_LOCATIONS = [
   {
     key: 'salvageYard',
     name: 'Auto Salvage Yard',
-    icon: '🧲',
+    icon: iconPath(LINE_ICON_BASE, 'towing-job.svg'),
+    fallbackIcon: '\u{1F9F2}',
     type: 'salvage',
     x: 78,
     y: 70,
@@ -57,7 +68,8 @@ export const AUTO_WORLD_LOCATIONS = [
   {
     key: 'roadsideBreakdown',
     name: 'Roadside Breakdown',
-    icon: '⚠️',
+    icon: iconPath(ROAD_RUNNER_ICON_BASE, 'wrecked-car.svg'),
+    fallbackIcon: '\u26A0\uFE0F',
     asset: '/assets/vehicles/iso-broken-red.svg',
     type: 'event',
     x: 52,
@@ -80,17 +92,18 @@ export const WORLD_TRAFFIC = [
 ];
 
 export const WORLD_PEOPLE = [
-  { key: 'buyer', icon: '🧍', x: 20, y: 35, label: 'buyer' },
-  { key: 'mechanic', icon: '👨‍🔧', x: 38, y: 56, label: 'mechanic' },
-  { key: 'yardWorker', icon: '🧑‍🏭', x: 82, y: 78, label: 'yard' },
-  { key: 'driver', icon: '🚶', x: 56, y: 82, label: 'driver' }
+  { key: 'buyer', icon: iconPath(UI_ICON_BASE, 'profile.png'), fallbackIcon: '\u{1F9CD}', x: 20, y: 35, label: 'buyer' },
+  { key: 'mechanic', icon: iconPath(LINE_ICON_BASE, 'mobile-mechanic.svg'), fallbackIcon: '\u{1F468}\u200D\u{1F527}', x: 38, y: 56, label: 'mechanic' },
+  { key: 'yardWorker', icon: iconPath(UI_ICON_BASE, 'tools.png'), fallbackIcon: '\u{1F9D1}\u200D\u{1F3ED}', x: 82, y: 78, label: 'yard' },
+  { key: 'driver', icon: iconPath(UI_ICON_BASE, 'race.png'), fallbackIcon: '\u{1F6B6}', x: 56, y: 82, label: 'driver' }
 ];
 
 export const AUTO_SHOP_ROOMS = [
   {
     key: 'frontLot',
     name: 'Front Lot',
-    icon: '🚗',
+    icon: iconPath(BUILD_ROOM_ICON_BASE, 'front-lot.svg'),
+    fallbackIcon: '\u{1F697}',
     asset: '/assets/shop/room-front-lot.svg',
     buildingKey: null,
     description: 'Customer cars arrive here. This is the first visual anchor for the companion game.',
@@ -99,7 +112,8 @@ export const AUTO_SHOP_ROOMS = [
   {
     key: 'partsCounter',
     name: 'Parts Counter',
-    icon: '📦',
+    icon: iconPath(BUILD_ROOM_ICON_BASE, 'parts-counter.svg'),
+    fallbackIcon: '\u{1F4E6}',
     asset: '/assets/shop/room-parts-counter.svg',
     buildingKey: 'partsStorage',
     description: 'Small parts shelf for bolts, filters, clamps, and starter merge items.',
@@ -108,7 +122,8 @@ export const AUTO_SHOP_ROOMS = [
   {
     key: 'serviceBay',
     name: 'Service Bay',
-    icon: '🧑‍🔧',
+    icon: iconPath(BUILD_ROOM_ICON_BASE, 'service-bay.svg'),
+    fallbackIcon: '\u{1F9D1}\u200D\u{1F527}',
     asset: '/assets/shop/room-service-bay.svg',
     buildingKey: 'partsStorage',
     description: 'Basic repair bay. Use it as the visual home for Mobile Mechanic income.',
@@ -117,7 +132,8 @@ export const AUTO_SHOP_ROOMS = [
   {
     key: 'towYard',
     name: 'Tow Yard',
-    icon: '🪝',
+    icon: iconPath(BUILD_ROOM_ICON_BASE, 'tow-yard.svg'),
+    fallbackIcon: '\u{1FA9D}',
     asset: '/assets/shop/room-tow-yard.svg',
     buildingKey: 'companionHub',
     description: 'Recovery/scrap area for breakdown and towing jobs.',
@@ -126,7 +142,8 @@ export const AUTO_SHOP_ROOMS = [
   {
     key: 'tuningCorner',
     name: 'Tuning Corner',
-    icon: '⚙️',
+    icon: iconPath(BUILD_ROOM_ICON_BASE, 'tuning-corner.svg'),
+    fallbackIcon: '\u2699\uFE0F',
     asset: '/assets/shop/room-tuning-corner.svg',
     buildingKey: 'tuningCorner',
     description: 'Performance micro-upgrade area. Locked until Tuning Corner is built.',
@@ -135,7 +152,8 @@ export const AUTO_SHOP_ROOMS = [
   {
     key: 'testTrack',
     name: '2D Test Track',
-    icon: '🏁',
+    icon: iconPath(BUILD_ROOM_ICON_BASE, 'test-track.svg'),
+    fallbackIcon: '\u{1F3C1}',
     asset: '/assets/shop/room-test-track.svg',
     buildingKey: 'testTrack',
     description: 'Small track for offline route testing and Race Event income.',

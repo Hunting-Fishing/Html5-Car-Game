@@ -8,11 +8,13 @@ import { BUILD_ASSET_LIST, BUILD_GUI_ASSETS, BUILD_ICON_ASSETS, buildRoomAssetFo
 import { connectionForBuilding, connectionForLine, connectionForRoom } from './data/buildLinkData.js';
 import { mergeAssetForName } from './data/mergeAssetMap.js';
 import { chainIconForKey } from './data/uiIconMap.js';
-import { renderShellFrame } from './ui/components/Shell.js';
-import { GamePanel, GarageCard, ObjectiveCard, ProblemAlert, RewardPanel, RouteCard, renderIconImage } from './ui/components/GamePanel.js';
+import { mountShell, renderScreenContent, setActiveScreen } from './ui/components/Shell.js';
+import { GamePanel, GarageCard, ObjectiveCard, ProblemAlert, RewardPanel, RouteCard, renderDataIcon, renderIconImage } from './ui/components/GamePanel.js';
 import { UpgradeCard } from './ui/components/UpgradeCard.js';
 import { meterLine, segmentedMeter } from './ui/components/StatMeter.js';
 import { renderGarageSystemCard } from './ui/components/GarageCard.js';
+import { updateTopHud } from './ui/components/TopHud.js';
+import { showToast as toast } from './ui/components/RewardToast.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, costToText, canAfford, addCurrency, addXp } from './systems/economySystem.js';
 import { getObjectiveList, applyDerivedObjectives } from './systems/objectiveSystem.js';
@@ -39,14 +41,6 @@ const WORLD_BUILDING_LABELS = {
   testTrack: 'Test Track'
 };
 
-const PRIMARY_NAV = [
-  { id: 'home', screen: 'hub', label: 'Home', activeScreens: ['hub', 'world'] },
-  { id: 'race', screen: 'race', label: 'Race', activeScreens: ['race'] },
-  { id: 'parts', screen: 'merge', label: 'Parts', activeScreens: ['merge'] },
-  { id: 'garage', screen: 'garage', label: 'Garage', activeScreens: ['garage', 'lines'] },
-  { id: 'menu', screen: 'profile', label: 'Menu', activeScreens: ['profile', 'creator'] }
-];
-
 function upgradeIconKey(def) {
   const byKey = {
     tapCrew: 'race',
@@ -60,11 +54,25 @@ function upgradeIconKey(def) {
 }
 
 function renderChainIcon(key, label, className = 'chainIconAsset') {
-  return renderIconImage(chainIconForKey(key), `${label} icon`, className);
+  const chain = CHAINS[key];
+  return renderDataIcon(chain || { icon: chainIconForKey(key) }, `${label} icon`, className);
 }
 
 function renderChainLabel(key, chain) {
   return `<span class="chainLabel">${renderChainIcon(key, chain.label, 'chainLabelIcon')}<span>${chain.label}</span></span>`;
+}
+
+function renderInlineDataIcon(data, label, className = 'inlineAssetIcon') {
+  return renderDataIcon(data, `${label} icon`, className);
+}
+
+function renderLabeledDataIcon(data, label, className = 'chipIcon') {
+  return `<span class="assetIconLabel">${renderInlineDataIcon(data, label, className)}<span>${label}</span></span>`;
+}
+
+function renderObjectiveStatusIcon(done) {
+  const icon = done ? '/assets/ui/icons/rep.png' : '/assets/ui/icons/menu.png';
+  return renderIconImage(icon, done ? 'Objective complete' : 'Objective open', 'checkIconImg', done ? 'OK' : '--');
 }
 
 applyInitialScreenParam();
@@ -80,7 +88,7 @@ function applyInitialScreenParam() {
 function boot() {
   normalizeMergeState(state);
   ensureIdleLineState(state);
-  renderShell();
+  mountShell(root, { screens: SCREENS });
   render();
   root.addEventListener('click', handleClick);
   requestAnimationFrame(gameLoop);
@@ -108,49 +116,39 @@ function gameLoop(now) {
   requestAnimationFrame(gameLoop);
 }
 
-function renderShell() {
-  root.innerHTML = renderShellFrame({ screens: SCREENS, primaryNav: PRIMARY_NAV });
-}
-
 function render() {
   ensureIdleLineState(state);
   publishBuildCommunicationState(state);
   updateTopBar();
-  document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
-  document.querySelector(`#screen-${state.activeScreen}`)?.classList.add('active');
-  document.querySelectorAll('.tab').forEach((tab) => {
-    const activeScreens = (tab.dataset.activeScreens || tab.dataset.screen || '').split(',');
-    tab.classList.toggle('active', activeScreens.includes(state.activeScreen));
-  });
+  setActiveScreen(state.activeScreen);
   renderActiveScreen();
 }
 
 function renderActiveScreen() {
-  const el = document.querySelector(`#screen-${state.activeScreen}`);
-  if (!el) return;
-  if (state.activeScreen === 'hub') el.innerHTML = renderHubGamePanels();
-  if (state.activeScreen === 'world') {
-    if (!el.querySelector('.pixiWorldShell')) el.innerHTML = renderWorld();
+  const { el, rendered } = renderScreenContent(state.activeScreen, {
+    renderers: {
+      hub: renderHubGamePanels,
+      world: renderWorld,
+      race: renderRaceGamePanels,
+      lines: renderLines,
+      merge: renderMergeGamePanels,
+      garage: renderGarageGamePanels,
+      profile: renderProfileGamePanels,
+      creator: renderCreator
+    },
+    shouldSkip: (screenId, screenEl) => (
+      (screenId === 'world' && screenEl.querySelector('.pixiWorldShell')) ||
+      (screenId === 'race' && screenEl.querySelector('.roadRunnerShell'))
+    )
+  });
+  if (state.activeScreen === 'race' && rendered) {
+    const host = el?.querySelector('#raceCanvas');
+    if (host) mountRaceCanvas(host).then(() => updateRaceCanvas(state));
   }
-  if (state.activeScreen === 'race') {
-    if (!el.querySelector('.roadRunnerShell')) {
-      el.innerHTML = renderRaceGamePanels();
-      const host = el.querySelector('#raceCanvas');
-      if (host) mountRaceCanvas(host).then(() => updateRaceCanvas(state));
-    }
-  }
-  if (state.activeScreen === 'lines') el.innerHTML = renderLines();
-  if (state.activeScreen === 'merge') el.innerHTML = renderMergeGamePanels();
-  if (state.activeScreen === 'garage') el.innerHTML = renderGarageGamePanels();
-  if (state.activeScreen === 'profile') el.innerHTML = renderProfileGamePanels();
-  if (state.activeScreen === 'creator') el.innerHTML = renderCreator();
 }
 
 function updateTopBar() {
-  const c = state.currencies;
-  setText('stagePillValue', state.stage);
-  document.querySelector('.stagePill')?.setAttribute('aria-label', `Stage ${state.stage}`);
-  ['coins', 'parts', 'tools', 'scrap', 'tune', 'rep'].forEach((key) => setText(`cur-${key}`, fmt(c[key])));
+  updateTopHud({ currencies: state.currencies, stage: state.stage, format: fmt });
 }
 
 function renderHub() {
@@ -296,16 +294,20 @@ function renderWorld() {
 }
 
 function renderTrafficCar(car) {
-  const vehicle = car.asset ? `<img src="${car.asset}" alt="${car.key}" loading="lazy">` : car.icon;
+  const vehicle = car.asset
+    ? `<img src="${car.asset}" alt="${car.key}" loading="lazy">`
+    : renderDataIcon(car, car.key, 'trafficCarIcon');
   return `<div class="trafficCar ${car.lane} ${car.speedClass}" style="animation-delay:${car.delay}s">${vehicle}</div>`;
 }
 
 function renderWorldPerson(person) {
-  return `<div class="worldPerson" style="left:${person.x}%; top:${person.y}%" title="${person.label}">${person.icon}</div>`;
+  return `<div class="worldPerson" style="left:${person.x}%; top:${person.y}%" title="${person.label}">${renderDataIcon(person, person.label, 'worldPersonIcon')}</div>`;
 }
 
 function renderWorldLocation(location) {
-  const locationIcon = location.asset ? `<img class="worldLocationVehicle" src="${location.asset}" alt="${location.name}" loading="lazy">` : `<span class="worldIcon">${location.icon}</span>`;
+  const locationIcon = location.asset
+    ? `<img class="worldLocationVehicle" src="${location.asset}" alt="${location.name}" loading="lazy">`
+    : `<span class="worldIcon">${renderDataIcon(location, location.name, 'worldIconAsset')}</span>`;
   return `
     <button class="worldLocation ${location.type}" style="left:${location.x}%; top:${location.y}%" data-action="worldLocation" data-location="${location.key}">
       ${locationIcon}
@@ -323,7 +325,7 @@ function renderRace() {
     <section class="card">
       <div class="cardTitle">
         <div><h2>Idle Racing</h2><p>Not about first place. The enemy is fuel, breakdowns, heat, traffic, and route cost.</p></div>
-        <span class="pill">${mode.icon} ${mode.label}</span>
+        <span class="pill modePill">${renderLabeledDataIcon(mode, mode.label, 'pillIcon')}</span>
       </div>
       <div class="raceCanvas" id="raceCanvas"></div>
       ${meterLine('Progress', state.race.progress, stats.mode.stageLength, '')}
@@ -338,7 +340,7 @@ function renderRace() {
     <section class="card">
       <div class="cardTitle"><div><h3>Route Modes</h3><p>2D idle modes only. No real-time PVP.</p></div></div>
       <div class="modeChips">
-        ${Object.entries(RACE_MODES).map(([key, m]) => `<button class="chip ${key === state.race.mode ? 'active' : ''}" data-action="raceMode" data-mode="${key}">${m.icon} ${m.label}</button>`).join('')}
+        ${Object.entries(RACE_MODES).map(([key, m]) => `<button class="chip ${key === state.race.mode ? 'active' : ''}" data-action="raceMode" data-mode="${key}">${renderLabeledDataIcon(m, m.label)}</button>`).join('')}
       </div>
     </section>
 
@@ -384,7 +386,7 @@ function renderRaceGamePanels() {
       subtitle: '2D idle modes only. No real-time PVP.',
       body: `
         <div class="modeChips">
-          ${Object.entries(RACE_MODES).map(([key, m]) => `<button class="chip ${key === state.race.mode ? 'active' : ''}" data-action="raceMode" data-mode="${key}">${m.icon} ${m.label}</button>`).join('')}
+          ${Object.entries(RACE_MODES).map(([key, m]) => `<button class="chip ${key === state.race.mode ? 'active' : ''}" data-action="raceMode" data-mode="${key}">${renderLabeledDataIcon(m, m.label)}</button>`).join('')}
         </div>
       `
     })}
@@ -442,11 +444,9 @@ function renderBuildLineBridge(snapshot) {
 }
 
 function renderLineIcon(line) {
-  const asset = lineAssetForKey(line.key);
   return `
     <div class="lineIcon">
-      <img class="lineIconAsset" src="${asset}" alt="${line.name}" loading="eager">
-      <span class="lineEmojiFallback">${line.icon}</span>
+      ${renderDataIcon({ ...line, icon: line.icon || lineAssetForKey(line.key) }, line.name, 'lineIconAsset')}
     </div>
   `;
 }
@@ -611,7 +611,8 @@ function renderLineCard(line) {
 
 function renderProblem(problem) {
   return ProblemAlert({
-    icon: 'tools',
+    icon: problem.icon,
+    fallbackIcon: problem.fallbackIcon,
     title: problem.label,
     subtitle: problem.description,
     badge: 'Alert',
@@ -950,7 +951,7 @@ function renderShopRoom(room) {
         <span class="roomStatusBadge">${roomStatus}</span>
       </div>
       <div class="roomInfo">
-        <div class="roomHead"><h3>${room.icon} ${room.name}</h3><span class="pill">${line ? line.outputLabel : 'Room'}</span></div>
+        <div class="roomHead"><h3>${renderDataIcon(room, room.name, 'roomHeadIcon')}<span>${room.name}</span></h3><span class="pill">${line ? line.outputLabel : 'Room'}</span></div>
         <p>${unlocked ? room.description : lockedText}</p>
         ${segmentedMeter({ value: progress, max: 100, label: `${room.name} room progress`, className: 'roomProgress' })}
         <div class="roomMeta">
@@ -965,7 +966,7 @@ function renderShopRoom(room) {
         </div>
       </div>
       ${unlocked && line && canCollectLine(state, line) && !manager ? `<div class="incomeBubble">Collect</div>` : ''}
-      ${!unlocked ? `<div class="roomLock">🔒</div>` : ''}
+      ${!unlocked ? `<div class="roomLock">${renderIconImage(BUILD_GUI_ASSETS.lockedBadge, 'Locked room', 'roomLockIcon', 'LOCK')}</div>` : ''}
     </article>
   `;
 }
@@ -974,7 +975,8 @@ function renderUpgrade(def) {
   const level = state.upgrades[def.key] || 0;
   const cost = upgradeCost(state, def);
   return UpgradeCard({
-    icon: upgradeIconKey(def),
+    icon: def.icon || upgradeIconKey(def),
+    fallbackIcon: def.fallbackIcon,
     title: def.name,
     subtitle: def.description,
     badge: `Lv ${level}`,
@@ -1042,7 +1044,7 @@ function renderProfile() {
 
     <section class="card">
       <div class="cardTitle"><div><h3>Objective Checklist</h3><p>The player always needs a clear reason to continue.</p></div></div>
-      ${objectives.map((o) => `<div class="objective"><div class="checkIcon">${o.done ? '✅' : '⬜'}</div><div><h4>${o.title}</h4><p>${o.body}</p></div><span class="pill">${o.done ? 'Done' : 'Open'}</span></div>`).join('')}
+      ${objectives.map((o) => `<div class="objective"><div class="checkIcon">${renderObjectiveStatusIcon(o.done)}</div><div><h4>${o.title}</h4><p>${o.body}</p></div><span class="pill">${o.done ? 'Done' : 'Open'}</span></div>`).join('')}
     </section>
 
     <section class="card">
@@ -1092,7 +1094,7 @@ function renderProfileGamePanels() {
       icon: 'home',
       title: 'Objective Checklist',
       subtitle: 'The player always needs a clear reason to continue.',
-      body: objectives.map((o) => `<div class="objective"><div class="checkIcon">${o.done ? 'âœ…' : 'â¬œ'}</div><div><h4>${o.title}</h4><p>${o.body}</p></div><span class="pill">${o.done ? 'Done' : 'Open'}</span></div>`).join('')
+      body: objectives.map((o) => `<div class="objective"><div class="checkIcon">${renderObjectiveStatusIcon(o.done)}</div><div><h4>${o.title}</h4><p>${o.body}</p></div><span class="pill">${o.done ? 'Done' : 'Open'}</span></div>`).join('')
     }),
     ProblemAlert({
       icon: 'tools',
@@ -1206,20 +1208,6 @@ function completeTowEvent() {
   addXp(state, 10 + towLevel);
   state.race.condition = Math.min(getRaceStats(state).conditionMax, state.race.condition + 8);
   return { ok: true, message: `Tow job complete: +${rewardCoins} coins, +${rewardScrap} scrap.` };
-}
-
-function setText(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = value;
-}
-
-function toast(message) {
-  const el = document.getElementById('toast');
-  if (!el) return;
-  el.textContent = message;
-  el.classList.add('show');
-  clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => el.classList.remove('show'), 1800);
 }
 
 function addLog(message) {

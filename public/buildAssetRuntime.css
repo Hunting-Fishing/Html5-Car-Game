@@ -185,7 +185,7 @@
 
 .buildCommandProgress .buildEfficiencyMeter.segMeter,
 .buildSystemMeter.segMeter {
-  height: 16px;
+  height: 22px;
 }
 
 .buildHubButtons,
@@ -318,7 +318,7 @@
 }
 
 #screen-garage .roomProgress.segMeter {
-  height: 16px;
+  height: 22px;
 }
 
 .buildAssetIcon,
@@ -585,7 +585,7 @@
 }
 
 #screen-garage .garageSystemRoomCard .buildSystemMeter.segMeter {
-  height: 18px;
+  height: 22px;
   background:
     var(--ui-meter-track),
     linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 42%),

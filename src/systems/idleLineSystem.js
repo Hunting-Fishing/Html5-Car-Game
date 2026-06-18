@@ -194,7 +194,7 @@ function collectLineReward(state, line, automatic) {
   current.collected += 1;
   state.idleLines.lifetimeCollections += 1;
   if (!automatic) {
-    state.log.unshift(`${line.icon} ${line.name} collected +${amount} ${line.output}.`);
+    state.log.unshift(`${line.name} collected +${amount} ${line.output}.`);
     state.log = state.log.slice(0, 10);
   }
   return { amount, label: line.outputLabel };

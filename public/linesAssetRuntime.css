@@ -140,7 +140,7 @@
 }
 
 #screen-lines .lineProgress.segMeter {
-  height: 17px;
+  height: 22px;
   margin: 8px 0;
 }
 
@@ -213,7 +213,7 @@
 
 #screen-lines .lineRequirementMeter.segMeter {
   grid-column: 1 / -1;
-  height: 14px;
+  height: 22px;
   margin-top: 1px;
 }
 

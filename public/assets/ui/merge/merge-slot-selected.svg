@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Selected merge slot">
+  <rect x="5" y="5" width="118" height="118" rx="24" fill="#3b2704" stroke="#ffe178" stroke-width="7"/>
+  <rect x="18" y="18" width="92" height="92" rx="17" fill="#071d2d" stroke="#ffbd30" stroke-width="4"/>
+  <path d="M28 23h72" stroke="#fff" stroke-opacity=".32" stroke-width="6" stroke-linecap="round"/>
+</svg>
