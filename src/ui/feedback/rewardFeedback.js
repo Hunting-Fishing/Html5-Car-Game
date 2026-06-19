@@ -4,11 +4,20 @@ import { fmt, labelCurrency } from '../../systems/economySystem.js';
 import { unlockedChainKeys } from '../../systems/mergeSystem.js';
 import { showFloatingReward, showRewardToast } from '../components/RewardToast.js';
 
-const AUTO_COLLECT_TOAST_COOLDOWN_MS = 20000;
-const AUTO_COLLECT_FLOAT_COOLDOWN_MS = 6000;
+const AUTO_COLLECT_SUMMARY_COOLDOWN_MS = 12000;
+const AUTO_COLLECT_LOG_COOLDOWN_MS = 30000;
+const SHORT_REWARD_LABELS = {
+  coins: 'C',
+  parts: 'P',
+  tools: 'T',
+  scrap: 'S',
+  fuelCans: 'F',
+  tune: 'Tn',
+  rep: 'R'
+};
 
-let lastAutoCollectToastAt = 0;
-let lastAutoCollectFloatAt = 0;
+let lastAutoCollectSummaryAt = 0;
+let lastAutoCollectLogAt = 0;
 const autoCollectBucket = new Map();
 
 export function feedbackSnapshot(source) {
@@ -78,29 +87,36 @@ function autoCollectMessage(rewards) {
   return rewards.map((reward) => `${reward.text} ${reward.label}`).join(', ');
 }
 
+function compactRewardText(reward) {
+  const suffix = SHORT_REWARD_LABELS[reward.resource] || '';
+  return `${reward.text || ''}${suffix}`;
+}
+
+function headerFloatText(meta, rewards) {
+  const actionText = meta.floats?.[0]?.text || '';
+  const rewardText = rewards.slice(0, 3).map(compactRewardText).filter(Boolean).join(' ');
+  return [actionText, rewardText].filter(Boolean).join(' ');
+}
+
+function emitHeaderFloat(meta, rewards) {
+  const text = headerFloatText(meta, rewards);
+  if (!text) return;
+  const primaryFloat = meta.floats?.[0] || {};
+  showFloatingReward(text, {
+    tone: meta.tone === 'bad' ? 'bad' : primaryFloat.tone || meta.tone || 'gold',
+    icon: primaryFloat.icon || meta.icon || rewards[0]?.icon,
+    resource: rewards[0]?.resource,
+    x: 60,
+    y: 7.6
+  });
+}
+
 function maybeEmitAutoCollectFeedback({ addLog } = {}) {
   const rewards = getAutoCollectRewards();
   if (!rewards.length) return;
 
   const now = Date.now();
-  if (now - lastAutoCollectToastAt >= AUTO_COLLECT_TOAST_COOLDOWN_MS) {
-    const message = autoCollectMessage(rewards);
-    showRewardToast({
-      title: 'Auto Collected',
-      message,
-      tone: 'gold',
-      icon: UI_ICONS.coin,
-      rewards: rewards.slice(0, 4),
-      duration: 1800
-    });
-    addLog?.(`Auto collected ${message}.`);
-    clearAutoCollectRewards();
-    lastAutoCollectToastAt = now;
-    lastAutoCollectFloatAt = now;
-    return;
-  }
-
-  if (now - lastAutoCollectFloatAt >= AUTO_COLLECT_FLOAT_COOLDOWN_MS) {
+  if (now - lastAutoCollectSummaryAt >= AUTO_COLLECT_SUMMARY_COOLDOWN_MS) {
     const top = rewards[0];
     showFloatingReward(`${top.text} ${top.label}`, {
       tone: 'gold',
@@ -108,7 +124,12 @@ function maybeEmitAutoCollectFeedback({ addLog } = {}) {
       x: 50,
       y: 58
     });
-    lastAutoCollectFloatAt = now;
+    if (now - lastAutoCollectLogAt >= AUTO_COLLECT_LOG_COOLDOWN_MS) {
+      addLog?.(`Auto collected ${autoCollectMessage(rewards)}.`);
+      lastAutoCollectLogAt = now;
+    }
+    clearAutoCollectRewards();
+    lastAutoCollectSummaryAt = now;
   }
 }
 
@@ -237,26 +258,12 @@ export function emitRewardFeedback({ state, result, before, action }) {
     message: result.message,
     tone: meta.tone,
     icon: meta.icon,
-    rewards
+    rewards,
+    duration: result.ok ? undefined : 1300
   });
 
   if (result.ok) {
-    rewards.slice(0, 3).forEach((reward, index) => {
-      showFloatingReward(`${reward.text} ${reward.label}`, {
-        tone: meta.tone === 'bad' ? 'bad' : 'gold',
-        resource: reward.resource,
-        x: 42 + index * 8,
-        y: 56 - index * 4
-      });
-    });
-    meta.floats.forEach((float, index) => {
-      showFloatingReward(float.text, {
-        tone: float.tone,
-        icon: float.icon,
-        x: Number.isFinite(float.x) ? float.x : 50,
-        y: Number.isFinite(float.y) ? float.y + index * 5 : 52 + index * 5
-      });
-    });
+    emitHeaderFloat(meta, rewards);
   }
 
   if (typeof window !== 'undefined' && window.__rewardFeedbackState) {

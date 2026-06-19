@@ -144,6 +144,22 @@ function handleClick(event) {
     return;
   }
 
+  if (action === 'mergeTab') {
+    const tab = target.dataset.tab;
+    state.merge.activeTab = ['recipes', 'chains', 'tips'].includes(tab) ? tab : 'recipes';
+    render();
+    queueSave();
+    return;
+  }
+
+  if (action === 'mergeChain') {
+    state.merge.selectedChain = target.dataset.chain || '';
+    state.merge.activeTab = 'recipes';
+    render();
+    queueSave();
+    return;
+  }
+
   const feedbackBefore = feedbackSnapshot(state);
 
   if (action === 'tapRace') {

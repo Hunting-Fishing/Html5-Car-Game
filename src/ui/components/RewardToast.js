@@ -3,9 +3,16 @@ import { currencyIconForKey, UI_ICONS } from '../../data/uiIconMap.js';
 let toastSequence = 0;
 let floatSequence = 0;
 
-const DEFAULT_DURATION = 2400;
+const DEFAULT_DURATION = 1800;
 const FLOAT_DURATION = 1400;
-const MAX_TOASTS = 4;
+const MAX_TOASTS = 2;
+const DUPLICATE_SUPPRESS_MS = 2600;
+const FLOAT_HEADER_X_MIN = 40;
+const FLOAT_HEADER_X_MAX = 76;
+const FLOAT_HEADER_Y_MIN = 4.5;
+const FLOAT_HEADER_Y_MAX = 8.5;
+
+const recentToastKeys = new Map();
 
 function asArray(value) {
   if (!value) return [];
@@ -37,6 +44,25 @@ function removeAfter(node, duration) {
     node.classList.add('leaving');
     window.setTimeout(() => node.remove(), 260);
   }, duration);
+}
+
+function toastDedupeKey({ title, message, tone, rewards }) {
+  const rewardKey = asArray(rewards)
+    .map((reward) => `${reward.resource || reward.label || ''}:${reward.text || reward.amount || ''}`)
+    .join('|');
+  return `${tone}|${title}|${message}|${rewardKey}`;
+}
+
+function shouldSuppressToast(key) {
+  const now = Date.now();
+  const last = recentToastKeys.get(key) || 0;
+  recentToastKeys.set(key, now);
+
+  for (const [storedKey, timestamp] of recentToastKeys.entries()) {
+    if (now - timestamp > 10000) recentToastKeys.delete(storedKey);
+  }
+
+  return now - last < DUPLICATE_SUPPRESS_MS;
 }
 
 function rewardChip(reward, root) {
@@ -74,6 +100,13 @@ export function showRewardToast({
     return;
   }
 
+  const rewardList = asArray(rewards).slice(0, 4);
+  const dedupeKey = toastDedupeKey({ title, message, tone, rewards: rewardList });
+  if (shouldSuppressToast(dedupeKey)) {
+    setLegacyStatus(message || title, root);
+    return;
+  }
+
   const id = ++toastSequence;
   const card = root.createElement('div');
   card.className = `rewardToastCard ${tone}`;
@@ -96,7 +129,6 @@ export function showRewardToast({
   body.textContent = message || title;
   copy.append(heading, body);
 
-  const rewardList = asArray(rewards).slice(0, 4);
   const chips = root.createElement('div');
   chips.className = 'rewardToastChips';
   rewardList.forEach((reward) => chips.append(rewardChip(reward, root)));
@@ -128,10 +160,14 @@ export function showFloatingReward(text, {
 
   const id = ++floatSequence;
   const node = root.createElement('div');
-  node.className = `floatingReward ${tone}`;
+  node.className = `floatingReward headerFloat ${tone}`;
   node.dataset.floatingRewardId = String(id);
-  node.style.setProperty('--float-x', `${Number.isFinite(x) ? x : 50 + (Math.random() * 30 - 15)}%`);
-  node.style.setProperty('--float-y', `${Number.isFinite(y) ? y : 58 + (Math.random() * 14 - 7)}%`);
+  const laneX = Number.isFinite(x) ? x : 58 + (Math.random() * 12 - 6);
+  const laneY = Number.isFinite(y) ? y : 8 + (Math.random() * 4 - 2);
+  const safeX = Math.min(FLOAT_HEADER_X_MAX, Math.max(FLOAT_HEADER_X_MIN, laneX));
+  const safeY = Math.min(FLOAT_HEADER_Y_MAX, Math.max(FLOAT_HEADER_Y_MIN, laneY));
+  node.style.setProperty('--float-x', `${safeX}%`);
+  node.style.setProperty('--float-y', `${safeY}%`);
 
   const src = icon || (resource ? currencyIconForKey(resource) : '');
   if (src) {

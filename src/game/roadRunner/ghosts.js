@@ -8,7 +8,7 @@ export function createGhostVehicles(scene, route, ghostMode, saveData) {
   const ghosts = [];
 
   for (let i = 0; i < ghostMode.count; i++) {
-    const label = i === 0 && saveData.bestTrail.length ? 'Best' : `Ghost ${i + 1}`;
+    const label = i === 0 && saveData.bestTrail.length ? 'Best Run' : `Rival ${i + 1}`;
     const node = createVehicle(scene, colors[i], label, textureKeys[i]);
     node.alpha = 0.46;
     ghosts.push({

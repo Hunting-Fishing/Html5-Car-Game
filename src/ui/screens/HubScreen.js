@@ -1,81 +1,81 @@
-import { RACE_MODES } from '../../data/gameData.js';
-import { GamePanel, ObjectiveCard, RewardPanel, RouteCard } from '../components/GamePanel.js';
-import { meterLine } from '../components/StatMeter.js';
-import { fmt } from '../../systems/economySystem.js';
+import { ObjectiveCard } from '../components/GamePanel.js';
+import { ScreenFrame } from '../components/ScreenFrame.js';
+import { SubTabBar } from '../components/SubTabBar.js';
+import { CompactStatStrip } from '../components/CompactStatStrip.js';
+import { ActionDock } from '../components/ActionDock.js';
 import { getObjectiveList } from '../../systems/objectiveSystem.js';
 import { getRaceStats } from '../../systems/raceSystem.js';
-import { getTotalIdlePerMinute } from '../../systems/idleLineSystem.js';
+
+function recommendedActionForObjective(objective) {
+  const key = objective?.key || '';
+  if (['firstMerge'].includes(key)) return { label: 'Open Parts', screen: 'merge', icon: 'parts', className: 'primary' };
+  if (['buildStorage', 'unlockPerformance', 'unlockTrack'].includes(key)) return { label: 'Open Garage', screen: 'garage', icon: 'garage', className: 'primary' };
+  if (['idleLineUpgrade'].includes(key)) return { label: 'Open Lines', screen: 'lines', icon: 'garage', className: 'gold' };
+  if (['firstTap', 'previewGhostRace', 'fixProblem', 'stageFive'].includes(key)) return { label: 'Open Race', screen: 'race', icon: 'race', className: 'primary' };
+  return { label: 'Open Race', screen: 'race', icon: 'race', className: 'primary' };
+}
 
 export function renderHubScreen(state) {
   const objectives = getObjectiveList(state);
   const next = objectives.find((item) => !item.done);
   const stats = getRaceStats(state);
-  const totals = getTotalIdlePerMinute(state);
-  const idleOutput = Object.entries(totals).length
-    ? Object.entries(totals).map(([key, value]) => `<div class="notice good"><b>${fmt(value)}</b><br>${key}/min</div>`).join('')
-    : `<div class="notice">Upgrade an idle line to begin output.</div>`;
+  const recommended = recommendedActionForObjective(next);
+  const recentReward = state.log?.[0] || 'Collect, merge, or upgrade to start the reward feed.';
 
-  return [
-    GamePanel({
-      icon: 'home',
-      title: 'Home',
-      subtitle: 'Home is grouped into Today and the World Map.',
-      badge: 'Home Group',
-      className: 'screenGroupPanel homeGroupPanel',
-      body: `
-        <div class="screenSubTabs" role="tablist" aria-label="Home sections">
-          <button class="btn primary active" type="button" data-action="screen" data-screen="hub" aria-current="page">Today</button>
-          <button class="btn" type="button" data-action="screen" data-screen="world">World Map</button>
-        </div>
+  return ScreenFrame({
+    title: 'Home',
+    subtitle: 'Today, routes, and quick actions.',
+    badge: 'Today',
+    className: 'hubMobileHome',
+    body: [
+      SubTabBar({
+        tabs: [
+          { label: 'Today', screen: 'hub', active: true, icon: 'home' },
+          { label: 'World Map', screen: 'world', icon: 'home' }
+        ]
+      }),
+      ObjectiveCard({
+        icon: 'home',
+        title: next ? next.title : 'Objective Set Complete',
+        subtitle: next ? 'Recommended next step' : 'Keep building the garage loop.',
+        badge: next ? 'Next' : 'Done',
+        heading: 'h2',
+        className: 'hubMainObjective',
+        body: next
+          ? `
+            <div class="hubObjectiveCopy">${next.body}</div>
+            ${ActionDock({ actions: [recommended] })}
+          `
+          : `
+            <div class="hubObjectiveCopy">Continue building resources, upgrades, and routes.</div>
+            ${ActionDock({ actions: [{ label: 'Run Race', screen: 'race', icon: 'race', className: 'primary' }] })}
+          `
+      }),
+      ActionDock({
+        actions: [
+          { label: 'Race', screen: 'race', icon: 'race', className: 'primary' },
+          { label: 'Parts', screen: 'merge', icon: 'parts' },
+          { label: 'Garage', screen: 'garage', icon: 'garage' },
+          { label: 'World', screen: 'world', icon: 'home', className: 'gold' }
+        ]
+      }),
       `
-    }),
-    ObjectiveCard({
-      icon: 'home',
-      title: "Today's Goal",
-      subtitle: 'Clear objectives keep this feeling like a mobile idle game.',
-      badge: next ? 'Next' : 'Complete',
-      heading: 'h2',
-      body: next
-        ? `<div class="notice good"><b>${next.title}</b><br>${next.body}</div>`
-        : `<div class="notice good"><b>Objective set complete.</b><br>Continue building resources, upgrades, and routes.</div>`
-    }),
-    GamePanel({
-      icon: 'home',
-      title: 'Playable Auto World',
-      subtitle: 'Tap buildings, roads, repair shops, dealers, and roadside events.',
-      heading: 'h2',
-      body: `
-        <div class="grid2">
-          <button class="btn primary" data-action="screen" data-screen="world">Open World Map</button>
-          <button class="btn gold" data-action="screen" data-screen="lines">Upgrade Lines</button>
-          <button class="btn" data-action="screen" data-screen="garage">Auto Shop</button>
-          <button class="btn ghost" data-action="screen" data-screen="merge">Merge Parts</button>
-        </div>
-      `
-    }),
-    RewardPanel({
-      icon: 'coin',
-      title: 'Idle Output / Minute',
-      subtitle: 'Managers automate lines. Manual collect is required until then.',
-      body: `<div class="grid2">${idleOutput}</div>`
-    }),
-    RouteCard({
-      icon: 'race',
-      title: 'Route Status',
-      subtitle: `${RACE_MODES[state.race.mode].label} - ${RACE_MODES[state.race.mode].description}`,
-      badge: `${Math.floor(state.race.progress)}/${stats.mode.stageLength}m`,
-      body: `
-        ${meterLine('Progress', state.race.progress, stats.mode.stageLength, '')}
-        ${meterLine('Fuel', state.race.fuel, stats.fuelMax, state.race.fuel < 25 ? 'red' : 'yellow')}
-        ${meterLine('Condition', state.race.condition, stats.conditionMax, state.race.condition < 25 ? 'red' : '')}
-        ${meterLine('Heat', state.race.heat, 100, state.race.heat > 70 ? 'red' : 'yellow')}
-      `
-    }),
-    GamePanel({
-      icon: 'menu',
-      title: 'Reward Feed',
-      subtitle: 'Recent rewards, fixes, upgrades, and unlocks.',
-      body: state.log.slice(0, 8).map((line) => `<div class="logLine">${line}</div>`).join('') || `<div class="logLine">No rewards yet. Collect, merge, or upgrade to start the feed.</div>`
-    })
-  ].join('');
+        <section class="hubRouteStrip">
+          <div class="hubRouteHead">
+            <div><h3>Route Status</h3><p>${stats.mode.label}</p></div>
+            <span class="pill">${Math.floor(state.race.progress)}/${stats.mode.stageLength}m</span>
+          </div>
+          ${CompactStatStrip({
+            stats: [
+              { label: 'Progress', value: Math.floor(state.race.progress), max: stats.mode.stageLength, tone: 'good', icon: 'race' },
+              { label: 'Fuel', value: Math.round(state.race.fuel), max: stats.fuelMax, tone: state.race.fuel < 25 ? 'bad' : 'good', icon: '/assets/road-runner/token-energy.svg' },
+              { label: 'Condition', value: Math.round(state.race.condition), max: stats.conditionMax, tone: state.race.condition < 25 ? 'bad' : 'good', icon: 'tools' },
+              { label: 'Heat', value: Math.round(state.race.heat), max: 100, tone: 'dangerHigh', dangerHigh: true, icon: 'rep' }
+            ]
+          })}
+        </section>
+      `,
+      `<div class="rewardTicker"><b>Recent</b><span>${recentReward}</span></div>`
+    ].join('')
+  });
 }

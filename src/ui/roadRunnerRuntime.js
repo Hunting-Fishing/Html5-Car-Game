@@ -30,14 +30,14 @@ const ROUTES = {
 
 const GHOST_MODES = {
   solo: { label: 'Solo', count: 0 },
-  ghost2: { label: '1 Ghost', count: 1 },
-  ghost3: { label: '2 Ghosts', count: 2 },
-  ghost4: { label: '3 Ghosts', count: 3 }
+  ghost2: { label: '1 Rival', count: 1 },
+  ghost3: { label: '2 Rivals', count: 2 },
+  ghost4: { label: '3 Rivals', count: 3 }
 };
 
 const VEHICLES = {
   hatchback: { label: 'Starter Hatchback', asset: 'hatchback', cls: 'starter', unlock: { coins: 0, parts: 0 }, speed: 1, accel: 1, fuel: 1, handling: 1, durability: 1, description: 'Balanced starter car.' },
-  greenCompact: { label: 'Compact Sport', asset: 'greenCompact', cls: 'starter', unlock: { coins: 180, parts: 1 }, speed: 1.08, accel: 1.08, fuel: 0.96, handling: 1.05, durability: 0.95, description: 'Faster compact for early ghost runs.' },
+  greenCompact: { label: 'Compact Sport', asset: 'greenCompact', cls: 'starter', unlock: { coins: 180, parts: 1 }, speed: 1.08, accel: 1.08, fuel: 0.96, handling: 1.05, durability: 0.95, description: 'Faster compact for early rival runs.' },
   cityTaxi: { label: 'City Taxi', asset: 'cityTaxi', cls: 'utility', unlock: { coins: 260, parts: 2 }, speed: 1.0, accel: 1.0, fuel: 1.1, handling: 1.1, durability: 1.05, description: 'Nimble all-rounder for city routes.' },
   pickup: { label: 'Parts Pickup', asset: 'pickup', cls: 'utility', unlock: { coins: 420, parts: 4 }, speed: 0.96, accel: 0.95, fuel: 1.2, handling: 1.08, durability: 1.22, description: 'More fuel and durability.' },
   rallyLite: { label: 'Rally Lite', asset: 'rallyLite', cls: 'offroad', unlock: { coins: 640, parts: 6 }, speed: 1.05, accel: 1.05, fuel: 1.0, handling: 1.2, durability: 1.05, description: 'Agile handling on loose surfaces.' },
@@ -799,7 +799,7 @@ function shellHtml() {
     <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label, meta]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" onclick="window.rrSetTab?.('${key}')"><b>${label}</b><span>${meta}</span></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
-        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="roadRunnerBadge rrGhostCycle" data-rr-mode data-guide-target="previewGhostRace" onclick="window.rrCycleGhosts?.()" aria-label="Change ghost racers">${GHOST_MODES[activeGhostMode].label}</button><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas" data-guide-target="raceBoost">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
+        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="roadRunnerBadge rrGhostCycle" data-rr-mode data-guide-target="previewGhostRace" onclick="window.rrCycleGhosts?.()" aria-label="Change rival racers">${GHOST_MODES[activeGhostMode].label}</button><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas" data-guide-target="raceBoost">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
       </section>
       <section class="racerPage ${activeTab === 'garage' ? 'active' : ''}" data-rr-page="garage"><div data-road-runner-garage></div></section>
       <section class="racerPage ${activeTab === 'vehicles' ? 'active' : ''}" data-rr-page="vehicles"><div data-road-runner-vehicles></div></section>
@@ -1235,7 +1235,7 @@ function drawGhosts(width, height, route, cameraX) {
     const x = point.x - cameraX;
     if (x < -100 || x > width + 120) continue;
     const imageKey = images[ghost.carKey]?.ready ? ghost.carKey : keys[i] || 'ghostA';
-    const label = ghost.source === 'local_best' ? 'Best Ghost' : ghost.playerName || `Computer ${i + 1}`;
+    const label = ghost.source === 'local_best' ? 'Your Best' : ghost.playerName || `Rival ${i + 1}`;
     drawCar(x, point.y, routeAngle(route, point.x, height) * 0.65, images[imageKey], label, 0.5, game.ghostColors[i] || '#e5e7eb');
   }
 }
@@ -1759,7 +1759,7 @@ function finishRun(completed) {
   const missionRewards = evaluateMissionSets();
   saveGameData();
   const reason = game.wear >= game.stats.wearLimit ? 'wear' : completed ? 'complete' : 'fuel';
-  game.message = completed && newGhostBest ? 'New Ghost Best' : completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
+  game.message = completed && newGhostBest ? 'New Best Run' : completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
   game.finishReason = reason;
   showPostRunPanel(completed, reason, bonus, missionRewards);
   refreshPanels();

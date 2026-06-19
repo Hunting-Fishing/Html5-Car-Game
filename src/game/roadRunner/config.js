@@ -39,7 +39,7 @@ export const ROUTES = {
   },
   track: {
     label: '365 Test Track',
-    description: 'Smoother race-track style route for faster ghost runs.',
+    description: 'Smoother race-track style route for faster rival runs.',
     profile: 'track',
     length: 9000,
     meters: 3000,
@@ -69,9 +69,9 @@ export function routeMeters(route, pixels) {
 
 export const GHOST_MODES = {
   solo: { label: 'Solo', count: 0 },
-  ghost2: { label: '1 Ghost', count: 1 },
-  ghost3: { label: '2 Ghosts', count: 2 },
-  ghost4: { label: '3 Ghosts', count: 3 }
+  ghost2: { label: '1 Rival', count: 1 },
+  ghost3: { label: '2 Rivals', count: 2 },
+  ghost4: { label: '3 Rivals', count: 3 }
 };
 
 export const START_ROUTE = 'track';

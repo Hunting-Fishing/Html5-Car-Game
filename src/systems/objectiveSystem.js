@@ -26,8 +26,8 @@ export function getObjectiveList(state) {
     },
     {
       key: 'previewGhostRace',
-      title: 'Preview Ghost Race',
-      body: 'Tap the Ghost badge in Race to preview replay opponents.',
+      title: 'Challenge Rivals',
+      body: 'Tap the Rivals badge in Race to line up nearby challengers.',
       done: state.objectives.previewGhostRace
     },
     {

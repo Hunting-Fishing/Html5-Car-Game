@@ -41,7 +41,7 @@ const GUIDE_STEPS = [
     key: 'previewGhostRace',
     number: 5,
     screen: 'race',
-    title: 'Preview Ghost',
+    title: 'Pick Rivals',
     label: 'Race',
     icon: UI_ICONS.race,
     targetSelectors: ['[data-guide-target="previewGhostRace"]', '[data-rr-mode]', '[data-nav-tab="race"]']

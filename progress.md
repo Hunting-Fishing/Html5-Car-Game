@@ -79,6 +79,19 @@ Follow-up prompt: Retune Road Runner vehicle speed and RPM so the km/h gauge mat
 
 Follow-up prompt: Compare against Hill Climb Racing references and make Road Runner speed more responsive.
 
+Follow-up prompt: Compress Merge Screen per Prompt 5.
+
+- Reworked `MergeScreen` so the supplier tray, merge actions, and 4x4 board remain the primary visible play area.
+- Moved recipes/chains/tips into a compact recipe drawer with future asset-ready classes: `.mergePlayArea`, `.mergeBoardArea`, `.mergeRecipeDrawer`, `.mergeChainCompact`, and `.mergeChainDetail`.
+- Recipe view now shows compact chain cards for all chains, but expands only one selected/default chain ladder at a time.
+- Locked chains keep requirement text and the Open Build Requirements action.
+- Added local UI-only handlers for drawer tabs and selected merge chain; merge rules, board size, item generation, and unlock logic were left unchanged.
+- `npm run build` passed.
+- `npm run test:v10` passed.
+- Mobile 390x844 Playwright check passed after sizing pass: page/body do not scroll, Merge panel fits above bottom nav, board keeps 16 cells visible, drawer owns recipe scrolling, and Recipes/Chains/Tips tabs switch with no console errors.
+- Final `npm run build` passed with existing Vite warnings about plugin timing and bundle chunk size.
+- Final `npm run test:v10` passed.
+
 - Reviewed `gllms/Hill`, which uses Matter.js bodies, direct wheel angular velocity for throttle, camera follow, non-wireframe rendering, and continuously generated road segments from noise.
 - Confirmed `seanpm2001/SeansLifeArchive_Images_Hill-Climb-Racing` is an image/archive reference rather than runnable physics or map-generation code.
 - Added a sampled terrain profile per route so road height is generated in chunks with clamped slope changes instead of relying only on live sine formulas.
@@ -493,3 +506,66 @@ Follow-up prompt: Reduce excessive auto-collect toast notifications.
 - Auto-collect now shows at most one compact toast every 20 seconds, with a lighter floating reward summary at most every 6 seconds while additional collections are accumulating.
 - Manual collect, upgrades, stage completion, merge success, and route problem toasts still use the normal reward feedback path.
 - Verified `npm run test:v10`, `npm run build`, the standard web-game client capture, and a focused browser probe with repeated auto-collections. The probe created only one `Auto Collected` toast over 9 seconds and produced no console errors.
+
+Follow-up prompt: Create reusable mobile layout components for future asset-based UI/UX.
+
+- Added `ScreenFrame`, `SubTabBar`, `BottomSheet`, `CompactStatStrip`, `ActionDock`, `HorizontalCarousel`, and `ExpandableCard` under `src/ui/components`.
+- Kept the change presentation-only: no gameplay logic, economy balance, Supabase, live PVP, or ghost racing behavior changes.
+- Added isolated mobile-first, dark navy, blue/gold, asset-ready CSS for the new class names in `src/styles.css` without changing existing `GamePanel`/`.card` markup.
+- Verified `npm run build`, `npm run test:v10`, and a standard web-game client capture of the Hub screen with no console errors.
+
+Follow-up prompt: Compress Hub into a mobile game home screen.
+
+- Refactored `HubScreen.js` from stacked dashboard panels into one compact `ScreenFrame`.
+- Replaced the Home group panel with a `SubTabBar` for Today and World Map.
+- Rebuilt Today's Goal as one compact `ObjectiveCard` with a recommended action button based on the existing next objective.
+- Added compact quick actions for Race, Parts, Garage, and World via `ActionDock`.
+- Replaced full route panel meters with a compact route status strip using `CompactStatStrip`.
+- Removed the full Reward Feed and Idle Output / Minute panels from Hub; Hub now keeps only a one-line recent reward ticker.
+- Verified `npm run build`, `npm run test:v10`, standard web-game client, and a 390x844 mobile probe with no Reward Feed/Idle Output panels and no console errors.
+
+Follow-up prompt: Compress RaceScreen into a mobile racing cockpit layout.
+
+- Refactored `src/ui/screens/RaceScreen.js` from four stacked panels into a compact `ScreenFrame` cockpit.
+- Kept the `#raceCanvas` mount point, `data-action="tapRace"`, `data-action="raceMode"`, `data-action="upgrade"`, and `data-action="fixProblem"` hooks intact.
+- Added compact route/stage/problem/async-ghost badges, a canvas wrapper, compact route-clear/problem status, four `CompactStatStrip` meters, and a smaller Tap Boost button.
+- Added a compact `BottomSheet` with Modes, Upgrades, and Ghosts sections. Ghost copy explicitly says asynchronous best-time/replay racing with no live PVP.
+- Updated `CompactStatStrip` with display-only stat labels so meters can stay numeric while showing friendly values like `64m` or `72%`.
+- Verified `npm run build`, `npm run test:v10`, standard web-game client against the live Race tab, and isolated 390x844 RaceScreen harnesses for clear-route and active-problem states.
+- Note: the live player-facing Race tab is currently owned by `roadRunnerRuntime.js` (`.roadRunnerShell`), so `RaceScreen.js` was validated through an isolated renderer harness without changing Road Runner routing or gameplay logic.
+
+Follow-up prompt: Compress LinesScreen with compact rows.
+
+- Refactored `src/ui/screens/LinesScreen.js` from fully expanded cards into one compact `ScreenFrame`.
+- Added Garage sub-tabs for Build Rooms and active Business Lines, a compact idle output/status strip, and visual filter chips for All, Ready, Upgradeable, and Locked.
+- Replaced the full vertical line list with compact line rows in a horizontal rail. Rows preserve line icons, level, status, output per cycle, segmented progress, collect, and upgrade actions.
+- Added one featured line detail panel using the requested default selection order: first ready line, else first unlocked line, else first locked line.
+- Collapsed manager details into the featured line panel and kept `buyManager` / `toggleLineAuto` hooks there.
+- Moved Build Links below the line rows as a small horizontal strip.
+- Preserved `collectLine`, `upgradeLine`, `buyManager`, `toggleLineAuto`, `screen`, and the Street Route guide target.
+- Fixed a compact Lines visual artifact from the global locked-line overlay by disabling that overlay only inside the compact Lines frame.
+- Verified `npm run build`, `npm run test:v10`, the standard web-game client on `?screen=lines`, a 390x844 mobile control probe that upgraded Street Route from Lv 1 to Lv 2, and a clean settled 390x844 visual probe with all eight line rows, one featured detail, and no console errors.
+
+Follow-up prompt: Reduce oversized/spammy notifications and remove player-facing Ghost wording.
+
+- Shrunk reward toasts into compact snackbars with a two-card stack limit, shorter default duration, and duplicate suppression for repeated messages like `No matching pair found.`
+- Changed passive manager auto-collect feedback from full toast cards to a small floating reward summary on a cooldown, with occasional log entries instead of repeated blocking cards.
+- Added a guide-aware toast offset so snackbars lift above the first-session guide rather than covering its action button.
+- Reworded player-facing Ghost labels to Rival/Best Run language across objectives, first-session guide, Race cockpit copy, Road Runner rival mode badges, rival car labels, and post-run best-run messaging while keeping the internal ghost replay model intact.
+- Verified `npm run build`, `npm run test:v10`, the standard web-game client on `?screen=merge`, and a 390x844 spam probe: four repeated Auto Merge clicks left one 44px alert, did not overlap the guide, showed no visible Ghost/Preview Ghost copy, and produced no console errors.
+
+Follow-up prompt: Merge the Merge Bay into the Merge Board and make recipes a compact tab with working scroll.
+
+- Refactored `MergeScreen.js` so Parts now renders one unified Merge Board panel instead of separate Merge Bay, Merge Board, and Merge Recipes panels.
+- Moved supplier/Merge Bay slots into a compact header dock beside the Merge Board title, using 34px mini shelf buttons that preserve `placeShelf` behavior.
+- Added Board / Recipes tabs backed by lightweight `state.merge.activeTab` UI state so the selected tab survives the normal game-loop re-render.
+- Kept the existing `placeAll`, `autoMerge`, `sellSelected`, `cell`, and guide-target hooks intact.
+- Compressed recipe cards and ladders, added a vertical recipe pane, and made recipe ladders plus the mini shelf horizontally scrollable with touch-friendly scroll behavior.
+- Verified `npm run build`, `npm run test:v10`, the standard web-game client on `?screen=merge`, and a 390x844 focused probe: one unified panel, no old Merge Bay/Guide cards, six 34px supplier slots, 16 board cells, Recipes tab selected correctly, recipe pane scrolled vertically, ladders scrolled horizontally, and no console errors.
+
+Follow-up prompt: Contain merge floating rewards in the top HUD instead of over the board.
+
+- Clamped floating reward positions to a top-header lane near the Micro Garage HUD so merge feedback no longer travels over the Parts playfield.
+- Aggregated per-action floating rewards into one compact header float, e.g. `MERGE! +27C +1S +4P`, instead of stacking separate `MERGE`, coins, scrap, and parts floaters on top of each other.
+- Kept the normal compact reward toast and all merge reward/economy logic unchanged.
+- Verified `npm run build`, `npm run test:v10`, and a 390x844 focused merge probe: one floating reward appeared from 64px to 92px, the Merge Board started at 120px, `anyFloatOverBoard` was false, the merge produced Washer Set, and no console errors were reported.

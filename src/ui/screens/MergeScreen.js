@@ -1,7 +1,7 @@
 import { CHAINS } from '../../data/gameData.js';
 import { mergeAssetForName } from '../../data/mergeAssetMap.js';
 import { chainIconForKey } from '../../data/uiIconMap.js';
-import { GamePanel, RewardPanel, renderDataIcon } from '../components/GamePanel.js';
+import { renderDataIcon } from '../components/GamePanel.js';
 import {
   activeBoardCount,
   boardLimit,
@@ -27,41 +27,75 @@ export function renderMergeScreen(state) {
   const firstPair = firstMatchingPairIndexes(state);
   const pairSet = new Set(firstPair);
   const guideNeedsPair = !state.objectives?.firstMerge;
-  return [
-    RewardPanel({
-      icon: 'parts',
-      title: 'Merge Bay',
-      subtitle: 'Supplier drops Level 1 only. Every higher item must be earned by merging.',
-      badge: `${active}/${limit} permit`,
-      heading: 'h2',
-      className: 'mergeBayPanel',
-      body: `
-        <div class="notice">Next supplier item in <b>${Math.ceil(state.merge.supplierTimer)}s</b>. Shelf capacity: ${shelfCapacity(state)}.</div>
-        <div class="shelf" style="margin-top:8px;">
-          ${state.merge.supplierSlots.map((item, index) => renderShelfSlot(item, index)).join('')}
+  const drawerTab = ['recipes', 'chains', 'tips'].includes(state.merge.activeTab) ? state.merge.activeTab : 'recipes';
+  const selectedChain = selectedMergeChainKey(state);
+  const shelfGuideTarget = guideNeedsPair && !pairSet.size ? ' data-guide-target="placeAll"' : '';
+
+  return `
+    <section class="card gamePanel RewardPanel mergeUnifiedPanel mergePlayArea" data-component="RewardPanel">
+      <div class="gamePanelField">
+        <div class="mergeUnifiedHeader">
+          <span class="gameIconBadge">${renderDataIcon('parts', 'Parts icon', 'gameIconBadgeImg')}</span>
+          <div class="mergeUnifiedTitle">
+            <h2>Merge Board</h2>
+            <p>Merge pairs.</p>
+          </div>
+          <div class="mergeBayDock" aria-label="Merge Bay supplier slots">
+            <div class="mergeBayDockMeta">
+              <b>${Math.ceil(state.merge.supplierTimer)}s</b>
+              <span>${active}/${limit}</span>
+            </div>
+            <div class="miniShelf"${shelfGuideTarget}>
+              ${state.merge.supplierSlots.map((item, index) => renderMiniShelfSlot(item, index)).join('')}
+            </div>
+          </div>
         </div>
-        <div class="grid3" style="margin-top:8px;">
+
+        <div class="mergeBoardActions">
           <button class="btn small primary" data-action="placeAll" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="placeAll"' : ''}>Place All</button>
           <button class="btn small" data-action="autoMerge" ${guideNeedsPair && pairSet.size ? 'data-guide-target="mergePair"' : ''}>Auto Merge</button>
-          <button class="btn small red" data-action="sellSelected">Sell Selected</button>
+          <button class="btn small red" data-action="sellSelected">Sell</button>
         </div>
-      `
-    }),
-    GamePanel({
-      icon: 'parts',
-      title: 'Merge Board',
-      subtitle: 'Tap one item, then tap a matching level item to merge.',
-      className: 'mergeBoardPanel',
-      body: `<div class="board" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => renderBoardCell(state, item, index, pairSet)).join('')}</div>`
-    }),
-    GamePanel({
-      icon: 'tools',
-      title: 'Merge Recipes',
-      subtitle: 'Two matching items combine into the next item. Locked sets show the exact requirement.',
-      className: 'mergeGuideCard',
-      body: Object.entries(CHAINS).map(([key, chain]) => renderMergeChainGuide(state, key, chain)).join('')
-    })
-  ].join('');
+
+        <div class="mergeBoardArea">
+          <div class="board mergeBoardGrid" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => renderBoardCell(state, item, index, pairSet)).join('')}</div>
+        </div>
+
+        <div class="mergeRecipeDrawer">
+          <div class="mergeBoardTabs mergeDrawerTabs" role="tablist" aria-label="Parts guide sections">
+            <button class="mergeBoardTab ${drawerTab === 'recipes' ? 'active' : ''}" type="button" role="tab" data-action="mergeTab" data-tab="recipes" aria-selected="${drawerTab === 'recipes'}">Recipes</button>
+            <button class="mergeBoardTab ${drawerTab === 'chains' ? 'active' : ''}" type="button" role="tab" data-action="mergeTab" data-tab="chains" aria-selected="${drawerTab === 'chains'}">Chains</button>
+            <button class="mergeBoardTab ${drawerTab === 'tips' ? 'active' : ''}" type="button" role="tab" data-action="mergeTab" data-tab="tips" aria-selected="${drawerTab === 'tips'}">Tips</button>
+          </div>
+
+          <div class="mergeDrawerPane ${drawerTab === 'recipes' ? 'active' : ''}" data-merge-pane="recipes">
+            <div class="mergeChainCompactList">
+              ${Object.entries(CHAINS).map(([key, chain]) => renderMergeChainCompact(state, key, chain, selectedChain)).join('')}
+            </div>
+            ${renderMergeChainDetail(state, selectedChain, CHAINS[selectedChain])}
+          </div>
+
+          <div class="mergeDrawerPane ${drawerTab === 'chains' ? 'active' : ''}" data-merge-pane="chains">
+            <div class="mergeRecipesPane mergeChainsPane">
+              ${Object.entries(CHAINS).map(([key, chain]) => renderMergeChainSummary(state, key, chain)).join('')}
+            </div>
+          </div>
+
+          <div class="mergeDrawerPane ${drawerTab === 'tips' ? 'active' : ''}" data-merge-pane="tips">
+            ${renderMergeTips(state, active, limit)}
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function selectedMergeChainKey(state) {
+  const keys = Object.keys(CHAINS);
+  const saved = state.merge.selectedChain;
+  if (saved && keys.includes(saved)) return saved;
+  const unlocked = unlockedChainKeys(state).find((key) => keys.includes(key));
+  return unlocked || keys[0];
 }
 
 function firstMatchingPairIndexes(state) {
@@ -80,6 +114,11 @@ function firstMatchingPairIndexes(state) {
 function renderShelfSlot(item, index) {
   if (!item) return `<button class="shelfSlot"><span class="emptyText">Empty<br>slot</span></button>`;
   return `<button class="shelfSlot ready" data-action="placeShelf" data-index="${index}" data-guide-target="supplierReady">${renderItem(item)}</button>`;
+}
+
+function renderMiniShelfSlot(item, index) {
+  if (!item) return `<button class="miniShelfSlot" type="button" disabled><span class="emptyText">+</span></button>`;
+  return `<button class="miniShelfSlot ready" type="button" data-action="placeShelf" data-index="${index}" data-guide-target="supplierReady">${renderItem(item)}</button>`;
 }
 
 function renderBoardCell(state, item, index, pairSet = new Set()) {
@@ -129,12 +168,28 @@ function mergeChainRequirement(state, key) {
   return { met: true, text: 'Unlocked from start', actionScreen: null };
 }
 
-function renderMergeChainGuide(state, key, chain) {
+function renderMergeChainCompact(state, key, chain, selectedChain) {
+  const unlocked = unlockedChainKeys(state).includes(key);
+  const req = mergeChainRequirement(state, key);
+  return `
+    <button class="mergeChainCompact ${unlocked ? 'unlocked' : 'locked'} ${selectedChain === key ? 'selected' : ''}" type="button" data-action="mergeChain" data-chain="${key}">
+      <div class="mergeRecipeHead">
+        <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
+        <span class="pill">${unlocked ? 'Open' : 'Locked'}</span>
+      </div>
+      <span class="mergeChainRequirement">${unlocked ? '2 matching items make next level.' : req.text}</span>
+      ${renderMergeChainPreview(key, chain, unlocked)}
+    </button>
+  `;
+}
+
+function renderMergeChainDetail(state, key, chain) {
+  if (!chain) return '';
   const unlocked = unlockedChainKeys(state).includes(key);
   const req = mergeChainRequirement(state, key);
   if (!unlocked) {
     return `
-      <div class="mergeRecipe locked">
+      <div class="mergeRecipe mergeChainDetail locked">
         <div class="mergeRecipeHead">
           <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
           <span class="pill">Locked</span>
@@ -147,7 +202,7 @@ function renderMergeChainGuide(state, key, chain) {
   }
 
   return `
-    <div class="mergeRecipe good">
+    <div class="mergeRecipe mergeChainDetail good">
       <div class="mergeRecipeHead">
         <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
         <span class="pill">Unlocked</span>
@@ -155,6 +210,47 @@ function renderMergeChainGuide(state, key, chain) {
       <div class="mergeRecipeRule">Recipe rule: <b>2 matching items</b> make the next level.</div>
       <div class="mergeChainLadder" aria-label="${chain.label} merge progression">
         ${chain.items.map((name, index) => renderMergeChainStep(key, chain, name, index)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderMergeChainSummary(state, key, chain) {
+  const unlocked = unlockedChainKeys(state).includes(key);
+  const req = mergeChainRequirement(state, key);
+  return `
+    <div class="mergeRecipe mergeCompactRecipe ${unlocked ? 'good' : 'locked'}">
+      <div class="mergeRecipeHead">
+        <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
+        <span class="pill">${unlocked ? 'Unlocked' : 'Locked'}</span>
+      </div>
+      <div class="${unlocked ? 'mergeRecipeRule' : 'notice'}">${unlocked ? '2 matching items make the next level.' : `Requirement: ${req.text}`}</div>
+      ${renderMergeChainPreview(key, chain, unlocked)}
+      ${!unlocked && req.actionScreen ? `<button class="btn small gold mergeRecipeAction" data-action="screen" data-screen="${req.actionScreen}">Open Build Requirements</button>` : ''}
+    </div>
+  `;
+}
+
+function renderMergeTips(state, active, limit) {
+  const selected = selectedMergeChainKey(state);
+  const selectedLabel = CHAINS[selected]?.label || 'Original Parts';
+  return `
+    <div class="mergeTipsGrid">
+      <div class="mergeTipCard">
+        <b>Board Space</b>
+        <span>${active}/${limit} filled</span>
+      </div>
+      <div class="mergeTipCard">
+        <b>Supplier Bay</b>
+        <span>${shelfCapacity(state)} slots ready</span>
+      </div>
+      <div class="mergeTipCard">
+        <b>Selected Chain</b>
+        <span>${selectedLabel}</span>
+      </div>
+      <div class="mergeTipCard">
+        <b>Fast Rule</b>
+        <span>Tap two matching levels or use Auto Merge.</span>
       </div>
     </div>
   `;

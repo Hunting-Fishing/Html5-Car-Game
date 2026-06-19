@@ -2,7 +2,9 @@ import { IDLE_LINES } from '../../data/gameData.js';
 import { lineAssetForKey, LINES_GUI_ASSETS } from '../../data/linesAssetMap.js';
 import { BUILD_ICON_ASSETS, buildSystemAssetForKey } from '../../data/buildAssetMap.js';
 import { connectionForLine } from '../../data/buildLinkData.js';
-import { GamePanel, renderDataIcon } from '../components/GamePanel.js';
+import { renderDataIcon } from '../components/GamePanel.js';
+import { ScreenFrame } from '../components/ScreenFrame.js';
+import { SubTabBar } from '../components/SubTabBar.js';
 import { segmentedMeter } from '../components/StatMeter.js';
 import { fmt, costToText, canAfford } from '../../systems/economySystem.js';
 import { getBuildCommunicationState } from '../../systems/buildCommunicationSystem.js';
@@ -14,6 +16,7 @@ import {
   getLineUpgradeCost,
   getManagerCost,
   getNextMilestone,
+  getTotalIdlePerMinute,
   hasManager,
   isAutoCollectEnabled,
   isLineUnlocked,
@@ -22,48 +25,41 @@ import {
 
 export function renderLinesScreen(state) {
   const buildComm = getBuildCommunicationState(state);
-  return `
-    ${GamePanel({
-      icon: 'garage',
-      title: 'Garage',
-      subtitle: 'Garage is grouped into Build Rooms and Business Lines.',
-      badge: 'Garage Group',
-      className: 'screenGroupPanel garageGroupPanel',
-      body: `
-        <div class="screenSubTabs" role="tablist" aria-label="Garage sections">
-          <button class="btn" type="button" data-action="screen" data-screen="garage">
-            <img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.buildMode}" alt="" loading="eager">
-            <span>Build Rooms</span>
-          </button>
-          <button class="btn primary active" type="button" data-action="screen" data-screen="lines" aria-current="page">
-            <img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager">
-            <span>Business Lines</span>
-          </button>
-        </div>
-      `
-    })}
+  const lines = IDLE_LINES.map((line) => getLineViewModel(state, line));
+  const featured = selectFeaturedLine(lines);
 
-    <section class="card linesIntroCard">
-      <div class="cardTitle">
-        <div><h2>Idle Business Lines</h2><p>Upgrade each automotive line. Hire managers at Lv 10 to auto-collect.</p></div>
-        <span class="pill">Phase 10</span>
+  return ScreenFrame({
+    title: 'Business Lines',
+    subtitle: 'Compact idle routes, collections, managers, and unlocks.',
+    badge: `${buildComm.unlockedLineCount}/${buildComm.totalLineCount}`,
+    className: 'linesCompactFrame',
+    body: `
+      ${SubTabBar({
+        tabs: [
+          { label: 'Build Rooms', screen: 'garage', icon: BUILD_ICON_ASSETS.buildMode },
+          { label: 'Business Lines', screen: 'lines', active: true, icon: BUILD_ICON_ASSETS.lineSync }
+        ]
+      })}
+      ${renderLinesStatusStrip(state, lines)}
+      ${renderLineFilterChips(lines)}
+      <div class="linesCompactList">
+        ${lines.map((line) => renderLineRow(state, line, featured?.line.key)).join('')}
       </div>
-      <div class="notice good"><b>Goal:</b> Street Route -> Parts Delivery -> Mobile Mechanic -> Fuel/Towing -> Dealer/Performance/Race.</div>
+      ${featured ? renderFeaturedLineDetail(state, featured) : ''}
+      ${renderBuildLineBridge(buildComm)}
       <div class="linesAssetPreload" aria-hidden="true">
         ${Object.entries(LINES_GUI_ASSETS).map(([key, src]) => `<img class="linesGuiAsset" data-lines-gui="${key}" src="${src}" alt="" loading="eager">`).join('')}
       </div>
-    </section>
-    ${renderBuildLineBridge(buildComm)}
-    ${IDLE_LINES.map((line) => renderLineCard(state, line)).join('')}
-  `;
+    `
+  });
 }
 
 function renderBuildLineBridge(snapshot) {
   const systems = snapshot.systems.filter((system) => system.lineKeys.length);
   return `
-    <section class="card buildLineBridgeCard">
-      <div class="cardTitle">
-        <div><h3>Build Links</h3><p>Garage systems now publish to Lines and World inventory together.</p></div>
+    <section class="buildLineBridgeCard compactBuildLinks">
+      <div class="compactSectionHead">
+        <div><h3>Build Links</h3><p>Garage systems publish to Lines and World inventory.</p></div>
         <span class="pill buildSyncBadge">${snapshot.unlockedLineCount}/${snapshot.totalLineCount} lines</span>
       </div>
       <div class="buildLineBridgeGrid">
@@ -92,6 +88,81 @@ function renderLineIcon(line) {
 
 function renderLineStatusPill(label, asset) {
   return `<span class="pill lineStatusPill"><img class="lineStatusAsset linesGuiAsset" src="${asset}" alt="" loading="eager">${label}</span>`;
+}
+
+function getLineViewModel(state, line) {
+  const current = getLineState(state, line.key);
+  const unlocked = isLineUnlocked(state, line);
+  const level = current.level;
+  const cycleMs = getLineCycleMs(state, line);
+  const income = getLineIncome(state, line);
+  const upgradeCost = getLineUpgradeCost(state, line);
+  const managerCost = getManagerCost(state, line);
+  const managerOwned = hasManager(state, line.key);
+  const autoEnabled = isAutoCollectEnabled(state, line.key);
+  const collectReady = canCollectLine(state, line);
+  const upgradeAffordable = unlocked && canAfford(state, upgradeCost);
+  const statusAsset = !unlocked ? LINES_GUI_ASSETS.lockedBadge : collectReady ? LINES_GUI_ASSETS.collectButton : managerOwned && autoEnabled ? LINES_GUI_ASSETS.autoBadge : LINES_GUI_ASSETS.manualBadge;
+  const statusLabel = !unlocked ? 'Locked' : collectReady ? 'Ready' : managerOwned && autoEnabled ? 'Auto' : 'Manual';
+
+  return {
+    line,
+    current,
+    unlocked,
+    level,
+    cycleMs,
+    income,
+    upgradeCost,
+    managerCost,
+    managerOwned,
+    autoEnabled,
+    collectReady,
+    upgradeAffordable,
+    statusAsset,
+    statusLabel,
+    nextMilestone: getNextMilestone(state, line)
+  };
+}
+
+function selectFeaturedLine(lines) {
+  return lines.find((item) => item.collectReady)
+    || lines.find((item) => item.unlocked)
+    || lines.find((item) => !item.unlocked)
+    || null;
+}
+
+function renderLinesStatusStrip(state, lines) {
+  const totals = getTotalIdlePerMinute(state);
+  const totalText = Object.entries(totals).length
+    ? Object.entries(totals).map(([resource, value]) => `${fmt(value)}/${resource}`).join(' + ')
+    : 'Upgrade a line to begin output';
+  const readyCount = lines.filter((item) => item.collectReady).length;
+  const autoCount = lines.filter((item) => item.managerOwned && item.autoEnabled).length;
+  const unlockedCount = lines.filter((item) => item.unlocked).length;
+
+  return `
+    <div class="linesStatusStrip">
+      <div><b>${totalText}</b><span>Idle output / minute</span></div>
+      <div><b>${readyCount}</b><span>Ready</span></div>
+      <div><b>${autoCount}</b><span>Auto</span></div>
+      <div><b>${unlockedCount}/${lines.length}</b><span>Open</span></div>
+    </div>
+  `;
+}
+
+function renderLineFilterChips(lines) {
+  const ready = lines.filter((item) => item.collectReady).length;
+  const upgradeable = lines.filter((item) => item.upgradeAffordable).length;
+  const locked = lines.filter((item) => !item.unlocked).length;
+
+  return `
+    <div class="lineFilterChips" aria-label="Line filters">
+      <span class="chip active">All ${lines.length}</span>
+      <span class="chip">Ready ${ready}</span>
+      <span class="chip">Upgradeable ${upgradeable}</span>
+      <span class="chip">Locked ${locked}</span>
+    </div>
+  `;
 }
 
 function getLineRequirementInfo(state, line) {
@@ -188,49 +259,76 @@ function renderManagerRequirement(state, line, level, managerOwned, managerCost,
   `;
 }
 
-function renderLineCard(state, line) {
-  const current = getLineState(state, line.key);
-  const unlocked = isLineUnlocked(state, line);
-  const level = current.level;
-  const cycleMs = getLineCycleMs(state, line);
-  const income = getLineIncome(state, line);
-  const upgradeCost = getLineUpgradeCost(state, line);
-  const managerCost = getManagerCost(state, line);
-  const managerOwned = hasManager(state, line.key);
-  const autoEnabled = isAutoCollectEnabled(state, line.key);
-  const nextMilestone = getNextMilestone(state, line);
-  const collectReady = canCollectLine(state, line);
-  const statusAsset = !unlocked ? LINES_GUI_ASSETS.lockedBadge : managerOwned && autoEnabled ? LINES_GUI_ASSETS.autoBadge : LINES_GUI_ASSETS.manualBadge;
-  const statusLabel = !unlocked ? 'Locked' : managerOwned ? (autoEnabled ? 'AUTO ON' : 'AUTO OFF') : 'MANUAL';
+function renderLineRow(state, item, featuredKey) {
+  const { line, current, unlocked, level, cycleMs, income, upgradeCost, collectReady, upgradeAffordable, statusAsset, statusLabel, managerOwned, autoEnabled } = item;
   const guideTarget = line.key === 'streetRoute' && !state.objectives?.idleLineUpgrade ? ' data-guide-target="upgradeStreetRoute"' : '';
 
   if (!unlocked) {
     const buildConnection = connectionForLine(line.key);
     const buildLink = buildConnection?.buildingKey
-      ? `<div class="lockedLineActions"><button class="btn small gold" data-action="screen" data-screen="garage"><img class="roomButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.buildMode}" alt="" loading="eager"><span>Open Build</span></button></div>`
+      ? `<button class="btn small ghost" data-action="screen" data-screen="garage">Req</button>`
       : '';
     return `
-      <section class="lineCard lockedLine" data-line-key="${line.key}">
-        <div class="lineHead">
-          ${renderLineIcon(line)}
+      <article class="lineCompactRow lockedLine ${line.key === featuredKey ? 'featured' : ''}" data-line-key="${line.key}">
+        ${renderLineIcon(line)}
+        <div class="lineCompactMain">
+          <div class="lineCompactHead"><b>${line.name}</b><span>Lv ${level}</span></div>
+          <div class="lineCompactMeta"><span>${renderLineStatusPill(statusLabel, statusAsset)}</span><span>${unlockText(line)}</span></div>
+          ${segmentedMeter({ value: 0, max: 1, label: `${line.name} locked progress`, className: 'lineProgress lineRowMeter' })}
+        </div>
+        <div class="lineCompactActions">${buildLink}</div>
+      </article>
+    `;
+  }
+
+  return `
+    <article class="lineCompactRow ${collectReady ? 'ready' : ''} ${line.key === featuredKey ? 'featured' : ''}" data-line-key="${line.key}">
+      ${renderLineIcon(line)}
+      <div class="lineCompactMain">
+        <div class="lineCompactHead"><b>${line.name}</b><span>Lv ${level}</span></div>
+        <div class="lineCompactMeta">
+          <span>${renderLineStatusPill(statusLabel, statusAsset)}</span>
+          <span>${fmt(income)} ${line.outputLabel}/cycle</span>
+          <span>${(cycleMs / 1000).toFixed(1)}s</span>
+        </div>
+        ${segmentedMeter({ value: current.cycle, max: cycleMs, label: `${line.name} cycle progress`, className: 'lineProgress lineRowMeter' })}
+      </div>
+      <div class="lineCompactActions">
+        <button class="btn small ${collectReady ? 'gold' : 'ghost'}" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.collectButton}" alt="" loading="eager"><span>${managerOwned && autoEnabled ? 'Auto' : 'Collect'}</span></button>
+        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${upgradeAffordable ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.upgradeButton}" alt="" loading="eager"><span>Up</span></button>
+      </div>
+    </article>
+  `;
+}
+
+function renderFeaturedLineDetail(state, item) {
+  const { line, current, unlocked, level, cycleMs, income, upgradeCost, managerCost, managerOwned, autoEnabled, collectReady, upgradeAffordable, nextMilestone } = item;
+  const guideTarget = line.key === 'streetRoute' && !state.objectives?.idleLineUpgrade ? ' data-guide-target="upgradeStreetRoute"' : '';
+
+  if (!unlocked) {
+    const buildConnection = connectionForLine(line.key);
+    const buildAction = buildConnection?.buildingKey
+      ? `<button class="btn small gold" data-action="screen" data-screen="garage"><img class="roomButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.buildMode}" alt="" loading="eager"><span>Open Build</span></button>`
+      : '';
+    return `
+      <section class="lineFeaturedDetail lockedLine">
+        <div class="compactSectionHead">
           <div><h3>${line.name}</h3><p>${line.description}</p></div>
-          ${renderLineStatusPill(statusLabel, statusAsset)}
+          <span class="pill">Featured</span>
         </div>
         ${renderLineRequirement(state, line)}
         <div class="notice">${unlockText(line)}</div>
-        ${buildLink}
+        ${buildAction}
       </section>
     `;
   }
 
   return `
-    <section class="lineCard" data-line-key="${line.key}">
-      <div class="lineHead">
-        ${renderLineIcon(line)}
-        <div><h3>${line.name} <span class="pill">Lv ${level}</span></h3><p>${line.description}</p></div>
-        ${renderLineStatusPill(statusLabel, statusAsset)}
+    <section class="lineFeaturedDetail" data-line-key="${line.key}">
+      <div class="compactSectionHead">
+        <div><h3>${line.name}</h3><p>${line.description}</p></div>
+        <span class="pill">Featured</span>
       </div>
-      ${renderLineRequirement(state, line)}
       <div class="lineStats">
         <div><b>${fmt(income)}</b><span>${line.outputLabel}/cycle</span></div>
         <div><b>${(cycleMs / 1000).toFixed(1)}s</b><span>Cycle</span></div>
@@ -239,9 +337,13 @@ function renderLineCard(state, line) {
       ${segmentedMeter({ value: current.cycle, max: cycleMs, label: `${line.name} cycle progress`, className: 'lineProgress' })}
       <div class="lineButtons">
         <button class="btn small ${collectReady ? 'gold' : 'ghost'}" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.collectButton}" alt="" loading="eager"><span>${managerOwned && autoEnabled ? 'Auto Running' : 'Collect'}</span></button>
-        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${canAfford(state, upgradeCost) ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.upgradeButton}" alt="" loading="eager"><span>Upgrade<br><small>${costToText(upgradeCost)}</small></span></button>
+        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${upgradeAffordable ? '' : 'disabled'}><img class="lineButtonAsset linesGuiAsset" src="${LINES_GUI_ASSETS.upgradeButton}" alt="" loading="eager"><span>Upgrade<br><small>${costToText(upgradeCost)}</small></span></button>
       </div>
-      <div class="lineManager">
+      <div class="lineManager compactLineManager">
+        <div class="compactSectionHead mini">
+          <div><h3>Manager</h3><p>Auto collect unlocks at Lv ${line.manager.unlockLevel}.</p></div>
+          <span class="pill">${managerOwned ? (autoEnabled ? 'Auto On' : 'Auto Off') : `Lv ${level}/${line.manager.unlockLevel}`}</span>
+        </div>
         ${renderManagerRequirement(state, line, level, managerOwned, managerCost, autoEnabled)}
       </div>
       <div class="cost">Next milestone: ${nextMilestone ? `Lv ${nextMilestone.level} - ${nextMilestone.label}` : 'All early milestones reached.'}</div>
