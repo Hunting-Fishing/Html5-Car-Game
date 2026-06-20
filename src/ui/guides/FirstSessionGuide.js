@@ -41,10 +41,10 @@ const GUIDE_STEPS = [
     key: 'previewGhostRace',
     number: 5,
     screen: 'race',
-    title: 'Pick Rivals',
+    title: 'Open Leaderboard',
     label: 'Race',
     icon: UI_ICONS.race,
-    targetSelectors: ['[data-guide-target="previewGhostRace"]', '[data-rr-mode]', '[data-nav-tab="race"]']
+    targetSelectors: ['[data-rr-tab="leaderboard"]', '[data-road-runner-leaderboard]', '[data-guide-target="previewGhostRace"]', '[data-nav-tab="race"]']
   }
 ];
 

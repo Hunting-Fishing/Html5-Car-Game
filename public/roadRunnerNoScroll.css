@@ -38,7 +38,7 @@ html.rrRaceViewport #screen-race.active {
   position: relative;
   top: auto;
   z-index: 60;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 3px;
   margin: 0;
   padding: 3px;
@@ -47,8 +47,8 @@ html.rrRaceViewport #screen-race.active {
 
 #screen-race .racerInnerNav button {
   min-width: 0;
-  min-height: 30px;
-  padding: 3px 2px;
+  min-height: 38px;
+  padding: 5px 2px;
   display: grid;
   place-items: center;
   gap: 0;
@@ -269,6 +269,7 @@ html.rrRaceViewport #screen-race.active {
   border: 1px solid rgba(255,255,255,.09);
 }
 
+#screen-race .roadRunnerShell[data-rr-active-tab="leaderboard"] .rrRaceCommand,
 #screen-race .roadRunnerShell[data-rr-active-tab="garage"] .rrRaceCommand,
 #screen-race .roadRunnerShell[data-rr-active-tab="vehicles"] .rrRaceCommand,
 #screen-race .roadRunnerShell[data-rr-active-tab="routes"] .rrRaceCommand,
@@ -279,6 +280,7 @@ html.rrRaceViewport #screen-race.active {
     "mission";
 }
 
+#screen-race .roadRunnerShell[data-rr-active-tab="leaderboard"] .rrRaceCommandStats,
 #screen-race .roadRunnerShell[data-rr-active-tab="garage"] .rrRaceCommandStats,
 #screen-race .roadRunnerShell[data-rr-active-tab="vehicles"] .rrRaceCommandStats,
 #screen-race .roadRunnerShell[data-rr-active-tab="routes"] .rrRaceCommandStats,
@@ -286,6 +288,7 @@ html.rrRaceViewport #screen-race.active {
   display: none;
 }
 
+#screen-race .roadRunnerShell[data-rr-active-tab="leaderboard"] .rrRaceMissionStrip,
 #screen-race .roadRunnerShell[data-rr-active-tab="garage"] .rrRaceMissionStrip,
 #screen-race .roadRunnerShell[data-rr-active-tab="vehicles"] .rrRaceMissionStrip,
 #screen-race .roadRunnerShell[data-rr-active-tab="routes"] .rrRaceMissionStrip,
@@ -329,17 +332,12 @@ html.rrRaceViewport #screen-race.active {
   box-shadow: none !important;
 }
 
-.rrGhostCycle {
-  pointer-events: auto;
-  cursor: pointer;
-}
-
 .rrRestartRunButton {
   position: relative;
   z-index: 1;
-  flex: 0 0 31px;
-  width: 31px;
-  height: 31px;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
   padding: 0 0 3px;
   color: #06213a;
   font-size: 21px;

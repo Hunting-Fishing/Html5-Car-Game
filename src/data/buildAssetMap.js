@@ -1,5 +1,7 @@
 export const BUILD_ASSET_BASE = '/assets/Build';
 
+// Build/Garage replacement art belongs under public/assets/Build.
+// Room art is for shop-floor visuals; system art is for upgrade cards.
 export const BUILD_ROOM_ASSETS = {
   frontLot: `${BUILD_ASSET_BASE}/rooms/front-lot.svg`,
   partsCounter: `${BUILD_ASSET_BASE}/rooms/parts-counter.svg`,
@@ -52,4 +54,3 @@ export function buildRoomAssetForKey(key) {
 export function buildSystemAssetForKey(key) {
   return BUILD_SYSTEM_ASSETS[key] || BUILD_ROOM_ASSETS[key] || '';
 }
-

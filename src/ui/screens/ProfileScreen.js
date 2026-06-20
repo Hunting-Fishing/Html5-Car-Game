@@ -1,15 +1,33 @@
-import { GamePanel, ObjectiveCard, ProblemAlert, renderIconImage } from '../components/GamePanel.js';
+import { renderIconImage } from '../components/GamePanel.js';
+import { ScreenFrame } from '../components/ScreenFrame.js';
+import { SubTabBar } from '../components/SubTabBar.js';
+import { ActionDock } from '../components/ActionDock.js';
 import { meterLine } from '../components/StatMeter.js';
 import { fmt } from '../../systems/economySystem.js';
 import { getObjectiveList } from '../../systems/objectiveSystem.js';
+
+function escapeHtml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 function renderObjectiveStatusIcon(done) {
   const icon = done ? '/assets/ui/icons/rep.png' : '/assets/ui/icons/menu.png';
   return renderIconImage(icon, done ? 'Objective complete' : 'Objective open', 'checkIconImg', done ? 'OK' : '--');
 }
 
+function compactStat(value, label, tone = '') {
+  return `<div class="menuStat ${tone}"><b>${escapeHtml(value)}</b><span>${escapeHtml(label)}</span></div>`;
+}
+
 export function renderProfileScreen(state) {
   const objectives = getObjectiveList(state);
+  const nextObjective = objectives.find((item) => !item.done);
+  const doneCount = objectives.filter((item) => item.done).length;
   const garageValue = Math.round(
     state.currencies.coins +
     state.stage * 100 +
@@ -17,82 +35,71 @@ export function renderProfileScreen(state) {
     Object.values(state.buildings).reduce((a, b) => a + b, 0) * 500 +
     state.idleLines.lifetimeCollections * 12
   );
-  return [
-    GamePanel({
-      icon: 'menu',
-      title: 'Menu Sections',
-      subtitle: 'Menu groups profile, creator rules, settings, and save controls.',
-      badge: 'Menu Group',
-      className: 'screenGroupPanel menuGroupPanel',
-      body: `
-        <div class="screenSubTabs menuSubTabs" role="tablist" aria-label="Menu sections">
-          <button class="btn primary active" type="button" data-action="screen" data-screen="profile" aria-current="page">Profile</button>
-          <button class="btn" type="button" data-action="screen" data-screen="creator">Creator Rules</button>
-          <a class="btn ghost" href="#profile-settings">Settings</a>
-          <button class="btn red" type="button" data-action="reset">Reset Save</button>
+
+  return ScreenFrame({
+    title: 'Menu',
+    subtitle: 'Profile, settings, and creator tools.',
+    badge: `Lv ${state.level}`,
+    className: 'menuCompactFrame',
+    body: `
+      ${SubTabBar({
+        tabs: [
+          { label: 'Profile', screen: 'profile', active: true, icon: 'profile' },
+          { label: 'Creator Rules', screen: 'creator', icon: 'menu' },
+          { label: 'Home', screen: 'hub', icon: 'home' }
+        ]
+      })}
+
+      <section class="menuProfileHero assetFrame profilePanel">
+        <div class="menuProfileHead">
+          <span class="gameIconBadge">${renderIconImage('/assets/ui/icons/profile.png', 'Profile icon', 'gameIconBadgeImg', 'P')}</span>
+          <div>
+            <h3>${escapeHtml(state.playerName)}</h3>
+            <p>Local save profile. No Supabase yet.</p>
+          </div>
+          <span class="pill">Stage ${state.stage}</span>
         </div>
-      `
-    }),
-    GamePanel({
-      icon: 'profile',
-      title: state.playerName,
-      subtitle: 'Local-only profile. Git repo stage. No Supabase yet.',
-      badge: `Lv ${state.level}`,
-      heading: 'h2',
-      className: 'profilePanel',
-      body: `
         ${meterLine('XP', state.xp, state.level * 80, '')}
-        <div class="grid2">
-          <div class="notice good"><b>${fmt(garageValue)}</b><br>Garage Value</div>
-          <div class="notice good"><b>${fmt(state.race.lifetimeMeters)}</b><br>Lifetime Meters</div>
-          <div class="notice"><b>${state.merge.totalMerges}</b><br>Total Merges</div>
-          <div class="notice"><b>${fmt(state.idleLines.lifetimeCollections)}</b><br>Line Collects</div>
+        <div class="menuStatGrid">
+          ${compactStat(fmt(garageValue), 'Garage Value', 'good')}
+          ${compactStat(fmt(state.race.lifetimeMeters), 'Meters')}
+          ${compactStat(String(state.merge.totalMerges), 'Merges')}
+          ${compactStat(fmt(state.idleLines.lifetimeCollections), 'Line Collects')}
         </div>
-      `
-    }),
-    GamePanel({
-      icon: 'tools',
-      title: 'Settings',
-      subtitle: 'Current local test settings and app controls.',
-      badge: 'Local',
-      className: 'settingsPanel',
-      body: `
-        <div id="profile-settings" class="settingsGrid">
-          <div class="notice good"><b>Save Mode</b><br>Local browser save</div>
-          <div class="notice"><b>Fullscreen</b><br>Use the FS button in the top HUD</div>
-          <div class="notice"><b>Creator Rules</b><br>Available from this Menu group</div>
-          <div class="notice bad"><b>Reset Save</b><br>Use only for test profiles</div>
+      </section>
+
+      <section class="menuActionDock assetBottomSheet">
+        ${ActionDock({
+          actions: [
+            { label: 'Creator Rules', screen: 'creator', icon: 'menu' },
+            { label: 'World Map', screen: 'world', icon: 'home', className: 'primary' },
+            { label: 'Business Lines', screen: 'lines', icon: 'parts', className: 'gold' },
+            { label: 'Reset Save', action: 'reset', icon: 'tools', className: 'red' }
+          ]
+        })}
+      </section>
+
+      <section id="profile-settings" class="menuSettingsStrip assetPanel settingsPanel">
+        <div><b>Local Save</b><span>Browser profile</span></div>
+        <div><b>Fullscreen</b><span>Use FS in HUD</span></div>
+        <div><b>Creator</b><span>Rules grouped here</span></div>
+        <div class="danger"><b>Reset</b><span>Test profiles only</span></div>
+      </section>
+
+      <section class="menuObjectiveCompact assetPanel">
+        <div class="menuObjectiveHead">
+          <div>
+            <h3>Next Objective</h3>
+            <p>${nextObjective ? escapeHtml(nextObjective.title) : 'Objective set complete'}</p>
+          </div>
+          <span class="pill">${doneCount}/${objectives.length}</span>
         </div>
-      `
-    }),
-    GamePanel({
-      icon: 'menu',
-      title: 'Quick Links',
-      subtitle: 'Secondary screens live here so the main nav stays player-focused.',
-      badge: 'Shortcuts',
-      className: 'menuHubCard',
-      body: `
-        <div class="grid2">
-          <button class="btn primary" data-action="screen" data-screen="world">World Map</button>
-          <button class="btn gold" data-action="screen" data-screen="lines">Lines</button>
-          <button class="btn" data-action="screen" data-screen="creator">Creator Rules</button>
-          <button class="btn ghost" data-action="screen" data-screen="hub">Back Home</button>
+        <div class="menuObjectiveRow">
+          <span class="checkIcon">${renderObjectiveStatusIcon(!nextObjective)}</span>
+          <span>${nextObjective ? escapeHtml(nextObjective.body) : 'Keep racing, merging, and building.'}</span>
         </div>
-        <div class="notice">Profile and Creator are grouped under Menu so the bottom nav stays player-focused.</div>
-      `
-    }),
-    ObjectiveCard({
-      icon: 'home',
-      title: 'Objective Checklist',
-      subtitle: 'The player always needs a clear reason to continue.',
-      body: objectives.map((o) => `<div class="objective"><div class="checkIcon">${renderObjectiveStatusIcon(o.done)}</div><div><h4>${o.title}</h4><p>${o.body}</p></div><span class="pill">${o.done ? 'Done' : 'Open'}</span></div>`).join('')
-    }),
-    ProblemAlert({
-      icon: 'tools',
-      title: 'Reset Local Save',
-      subtitle: 'Use carefully. This clears the local test profile.',
-      badge: 'Danger',
-      body: `<button class="btn red" data-action="reset">Reset Local Save</button>`
-    })
-  ].join('');
+        <div class="menuObjectiveDots" aria-label="Objective progress">${objectives.map((objective) => `<span class="${objective.done ? 'done' : ''}"></span>`).join('')}</div>
+      </section>
+    `
+  });
 }

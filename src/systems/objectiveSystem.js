@@ -26,8 +26,8 @@ export function getObjectiveList(state) {
     },
     {
       key: 'previewGhostRace',
-      title: 'Challenge Rivals',
-      body: 'Tap the Rivals badge in Race to line up nearby challengers.',
+      title: 'Choose Rivals',
+      body: 'Open the Race Leaderboard, search users, and choose up to 3 friends or best players.',
       done: state.objectives.previewGhostRace
     },
     {

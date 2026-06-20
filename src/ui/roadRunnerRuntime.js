@@ -6,13 +6,13 @@ import {
 import {
   GHOST_SAMPLE_INTERVAL_MS,
   GHOST_STORAGE_KEY,
+  GHOST_SOURCES,
   createGhostFromLegacyTrail,
   createLocalBestGhost,
   getLocalBestGhost,
   loadGhostStore,
   sampleGhostAt,
   saveGhostStore,
-  selectGhostsForRace,
   upsertLocalBestGhost
 } from '../game/roadRunner/ghostModel.js';
 import { RACER_VEHICLE_ASSETS } from '../data/racerVehicleAssetMap.js';
@@ -34,6 +34,18 @@ const GHOST_MODES = {
   ghost3: { label: '2 Rivals', count: 2 },
   ghost4: { label: '3 Rivals', count: 3 }
 };
+
+const MAX_SELECTED_RIVALS = 3;
+const RIVAL_LEADERBOARD_USERS = [
+  { id: 'friend_mia', name: 'Mia Torque', group: 'Friend', carKey: 'greenCompact', pace: 0.94, badge: 'FR' },
+  { id: 'friend_ken', name: 'Ken Parts', group: 'Friend', carKey: 'pickup', pace: 0.98, badge: 'FR' },
+  { id: 'best_jax', name: 'Jax Apex', group: 'Best Player', carKey: 'race', pace: 1.12, badge: 'TOP' },
+  { id: 'best_luna', name: 'Luna Shift', group: 'Best Player', carKey: 'superCoupe', pace: 1.18, badge: 'TOP' },
+  { id: 'local_scout', name: 'Route Scout', group: 'Nearby', carKey: 'greenCompact', pace: 0.90, badge: 'AI' },
+  { id: 'local_parts_runner', name: 'Parts Runner', group: 'Nearby', carKey: 'serviceVan', pace: 1.02, badge: 'AI' },
+  { id: 'city_rookie', name: 'City Rookie', group: 'Nearby', carKey: 'cityTaxi', pace: 0.88, badge: 'AI' },
+  { id: 'garage_pro', name: 'Garage Pro', group: 'Best Player', carKey: 'rallyLite', pace: 1.08, badge: 'TOP' }
+];
 
 const VEHICLES = {
   hatchback: { label: 'Starter Hatchback', asset: 'hatchback', cls: 'starter', unlock: { coins: 0, parts: 0 }, speed: 1, accel: 1, fuel: 1, handling: 1, durability: 1, description: 'Balanced starter car.' },
@@ -134,6 +146,7 @@ let game = null;
 let lastTime = 0;
 let activeTab = 'drive';
 let activeVehicleFilter = 'all';
+let leaderboardSearch = '';
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -174,6 +187,7 @@ function loadSave() {
       unlockedVehicles,
       selectedVehicle,
       completedMissions: Array.isArray(parsed.completedMissions) ? parsed.completedMissions : [],
+      selectedRivals: normalizeSelectedRivals(parsed.selectedRivals),
       lifetimeFuel: parsed.lifetimeFuel || 0,
       lifetimeWear: parsed.lifetimeWear || 0,
       lifetimeRepairs: parsed.lifetimeRepairs || 0,
@@ -189,7 +203,7 @@ function loadSave() {
     migrateLegacyBestTrail(result);
     return result;
   } catch {
-    const fallback = { coins: 0, parts: 0, tools: 0, bestDistance: 0, bestTrail: [], upgrades: defaultUpgrades(), unlockedVehicles: ['hatchback'], selectedVehicle: 'hatchback', completedMissions: [], lifetimeFuel: 0, lifetimeWear: 0, lifetimeRepairs: 0, lifetime: { distance: 0, coinsEarned: 0, partsEarned: 0, runs: 0 }, missions: null };
+    const fallback = { coins: 0, parts: 0, tools: 0, bestDistance: 0, bestTrail: [], upgrades: defaultUpgrades(), unlockedVehicles: ['hatchback'], selectedVehicle: 'hatchback', completedMissions: [], selectedRivals: [], lifetimeFuel: 0, lifetimeWear: 0, lifetimeRepairs: 0, lifetime: { distance: 0, coinsEarned: 0, partsEarned: 0, runs: 0 }, missions: null };
     ensureMissionState(fallback);
     return fallback;
   }
@@ -236,14 +250,8 @@ function migrateLegacyBestTrail(data) {
 }
 
 function ghostsForRun(route, stage) {
-  const mode = GHOST_MODES[activeGhostMode] || GHOST_MODES.ghost2;
-  return selectGhostsForRace({
-    store: ghostStore,
-    route: activeRoute,
-    stage,
-    count: mode.count,
-    routeLength: route.length
-  });
+  const selected = selectedRivalCandidates(activeRoute, stage);
+  return selected.map((candidate) => candidate.ghost).slice(0, MAX_SELECTED_RIVALS);
 }
 
 function refreshActiveGhosts() {
@@ -453,6 +461,133 @@ function loadImages() {
     result[key] = img;
   });
   return result;
+}
+
+function normalizeSelectedRivals(ids = []) {
+  const allowed = new Set(['local_best', ...RIVAL_LEADERBOARD_USERS.map((user) => user.id)]);
+  return Array.from(new Set(Array.isArray(ids) ? ids : []))
+    .map((id) => String(id || '').trim())
+    .filter((id) => allowed.has(id))
+    .slice(0, MAX_SELECTED_RIVALS);
+}
+
+function selectedRivalIds() {
+  saveData.selectedRivals = normalizeSelectedRivals(saveData.selectedRivals);
+  return saveData.selectedRivals;
+}
+
+function selectedRivalLabel(count = selectedRivalCandidates().length) {
+  if (count <= 0) return 'Solo run';
+  return `${count}/${MAX_SELECTED_RIVALS} rivals`;
+}
+
+function escapeHtml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(value = '') {
+  return escapeHtml(value);
+}
+
+function formatRaceTime(milliseconds) {
+  const ms = Math.max(0, Math.round(Number(milliseconds) || 0));
+  const minutes = Math.floor(ms / 60000);
+  const seconds = Math.floor((ms % 60000) / 1000);
+  const tenths = Math.floor((ms % 1000) / 100);
+  return minutes > 0 ? `${minutes}:${String(seconds).padStart(2, '0')}.${tenths}` : `${seconds}.${tenths}s`;
+}
+
+function routeHash(value) {
+  let hash = 2166136261;
+  const text = String(value || '');
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return Math.abs(hash >>> 0);
+}
+
+function makeLeaderboardGhost(profile, routeKey, stage, routeLength) {
+  const seed = routeHash(`${profile.id}:${routeKey}:${stage}`);
+  const length = Math.max(100, Number(routeLength) || 1000);
+  const pace = Math.max(0.72, Number(profile.pace || 1) + ((seed % 13) - 6) * 0.003 + stage * 0.01);
+  const durationMs = Math.round((56000 / pace) + length * 0.95);
+  const samples = [];
+  for (let t = 0; t <= durationMs; t += GHOST_SAMPLE_INTERVAL_MS) {
+    const ratio = Math.min(1, t / durationMs);
+    const eased = 1 - Math.pow(1 - ratio, 1.32);
+    const wobble = Math.sin((t / 1000) * (1.05 + (seed % 7) * 0.03) + seed) * length * 0.0035;
+    const x = Math.min(length, Math.max(0, eased * length + wobble));
+    const speed = Math.max(0, (length / Math.max(1, durationMs / 1000)) * 3.6 * (0.24 + ratio * 0.84));
+    samples.push({ t, x: Number(x.toFixed(1)), speed: Number(speed.toFixed(1)) });
+  }
+  if (samples[samples.length - 1].x < length) samples.push({ t: durationMs, x: length, speed: 0 });
+
+  return {
+    ghostId: `leader_${profile.id}_${routeKey}_stage_${stage}`,
+    playerName: profile.name,
+    route: routeKey,
+    stage,
+    bestTimeMs: durationMs,
+    carKey: profile.carKey,
+    recordedAt: 0,
+    source: GHOST_SOURCES.REMOTE_BEST,
+    samples
+  };
+}
+
+function leaderboardCandidates(routeKey = activeRoute, stage = currentGhostStage()) {
+  const route = ROUTES[routeKey] || ROUTES[activeRoute] || ROUTES.track;
+  const local = getLocalBestGhost(ghostStore, routeKey, stage);
+  const candidates = local ? [{
+    id: 'local_best',
+    name: 'Your Best Run',
+    group: 'You',
+    badge: 'YOU',
+    carKey: local.carKey,
+    bestTimeMs: local.bestTimeMs,
+    route: routeKey,
+    ghost: local
+  }] : [];
+
+  RIVAL_LEADERBOARD_USERS.forEach((profile) => {
+    const ghost = makeLeaderboardGhost(profile, routeKey, stage, route.length);
+    candidates.push({
+      id: profile.id,
+      name: profile.name,
+      group: profile.group,
+      badge: profile.badge,
+      carKey: profile.carKey,
+      bestTimeMs: ghost.bestTimeMs,
+      route: routeKey,
+      ghost
+    });
+  });
+
+  return candidates.sort((a, b) => a.bestTimeMs - b.bestTimeMs);
+}
+
+function selectedRivalCandidates(routeKey = activeRoute, stage = currentGhostStage()) {
+  const ids = selectedRivalIds();
+  const candidates = leaderboardCandidates(routeKey, stage);
+  return ids
+    .map((id) => candidates.find((candidate) => candidate.id === id))
+    .filter(Boolean)
+    .slice(0, MAX_SELECTED_RIVALS);
+}
+
+function setSelectedRivals(ids) {
+  saveData.selectedRivals = normalizeSelectedRivals(ids);
+  activeGhostMode = Object.keys(GHOST_MODES)[Math.min(MAX_SELECTED_RIVALS, saveData.selectedRivals.length)] || 'solo';
+  saveGameData();
+  refreshActiveGhosts();
+  refreshRaceCommand();
+  updateHud();
 }
 
 function publishRoadRunnerAssetState() {
@@ -681,7 +816,7 @@ function raceCommandKey() {
     saveData.selectedVehicle,
     activeRoute,
     currentGhostStage(),
-    activeGhostMode,
+    selectedRivalIds().join(','),
     ghostStore.updatedAt || 0,
     Math.floor(saveData.bestDistance || 0),
     currentProgressionMission()?.key || 'done',
@@ -704,7 +839,7 @@ function raceCommandHtml() {
         <div class="rrRaceVehicleCopy">
           <span>Selected Vehicle</span>
           <b>${vehicle.label}</b>
-          <small>${route.label} - ${GHOST_MODES[activeGhostMode].label}</small>
+          <small>${route.label} - ${selectedRivalLabel()}</small>
         </div>
       </div>
       <div class="rrRaceCommandStats">
@@ -787,6 +922,7 @@ function resetRun() {
 function shellHtml() {
   const tabs = [
     ['drive', 'Drive', 'run'],
+    ['leaderboard', 'Leaderboard', 'search'],
     ['garage', 'Garage', 'tune'],
     ['vehicles', 'Vehicles', 'cars'],
     ['routes', 'Routes', 'map'],
@@ -796,11 +932,12 @@ function shellHtml() {
     <div class="roadRunnerHeader"><h2>365 Hill Route</h2><p>Drive, repair, upgrade, and unlock vehicles across five routes.</p></div>
     <div class="roadRunnerHud"><div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div><div class="roadRunnerStat"><b data-rr-speed>0 km/h</b><span>Speed</span></div><div class="roadRunnerStat"><b data-rr-fuel>100% · 0m</b><span>Fuel / Next</span></div><div class="roadRunnerStat"><b data-rr-wear>0%</b><span>Wear</span></div><div class="roadRunnerStat"><b data-rr-coins>${formatSmall(saveData.coins)} +0</b><span>Coins / Run</span></div><div class="roadRunnerStat"><b data-rr-parts>${formatSmall(saveData.parts)} +0</b><span>Parts / Run</span></div><div class="roadRunnerStat"><b data-rr-tools>${formatSmall(saveData.tools || 0)} +0</b><span>Tools / Run</span></div><div class="roadRunnerStat"><b data-rr-best>${formatSmall(saveData.bestDistance)}m</b><span>Best</span></div></div>
     ${raceCommandHtml()}
-    <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label, meta]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" onclick="window.rrSetTab?.('${key}')"><b>${label}</b><span>${meta}</span></button>`).join('')}</nav>
+    <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label, meta]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" ${key === 'leaderboard' ? 'data-guide-target="previewGhostRace"' : ''} onclick="window.rrSetTab?.('${key}')"><b>${label}</b><span>${meta}</span></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
-        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="roadRunnerBadge rrGhostCycle" data-rr-mode data-guide-target="previewGhostRace" onclick="window.rrCycleGhosts?.()" aria-label="Change rival racers">${GHOST_MODES[activeGhostMode].label}</button><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas" data-guide-target="raceBoost">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
+        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas" data-guide-target="raceBoost">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
       </section>
+      <section class="racerPage ${activeTab === 'leaderboard' ? 'active' : ''}" data-rr-page="leaderboard"><div data-road-runner-leaderboard></div></section>
       <section class="racerPage ${activeTab === 'garage' ? 'active' : ''}" data-rr-page="garage"><div data-road-runner-garage></div></section>
       <section class="racerPage ${activeTab === 'vehicles' ? 'active' : ''}" data-rr-page="vehicles"><div data-road-runner-vehicles></div></section>
       <section class="racerPage ${activeTab === 'routes' ? 'active' : ''}" data-rr-page="routes"><div data-road-runner-routes></div></section>
@@ -850,6 +987,7 @@ function updateHud() {
 
 function refreshPanels() {
   renderMissionPanel();
+  renderLeaderboardPanel();
   renderVehiclePanel();
   renderGaragePanel();
   renderRoutesPanel();
@@ -893,6 +1031,65 @@ function renderMissionPanel() {
     return `<div class="racerHubCard"><h4>${mission.label}</h4><p>${mission.description}</p><p>Reward: ${mission.rewardCoins} coins / ${mission.rewardParts} parts</p><p>Status: ${done ? 'Completed' : `${progress} / ${mission.target}`}</p></div>`;
   }).join('');
   panel.innerHTML = `<h3 class="racerPageTitle">Progression</h3><div class="racerHubCards">${progHtml}</div><h3 class="racerPageTitle">Daily Missions - resets in ${formatTimeRemaining(nextDailyResetAt())}</h3><div class="racerHubCards">${dailyCards}</div><h3 class="racerPageTitle">Weekly Missions - resets in ${formatTimeRemaining(nextWeeklyResetAt())}</h3><div class="racerHubCards">${weeklyCards}</div>`;
+}
+
+function renderLeaderboardPanel() {
+  const panel = document.querySelector('[data-road-runner-leaderboard]');
+  if (!panel) return;
+  const stage = currentGhostStage();
+  const query = leaderboardSearch.trim().toLowerCase();
+  const allCandidates = leaderboardCandidates(activeRoute, stage);
+  const selectedCandidates = selectedRivalCandidates(activeRoute, stage);
+  const selectedIds = selectedCandidates.map((candidate) => candidate.id);
+  const filtered = allCandidates.filter((candidate) => {
+    if (!query) return true;
+    return `${candidate.name} ${candidate.group} ${candidate.badge}`.toLowerCase().includes(query);
+  });
+  const selectedHtml = selectedCandidates.length
+    ? selectedCandidates.map((candidate) => `<span class="rrSelectedRivalChip"><b>${escapeHtml(candidate.name)}</b><small>${formatRaceTime(candidate.bestTimeMs)}</small></span>`).join('')
+    : '<span class="rrSelectedRivalChip empty"><b>Solo</b><small>Pick up to 3 users</small></span>';
+
+  panel.innerHTML = `
+    <div class="rrLeaderboardPanel">
+      <div class="rrLeaderboardHeader">
+        <div>
+          <h3 class="racerPageTitle">Leaderboard</h3>
+          <p>Search users, friends, or best players. Pick up to ${MAX_SELECTED_RIVALS} rivals for this route.</p>
+        </div>
+        <span class="pill">${selectedCandidates.length}/${MAX_SELECTED_RIVALS} selected</span>
+      </div>
+      <label class="rrLeaderboardSearch">
+        <span>Search Users</span>
+        <input type="search" value="${escapeAttr(leaderboardSearch)}" placeholder="Search friends or best players" oninput="window.rrSearchLeaderboard?.(this.value)">
+      </label>
+      <div class="rrSelectedRivals">${selectedHtml}</div>
+      <div class="rrLeaderboardTools">
+        <button class="btn small ${selectedCandidates.length ? 'ghost' : 'primary'}" onclick="window.rrClearRivals?.()" ${selectedCandidates.length ? '' : 'disabled'}>Clear</button>
+        <button class="btn small primary" onclick="window.rrSetTab?.('drive')">Back to Drive</button>
+      </div>
+      <div class="rrLeaderboardList">
+        ${filtered.map((candidate, index) => renderLeaderboardCandidate(candidate, index, selectedIds)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderLeaderboardCandidate(candidate, index, selectedIds) {
+  const selected = selectedIds.includes(candidate.id);
+  const atLimit = !selected && selectedIds.length >= MAX_SELECTED_RIVALS;
+  const vehicle = VEHICLES[candidate.carKey]?.label || candidate.carKey;
+  const rank = index + 1;
+  return `
+    <article class="rrLeaderboardRow ${selected ? 'selected' : ''}">
+      <div class="rrLeaderboardRank">#${rank}</div>
+      <div class="rrLeaderboardCopy">
+        <div class="rrLeaderboardName"><b>${escapeHtml(candidate.name)}</b><span>${escapeHtml(candidate.group)}</span></div>
+        <small>${escapeHtml(vehicle)} · ${ROUTES[candidate.route]?.label || 'Route'} · Stage ${candidate.ghost.stage}</small>
+      </div>
+      <div class="rrLeaderboardTime"><b>${formatRaceTime(candidate.bestTimeMs)}</b><span>${escapeHtml(candidate.badge)}</span></div>
+      <button class="btn small ${selected ? 'gold' : atLimit ? 'ghost' : 'primary'}" onclick="window.rrToggleRival?.('${candidate.id}')" ${atLimit ? 'disabled' : ''}>${selected ? 'Picked' : atLimit ? 'Max 3' : 'Pick'}</button>
+    </article>
+  `;
 }
 
 function renderVehiclePanel() {
@@ -1853,16 +2050,13 @@ window.restartHillRoute = () => {
 };
 window.setHillGhosts = (mode) => {
   if (!GHOST_MODES[mode]) return;
-  activeGhostMode = mode;
-  refreshActiveGhosts();
+  const count = Math.min(MAX_SELECTED_RIVALS, GHOST_MODES[mode].count || 0);
+  const ids = leaderboardCandidates(activeRoute, currentGhostStage()).filter((candidate) => candidate.id !== 'local_best').slice(0, count).map((candidate) => candidate.id);
+  setSelectedRivals(ids);
   mountRoadRunner(true);
 };
 window.rrCycleGhosts = () => {
-  const modes = Object.keys(GHOST_MODES);
-  activeGhostMode = modes[(modes.indexOf(activeGhostMode) + 1) % modes.length];
-  setText('[data-rr-mode]', GHOST_MODES[activeGhostMode].label);
-  refreshActiveGhosts();
-  window.dispatchEvent(new CustomEvent('roadRunnerGhostPreview'));
+  window.rrSetTab?.('leaderboard');
 };
 window.setHillRoute = (route) => {
   if (!ROUTES[route] || !routeUnlocked(route)) return;
@@ -1908,15 +2102,38 @@ window.buyRoadRunnerUpgrade = (key) => {
   draw();
 };
 window.rrSetTab = (tab) => {
-  if (!['drive', 'garage', 'vehicles', 'routes', 'missions'].includes(tab)) return;
+  if (!['drive', 'leaderboard', 'garage', 'vehicles', 'routes', 'missions'].includes(tab)) return;
   activeTab = tab;
   document.querySelector('.roadRunnerShell')?.setAttribute('data-rr-active-tab', tab);
   document.querySelectorAll('[data-rr-tab]').forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-rr-tab') === tab));
   document.querySelectorAll('[data-rr-page]').forEach((page) => page.classList.toggle('active', page.getAttribute('data-rr-page') === tab));
-  if (tab === 'garage') renderGaragePanel();
+  if (tab === 'leaderboard') renderLeaderboardPanel();
+  else if (tab === 'garage') renderGaragePanel();
   else if (tab === 'vehicles') renderVehiclePanel();
   else if (tab === 'routes') renderRoutesPanel();
   else if (tab === 'missions') renderMissionPanel();
+};
+window.rrSearchLeaderboard = (query) => {
+  leaderboardSearch = String(query || '').slice(0, 40);
+  renderLeaderboardPanel();
+};
+window.rrToggleRival = (id) => {
+  const currentCandidates = leaderboardCandidates(activeRoute, currentGhostStage());
+  const candidate = currentCandidates.find((item) => item.id === id);
+  if (!candidate) return;
+  const selected = selectedRivalIds().filter((selectedId) => currentCandidates.some((item) => item.id === selectedId));
+  const next = selected.includes(id)
+    ? selected.filter((item) => item !== id)
+    : selected.length < MAX_SELECTED_RIVALS
+      ? [...selected, id]
+      : selected;
+  setSelectedRivals(next);
+  renderLeaderboardPanel();
+  if (!selected.includes(id) && next.includes(id)) window.dispatchEvent(new CustomEvent('roadRunnerGhostPreview'));
+};
+window.rrClearRivals = () => {
+  setSelectedRivals([]);
+  renderLeaderboardPanel();
 };
 window.rrSetVehicleFilter = (filter) => {
   if (!VEHICLE_FILTERS.includes(filter)) return;
@@ -1938,6 +2155,13 @@ window.render_game_to_text = () => {
     routeBackgroundAsset: ASSET_PATHS[game.route.bgAsset] || '',
     routeBackgroundReady: Boolean(images[game.route.bgAsset]?.ready && images[game.route.bgAsset]?.naturalWidth > 0),
     ghostStorageKey: GHOST_STORAGE_KEY,
+    selectedRivals: selectedRivalCandidates(activeRoute, game.stage).map((candidate) => ({
+      id: candidate.id,
+      playerName: candidate.name,
+      group: candidate.group,
+      bestTimeMs: candidate.bestTimeMs
+    })),
+    leaderboardSearch,
     localBestGhost: localBestGhost ? {
       ghostId: localBestGhost.ghostId,
       bestTimeMs: localBestGhost.bestTimeMs,

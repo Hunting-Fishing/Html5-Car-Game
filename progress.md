@@ -569,3 +569,52 @@ Follow-up prompt: Contain merge floating rewards in the top HUD instead of over 
 - Aggregated per-action floating rewards into one compact header float, e.g. `MERGE! +27C +1S +4P`, instead of stacking separate `MERGE`, coins, scrap, and parts floaters on top of each other.
 - Kept the normal compact reward toast and all merge reward/economy logic unchanged.
 - Verified `npm run build`, `npm run test:v10`, and a 390x844 focused merge probe: one floating reward appeared from 64px to 92px, the Merge Board started at 120px, `anyFloatOverBoard` was false, the merge produced Washer Set, and no console errors were reported.
+
+Follow-up prompt: Compress Garage Screen around the shop floor.
+
+- Rebuilt `GarageScreen.js` around one compact `ScreenFrame` with Build Rooms / Business Lines tabs, a four-stat build summary strip, a primary Auto Shop Floor room carousel, and a Room / Systems / Supplier drawer.
+- Kept building logic, costs, unlock rules, Build/World/Lines communication, and supplier upgrade behavior unchanged.
+- Preserved room art through `buildRoomAssetForKey()` and `<img class="roomArt buildAssetImage">`.
+- Added local UI-only handlers for Garage drawer tabs, selected room, and selected system.
+- Added asset-ready Garage classes: `.garagePlayArea`, `.shopFloorPrimary`, `.garageSystemDrawer`, `.garageSystemCompact`, and `.roomDetailDrawer`.
+- Mobile 390x844 visual probe passed: no body/page scroll, Garage frame fits above bottom nav, six room assets load, drawer tabs switch, Systems build/world/lines actions are visible, and no console errors were reported.
+- Final `npm run build` passed with existing Vite plugin-timing and large-chunk warnings.
+- Final `npm run test:v10` passed.
+
+Follow-up prompt: Move rival picking off the Drive screen and into Leaderboard search.
+
+- Removed the on-drive rival picker/ghost cycle button from the Road Runner overlay; Drive now shows route + restart only.
+- Added a Road Runner Leaderboard tab with user search, selected-rival chips, Clear / Back to Drive actions, and compact rows for friends, nearby users, and best players.
+- Rival selection is capped at three users; non-selected rows switch to `Max 3` once full, and selected replay runners feed the active race list.
+- Updated the first-session guide and objective copy from `Pick Rivals` / `Rivals badge` to `Open Leaderboard` / search-and-choose wording.
+- Removed the standalone Rivals badge/section from the fallback compact `RaceScreen.js` renderer.
+- Verified `npm run build`, `npm run test:v10`, the standard web-game client on `?screen=race`, and a 390x844 focused probe: no `[data-rr-mode]` or `.rrGhostCycle` button, no `Pick Rivals` text, search found Mia Torque, three rivals were selected, five remaining rows locked at `Max 3`, Drive displayed `3/3 rivals`, and no console/page errors were reported.
+
+Follow-up prompt: Compress World Screen into a visual map-first mobile screen.
+
+- Refactored the static `WorldScreen.js` into one `ScreenFrame` with compact Today / World Map tabs, a primary `worldMapPrimary` map area, and a compact `ActionDock`.
+- Removed the large Home group panel and large World Jobs panel from the static World renderer while preserving `data-action="worldLocation"` on map locations.
+- Updated the active Pixi World runtime shell to use the same `worldPlayArea`, `worldMapPrimary`, and `worldActionDock` hooks because the runtime replaces the static World DOM in the live app.
+- Runtime World now shows a compact Today / World Map tab row, map-first canvas, small Build / Center map tools, and the requested dock actions: Dispatch Tow, Manage Shop, Upgrade Businesses, and Run Route.
+- Added a first-session-guide offset so the guide no longer blocks World dock taps.
+- Verified `npm run build`, `npm run test:v10`, the standard web-game client on `?screen=world`, and a 390x844 focused probe: no old Home group panel, no World Jobs text, one Pixi canvas, no body/screen scroll, guide did not overlap the dock, Manage Shop routed to Garage, Run Route routed to Race, and no console/page errors were reported.
+
+Follow-up prompt: Make asset integration safer for production GUI replacements.
+
+- Replaced inline `onerror` image fallback from `renderIconImage()` with `data-asset-image` markers and a delegated `assetFallbackRuntime`.
+- Fallback icons now sit in linked `data-asset-fallback` nodes, hide broken images on load error, and avoid visible browser broken-image icons.
+- Added neutral future-art CSS hooks: `.assetFrame`, `.assetPanel`, `.assetButton`, `.assetIcon`, `.assetBackdrop`, and `.assetBottomSheet`.
+- Documented production asset replacement folders in `public/assets/README.md`.
+- Strengthened `tests/assetPaths.test.mjs` to explicitly validate HUD icons, nav icons, race route icons, merge assets, build room assets, line assets, race scene assets, and the no-inline-onerror render contract.
+- Verified `npm run build`, `npm run test:assets`, and `npm run test:v10`; build still has the existing Vite plugin timing and large chunk warnings only.
+- Ran the standard web-game client on `?screen=hub`; the first pass hit a transient Vite navigation reload, the rerun passed, and the captured HUD/nav screenshot showed icons rendering correctly with no console/page errors.
+
+Follow-up prompt: Final mobile UX QA pass after layout compression.
+
+- Ran a 390x844 mobile QA pass across Hub, Race, Parts/Merge, Garage, Lines, World, and Menu/Profile.
+- Compressed `ProfileScreen.js` into a one-screen Menu frame with Profile / Creator Rules / Home tabs, compact profile stats, quick actions, settings chips, and one next-objective card instead of a long checklist stack.
+- Raised undersized interactive controls across compact UI: sub tabs, bottom-sheet tabs, merge actions, merge recipe tabs, line row buttons, garage drawer/actions, Road Runner tab chips/restart, and World map tools/dock actions.
+- Kept each screen's main purpose intact: Hub objective, Race cockpit, Merge board, Garage shop floor, Lines rows, World map, Menu profile/settings/creator.
+- Re-capped the Merge recipe drawer so larger touch targets did not reintroduce page scroll; supplier slots are now 36px and board remains the hero.
+- Verified final 390x844 metrics: no primary screen required page scroll; Race canvas/GAS area, Merge board, Garage shop floor, Lines compact rows, World map, and Menu profile summary were all visible in the first viewport.
+- Verified `npm run build`, `npm run test:v10`, and the standard web-game client on `?screen=profile`; build still has the existing Vite plugin timing and large-chunk warnings only.

@@ -1,5 +1,8 @@
 export const MERGE_ASSET_BASE = '/assets/Merge';
 
+// Merge item replacement art belongs under public/assets/Merge.
+// Keep item names aligned with CHAINS in gameData.js so art can be swapped
+// without changing merge rules.
 export const MERGE_ASSETS = {
   'Bolt Pack': '/assets/Merge/original/bolt-pack.svg',
   'Washer Set': '/assets/Merge/original/washer-set.svg',
@@ -53,6 +56,9 @@ export const MERGE_ASSETS = {
   'Rally Lamps': '/assets/Merge/racing/rally-lamps.svg',
   'Drag Slicks': '/assets/Merge/racing/drag-slicks.svg'
 };
+
+export const MERGE_ASSET_LIST = Object.entries(MERGE_ASSETS)
+  .map(([key, src]) => ({ category: 'items', key, src }));
 
 export function mergeAssetForName(name) {
   return MERGE_ASSETS[name] || '';

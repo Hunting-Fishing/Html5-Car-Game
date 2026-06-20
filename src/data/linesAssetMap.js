@@ -1,5 +1,7 @@
 export const LINES_ASSET_BASE = '/assets/Lines';
 
+// Idle business line replacement art belongs under public/assets/Lines.
+// Icons are used by compact rows and manager/collection status panels.
 export const LINE_ASSETS = {
   streetRoute: `${LINES_ASSET_BASE}/icons/street-route.svg`,
   partsDelivery: `${LINES_ASSET_BASE}/icons/parts-delivery.svg`,
@@ -25,7 +27,11 @@ export const LINES_GUI_ASSETS = {
   lockedBadge: `${LINES_ASSET_BASE}/badges/locked-badge.svg`
 };
 
+export const LINES_ASSET_LIST = [
+  ...Object.entries(LINE_ASSETS).map(([key, src]) => ({ category: 'icons', key, src })),
+  ...Object.entries(LINES_GUI_ASSETS).map(([key, src]) => ({ category: 'gui', key, src }))
+];
+
 export function lineAssetForKey(key) {
   return LINE_ASSETS[key] || '';
 }
-

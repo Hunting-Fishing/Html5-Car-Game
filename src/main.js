@@ -1,5 +1,6 @@
 import './styles.css';
 import './ui/screenControlRuntime.js';
+import './ui/assetFallbackRuntime.js';
 import { gsap } from 'gsap';
 import { SCREENS } from './data/gameData.js';
 import { AUTO_WORLD_LOCATIONS } from './data/visualData.js';
@@ -155,6 +156,33 @@ function handleClick(event) {
   if (action === 'mergeChain') {
     state.merge.selectedChain = target.dataset.chain || '';
     state.merge.activeTab = 'recipes';
+    render();
+    queueSave();
+    return;
+  }
+
+  if (action === 'garageTab') {
+    state.garage = state.garage || {};
+    const tab = target.dataset.tab;
+    state.garage.drawerTab = ['room', 'systems', 'supplier'].includes(tab) ? tab : 'room';
+    render();
+    queueSave();
+    return;
+  }
+
+  if (action === 'garageRoom') {
+    state.garage = state.garage || {};
+    state.garage.selectedRoom = target.dataset.room || '';
+    state.garage.drawerTab = 'room';
+    render();
+    queueSave();
+    return;
+  }
+
+  if (action === 'garageSystem') {
+    state.garage = state.garage || {};
+    state.garage.selectedSystem = target.dataset.key || '';
+    state.garage.drawerTab = 'systems';
     render();
     queueSave();
     return;

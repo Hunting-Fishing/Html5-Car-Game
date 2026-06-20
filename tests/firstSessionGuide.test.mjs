@@ -43,4 +43,4 @@ assert.equal(guide.complete, true);
 const partsStorage = BUILDINGS.find((building) => building.key === 'partsStorage');
 assert.deepEqual(partsStorage.costs[0], { coins: 70, parts: 4 });
 
-console.log('first session guide funnels Tap Race -> Merge Parts -> Parts Storage -> Street Route -> Rival Race');
+console.log('first session guide funnels Tap Race -> Merge Parts -> Parts Storage -> Street Route -> Leaderboard Rivals');

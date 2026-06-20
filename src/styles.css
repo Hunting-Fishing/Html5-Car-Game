@@ -79,6 +79,46 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .iconEmojiFallback[hidden] { display: none !important; }
 .tabIconFallback { width: 23px; height: 23px; font-size: 18px; }
 .gameIconBadgeImgFallback { font-size: 22px; }
+.assetImageFailed { display: none !important; }
+.assetFrame {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid rgba(125,220,255,.38);
+  border-radius: 20px;
+  background: var(--ui-card-frame), linear-gradient(180deg, rgba(22,86,124,.92), rgba(3,20,34,.96));
+  background-size: 100% 100%, auto;
+}
+.assetPanel {
+  position: relative;
+  border: 1px solid rgba(125,220,255,.28);
+  border-radius: 20px;
+  background: var(--ui-panel-frame), linear-gradient(180deg, rgba(15,63,96,.94), rgba(2,16,28,.96));
+  background-size: 100% 100%, auto;
+}
+.assetButton {
+  border-radius: 16px;
+  background: var(--ui-blue-cta), linear-gradient(180deg, #3bbaf4, #126295);
+  background-size: 100% 100%, auto;
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.24), 0 5px 0 rgba(0,0,0,.24);
+}
+.assetIcon {
+  display: inline-block;
+  object-fit: contain;
+  vertical-align: middle;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.28));
+}
+.assetBackdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0, rgba(90,183,255,.16), transparent 42%);
+}
+.assetBottomSheet {
+  border-radius: 24px 24px 18px 18px;
+  border: 2px solid rgba(125,220,255,.38);
+  background: var(--ui-panel-frame), linear-gradient(180deg, rgba(19,84,124,.96), rgba(3,18,31,.98));
+  background-size: 100% 100%, auto;
+}
 .assetIconLabel { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; }
 .inlineAssetIcon, .chipIcon, .pillIcon, .trafficCarIcon, .worldPersonIcon, .worldIconAsset, .roomHeadIcon, .checkIconImg, .roomLockIcon { display: inline-block; object-fit: contain; vertical-align: middle; filter: drop-shadow(0 2px 0 rgba(0,0,0,.25)); }
 .chipIcon { width: 18px; height: 18px; flex: 0 0 auto; }
@@ -140,7 +180,7 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .btn.gold { background: var(--ui-orange-cta), linear-gradient(180deg, var(--yellow), #cc7f12); background-size: 100% 100%, auto; color: #1f1200; }
 .btn.red { background: var(--ui-red-cta), linear-gradient(180deg, var(--red), #b2253c); background-size: 100% 100%, auto; }
 .btn.ghost { background: var(--ui-blue-cta), rgba(255,255,255,.07); background-size: 100% 100%, auto; box-shadow: none; }
-.btn.small { font-size: 11px; padding: 7px 9px; min-height: 32px; border-radius: 12px; }
+.btn.small { font-size: 11px; padding: 7px 9px; min-height: 36px; border-radius: 12px; }
 .screenFrame { position: relative; display: grid; gap: 10px; min-width: 0; margin-bottom: 10px; padding: 10px; border-radius: 24px; border: 2px solid rgba(125,220,255,.42); background: var(--ui-panel-frame), linear-gradient(180deg, rgba(19,84,124,.94), rgba(4,22,36,.98)); background-size: 100% 100%, auto; box-shadow: inset 0 2px 0 rgba(255,255,255,.16), 0 8px 0 rgba(0,0,0,.28), 0 16px 26px rgba(0,0,0,.24); overflow: hidden; }
 .screenFrame::before { content: ''; position: absolute; left: -3px; top: -3px; width: 54px; height: 16px; border-radius: 0 0 14px 0; background: linear-gradient(180deg, #ffe899, #f59e0b); pointer-events: none; box-shadow: inset 0 2px 0 rgba(255,255,255,.45), 0 3px 0 rgba(97,45,0,.45); }
 .screenFrameHeader { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 4px 2px 0; }
@@ -150,13 +190,13 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .screenFrameBadge { align-self: start; background: rgba(0,0,0,.24); color: #eaf8ff; }
 .subTabBar { display: flex; gap: 7px; min-width: 0; overflow-x: auto; padding: 2px 2px 7px; scrollbar-width: none; }
 .subTabBar::-webkit-scrollbar { display: none; }
-.subTab { flex: 0 0 auto; min-width: 82px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 15px; background: var(--ui-blue-cta), linear-gradient(180deg, rgba(42,145,201,.9), rgba(8,45,72,.94)); background-size: 100% 100%, auto; border: 1px solid rgba(125,220,255,.28); color: #d9f7ff; font-size: 10px; font-weight: 1000; box-shadow: inset 0 2px 0 rgba(255,255,255,.17), 0 4px 0 rgba(0,0,0,.24); }
+.subTab { flex: 0 0 auto; min-width: 82px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border-radius: 15px; background: var(--ui-blue-cta), linear-gradient(180deg, rgba(42,145,201,.9), rgba(8,45,72,.94)); background-size: 100% 100%, auto; border: 1px solid rgba(125,220,255,.28); color: #d9f7ff; font-size: 10px; font-weight: 1000; box-shadow: inset 0 2px 0 rgba(255,255,255,.17), 0 4px 0 rgba(0,0,0,.24); }
 .subTab.active { background: var(--ui-green-cta), linear-gradient(180deg, #79ffad, #20bf63); background-size: 100% 100%, auto; color: #04140c; border-color: rgba(255,255,255,.34); box-shadow: inset 0 3px 0 rgba(255,255,255,.34), 0 5px 0 rgba(0,0,0,.28), 0 0 0 3px rgba(53,229,138,.14); }
 .subTabIcon { width: 18px; height: 18px; object-fit: contain; filter: drop-shadow(0 2px 0 rgba(0,0,0,.25)); }
 .bottomSheet { position: relative; display: grid; gap: 8px; margin-top: 10px; padding: 9px; border-radius: 24px 24px 18px 18px; border: 2px solid rgba(125,220,255,.38); background: linear-gradient(180deg, rgba(19,84,124,.96), rgba(3,18,31,.98)); box-shadow: inset 0 2px 0 rgba(255,255,255,.15), 0 -3px 0 rgba(125,220,255,.10), 0 10px 22px rgba(0,0,0,.28); }
 .bottomSheetTabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
 .bottomSheetTabs::-webkit-scrollbar { display: none; }
-.bottomSheetTab { flex: 0 0 auto; min-height: 31px; padding: 6px 10px; border-radius: 999px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.13); color: #bfe9f5; font-size: 10px; font-weight: 1000; }
+.bottomSheetTab { flex: 0 0 auto; min-height: 38px; padding: 7px 10px; border-radius: 999px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.13); color: #bfe9f5; font-size: 10px; font-weight: 1000; }
 .bottomSheetTab.active { background: linear-gradient(180deg, #ffe08a, #f59e0b); color: #2b1700; border-color: rgba(55,28,0,.36); box-shadow: inset 0 2px 0 rgba(255,255,255,.45), 0 3px 0 rgba(0,0,0,.22); }
 .bottomSheetBody { min-width: 0; padding: 8px; border-radius: 16px; background: rgba(1,12,22,.52); border: 1px solid rgba(255,255,255,.08); }
 .compactStatStrip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; min-width: 0; }
@@ -204,7 +244,7 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .hubMobileHome .gamePanelTitle h2 { font-size: 15px; }
 .hubMobileHome .gamePanelTitle p { font-size: 9px; }
 .hubMainObjective .actionDock { grid-template-columns: 1fr; padding: 6px; margin-top: 7px; }
-.hubMainObjective .actionDockButton { min-height: 38px; }
+.hubMainObjective .actionDockButton { min-height: 42px; }
 .hubObjectiveCopy { padding: 8px 9px; border-radius: 14px; border: 1px solid rgba(53,229,138,.28); background: rgba(53,229,138,.08); color: #caffdf; font-size: 11px; line-height: 1.3; }
 .hubRouteStrip { display: grid; gap: 6px; padding: 8px; border-radius: 18px; border: 1px solid rgba(125,220,255,.28); background: linear-gradient(180deg, rgba(10,48,76,.92), rgba(2,17,31,.96)); box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 4px 0 rgba(0,0,0,.22); }
 .hubRouteHead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
@@ -230,6 +270,43 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .screenSubTabs .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; }
 .screenSubTabs .btn.active, .screenSubTabs .btn[aria-current="page"] { outline: 2px solid rgba(255,255,255,.32); box-shadow: inset 0 3px 0 rgba(255,255,255,.30), 0 5px 0 rgba(0,0,0,.26), 0 0 0 3px rgba(53,229,138,.14) !important; }
 .settingsGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; scroll-margin-top: 100px; }
+.menuCompactFrame { margin-bottom: 0; padding: 9px; background: radial-gradient(circle at 18% 0, rgba(90,183,255,.18), transparent 32%), linear-gradient(180deg, rgba(19,84,124,.94), rgba(4,22,36,.98)); }
+.menuCompactFrame > .screenFrameBody { gap: 8px; }
+.menuCompactFrame .subTabBar { padding-bottom: 2px; }
+.menuCompactFrame .subTab { min-width: 0; flex: 1 1 0; }
+.menuProfileHero { display: grid; gap: 7px; padding: 8px; border-color: rgba(125,220,255,.32); }
+.menuProfileHead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.menuProfileHead h3 { margin: 0; color: #fff; font-size: 15px; line-height: 1.05; text-shadow: 0 2px 0 rgba(0,0,0,.32); }
+.menuProfileHead p { margin: 2px 0 0; color: #bfe9f5; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.menuProfileHero .gameIconBadge { width: 38px; height: 38px; border-radius: 13px; }
+.menuProfileHero .gameIconBadgeImg { width: 23px; height: 23px; }
+.menuProfileHero .statLine { margin: 0; grid-template-columns: 34px minmax(0, 1fr) 42px; font-size: 9px; }
+.menuProfileHero .statMeter { height: 17px; }
+.menuStatGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.menuStat { min-width: 0; padding: 6px 4px; border-radius: 13px; border: 1px solid rgba(125,220,255,.20); background: rgba(1,12,22,.46); text-align: center; }
+.menuStat.good { border-color: rgba(53,229,138,.30); background: rgba(53,229,138,.08); }
+.menuStat b { display: block; overflow: hidden; color: #fff; font-size: 11px; line-height: 1.05; text-overflow: ellipsis; white-space: nowrap; }
+.menuStat span { display: block; margin-top: 2px; overflow: hidden; color: #bfe9f5; font-size: 7px; font-weight: 900; letter-spacing: .04em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.menuActionDock { padding: 7px; }
+.menuActionDock .actionDock { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.menuActionDock .actionDockButton { min-height: 44px; padding: 6px 4px; flex-direction: column; gap: 3px; border-radius: 14px; font-size: 8px; line-height: 1.05; text-align: center; }
+.menuActionDock .actionDockIcon { width: 18px; height: 18px; }
+.menuSettingsStrip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 7px; }
+.menuSettingsStrip div { min-width: 0; padding: 7px 4px; border-radius: 13px; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.18); text-align: center; }
+.menuSettingsStrip div.danger { border-color: rgba(255,93,115,.32); background: rgba(255,93,115,.08); }
+.menuSettingsStrip b, .menuSettingsStrip span { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menuSettingsStrip b { color: #fff; font-size: 9px; }
+.menuSettingsStrip span { margin-top: 2px; color: #bfe9f5; font-size: 7px; font-weight: 900; }
+.menuObjectiveCompact { display: grid; gap: 7px; padding: 8px; border-color: rgba(255,209,102,.24); }
+.menuObjectiveHead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.menuObjectiveHead h3 { margin: 0; color: #fff; font-size: 13px; line-height: 1.05; text-shadow: 0 2px 0 rgba(0,0,0,.32); }
+.menuObjectiveHead p { margin: 2px 0 0; color: #bfe9f5; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.menuObjectiveRow { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 7px; align-items: center; padding: 7px; border-radius: 13px; background: rgba(255,209,102,.07); border: 1px solid rgba(255,209,102,.20); color: #ffedb0; font-size: 9px; line-height: 1.25; }
+.menuObjectiveRow .checkIcon { width: 28px; height: 28px; border-radius: 10px; }
+.menuObjectiveDots { display: flex; gap: 4px; min-width: 0; overflow-x: auto; padding-bottom: 1px; scrollbar-width: none; }
+.menuObjectiveDots::-webkit-scrollbar { display: none; }
+.menuObjectiveDots span { flex: 0 0 16px; height: 7px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.10); }
+.menuObjectiveDots span.done { background: linear-gradient(180deg, #86ffc0, #22c55e); border-color: rgba(53,229,138,.44); }
 .worldHomeSwitcher { display: grid; gap: 8px; margin-bottom: 10px; padding: 9px; border-radius: 16px; border: 1px solid rgba(255,209,102,.36); background: rgba(3,17,29,.58); }
 .worldHomeSwitcherCopy { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: var(--text); }
 .worldHomeSwitcherCopy b { font-size: 13px; }
@@ -303,18 +380,18 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .raceProblemCompact .gamePanelTitle h3 { font-size: 13px; }
 .raceProblemCompact .gamePanelTitle p { font-size: 9px; }
 .raceProblemCompact .grid2 { gap: 6px; }
-.raceProblemCompact .btn { min-height: 36px; padding: 6px 8px; border-radius: 14px !important; font-size: 9px; }
+.raceProblemCompact .btn { min-height: 40px; padding: 7px 8px; border-radius: 14px !important; font-size: 9px; }
 .raceProblemCompact small { font-size: 7px; }
 .raceCockpitBottomSheet { margin-top: 0; padding: 7px; border-radius: 20px; }
 .raceCockpitBottomSheet .bottomSheetTabs { gap: 5px; }
-.raceCockpitBottomSheet .bottomSheetTab { min-height: 28px; padding: 5px 9px; font-size: 9px; }
+.raceCockpitBottomSheet .bottomSheetTab { min-height: 38px; padding: 7px 9px; font-size: 9px; }
 .raceCockpitBottomSheet .bottomSheetBody { max-height: 188px; overflow-y: auto; padding: 7px; border-radius: 15px; }
 .raceSheetStack { display: grid; gap: 7px; }
 .raceSheetSection { display: grid; gap: 7px; padding: 8px; border-radius: 15px; border: 1px solid rgba(125,220,255,.20); background: rgba(1,12,22,.44); }
 .raceSheetHeader { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; }
 .raceSheetHeader b { color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
 .raceSheetHeader span { color: #bfe9f5; font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.raceCockpitModeChip.chip { min-height: 34px; padding: 6px 8px; border-radius: 13px; font-size: 9px; background: linear-gradient(180deg, rgba(18,76,112,.92), rgba(4,26,43,.96)); }
+.raceCockpitModeChip.chip { min-height: 38px; padding: 7px 8px; border-radius: 13px; font-size: 9px; background: linear-gradient(180deg, rgba(18,76,112,.92), rgba(4,26,43,.96)); }
 .raceCockpitModeChip.chip.active { background: linear-gradient(180deg, #9cffc0, #26e872); color: #04140c; border-color: rgba(255,255,255,.32); }
 .raceCockpitModeChip .assetIconLabel { max-width: 116px; }
 .raceCockpitModeChip .assetIconLabel span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -325,10 +402,54 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .raceUpgradeCompact .gameRowHead h4 { font-size: 11px; }
 .raceUpgradeCompact .gameRowHead p { font-size: 8px; }
 .raceUpgradeCompact .cost { margin-top: 2px; font-size: 8px; }
-.raceUpgradeCompact .btn.small { min-height: 30px; padding: 6px 8px; border-radius: 12px !important; font-size: 9px; }
+.raceUpgradeCompact .btn.small { min-height: 36px; padding: 7px 8px; border-radius: 12px !important; font-size: 9px; }
 .raceGhostNotice { padding: 8px; border-radius: 13px; border: 1px solid rgba(255,209,102,.28); background: rgba(255,209,102,.08); color: #ffedb0; font-size: 10px; line-height: 1.35; }
+.rrLeaderboardPanel { display: grid; gap: 8px; padding: 8px; border-radius: 20px; border: 2px solid rgba(125,220,255,.30); background: radial-gradient(circle at 14% 0, rgba(255,209,102,.16), transparent 32%), linear-gradient(180deg, rgba(13,58,87,.94), rgba(3,18,31,.98)); box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 5px 0 rgba(0,0,0,.22); }
+.rrLeaderboardHeader { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: start; }
+.rrLeaderboardHeader .racerPageTitle { margin: 0; font-size: 16px; line-height: 1; }
+.rrLeaderboardHeader p { margin: 3px 0 0; color: #bfe9f5; font-size: 9px; line-height: 1.25; }
+.rrLeaderboardSearch { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 7px; align-items: center; min-height: 38px; padding: 6px 8px; border-radius: 15px; border: 1px solid rgba(125,220,255,.28); background: rgba(0,0,0,.20); }
+.rrLeaderboardSearch span { color: #ffd166; font-size: 8px; font-weight: 1000; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
+.rrLeaderboardSearch input { min-width: 0; width: 100%; height: 27px; border: 1px solid rgba(255,255,255,.14); border-radius: 10px; padding: 5px 8px; background: rgba(2,12,23,.78); color: #fff; font: inherit; font-size: 10px; font-weight: 900; outline: none; }
+.rrLeaderboardSearch input:focus { border-color: rgba(255,209,102,.72); box-shadow: 0 0 0 3px rgba(255,209,102,.12); }
+.rrSelectedRivals { display: flex; gap: 5px; min-width: 0; overflow-x: auto; padding-bottom: 1px; scrollbar-width: none; }
+.rrSelectedRivals::-webkit-scrollbar { display: none; }
+.rrSelectedRivalChip { flex: 0 0 auto; min-width: 88px; max-width: 132px; display: grid; gap: 1px; padding: 6px 8px; border-radius: 13px; border: 1px solid rgba(255,209,102,.36); background: linear-gradient(180deg, rgba(255,209,102,.20), rgba(0,0,0,.22)); }
+.rrSelectedRivalChip.empty { border-color: rgba(125,220,255,.24); background: rgba(0,0,0,.18); }
+.rrSelectedRivalChip b, .rrSelectedRivalChip small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rrSelectedRivalChip b { color: #fff; font-size: 9px; line-height: 1.05; }
+.rrSelectedRivalChip small { color: #ffedb0; font-size: 7px; font-weight: 900; text-transform: uppercase; }
+.rrLeaderboardTools { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 7px; }
+.rrLeaderboardTools .btn.small { min-height: 38px; padding: 7px 8px; border-radius: 13px !important; font-size: 9px; }
+.rrLeaderboardList { display: grid; gap: 6px; max-height: min(54vh, 430px); overflow-y: auto; padding-right: 2px; scrollbar-width: thin; }
+.rrLeaderboardRow { display: grid; grid-template-columns: 32px minmax(0,1fr) 50px 50px; gap: 6px; align-items: center; min-height: 55px; padding: 7px; border-radius: 16px; border: 1px solid rgba(125,220,255,.20); background: linear-gradient(180deg, rgba(19,69,101,.88), rgba(4,24,41,.96)); box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 3px 0 rgba(0,0,0,.18); }
+.rrLeaderboardRow.selected { border-color: rgba(255,209,102,.64); background: radial-gradient(circle at 12% 0, rgba(255,209,102,.18), transparent 35%), linear-gradient(180deg, rgba(33,82,98,.95), rgba(8,30,44,.98)); }
+.rrLeaderboardRank { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(180deg, #ffe08a, #f59e0b); color: #2b1700; font-size: 10px; font-weight: 1000; border: 1px solid rgba(61,31,0,.38); box-shadow: inset 0 2px 0 rgba(255,255,255,.34); }
+.rrLeaderboardCopy { min-width: 0; display: grid; gap: 2px; }
+.rrLeaderboardName { min-width: 0; display: flex; gap: 5px; align-items: baseline; }
+.rrLeaderboardName b, .rrLeaderboardCopy small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rrLeaderboardName b { color: #fff; font-size: 11px; line-height: 1.05; }
+.rrLeaderboardName span { flex: 0 0 auto; color: #9ddcf1; font-size: 7px; font-weight: 1000; text-transform: uppercase; }
+.rrLeaderboardCopy small { color: #c7f9ff; font-size: 7px; line-height: 1.1; }
+.rrLeaderboardTime { min-width: 0; display: grid; gap: 2px; justify-items: center; text-align: center; }
+.rrLeaderboardTime b { color: #fff3c4; font-size: 10px; line-height: 1; white-space: nowrap; }
+.rrLeaderboardTime span { max-width: 100%; overflow: hidden; padding: 2px 5px; border-radius: 999px; background: rgba(0,0,0,.28); color: #dff8ff; font-size: 6px; font-weight: 1000; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.rrLeaderboardRow .btn.small { min-height: 34px; padding: 5px 5px; border-radius: 10px !important; font-size: 7px; }
+.rrLeaderboardRow .btn.small:disabled { opacity: .62; }
 .problemCard { border-color: rgba(255,93,115,.36); background: linear-gradient(180deg, rgba(255,93,115,.16), rgba(11,33,48,.96)); }
 .worldCard { padding-bottom: 10px; }
+.worldPlayArea { margin-bottom: 0; padding: 9px; background: radial-gradient(circle at 18% 0, rgba(90,183,255,.18), transparent 32%), linear-gradient(180deg, rgba(19,84,124,.94), rgba(4,22,36,.98)); }
+.worldPlayArea > .screenFrameBody { gap: 7px; }
+.worldPlayArea .screenFrameHeader { padding-right: 2px; }
+.worldPlayArea .subTabBar { padding-bottom: 1px; }
+.worldMapPrimary { position: relative; min-width: 0; padding: 6px; border-radius: 20px; border: 1px solid rgba(125,220,255,.30); background: linear-gradient(180deg, rgba(10,48,76,.92), rgba(2,17,31,.96)); box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 5px 0 rgba(0,0,0,.24); overflow: hidden; }
+.worldMapPrimary::before { content: ''; position: absolute; z-index: 2; left: 12px; top: 12px; width: 48px; height: 13px; border-radius: 0 0 12px 0; background: linear-gradient(180deg,#ffe08a,#f59e0b); pointer-events: none; box-shadow: inset 0 2px 0 rgba(255,255,255,.42), 0 3px 0 rgba(0,0,0,.2); }
+.worldPlayArea .autoWorldMap { height: clamp(300px, 48vh, 460px); margin: 0; border-radius: 17px; border-width: 2px; }
+.worldActionDock { position: relative; z-index: 3; margin-top: -15px; padding: 0 8px 2px; }
+.worldActionDock .actionDock { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 6px; border-radius: 18px; border-color: rgba(255,209,102,.28); background: rgba(1,12,22,.78); box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 5px 0 rgba(0,0,0,.24), 0 -8px 18px rgba(0,0,0,.22); backdrop-filter: blur(3px); }
+.worldActionDock .actionDockButton { min-height: 42px; padding: 6px 4px; flex-direction: column; gap: 3px; border-radius: 14px; font-size: 8px; line-height: 1.05; text-align: center; }
+.worldActionDock .actionDockIcon { width: 18px; height: 18px; }
+.worldActionDock .actionDockButton span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .autoWorldMap { position: relative; height: 520px; overflow: hidden; border-radius: 22px; border: 1px solid rgba(255,255,255,.14); background: linear-gradient(180deg, #0d3b43 0%, #11513b 45%, #0f3327 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); }
 .mapGround { position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(53,229,138,.2), transparent 24%), radial-gradient(circle at 80% 74%, rgba(255,209,102,.14), transparent 18%); }
 .road { position: absolute; background: #1f2937; border: 2px solid rgba(255,255,255,.12); box-shadow: inset 0 0 0 2px rgba(0,0,0,.25); }
@@ -393,7 +514,7 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .linesStatusStrip span { display: block; margin-top: 2px; overflow: hidden; color: #bfe9f5; font-size: 7px; font-weight: 900; letter-spacing: .04em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
 .lineFilterChips { display: flex; gap: 6px; min-width: 0; overflow-x: auto; padding: 1px 1px 4px; scrollbar-width: none; }
 .lineFilterChips::-webkit-scrollbar { display: none; }
-.lineFilterChips .chip { min-height: 28px; padding: 5px 9px; font-size: 9px; }
+.lineFilterChips .chip { min-height: 34px; padding: 7px 9px; font-size: 9px; }
 .lineFilterChips .chip.active { color: #04140c; background: linear-gradient(180deg, #9cffc0, #26e872); border-color: rgba(255,255,255,.32); }
 .linesCompactList { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(264px, 86%); gap: 7px; min-height: 104px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-inline: contain; scroll-snap-type: x proximity; padding: 1px 3px 8px 1px; scrollbar-width: none; }
 .linesCompactList::-webkit-scrollbar { display: none; }
@@ -416,7 +537,7 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .lineRowMeter.segMeter { height: 14px; gap: 2px; margin: 0; padding: 3px; }
 .lineRowMeter .segMeterNeedle, .lineRowMeter .segMeterValue { display: none; }
 .lineCompactActions { display: grid; grid-template-columns: 1fr; gap: 4px; min-width: 50px; }
-.lineCompactActions .btn.small { min-height: 25px; padding: 4px 6px; border-radius: 11px !important; font-size: 8px; }
+.lineCompactActions .btn.small { min-height: 36px; padding: 5px 6px; border-radius: 11px !important; font-size: 8px; }
 .lineCompactActions .lineButtonAsset { width: 14px; height: 14px; }
 .lineFeaturedDetail, .compactBuildLinks { display: grid; gap: 6px; padding: 7px; border-radius: 17px; border: 1px solid rgba(125,220,255,.28); background: linear-gradient(180deg, rgba(10,48,76,.92), rgba(2,17,31,.96)); box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 4px 0 rgba(0,0,0,.22); }
 .lineFeaturedDetail { max-height: 176px; overflow-y: auto; scrollbar-width: thin; }
@@ -434,7 +555,7 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .lineFeaturedDetail .lineProgress.segMeter { height: 17px; margin: 0; padding: 3px; }
 .lineFeaturedDetail .lineProgress .segMeterNeedle, .lineFeaturedDetail .lineProgress .segMeterValue { display: none; }
 .lineFeaturedDetail .lineButtons { margin-top: 0; gap: 6px; }
-.lineFeaturedDetail .lineButtons .btn.small { min-height: 31px; padding: 5px 8px; border-radius: 13px !important; font-size: 9px; }
+.lineFeaturedDetail .lineButtons .btn.small { min-height: 36px; padding: 6px 8px; border-radius: 13px !important; font-size: 9px; }
 .compactLineManager { display: grid; gap: 5px; margin-top: 0; padding: 6px; border-radius: 14px; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.18); }
 .lineRequirement { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 8px; align-items: center; padding: 7px; border-radius: 14px; border: 1px solid rgba(255,209,102,.22); background: rgba(255,209,102,.07); }
 .lineRequirement.met { border-color: rgba(53,229,138,.26); background: rgba(53,229,138,.07); }
@@ -442,12 +563,12 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .lineRequirementText b { display: block; color: #fff; font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
 .lineRequirementText span { display: block; margin-top: 2px; color: #c7f9ff; font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lineRequirement strong { color: #ffedb0; font-size: 9px; white-space: nowrap; }
-.lineRequirement .btn { grid-column: 1 / -1; min-height: 28px; }
+.lineRequirement .btn { grid-column: 1 / -1; min-height: 36px; }
 .lineRequirementMeter.segMeter { grid-column: 1 / -1; height: 15px; padding: 3px; gap: 2px; }
 .lineRequirementMeter .segMeterNeedle, .lineRequirementMeter .segMeterValue { display: none; }
 .lineManagerGrid, .lineManagerNeed { display: grid; gap: 6px; }
 .lineManagerGrid .notice { padding: 7px; border-radius: 12px; font-size: 9px; line-height: 1.25; }
-.lineManagerGrid .btn.small, .lineManagerNeed .btn.small { min-height: 32px; padding: 6px 8px; border-radius: 13px !important; font-size: 9px; }
+.lineManagerGrid .btn.small, .lineManagerNeed .btn.small { min-height: 36px; padding: 6px 8px; border-radius: 13px !important; font-size: 9px; }
 .lineButtonAsset, .buildAssetIcon { width: 16px; height: 16px; object-fit: contain; vertical-align: middle; }
 .compactBuildLinks .compactSectionHead { align-items: center; }
 .compactBuildLinks .compactSectionHead p { display: none; }
@@ -471,6 +592,81 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 .roomLock { position: absolute; inset: 0; display: grid; place-items: center; font-size: 0; background: rgba(3,8,13,.35); pointer-events: none; }
 .incomeBubble { position: absolute; top: 10px; right: 10px; padding: 6px 9px; border-radius: 999px; background: linear-gradient(180deg, var(--yellow), var(--orange)); color: #251100; font-size: 10px; font-weight: 1000; box-shadow: 0 9px 18px rgba(0,0,0,.28); animation: bob 1.1s ease-in-out infinite alternate; }
 @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+.garagePlayArea { margin-bottom: 0; padding: 9px; background: radial-gradient(circle at 18% 0, rgba(90,183,255,.18), transparent 32%), linear-gradient(180deg, rgba(19,84,124,.94), rgba(4,22,36,.98)); }
+.garagePlayArea > .screenFrameBody { gap: 7px; }
+.garagePlayArea .subTabBar { padding-bottom: 2px; }
+.garagePlayArea .compactStatStrip { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.garagePlayArea .compactStatItem { grid-template-columns: 1fr; grid-template-areas: "icon" "copy" "meter"; justify-items: center; gap: 3px; padding: 5px 3px; text-align: center; }
+.garagePlayArea .compactStatIcon { width: 25px; height: 25px; border-radius: 9px; }
+.garagePlayArea .compactStatIconImg { width: 16px; height: 16px; }
+.garagePlayArea .compactStatCopy span { font-size: 7px; }
+.garagePlayArea .compactStatCopy b { font-size: 10px; }
+.garagePlayArea .compactStatMeter { width: 100%; height: 14px; gap: 2px; padding: 3px; }
+.garagePlayArea .compactStatMeter .segMeterNeedle, .garagePlayArea .compactStatMeter .segMeterValue { display: none; }
+.shopFloorPrimary, .garageSystemDrawer { display: grid; gap: 6px; padding: 7px; border-radius: 18px; border: 1px solid rgba(125,220,255,.28); background: linear-gradient(180deg, rgba(10,48,76,.92), rgba(2,17,31,.96)); box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 4px 0 rgba(0,0,0,.22); }
+.shopFloorPrimary .compactSectionHead { align-items: center; }
+.shopFloorPrimary .compactSectionHead p { font-size: 8px; }
+.garageShopFloorCompact { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(146px, 43%); gap: 6px; overflow-x: auto; overflow-y: hidden; padding: 1px 2px 7px; scrollbar-width: none; overscroll-behavior-inline: contain; scroll-snap-type: x proximity; }
+.garageShopFloorCompact::-webkit-scrollbar, .garageSystemsRail::-webkit-scrollbar, .garageSupplierRail::-webkit-scrollbar, .garageSystemDrawer::-webkit-scrollbar { display: none; }
+.garageRoomTile { position: relative; min-width: 0; width: 100%; height: 118px; display: grid; grid-template-rows: 74px auto; gap: 0; padding: 0; color: inherit; text-align: left; scroll-snap-align: start; }
+.garageRoomTile.selected { outline: 2px solid rgba(255,209,102,.78); box-shadow: 0 0 0 4px rgba(255,209,102,.12), inset 0 1px 0 rgba(255,255,255,.10), 0 5px 0 rgba(0,0,0,.22); }
+.garageRoomTile .roomArtWrap { position: relative; min-height: 0; overflow: hidden; }
+.garageRoomTile .roomArt { height: 74px; aspect-ratio: auto; object-fit: cover; }
+.garageRoomTile .roomLevelBadge, .garageSystemLevel { position: absolute; left: 5px; top: 5px; padding: 3px 6px; border-radius: 999px; background: linear-gradient(180deg, #ffe08a, #f59e0b); color: #2b1700; border: 1px solid rgba(0,0,0,.28); font-size: 8px; font-weight: 1000; box-shadow: inset 0 1px 0 rgba(255,255,255,.34), 0 2px 0 rgba(0,0,0,.20); }
+.garageRoomTile .roomStatusBadge { position: absolute; right: 5px; top: 5px; padding: 3px 6px; border-radius: 999px; background: rgba(1,12,22,.72); color: #d9f7ff; border: 1px solid rgba(125,220,255,.26); font-size: 7px; font-weight: 1000; }
+.roomTileInfo { min-width: 0; display: grid; gap: 2px; padding: 5px 6px 6px; }
+.roomTileInfo b { min-width: 0; display: flex; align-items: center; gap: 4px; color: #fff; font-size: 9px; line-height: 1.05; text-shadow: 0 2px 0 rgba(0,0,0,.28); }
+.roomTileInfo b span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roomTileInfo > span { color: #bfe9f5; font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.garageRoomTile .roomHeadIcon { width: 14px; height: 14px; object-fit: contain; flex: 0 0 auto; }
+.garageRoomTile .roomLockIcon { width: 34px; height: 34px; object-fit: contain; }
+.garageRoomTile .incomeBubble { top: auto; right: 6px; bottom: 29px; padding: 3px 6px; font-size: 7px; }
+.garageSystemDrawer { max-height: 232px; overflow-y: auto; scrollbar-width: none; touch-action: pan-y; overscroll-behavior: contain; }
+.garageDrawerTabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding: 3px; border-radius: 15px; background: rgba(1,12,22,.56); border: 1px solid rgba(125,220,255,.18); }
+.garageDrawerTab { min-height: 38px; border-radius: 12px; background: var(--ui-blue-cta), linear-gradient(180deg, rgba(42,145,201,.9), rgba(8,45,72,.94)); background-size: 100% 100%, auto; color: #d9f7ff; font-size: 9px; font-weight: 1000; box-shadow: inset 0 2px 0 rgba(255,255,255,.15), 0 3px 0 rgba(0,0,0,.22); }
+.garageDrawerTab.active { background: var(--ui-orange-cta), linear-gradient(180deg, #ffe08a, #f59e0b); background-size: 100% 100%, auto; color: #2b1700; }
+.garageDrawerPane { display: none; min-width: 0; }
+.garageDrawerPane.active { display: grid; gap: 6px; }
+.roomDetailDrawer, .garageSystemCompact { min-width: 0; display: grid; gap: 6px; padding: 7px; border-radius: 16px; border: 1px solid rgba(125,220,255,.24); background: var(--ui-row-card-frame), linear-gradient(180deg, rgba(11,54,82,.96), rgba(2,17,31,.98)); background-size: 100% 100%, auto; box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 3px 0 rgba(0,0,0,.20); }
+.roomDetailDrawer { max-height: 182px; overflow-y: auto; scrollbar-width: thin; }
+.roomDetailDrawer .compactSectionHead p { font-size: 8px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.roomDetailDrawer .roomProgress.segMeter, .garageSystemCompact .buildSystemMeter.segMeter { height: 15px; padding: 3px; gap: 2px; }
+.roomDetailDrawer .roomProgress .segMeterNeedle, .roomDetailDrawer .roomProgress .segMeterValue, .garageSystemCompact .buildSystemMeter .segMeterNeedle, .garageSystemCompact .buildSystemMeter .segMeterValue { display: none; }
+.roomDetailStats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.roomDetailStats div { min-width: 0; padding: 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.18); text-align: center; }
+.roomDetailStats b { display: block; overflow: hidden; color: #fff; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.roomDetailStats span { display: block; margin-top: 1px; color: #bfe9f5; font-size: 7px; font-weight: 900; text-transform: uppercase; }
+.roomDetailDrawer .roomSyncRow, .roomDetailDrawer .lineBuildBridge, .garageSystemCompact .roomSyncRow, .garageSystemCompact .lineBuildBridge { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 1px; scrollbar-width: none; }
+.roomDetailDrawer .roomSyncRow::-webkit-scrollbar, .roomDetailDrawer .lineBuildBridge::-webkit-scrollbar, .garageSystemCompact .roomSyncRow::-webkit-scrollbar, .garageSystemCompact .lineBuildBridge::-webkit-scrollbar { display: none; }
+.roomDetailDrawer .buildWorldChip, .garageSystemCompact .buildWorldChip, .roomDetailDrawer .buildLineChip, .garageSystemCompact .buildLineChip { flex: 0 0 112px; padding: 5px; }
+.roomDetailDrawer .roomActions, .garageSystemActions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.roomDetailDrawer .btn.small, .garageSystemActions .btn.small, .supplierUpgradeCompact .btn.small { min-height: 36px; padding: 5px 6px; border-radius: 12px !important; font-size: 8px; }
+.roomButtonAsset, .buildButtonAsset { width: 14px; height: 14px; object-fit: contain; }
+.garageSystemsRail, .garageSupplierRail { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(270px, 88%); gap: 7px; overflow-x: auto; overflow-y: hidden; padding: 1px 2px 7px; scrollbar-width: none; overscroll-behavior-inline: contain; scroll-snap-type: x proximity; }
+.garageSystemCompact { grid-template-columns: 74px minmax(0, 1fr); align-items: start; scroll-snap-align: start; }
+.garageSystemCompact.selected { outline: 2px solid rgba(255,209,102,.72); box-shadow: 0 0 0 4px rgba(255,209,102,.11), inset 0 1px 0 rgba(255,255,255,.10), 0 3px 0 rgba(0,0,0,.22); }
+.garageSystemCompactArt { position: relative; height: 76px; min-height: 0; overflow: hidden; border-radius: 14px; border: 1px solid rgba(125,220,255,.20); background: rgba(0,0,0,.18); display: grid; place-items: center; align-self: start; }
+.garageSystemCompactArt .garageSystemArt { width: 100%; height: 100%; object-fit: cover; }
+.garageSystemCompactIcon { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 0 rgba(0,0,0,.28)); }
+.garageSystemCompactBody { min-width: 0; display: grid; gap: 5px; }
+.garageSystemCompactHead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: start; }
+.garageSystemCompactHead h4 { margin: 0; color: #fff; font-size: 11px; line-height: 1.05; text-shadow: 0 2px 0 rgba(0,0,0,.32); }
+.garageSystemCompactHead p { margin: 2px 0 0; color: #bfe9f5; font-size: 8px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.garageSystemCost, .garageSystemUnlock { margin: 0; color: #c7f9ff; font-size: 8px; line-height: 1.2; }
+.garageSystemUnlock { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.garageSystemMeta { display: grid; gap: 4px; min-width: 0; max-height: 54px; overflow: hidden; }
+.supplierUpgradeCompact { grid-template-columns: 70px minmax(0, 1fr); }
+.supplierUpgradeCompact .garageSystemCompactArt { height: 64px; }
+@media (max-width: 380px) {
+  .garagePlayArea .screenFrameHeader h2 { font-size: 16px; }
+  .garageShopFloorCompact { grid-auto-columns: minmax(132px, 46%); }
+  .garageRoomTile { height: 110px; grid-template-rows: 68px auto; }
+  .garageRoomTile .roomArt { height: 68px; }
+  .garageSystemDrawer { max-height: 218px; }
+  .garageSystemsRail, .garageSupplierRail { grid-auto-columns: minmax(252px, 92%); }
+  .garageSystemCompact { grid-template-columns: 68px minmax(0, 1fr); }
+  .garageSystemCompactArt { height: 70px; }
+}
 .shelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
 .shelfSlot, .cell { position: relative; aspect-ratio: 1 / 1; border-radius: 16px; border: 1px solid var(--line); background: var(--ui-merge-slot-empty), rgba(0,0,0,.22); background-size: 100% 100%, auto; display: grid; place-items: center; text-align: center; overflow: hidden; }
 .shelfSlot.ready { background: var(--ui-merge-slot-ready), linear-gradient(180deg, rgba(53,229,138,.18), rgba(45,212,191,.07)); background-size: 100% 100%, auto; border-color: rgba(53,229,138,.38); }
@@ -500,26 +696,26 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 #screen-merge .mergeBayDockMeta { display: grid; place-items: center; min-width: 30px; padding: 3px; border-radius: 10px; background: linear-gradient(180deg, #ffe08a, #f59e0b); color: #2b1700; line-height: 1; box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 2px 0 rgba(0,0,0,.20); }
 #screen-merge .mergeBayDockMeta b { font-size: 10px; }
 #screen-merge .mergeBayDockMeta span { margin-top: 2px; font-size: 7px; font-weight: 1000; text-transform: uppercase; }
-#screen-merge .miniShelf { min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 30px; gap: 3px; overflow-x: auto; overflow-y: hidden; padding: 1px 1px 3px; scrollbar-width: thin; scroll-snap-type: x proximity; overscroll-behavior-inline: contain; touch-action: pan-x; }
+#screen-merge .miniShelf { min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 36px; gap: 3px; overflow-x: auto; overflow-y: hidden; padding: 1px 1px 3px; scrollbar-width: thin; scroll-snap-type: x proximity; overscroll-behavior-inline: contain; touch-action: pan-x; }
 #screen-merge .miniShelf::-webkit-scrollbar, #screen-merge .mergeChainLadder::-webkit-scrollbar, #screen-merge .mergeRecipesPane::-webkit-scrollbar, #screen-merge .mergeChainCompactList::-webkit-scrollbar { width: 6px; height: 6px; }
 #screen-merge .miniShelf::-webkit-scrollbar-thumb, #screen-merge .mergeChainLadder::-webkit-scrollbar-thumb, #screen-merge .mergeRecipesPane::-webkit-scrollbar-thumb, #screen-merge .mergeChainCompactList::-webkit-scrollbar-thumb { border-radius: 999px; background: rgba(125,220,255,.36); }
-#screen-merge .miniShelfSlot { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; border: 1px solid rgba(125,220,255,.22); background: var(--ui-merge-slot-empty), rgba(0,0,0,.22); background-size: 100% 100%, auto; overflow: hidden; scroll-snap-align: start; }
+#screen-merge .miniShelfSlot { position: relative; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; border: 1px solid rgba(125,220,255,.22); background: var(--ui-merge-slot-empty), rgba(0,0,0,.22); background-size: 100% 100%, auto; overflow: hidden; scroll-snap-align: start; }
 #screen-merge .miniShelfSlot.ready { background: var(--ui-merge-slot-ready), linear-gradient(180deg, rgba(53,229,138,.16), rgba(45,212,191,.06)); background-size: 100% 100%, auto; border-color: rgba(53,229,138,.35); }
 #screen-merge .miniShelfSlot .itemIcon { min-height: 24px; }
 #screen-merge .miniShelfSlot .mergeItemArt { width: 21px; height: 21px; }
 #screen-merge .miniShelfSlot .itemName, #screen-merge .miniShelfSlot .chainTag { display: none; }
 #screen-merge .miniShelfSlot .lvl { top: 1px; left: 1px; padding: 1px 3px; border-radius: 6px; font-size: 6px; }
 #screen-merge .mergeBoardActions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-#screen-merge .mergeBoardActions .btn.small { min-height: 29px; padding: 4px 7px; border-radius: 13px !important; font-size: 10px; }
+#screen-merge .mergeBoardActions .btn.small { min-height: 40px; padding: 7px 7px; border-radius: 13px !important; font-size: 10px; }
 #screen-merge .mergeBoardTabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 5px; border-radius: 16px; background: rgba(1,12,22,.56); border: 1px solid rgba(125,220,255,.18); }
 #screen-merge .mergeDrawerTabs { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 3px; }
-#screen-merge .mergeBoardTab { min-height: 28px; border-radius: 12px; background: var(--ui-blue-cta), linear-gradient(180deg, rgba(42,145,201,.9), rgba(8,45,72,.94)); background-size: 100% 100%, auto; color: #d9f7ff; font-size: 9px; font-weight: 1000; box-shadow: inset 0 2px 0 rgba(255,255,255,.15), 0 3px 0 rgba(0,0,0,.22); }
+#screen-merge .mergeBoardTab { min-height: 38px; border-radius: 12px; background: var(--ui-blue-cta), linear-gradient(180deg, rgba(42,145,201,.9), rgba(8,45,72,.94)); background-size: 100% 100%, auto; color: #d9f7ff; font-size: 9px; font-weight: 1000; box-shadow: inset 0 2px 0 rgba(255,255,255,.15), 0 3px 0 rgba(0,0,0,.22); }
 #screen-merge .mergeBoardTab.active { background: var(--ui-orange-cta), linear-gradient(180deg, #ffe08a, #f59e0b); background-size: 100% 100%, auto; color: #2b1700; }
 #screen-merge .mergeTabPane { display: none; min-width: 0; }
 #screen-merge .mergeTabPane.active { display: block; }
 #screen-merge .mergeBoardArea { min-width: 0; padding: 4px; border-radius: 18px; border: 1px solid rgba(125,220,255,.18); background: rgba(1,12,22,.34); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
 #screen-merge .mergeBoardGrid { max-width: 276px; margin: 0 auto; gap: 5px; }
-#screen-merge .mergeRecipeDrawer { min-width: 0; max-height: 226px; overflow-y: auto; display: grid; gap: 5px; padding: 5px; border-radius: 18px; border: 1px solid rgba(255,209,102,.20); background: linear-gradient(180deg, rgba(9,49,75,.62), rgba(1,12,22,.78)); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); scrollbar-width: thin; overscroll-behavior: contain; touch-action: pan-y; }
+#screen-merge .mergeRecipeDrawer { min-width: 0; max-height: 198px; overflow-y: auto; display: grid; gap: 5px; padding: 5px; border-radius: 18px; border: 1px solid rgba(255,209,102,.20); background: linear-gradient(180deg, rgba(9,49,75,.62), rgba(1,12,22,.78)); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); scrollbar-width: thin; overscroll-behavior: contain; touch-action: pan-y; }
 #screen-merge .mergeDrawerPane { display: none; min-width: 0; }
 #screen-merge .mergeDrawerPane.active { display: grid; gap: 7px; }
 #screen-merge .mergeRecipesPane { max-height: 190px; overflow-y: auto; overflow-x: hidden; padding: 1px 2px 5px 1px; scrollbar-width: thin; overscroll-behavior: contain; touch-action: pan-y; }
@@ -568,7 +764,7 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 #screen-merge .mergeChainDetail .mergeChainStep b { max-width: 100%; font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #screen-merge .mergeCompactRecipe .mergeChainArrow { max-width: 100%; font-size: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #screen-merge .mergeChainDetail .mergeChainArrow { max-width: 100%; font-size: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#screen-merge .mergeRecipeAction { margin-top: 6px; min-height: 30px; }
+#screen-merge .mergeRecipeAction { margin-top: 6px; min-height: 36px; }
 #screen-merge .mergeTipsGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
 #screen-merge .mergeTipCard { min-height: 52px; display: grid; align-content: center; gap: 3px; padding: 8px; border-radius: 14px; border: 1px solid rgba(125,220,255,.18); background: rgba(1,12,22,.46); }
 #screen-merge .mergeTipCard b { font-size: 10px; color: #fff; }
@@ -580,8 +776,8 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
   #screen-merge .mergeUnifiedTitle p { display: none; }
   #screen-merge .mergeBayDock { grid-template-columns: 29px minmax(0, 1fr); gap: 4px; padding: 4px; }
   #screen-merge .mergeBayDockMeta { min-width: 29px; padding: 3px; }
-  #screen-merge .miniShelf { grid-auto-columns: 31px; }
-  #screen-merge .miniShelfSlot { width: 31px; height: 31px; border-radius: 10px; }
+  #screen-merge .miniShelf { grid-auto-columns: 36px; }
+  #screen-merge .miniShelfSlot { width: 36px; height: 36px; border-radius: 10px; }
   #screen-merge .miniShelfSlot .mergeItemArt { width: 22px; height: 22px; }
 }
 .upgrade, .building, .objective, .ruleBlock { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; border: 1px solid var(--line); background: var(--ui-row-card-frame), rgba(0,0,0,.18); background-size: 100% 100%, auto; border-radius: 16px; padding: 10px; margin-bottom: 8px; }

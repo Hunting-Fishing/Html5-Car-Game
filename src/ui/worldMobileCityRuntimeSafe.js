@@ -477,30 +477,34 @@ function targetFromToken(token) {
 
 function html() {
   return `
-    <section class="card pixiWorldShell">
-      <div class="worldHomeSwitcher screenGroupPanel">
-        <div class="worldHomeSwitcherCopy"><b>Home</b><span>Home is grouped into Today and the World Map.</span></div>
-        <div class="screenSubTabs" role="tablist" aria-label="Home sections">
-          <button class="btn" type="button" data-action="screen" data-screen="hub">Today</button>
-          <button class="btn primary active" type="button" data-action="screen" data-screen="world" aria-current="page">World Map</button>
-        </div>
+    <section class="card pixiWorldShell worldPlayArea">
+      <div class="worldRuntimeTabs subTabBar" role="tablist" aria-label="Home sections">
+        <button class="subTab" type="button" role="tab" data-action="screen" data-screen="hub" aria-selected="false"><span>Today</span></button>
+        <button class="subTab active" type="button" role="tab" data-action="screen" data-screen="world" aria-current="page" aria-selected="true"><span>World Map</span></button>
       </div>
-      <div class="pixiWorldHeader">
+      <div class="pixiWorldHeader worldMapPrimaryHeader">
         <h2>365 Auto City - World Buildings</h2>
-        <p>Tap buildings for collection timers, bonuses, levels, and upgrade requirements.</p>
+        <p>Tap buildings, people, and city events.</p>
       </div>
-      <div class="pixiWorldHost" id="pixiWorldHost"></div>
+      <div class="pixiWorldHost worldMapPrimary" id="pixiWorldHost"></div>
       <div class="worldAssetPreload" aria-hidden="true">
         ${WORLD_ASSET_LIST.map((item) => `<img class="worldAssetPreloadImage" data-world-asset="${item.category}:${item.key}" src="${item.src}" alt="" loading="eager">`).join('')}
       </div>
       <div class="mobileCityHud">
-        <div class="mobileCityStatus"><span class="mobileCityModeBadge" data-mobile-city-mode>Normal</span> <span data-mobile-city-help>Tap buildings to collect, inspect, and upgrade. Build mode places owned buildings.</span></div>
-        <div class="mobileBuildSyncStatus"><span>Build Sync</span><b data-build-sync-total>+${totalSyncedWorldInventory()} world</b><small data-build-sync-lines>${getBuildSync()?.unlockedLineCount || 0}/${getBuildSync()?.totalLineCount || 0} linked lines</small></div>
-        <div class="mobileCityActions">
-          <button class="btn primary" onclick="window.openMobileBuildTraySafe?.()">Build</button>
-          <button class="btn ghost" onclick="window.centerMobileCitySafe?.()">Center</button>
+        <div class="mobileCityStatus">
+          <span class="mobileCityModeBadge" data-mobile-city-mode>Normal</span>
+          <span data-mobile-city-help>Tap buildings to collect, inspect, and upgrade.</span>
+          <div class="mobileMapTools">
+            <button class="btn small primary" onclick="window.openMobileBuildTraySafe?.()">Build</button>
+            <button class="btn small ghost" onclick="window.centerMobileCitySafe?.()">Center</button>
+          </div>
+        </div>
+        <div class="mobileBuildSyncStatus"><span>Sync</span><b data-build-sync-total>+${totalSyncedWorldInventory()} world</b><small data-build-sync-lines>${getBuildSync()?.unlockedLineCount || 0}/${getBuildSync()?.totalLineCount || 0} lines</small></div>
+        <div class="mobileCityActions worldActionDock">
+          <button class="btn primary" data-action="worldTow">Dispatch Tow</button>
           <button class="btn" data-action="screen" data-screen="garage">Manage Shop</button>
-          <button class="btn gold" data-action="screen" data-screen="lines">Upgrade Lines</button>
+          <button class="btn gold" data-action="screen" data-screen="lines">Upgrade Businesses</button>
+          <button class="btn ghost" data-action="screen" data-screen="race">Run Route</button>
         </div>
         <div class="mobileBuildTray" data-build-tray hidden>
           <div class="mobileTrayTitle mobileBuildTrayTitle"><span>Choose Building</span><span data-selected-building>${selectedDef().name}</span><span data-selected-rotation>0 deg</span></div>

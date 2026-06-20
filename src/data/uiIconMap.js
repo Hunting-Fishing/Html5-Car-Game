@@ -1,6 +1,9 @@
 const UI_ICON_BASE = '/assets/ui/icons';
 const ROAD_RUNNER_ICON_BASE = '/assets/road-runner';
 
+// Player-facing UI icons live in public/assets/ui/icons.
+// Keep these paths stable so designers can replace PNG/SVG files without
+// touching rendering code. New HUD/nav art should stay under public/assets/ui/.
 export const UI_ICONS = {
   home: `${UI_ICON_BASE}/home.png`,
   race: `${UI_ICON_BASE}/race.png`,

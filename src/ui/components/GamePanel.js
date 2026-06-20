@@ -19,18 +19,22 @@ function isAssetIcon(icon) {
   );
 }
 
+let assetFallbackId = 0;
+
 export function renderIconImage(src, label, className, fallbackIcon = '') {
   const alt = escapeHtml(label);
+  const safeClassName = escapeHtml(className);
+  const fallbackId = fallbackIcon ? `assetFallback${assetFallbackId += 1}` : '';
   const fallback = fallbackIcon
-    ? `<span class="${className}Fallback iconEmojiFallback" hidden aria-hidden="true">${escapeHtml(fallbackIcon)}</span>`
+    ? `<span id="${fallbackId}" class="${safeClassName}Fallback iconEmojiFallback" hidden aria-hidden="true" data-asset-fallback>${escapeHtml(fallbackIcon)}</span>`
     : '';
   if (!src) {
     return fallbackIcon
-      ? `<span class="${className}Fallback iconEmojiFallback" aria-hidden="true">${escapeHtml(fallbackIcon)}</span>`
+      ? `<span class="${safeClassName}Fallback iconEmojiFallback" aria-hidden="true" data-asset-fallback>${escapeHtml(fallbackIcon)}</span>`
       : '';
   }
-  const onError = fallback ? 'this.hidden=true;this.nextElementSibling.hidden=false' : 'this.hidden=true';
-  return `<img class="${className}" src="${escapeHtml(src)}" alt="${alt}" loading="eager" draggable="false" onerror="${onError}">${fallback}`;
+  const fallbackAttr = fallbackId ? ` data-asset-fallback-id="${fallbackId}"` : '';
+  return `<img class="${safeClassName}" src="${escapeHtml(src)}" alt="${alt}" loading="eager" draggable="false" data-asset-image${fallbackAttr}>${fallback}`;
 }
 
 export function panelIconSrc(icon) {

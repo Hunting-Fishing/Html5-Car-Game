@@ -37,14 +37,13 @@ export function renderRaceScreen(state) {
 
   return ScreenFrame({
     title: mode.label,
-    subtitle: 'Compact racing cockpit with rival best-run challenges.',
+    subtitle: 'Compact racing cockpit with route controls and fast upgrades.',
     badge: `Stage ${state.stage}`,
     className: 'raceCockpitFrame',
     body: `
       <div class="raceCockpitBadges">
         <span class="raceBadge progressBadge">${progress}/${stageLength}m</span>
         <span class="raceBadge ${problem ? 'problem' : 'clear'}">${problem ? problem.label : 'Route Clear'}</span>
-        <span class="raceBadge rival" data-guide-target="previewGhostRace">Rivals</span>
       </div>
 
       <section class="raceCanvasWrap">
@@ -64,8 +63,7 @@ export function renderRaceScreen(state) {
       ${BottomSheet({
         tabs: [
           { key: 'modes', label: 'Modes', active: true },
-          { key: 'upgrades', label: 'Upgrades' },
-          { key: 'ghosts', label: 'Rivals' }
+          { key: 'upgrades', label: 'Upgrades' }
         ],
         activeTab: 'modes',
         className: 'raceCockpitBottomSheet',
@@ -73,7 +71,6 @@ export function renderRaceScreen(state) {
           <div class="raceSheetStack">
             ${renderModeSection(state)}
             ${renderUpgradeSection(state)}
-            ${renderGhostSection()}
           </div>
         `
       })}
@@ -127,17 +124,6 @@ function renderUpgradeSection(state) {
       <div class="raceSheetHeader"><b>Fast Upgrades</b><span>Race route modifiers.</span></div>
       <div class="raceUpgradeList">
         ${UPGRADES.filter((upgrade) => upgrade.key !== 'supplierShelf').map((upgrade) => renderUpgrade(state, upgrade)).join('')}
-      </div>
-    </section>
-  `;
-}
-
-function renderGhostSection() {
-  return `
-    <section class="raceSheetSection raceGhostSection" data-guide-target="previewGhostRace">
-      <div class="raceSheetHeader"><b>Rivals</b><span>Best-run challengers.</span></div>
-      <div class="raceGhostNotice">
-        Line up against rival best runs and try to beat the next marker.
       </div>
     </section>
   `;
