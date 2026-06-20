@@ -103,6 +103,14 @@ export function updateFirstSessionGuide(state, root = document) {
   root.documentElement?.classList.add('firstSessionGuideActive');
 
   const targets = findGuideTargets(guide.step, root);
+  if (guide.activeScreen !== guide.step.screen) {
+    host.hidden = true;
+    host.removeAttribute('data-guide-placement');
+    host.dataset.guideTargetState = 'missing';
+    root.documentElement?.classList.remove('firstSessionGuideActive');
+    return;
+  }
+
   const topSafe = guide.activeScreen === 'race' || guide.step.key === 'previewGhostRace' || targets.length === 0;
   host.dataset.guidePlacement = topSafe ? 'topSafe' : 'default';
   host.dataset.guideTargetState = targets.length ? 'visible' : 'missing';

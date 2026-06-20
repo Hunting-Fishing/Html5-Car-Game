@@ -1,4 +1,4 @@
-import { renderDataIcon } from './GamePanel.js';
+import { renderFlatDataIcon } from './GamePanel.js';
 
 function escapeHtml(value = '') {
   return String(value)
@@ -16,7 +16,7 @@ export function ActionDock({ actions = [] } = {}) {
         const action = item.action || (item.screen ? 'screen' : '');
         return `
           <button class="actionDockButton ${escapeHtml(item.className || '')}" type="button" ${action ? `data-action="${escapeHtml(action)}"` : ''} ${item.screen ? `data-screen="${escapeHtml(item.screen)}"` : ''}>
-            ${item.icon ? renderDataIcon({ icon: item.icon, fallbackIcon: item.fallbackIcon }, item.label || 'Action', 'actionDockIcon') : ''}
+            ${item.icon ? renderFlatDataIcon({ icon: item.icon, fallbackIcon: item.fallbackIcon }, item.label || 'Action', 'actionDockIcon') : ''}
             <span>${escapeHtml(item.label || '')}</span>
           </button>
         `;

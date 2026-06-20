@@ -1,4 +1,4 @@
-import { UI_ICONS, screenIconForId } from '../../data/uiIconMap.js';
+import { UI_ICONS, UI_NAV_ICONS, screenIconForId } from '../../data/uiIconMap.js';
 
 function escapeHtml(value = '') {
   return String(value)
@@ -42,6 +42,11 @@ export function panelIconSrc(icon) {
   return UI_ICONS[icon] || screenIconForId(icon) || UI_ICONS.home;
 }
 
+export function flatIconSrc(icon) {
+  if (isAssetIcon(icon)) return icon;
+  return UI_NAV_ICONS[icon] || panelIconSrc(icon);
+}
+
 export function renderDataIcon(data, label, className) {
   if (!data) return '';
   const icon = typeof data === 'string' ? data : data.icon;
@@ -49,11 +54,18 @@ export function renderDataIcon(data, label, className) {
   return renderIconImage(panelIconSrc(icon), label, className, fallbackIcon);
 }
 
+export function renderFlatDataIcon(data, label, className) {
+  if (!data) return '';
+  const icon = typeof data === 'string' ? data : data.icon;
+  const fallbackIcon = typeof data === 'string' ? '' : data.fallbackIcon;
+  return renderIconImage(flatIconSrc(icon), label, className, fallbackIcon);
+}
+
 export function renderPanelHeader({ icon = 'home', fallbackIcon = '', title, subtitle = '', badge = '', heading = 'h3' }) {
   const TitleTag = heading === 'h2' ? 'h2' : 'h3';
   return `
     <div class="gamePanelHeader">
-      <span class="gameIconBadge">${renderIconImage(panelIconSrc(icon), `${title} icon`, 'gameIconBadgeImg', fallbackIcon)}</span>
+      <span class="gameIconBadge">${renderIconImage(flatIconSrc(icon), `${title} icon`, 'gameIconBadgeImg', fallbackIcon)}</span>
       <div class="gamePanelTitle"><${TitleTag}>${title}</${TitleTag}>${subtitle ? `<p>${subtitle}</p>` : ''}</div>
       ${badge ? `<span class="pill gamePanelBadge">${badge}</span>` : ''}
     </div>

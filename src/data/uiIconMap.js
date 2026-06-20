@@ -25,7 +25,12 @@ export const UI_NAV_ICONS = {
   race: `${UI_NAV_BASE}/icon-race.svg`,
   parts: `${UI_NAV_BASE}/icon-parts.svg`,
   garage: `${UI_NAV_BASE}/icon-garage.svg`,
-  menu: `${UI_NAV_BASE}/icon-menu.svg`
+  menu: `${UI_NAV_BASE}/icon-menu.svg`,
+  tools: `${UI_NAV_BASE}/icon-tools.svg`,
+  tune: `${UI_NAV_BASE}/icon-tune.svg`,
+  rep: `${UI_NAV_BASE}/icon-rep.svg`,
+  scrap: `${UI_NAV_BASE}/icon-scrap.svg`,
+  fuel: `${UI_NAV_BASE}/icon-fuel.svg`
 };
 
 export const SCREEN_ICON_MAP = {

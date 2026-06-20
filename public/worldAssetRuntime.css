@@ -773,12 +773,28 @@
 }
 
 #screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  z-index: 2;
   display: grid;
-  gap: 5px;
+  gap: 4px;
+  max-height: 112px;
+  margin: 8px 0 0;
+  padding: 5px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(8, 44, 66, .78), rgba(1, 12, 22, .88));
+  border: 1px solid rgba(125,220,255,.28);
+  box-shadow: 0 -5px 14px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.12);
 }
 
 html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) {
-  bottom: calc(82px + env(safe-area-inset-bottom));
+  bottom: auto;
+}
+
+#screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open)::before {
+  display: none;
 }
 
 #screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) .mobileCityStatus {
@@ -787,9 +803,9 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
   gap: 6px;
   align-items: center;
   margin: 0;
-  padding: 5px 7px;
-  border-radius: 13px;
-  background: rgba(3, 16, 23, .38);
+  padding: 3px 5px;
+  border-radius: 11px;
+  background: rgba(3, 16, 23, .22);
   border: 1px solid rgba(255,255,255,.10);
 }
 
@@ -799,13 +815,7 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
 }
 
 #screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) [data-mobile-city-help] {
-  min-width: 0;
-  overflow: hidden;
-  color: #dff6ff;
-  font-size: 9px;
-  line-height: 1.1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: none;
 }
 
 #screen-world .mobileMapTools {
@@ -830,11 +840,7 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
 }
 
 #screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) .mobileBuildSyncStatus {
-  min-height: 28px;
-  margin: 0;
-  padding: 5px 7px;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  border-radius: 12px;
+  display: none;
 }
 
 #screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) .mobileBuildSyncStatus b {
@@ -855,23 +861,43 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 5px;
   margin: 0;
-  padding: 5px;
-  border-radius: 15px;
-  background: rgba(1, 12, 22, .56);
-  border: 1px solid rgba(255,209,102,.22);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
 }
 
 #screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) .mobileCityActions.worldActionDock .btn {
-  min-height: 42px;
+  min-height: 39px;
   min-width: 0;
   padding: 5px 3px !important;
   border-radius: 12px !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  background: linear-gradient(180deg, #45c7f5 0%, #1687c7 54%, #07557d 100%) !important;
+  background-size: auto !important;
   font-size: 8px !important;
   line-height: 1.05;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 3px 0 rgba(0,0,0,.22);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.18), inset 0 -2px 0 rgba(0,0,0,.18), 0 3px 0 rgba(0,0,0,.22) !important;
+}
+
+#screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) .mobileCityActions.worldActionDock .btn.primary {
+  background: linear-gradient(180deg, #7cffad 0%, #24d36e 58%, #129655 100%) !important;
+  color: #04140c !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.22);
+}
+
+#screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) .mobileCityActions.worldActionDock .btn.gold {
+  background: linear-gradient(180deg, #ffe78f 0%, #ffb92e 58%, #c87908 100%) !important;
+  color: #2b1700 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.22);
+}
+
+#screen-world .mobileCityHud:not(.build-mode):not(.building-open):not(.resident-open) .mobileCityActions.worldActionDock .btn.ghost {
+  background: linear-gradient(180deg, #45c7f5 0%, #1687c7 54%, #07557d 100%) !important;
+  color: #eaffff !important;
 }
 
 #screen-world .mobileCityActions .btn.primary::before {

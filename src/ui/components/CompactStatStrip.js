@@ -1,4 +1,4 @@
-import { renderDataIcon } from './GamePanel.js';
+import { renderFlatDataIcon } from './GamePanel.js';
 import { segmentedMeter } from './StatMeter.js';
 
 function escapeHtml(value = '') {
@@ -15,7 +15,7 @@ export function CompactStatStrip({ stats = [] } = {}) {
     <div class="compactStatStrip">
       ${stats.map((stat) => `
         <div class="compactStatItem ${escapeHtml(stat.tone || '')}">
-          ${stat.icon ? `<span class="compactStatIcon">${renderDataIcon({ icon: stat.icon, fallbackIcon: stat.fallbackIcon }, stat.label || 'Stat', 'compactStatIconImg')}</span>` : ''}
+          ${stat.icon ? `<span class="compactStatIcon">${renderFlatDataIcon({ icon: stat.icon, fallbackIcon: stat.fallbackIcon }, stat.label || 'Stat', 'compactStatIconImg')}</span>` : ''}
           <div class="compactStatCopy">
             <span>${escapeHtml(stat.label || '')}</span>
             <b>${escapeHtml(stat.displayValue ?? stat.value ?? '')}</b>

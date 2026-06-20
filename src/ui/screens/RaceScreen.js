@@ -52,7 +52,7 @@ export function renderRaceScreen(state) {
         ${CompactStatStrip({
           stats: [
             { label: 'Progress', value: progress, max: stageLength, displayValue: `${progress}m`, tone: 'good', icon: 'race' },
-            { label: 'Fuel', value: Math.round(state.race.fuel), max: stats.fuelMax, displayValue: `${Math.round(state.race.fuel)}%`, tone: state.race.fuel < 25 ? 'bad' : 'good', icon: '/assets/road-runner/token-energy.svg' },
+            { label: 'Fuel', value: Math.round(state.race.fuel), max: stats.fuelMax, displayValue: `${Math.round(state.race.fuel)}%`, tone: state.race.fuel < 25 ? 'bad' : 'good', icon: 'fuel' },
             { label: 'Condition', value: Math.round(state.race.condition), max: stats.conditionMax, displayValue: `${Math.round(state.race.condition)}%`, tone: state.race.condition < 25 ? 'bad' : 'good', icon: 'tools' },
             { label: 'Heat', value: Math.round(state.race.heat), max: 100, displayValue: `${Math.round(state.race.heat)}%`, tone: 'dangerHigh', dangerHigh: true, icon: 'rep' }
           ]

@@ -629,3 +629,21 @@ Follow-up prompt: Clean up V10 mobile UI polish issues around guide overlays, Ra
 - Moved reward toasts into a compact HUD lane and reduced their size so attention/reward snackbars no longer cover race pedals, Tap Boost, merge actions, merge board cells, the bottom nav, or the guide card.
 - Verified `npm run build` and `npm run test:v10`.
 - Ran the standard web-game client against `?screen=race` and a 390x844 full-page Playwright QA sweep across Hub, Race, World, Merge, Garage, and Lines. Checks passed: no guide/control overlap, no Race-nav guide fallback, no visible `Route Clear` status, no nav nesting, nav icons use `/assets/ui/nav/icon-*.svg`, no page/screen scroll, and toasts no longer overlap Merge actions/board/nav.
+
+Follow-up prompt: Fix button icons/CTA art looking like smaller old buttons over newer buttons.
+
+- Added flat transparent UI glyphs under `public/assets/ui/nav` for tools, tune, rep, scrap, and fuel, extending the earlier flat Home/Race/Parts/Garage/Menu nav glyph set.
+- Added `flatIconSrc()` and `renderFlatDataIcon()` so button-like components can use flat glyphs while asset/card rendering can keep framed assets where appropriate.
+- Switched `SubTabBar`, `ActionDock`, `CompactStatStrip`, and `GamePanel` header badges to flat glyph rendering, removing old `/assets/ui/icons/*.png` square/capsule art from compact button/stat/card-header contexts.
+- Replaced the old Road Runner fuel token in compact stat strips with the new flat fuel glyph.
+- Removed Kenney CTA image backgrounds from compact sub-tabs, action dock buttons, and first-session guide jump buttons; these now use one clean gradient button surface with a simple shine instead of an inset old-button plate.
+- Verified a 390x844 Home screenshot: compact buttons/stats/card header use `/assets/ui/nav/icon-*.svg`, old framed icon count is 0, old CTA background count is 0, and body scroll remains 0.
+- Verified `npm run build` and `npm run test:v10`; build still has the existing Vite plugin timing and chunk-size warnings only.
+
+Follow-up prompt: Fix World map UI overlays on load.
+
+- Updated the first-session guide so it hides the floating guide card when the next step belongs to another screen instead of falling back to a bottom-nav target and covering World controls.
+- Converted the normal World runtime HUD into a compact in-flow strip below the Pixi map, with a real gap after the map and no guide-active upward nudge.
+- Hid normal-mode World helper/sync rows and removed old CTA background art from the World action dock so Dispatch Tow / Manage Shop / Upgrade Businesses / Run Route read as one clean button layer.
+- Verified a 390x844 World probe: guide hidden on World, no guide target highlight, World HUD does not overlap the map or bottom nav, old World action button background count is 0, no body/screen scroll.
+- Verified `npm run build`, `npm run test:v10`, and the standard web-game client on `?screen=world`; build still has the existing Vite plugin timing and chunk-size warnings only.
