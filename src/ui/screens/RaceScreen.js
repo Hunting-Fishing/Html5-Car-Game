@@ -43,12 +43,12 @@ export function renderRaceScreen(state) {
     body: `
       <div class="raceCockpitBadges">
         <span class="raceBadge progressBadge">${progress}/${stageLength}m</span>
-        <span class="raceBadge ${problem ? 'problem' : 'clear'}">${problem ? problem.label : 'Route Clear'}</span>
+        ${problem ? `<span class="raceBadge problem">${problem.label}</span>` : ''}
       </div>
 
       <section class="raceCanvasWrap">
         <div class="raceCanvas raceCockpitCanvas" id="raceCanvas"></div>
-        ${problem ? renderProblem(problem) : renderRouteClear(mode)}
+        ${problem ? renderProblem(problem) : ''}
         ${CompactStatStrip({
           stats: [
             { label: 'Progress', value: progress, max: stageLength, displayValue: `${progress}m`, tone: 'good', icon: 'race' },
@@ -92,15 +92,6 @@ function renderProblem(problem) {
       </div>
     `
   });
-}
-
-function renderRouteClear(mode) {
-  return `
-    <div class="raceClearStatus">
-      <b>Route Clear</b>
-      <span>${mode.description}</span>
-    </div>
-  `;
 }
 
 function renderModeSection(state) {

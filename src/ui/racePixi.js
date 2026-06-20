@@ -1,5 +1,4 @@
 import { Application, Assets, Container, Sprite, Text } from 'pixi.js';
-import { PROBLEMS } from '../data/gameData.js';
 import { getRaceMode, getRaceProgressRatio } from './raceProgress.js';
 
 const STARTER_CAR_SPRITE = '/assets/race/cars/starter_compact.png';
@@ -37,8 +36,6 @@ let car;
 let carSprite;
 let boostGlow;
 let warningBanner;
-let warningText;
-let warningSubText;
 let roadSprites = [];
 let streaks = [];
 let floatingRewards = [];
@@ -75,6 +72,7 @@ export async function mountRaceCanvas(host) {
   createSpeedStreaks();
   createCar();
   createWarningBanner();
+  warningBanner.visible = false;
 
   scene.addChild(roadLayer, milestoneLayer, streakLayer, car, rewardLayer, warningBanner);
 
@@ -114,12 +112,7 @@ export function updateRaceCanvas(state) {
   }
 
   updateMilestones(progressRatio);
-  if (raceState.problem) {
-    const problem = PROBLEMS[raceState.problem];
-    setWarning(problem?.label || 'Route Problem', problem?.description || 'Slow down and fix the route.');
-  } else {
-    setWarning(`Stage ${state.stage}`, `${mode.label} route clear`);
-  }
+  warningBanner.visible = false;
 
   lastProgress = progress;
 }
@@ -236,20 +229,13 @@ function createWarningBanner() {
   cap.y = 5;
   cap.width = 43;
   cap.height = 34;
-  warningText = new Text({ text: '', style: { fill: '#ffffff', fontSize: 15, fontWeight: '900' } });
+  const warningText = new Text({ text: '', style: { fill: '#ffffff', fontSize: 15, fontWeight: '900' } });
   warningText.x = 58;
   warningText.y = 8;
-  warningSubText = new Text({ text: '', style: { fill: '#bfe9f5', fontSize: 9, fontWeight: '800' } });
+  const warningSubText = new Text({ text: '', style: { fill: '#bfe9f5', fontSize: 9, fontWeight: '800' } });
   warningSubText.x = 58;
   warningSubText.y = 27;
   warningBanner.addChild(bg, cap, warningText, warningSubText);
-}
-
-function setWarning(title, subtitle) {
-  warningText.text = title;
-  warningSubText.text = subtitle.length > 38 ? `${subtitle.slice(0, 35)}...` : subtitle;
-  const problem = title.toLowerCase().includes('problem') || title.toLowerCase().includes('traffic') || title.toLowerCase().includes('break');
-  warningBanner.tint = problem ? 0xffd1d1 : 0xffffff;
 }
 
 function spawnReward(text, x, y, color = 0xffffff) {

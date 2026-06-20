@@ -44,7 +44,7 @@ const GUIDE_STEPS = [
     title: 'Open Leaderboard',
     label: 'Race',
     icon: UI_ICONS.race,
-    targetSelectors: ['[data-rr-tab="leaderboard"]', '[data-road-runner-leaderboard]', '[data-guide-target="previewGhostRace"]', '[data-nav-tab="race"]']
+    targetSelectors: ['[data-rr-tab="leaderboard"]', '[data-road-runner-leaderboard]', '[data-guide-target="previewGhostRace"]']
   }
 ];
 
@@ -89,6 +89,8 @@ export function updateFirstSessionGuide(state, root = document) {
     host.hidden = true;
     host.innerHTML = '';
     host.removeAttribute('data-guide-step');
+    host.removeAttribute('data-guide-placement');
+    host.removeAttribute('data-guide-target-state');
     root.documentElement?.classList.remove('firstSessionGuideActive');
     return;
   }
@@ -101,6 +103,9 @@ export function updateFirstSessionGuide(state, root = document) {
   root.documentElement?.classList.add('firstSessionGuideActive');
 
   const targets = findGuideTargets(guide.step, root);
+  const topSafe = guide.activeScreen === 'race' || guide.step.key === 'previewGhostRace' || targets.length === 0;
+  host.dataset.guidePlacement = topSafe ? 'topSafe' : 'default';
+  host.dataset.guideTargetState = targets.length ? 'visible' : 'missing';
   targets.slice(0, 4).forEach((target) => {
     target.classList.add('guideTargetActive');
     target.setAttribute('data-guide-active', guide.step.key);

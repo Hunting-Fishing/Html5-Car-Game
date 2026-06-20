@@ -1,4 +1,5 @@
 const UI_ICON_BASE = '/assets/ui/icons';
+const UI_NAV_BASE = '/assets/ui/nav';
 const ROAD_RUNNER_ICON_BASE = '/assets/road-runner';
 
 // Player-facing UI icons live in public/assets/ui/icons.
@@ -17,6 +18,14 @@ export const UI_ICONS = {
   tune: `${UI_ICON_BASE}/tune.png`,
   rep: `${UI_ICON_BASE}/rep.png`,
   fuel: `${ROAD_RUNNER_ICON_BASE}/token-energy.svg`
+};
+
+export const UI_NAV_ICONS = {
+  home: `${UI_NAV_BASE}/icon-home.svg`,
+  race: `${UI_NAV_BASE}/icon-race.svg`,
+  parts: `${UI_NAV_BASE}/icon-parts.svg`,
+  garage: `${UI_NAV_BASE}/icon-garage.svg`,
+  menu: `${UI_NAV_BASE}/icon-menu.svg`
 };
 
 export const SCREEN_ICON_MAP = {

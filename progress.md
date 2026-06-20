@@ -618,3 +618,14 @@ Follow-up prompt: Final mobile UX QA pass after layout compression.
 - Re-capped the Merge recipe drawer so larger touch targets did not reintroduce page scroll; supplier slots are now 36px and board remains the hero.
 - Verified final 390x844 metrics: no primary screen required page scroll; Race canvas/GAS area, Merge board, Garage shop floor, Lines compact rows, World map, and Menu profile summary were all visible in the first viewport.
 - Verified `npm run build`, `npm run test:v10`, and the standard web-game client on `?screen=profile`; build still has the existing Vite plugin timing and large-chunk warnings only.
+
+Follow-up prompt: Clean up V10 mobile UI polish issues around guide overlays, Race status, bottom nav, and toast layers.
+
+- Removed the Preview/Open Leaderboard first-session guide fallback to the Race bottom nav; the guide now only highlights actual leaderboard targets and uses compact top-safe placement when the target is missing or the active screen is Race.
+- Added `html[data-active-screen]` screen hooks and safe-area CSS variables for top HUD, bottom nav, and race controls.
+- Removed the duplicate clear-route messaging from the compact Race screen and hid the Pixi warning banner so normal routes do not show a bulky in-canvas/HTML clear status.
+- Replaced bottom-nav icon sources with transparent SVG glyphs under `public/assets/ui/nav` so the active tab no longer looks like a framed icon sitting on another framed button.
+- Simplified bottom-nav active styling in both `src/styles.css` and `public/mobileGameSkin.css`; confirmed there are no nested buttons in `BottomNav.js`.
+- Moved reward toasts into a compact HUD lane and reduced their size so attention/reward snackbars no longer cover race pedals, Tap Boost, merge actions, merge board cells, the bottom nav, or the guide card.
+- Verified `npm run build` and `npm run test:v10`.
+- Ran the standard web-game client against `?screen=race` and a 390x844 full-page Playwright QA sweep across Hub, Race, World, Merge, Garage, and Lines. Checks passed: no guide/control overlap, no Race-nav guide fallback, no visible `Route Clear` status, no nav nesting, nav icons use `/assets/ui/nav/icon-*.svg`, no page/screen scroll, and toasts no longer overlap Merge actions/board/nav.

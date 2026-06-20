@@ -28,6 +28,8 @@ export function getScreenElement(screenId, root = document) {
 }
 
 export function setActiveScreen(activeScreen, root = document) {
+  const doc = root.documentElement ? root : root.ownerDocument || document;
+  doc.documentElement.dataset.activeScreen = activeScreen;
   root.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
   getScreenElement(activeScreen, root)?.classList.add('active');
   setBottomNavActive(activeScreen, root);

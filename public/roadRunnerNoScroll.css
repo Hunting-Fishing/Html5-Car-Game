@@ -18,6 +18,12 @@ html.rrRaceViewport #screen-race.active {
   padding: 5px;
 }
 
+html.rrRaceViewport {
+  --bottom-nav-safe-area: calc(56px + env(safe-area-inset-bottom));
+  --top-hud-safe-area: 88px;
+  --race-control-safe-area: 172px;
+}
+
 #screen-race .roadRunnerShell {
   width: 100%;
   height: 100%;
