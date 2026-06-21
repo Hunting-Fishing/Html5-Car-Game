@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 110" role="img" aria-label="Row card frame">
+  <defs>
+    <linearGradient id="row" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#166f9e"/>
+      <stop offset=".55" stop-color="#083452"/>
+      <stop offset="1" stop-color="#031521"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="7" width="408" height="96" rx="21" fill="url(#row)" stroke="#7ee2ff" stroke-opacity=".55" stroke-width="4"/>
+  <path d="M20 16h216" stroke="#fff" stroke-opacity=".17" stroke-width="5" stroke-linecap="round"/>
+  <path d="M7 8h43v16H7zM370 86h43v16h-43z" fill="#ffd166"/>
+</svg>

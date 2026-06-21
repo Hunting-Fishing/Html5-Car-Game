@@ -1,21 +1,34 @@
 {
   "name": "365-micro-garage-companion",
-  "version": "0.9.0",
+  "version": "0.11.0",
   "private": true,
   "type": "module",
-  "description": "Mobile-first 365 Motor Sales companion idle racing clicker with merge-based micro parts and local saves.",
+  "description": "Mobile-first 365 Motor Sales companion idle racing clicker with a Phaser side-scroll racer and ghost race mode.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "test:race-progress": "node tests/raceProgress.test.mjs",
+    "test:ghost-model": "node tests/ghostModel.test.mjs",
+    "test:ghost-race": "node tests/ghostRace.test.mjs",
+    "test:first-session-guide": "node tests/firstSessionGuide.test.mjs",
+    "test:assets": "node tests/assetPaths.test.mjs",
+    "test:v10": "npm run test:race-progress && npm run test:ghost-model && npm run test:ghost-race && npm run test:first-session-guide && npm run test:assets"
   },
   "dependencies": {
+    "@juggle/resize-observer": "^3.4.0",
     "@vitejs/plugin-legacy": "latest",
+    "canvas-confetti": "latest",
     "gsap": "latest",
     "howler": "latest",
-    "pixi.js": "latest"
+    "lucide-static": "latest",
+    "phaser": "latest",
+    "pixi.js": "latest",
+    "screenfull": "^6.0.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "playwright": "^1.61.0",
     "vite": "latest",
     "vite-plugin-pwa": "latest"
   }

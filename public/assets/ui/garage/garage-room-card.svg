@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 440" role="img" aria-label="Garage room upgrade card">
+  <defs>
+    <linearGradient id="roomOuter" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#34c7f5"/>
+      <stop offset=".42" stop-color="#0d6598"/>
+      <stop offset="1" stop-color="#051f32"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="344" height="424" rx="30" fill="url(#roomOuter)" stroke="#9bedff" stroke-width="5"/>
+  <rect x="24" y="28" width="312" height="384" rx="21" fill="#051a29" stroke="#174b66" stroke-width="3"/>
+  <path d="M38 23h242" stroke="#fff" stroke-opacity=".26" stroke-width="7" stroke-linecap="round"/>
+  <path d="M22 30h42v18H22zM296 392h42v18h-42z" fill="#ffd166"/>
+  <circle cx="305" cy="66" r="28" fill="#001421" stroke="#7ee2ff" stroke-opacity=".35" stroke-width="3"/>
+</svg>

@@ -1,0 +1,846 @@
+:root {
+  --rr-ui-blue: url("/assets/vendor/kenney/kenney_ui-pack/Vector/Blue/button_rectangle_depth_gloss.svg");
+  --rr-ui-green: url("/assets/vendor/kenney/kenney_ui-pack/Vector/Green/button_rectangle_depth_gloss.svg");
+  --rr-ui-yellow: url("/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/button_rectangle_depth_gloss.svg");
+  --rr-ui-red: url("/assets/vendor/kenney/kenney_ui-pack/Vector/Red/button_rectangle_depth_gloss.svg");
+}
+
+html.rrRaceViewport,
+html.rrRaceViewport body,
+html.rrRaceViewport .appShell,
+html.rrRaceViewport .screenHost,
+html.rrRaceViewport #screen-race.active {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+html.rrRaceViewport #screen-race.active {
+  padding: 5px;
+}
+
+html.rrRaceViewport {
+  --bottom-nav-safe-area: calc(56px + env(safe-area-inset-bottom));
+  --top-hud-safe-area: 88px;
+  --race-control-safe-area: 172px;
+}
+
+#screen-race .roadRunnerShell {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 5px !important;
+  display: grid;
+  grid-template-rows: var(--ui-race-command-h, 64px) auto minmax(0, 1fr);
+  gap: 5px;
+}
+
+#screen-race .roadRunnerHeader,
+#screen-race .roadRunnerHud {
+  display: none;
+}
+
+#screen-race .racerInnerNav {
+  position: relative;
+  top: auto;
+  z-index: 60;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 3px;
+  margin: 0;
+  padding: 3px;
+  border-radius: 14px;
+}
+
+#screen-race .racerInnerNav button {
+  min-width: 0;
+  min-height: 38px;
+  padding: 5px 2px;
+  display: grid;
+  place-items: center;
+  gap: 0;
+  border-radius: 10px;
+  font-size: clamp(6px, 1.8vw, 9px);
+  background: var(--rr-ui-blue) center / 100% 100% no-repeat;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+#screen-race .racerInnerNav button b,
+#screen-race .racerInnerNav button span {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#screen-race .racerInnerNav button b {
+  color: inherit;
+  font-size: clamp(7px, 1.9vw, 10px);
+}
+
+#screen-race .racerInnerNav button span {
+  margin-top: 1px;
+  color: rgba(255,255,255,.72);
+  font-size: clamp(5px, 1.45vw, 7px);
+  text-transform: uppercase;
+}
+
+#screen-race .racerInnerNav button.active {
+  background-image: var(--rr-ui-yellow);
+}
+
+#screen-race .racerInnerNav button.active span {
+  color: rgba(43, 23, 0, .72);
+}
+
+#screen-race .rrRaceCommand {
+  height: var(--ui-race-command-h, 64px);
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1.15fr) minmax(112px, .85fr);
+  grid-template-areas:
+    "badge vehicle stats";
+  gap: 6px;
+  padding: 6px;
+  overflow: hidden;
+  contain: layout paint;
+  border-radius: 15px;
+  border: 2px solid rgba(125, 220, 255, .22);
+  background:
+    radial-gradient(circle at 12% 0, rgba(255, 209, 102, .18), transparent 35%),
+    linear-gradient(180deg, rgba(16, 52, 75, .94), rgba(5, 19, 32, .96));
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.10), 0 5px 0 rgba(0,0,0,.18);
+}
+
+#screen-race .rrRaceCommand::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: -2px;
+  width: 42px;
+  height: 13px;
+  border-radius: 0 0 12px 0;
+  background: linear-gradient(180deg,#ffe08a,#f59e0b);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.42), 0 3px 0 rgba(0,0,0,.2);
+  pointer-events: none;
+}
+
+#screen-race .rrRaceCommandBadge {
+  grid-area: badge;
+  width: 36px;
+  height: 36px;
+  align-self: center;
+  justify-self: center;
+}
+
+#screen-race .rrRaceCommandBadge .gameIconBadgeImg {
+  width: 22px;
+  height: 22px;
+}
+
+#screen-race .rrRaceVehicleMini {
+  grid-area: vehicle;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+
+#screen-race .rrRaceVehiclePortrait {
+  width: 44px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  align-content: center;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(125,220,255,.18), rgba(53,229,138,.10)),
+    rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+#screen-race .rrRaceVehiclePortrait b,
+#screen-race .rrRaceVehiclePortrait span {
+  display: block;
+  max-width: 38px;
+  overflow: hidden;
+  line-height: 1;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#screen-race .rrRaceVehiclePortrait b {
+  color: #fff;
+  font-size: 8px;
+}
+
+#screen-race .rrRaceVehiclePortrait span {
+  margin-top: 2px;
+  color: #9ddcf1;
+  font-size: 6px;
+  font-weight: 1000;
+}
+
+#screen-race .rrRaceVehicleCopy {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+#screen-race .rrRaceVehicleCopy span,
+#screen-race .rrRaceMissionStrip span {
+  color: #ffd166;
+  font-size: 6px;
+  font-weight: 1000;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+#screen-race .rrRaceVehicleCopy b,
+#screen-race .rrRaceMissionStrip b {
+  min-width: 0;
+  overflow: hidden;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2px 0 rgba(0,0,0,.32);
+}
+
+#screen-race .rrRaceVehicleCopy small,
+#screen-race .rrRaceMissionStrip small {
+  min-width: 0;
+  overflow: hidden;
+  color: #bfe9f5;
+  font-size: 7px;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#screen-race .rrRaceCommandStats {
+  grid-area: stats;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#screen-race .rrRaceCommandStats div {
+  min-width: 0;
+  padding: 5px 3px;
+  border-radius: 11px;
+  display: grid;
+  align-content: center;
+  text-align: center;
+  background: rgba(0,0,0,.24);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+#screen-race .rrRaceCommandStats b {
+  overflow: hidden;
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#screen-race .rrRaceCommandStats span {
+  margin-top: 2px;
+  color: #9ddcf1;
+  font-size: 6px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+#screen-race .rrRaceMissionStrip {
+  display: none;
+  grid-area: mission;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 7px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.23);
+  border: 1px solid rgba(255,255,255,.09);
+}
+
+#screen-race .roadRunnerShell[data-rr-active-tab="leaderboard"] .rrRaceCommand,
+#screen-race .roadRunnerShell[data-rr-active-tab="garage"] .rrRaceCommand,
+#screen-race .roadRunnerShell[data-rr-active-tab="vehicles"] .rrRaceCommand,
+#screen-race .roadRunnerShell[data-rr-active-tab="routes"] .rrRaceCommand,
+#screen-race .roadRunnerShell[data-rr-active-tab="missions"] .rrRaceCommand {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "vehicle"
+    "mission";
+}
+
+#screen-race .roadRunnerShell[data-rr-active-tab="leaderboard"] .rrRaceCommandStats,
+#screen-race .roadRunnerShell[data-rr-active-tab="garage"] .rrRaceCommandStats,
+#screen-race .roadRunnerShell[data-rr-active-tab="vehicles"] .rrRaceCommandStats,
+#screen-race .roadRunnerShell[data-rr-active-tab="routes"] .rrRaceCommandStats,
+#screen-race .roadRunnerShell[data-rr-active-tab="missions"] .rrRaceCommandStats {
+  display: none;
+}
+
+#screen-race .roadRunnerShell[data-rr-active-tab="leaderboard"] .rrRaceMissionStrip,
+#screen-race .roadRunnerShell[data-rr-active-tab="garage"] .rrRaceMissionStrip,
+#screen-race .roadRunnerShell[data-rr-active-tab="vehicles"] .rrRaceMissionStrip,
+#screen-race .roadRunnerShell[data-rr-active-tab="routes"] .rrRaceMissionStrip,
+#screen-race .roadRunnerShell[data-rr-active-tab="missions"] .rrRaceMissionStrip {
+  display: grid;
+}
+
+#screen-race .racerPages,
+#screen-race .racerPage.active {
+  height: 100%;
+  min-height: 0;
+}
+
+#screen-race .racerPage.active:not([data-rr-page="drive"]) {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+#screen-race .racerPage.active:not([data-rr-page="drive"])::-webkit-scrollbar {
+  display: none;
+}
+
+#screen-race [data-rr-page="drive"] {
+  overflow: hidden;
+}
+
+#screen-race [data-rr-page="drive"] .roadRunnerGameFrame {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  border-radius: 18px;
+}
+
+.roadRunnerBadge,
+.rrRestartRunButton,
+.rrGasGearBadge {
+  background: var(--rr-ui-blue) center / 100% 100% no-repeat !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.rrRestartRunButton {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  padding: 0 0 3px;
+  color: #06213a;
+  font-size: 21px;
+  font-weight: 1000;
+  line-height: 1;
+  pointer-events: auto;
+}
+
+.roadRunnerPedal.brake {
+  background: var(--rr-ui-red) center / 100% 100% no-repeat;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.roadRunnerPedal.gas {
+  background: var(--rr-ui-green) center / 100% 100% no-repeat;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.roadRunnerEndPanel.rrPostRunPanel {
+  inset: 5px !important;
+  padding: 8px !important;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  --rr-result-gap: 5px;
+  --rr-reward-h: 43px;
+  --rr-detail-h: 31px;
+  --rr-action-h: 31px;
+  gap: var(--rr-result-gap);
+  overflow: hidden !important;
+  overscroll-behavior: none;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 22% 0, rgba(125, 220, 255, .16), transparent 34%),
+    linear-gradient(180deg, rgba(8, 27, 43, .94), rgba(1, 11, 18, .96)) !important;
+  border: 2px solid rgba(125, 220, 255, .34) !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, .13),
+    0 8px 0 rgba(0, 0, 0, .22),
+    0 18px 30px rgba(0, 0, 0, .34) !important;
+}
+
+.rrPostRunHero {
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 4px 6px !important;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+  border: 1px solid rgba(255, 255, 255, .08);
+}
+
+.rrPostRunStars {
+  display: flex;
+  gap: 1px;
+  font-size: 0 !important;
+  filter: none !important;
+}
+
+.rrPostRunStars img {
+  width: clamp(16px, 5vw, 25px);
+  height: clamp(15px, 4.7vw, 23px);
+  object-fit: contain;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.28));
+}
+
+.rrPostRunPlace {
+  min-width: 62px;
+  min-height: 31px;
+  margin: 0 !important;
+  padding: 4px 9px !important;
+  background: var(--rr-ui-yellow) center / 100% 100% no-repeat !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: clamp(14px, 4vw, 21px) !important;
+}
+
+.rrPostRunHeading {
+  min-width: 0;
+}
+
+.roadRunnerEndPanel .rrPostRunTitle {
+  margin: 0 !important;
+  overflow: hidden;
+  font-size: clamp(13px, 3.8vw, 19px) !important;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roadRunnerEndPanel .rrPostRunSubtitle {
+  margin: 2px 0 0 !important;
+  overflow: hidden;
+  font-size: clamp(6px, 1.9vw, 9px) !important;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rrPostRunGrid {
+  flex: 0 0 auto;
+  min-height: 0;
+  margin: 0 !important;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: var(--rr-reward-h);
+  gap: var(--rr-result-gap) !important;
+  align-items: stretch;
+}
+
+.rrPostRunReward {
+  min-width: 0;
+  min-height: 0 !important;
+  height: var(--rr-reward-h);
+  padding: 4px 6px !important;
+  display: grid;
+  grid-template-columns: clamp(18px, 5.5vw, 28px) minmax(0, 1fr);
+  align-content: center;
+  align-items: center;
+  column-gap: 5px;
+  text-align: left;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .08), transparent 44%),
+    linear-gradient(180deg, rgba(48, 78, 97, .96), rgba(11, 29, 41, .98)) !important;
+  border: 1px solid rgba(255, 255, 255, .14) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+
+.rrPostRunReward[data-rr-reward="parts"] {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .08), transparent 44%),
+    linear-gradient(180deg, rgba(62, 62, 110, .96), rgba(24, 26, 58, .98)) !important;
+}
+
+.rrPostRunReward[data-rr-reward="tools"] {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .08), transparent 44%),
+    linear-gradient(180deg, rgba(128, 69, 38, .96), rgba(54, 28, 18, .98)) !important;
+}
+
+.rrPostRunRewardIcon {
+  width: clamp(18px, 5.5vw, 28px);
+  height: clamp(18px, 5.5vw, 28px);
+  object-fit: contain;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .28));
+}
+
+.rrPostRunRewardCopy {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  line-height: 1;
+}
+
+.rrPostRunReward b {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  font-size: clamp(11px, 3vw, 16px) !important;
+  line-height: .95;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rrPostRunRewardCopy > span,
+.rrPostRunRewardCopy > small {
+  margin-top: 1px !important;
+  overflow: hidden;
+  font-size: clamp(5px, 1.4vw, 7px) !important;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rrPostRunRewardCopy > small {
+  color: #fff3c4;
+}
+
+.rrPostRunDetails {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--rr-result-gap) !important;
+}
+
+.rrPostRunDetail {
+  min-width: 0;
+  min-height: 0 !important;
+  height: var(--rr-detail-h);
+  padding: 3px 2px !important;
+  display: grid;
+  align-content: center;
+  overflow: hidden;
+  border-radius: 9px !important;
+  font-size: clamp(5px, 1.5vw, 7px) !important;
+  line-height: 1;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rrPostRunDetail b {
+  margin: 0 0 2px !important;
+  overflow: hidden;
+  font-size: clamp(9px, 2.4vw, 12px) !important;
+  text-overflow: ellipsis;
+}
+
+.rrPostRunActions {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--rr-result-gap) !important;
+}
+
+.rrPostRunActions button {
+  min-width: 0;
+  min-height: 0 !important;
+  height: var(--rr-action-h);
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--rr-ui-blue) center / 100% 100% no-repeat !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: clamp(7px, 2vw, 10px) !important;
+}
+
+.rrPostRunActions button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rrPostRunActionIcon {
+  flex: 0 0 auto;
+  width: clamp(12px, 3vw, 17px);
+  height: clamp(12px, 3vw, 17px);
+  object-fit: contain;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .24));
+}
+
+.rrPostRunActions button.primary {
+  background-image: var(--rr-ui-green) !important;
+}
+
+.rrPostRunActions button.gold {
+  background-image: var(--rr-ui-yellow) !important;
+}
+
+@media (min-height: 701px) {
+  .roadRunnerEndPanel.rrPostRunPanel {
+    inset: clamp(18px, 6vh, 52px) 10px !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%);
+    max-height: calc(100% - 92px);
+    padding: 12px !important;
+    --rr-result-gap: 7px;
+    --rr-reward-h: 54px;
+    --rr-detail-h: 42px;
+    --rr-action-h: 40px;
+    gap: var(--rr-result-gap);
+  }
+
+  .rrPostRunHero {
+    gap: 9px;
+  }
+
+  .rrPostRunStars img {
+    width: 27px;
+    height: 25px;
+  }
+
+  .rrPostRunPlace {
+    min-width: 72px;
+    min-height: 38px;
+    font-size: 20px !important;
+  }
+
+  .roadRunnerEndPanel .rrPostRunTitle {
+    font-size: 19px !important;
+  }
+
+  .roadRunnerEndPanel .rrPostRunSubtitle {
+    font-size: 9px !important;
+  }
+
+  .rrPostRunGrid {
+    grid-auto-rows: var(--rr-reward-h);
+    gap: var(--rr-result-gap) !important;
+  }
+
+  .rrPostRunReward b {
+    font-size: 16px !important;
+  }
+
+  .rrPostRunRewardCopy > span,
+  .rrPostRunRewardCopy > small {
+    font-size: 7px !important;
+  }
+
+  .rrPostRunDetails {
+    gap: var(--rr-result-gap) !important;
+  }
+
+  .rrPostRunDetail {
+    height: var(--rr-detail-h);
+    font-size: 7px !important;
+  }
+
+  .rrPostRunDetail b {
+    font-size: 12px !important;
+  }
+
+  .rrPostRunActions {
+    gap: var(--rr-result-gap) !important;
+  }
+
+  .rrPostRunActions button {
+    height: var(--rr-action-h);
+    font-size: 10px !important;
+  }
+}
+
+@media (min-height: 701px) and (max-width: 430px) {
+  .rrPostRunHero {
+    grid-template-columns: auto auto;
+    justify-content: center;
+  }
+
+  .rrPostRunHeading {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+}
+
+@media (max-height: 700px) {
+  .roadRunnerEndPanel.rrPostRunPanel {
+    --rr-result-gap: 4px;
+    --rr-reward-h: 37px;
+    --rr-detail-h: 28px;
+    --rr-action-h: 28px;
+    padding: 6px !important;
+  }
+
+  html.rrRaceViewport .appShell {
+    grid-template-rows: 68px minmax(0, 1fr) 56px;
+  }
+
+  html.rrRaceViewport .topBar {
+    min-height: 0;
+    padding: 4px 8px;
+  }
+
+  html.rrRaceViewport .topLine {
+    margin-bottom: 2px;
+  }
+
+  html.rrRaceViewport .brandLogo {
+    width: 31px;
+    height: 31px;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+
+  html.rrRaceViewport .brandText b {
+    font-size: 11px;
+  }
+
+  html.rrRaceViewport .brandText span,
+  html.rrRaceViewport .stagePill {
+    display: none;
+  }
+
+  html.rrRaceViewport .walletRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
+  html.rrRaceViewport .currencyGrid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  html.rrRaceViewport .cur {
+    min-height: 25px;
+    grid-template-columns: 10px minmax(0, 1fr);
+    gap: 1px;
+    padding: 2px 3px;
+    border-width: 1px;
+    border-radius: 8px;
+  }
+
+  html.rrRaceViewport .curIcon {
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  html.rrRaceViewport .curPlus {
+    display: none;
+  }
+
+  html.rrRaceViewport .cur b {
+    font-size: 9px;
+  }
+
+  html.rrRaceViewport .cur span {
+    font-size: 6px;
+  }
+
+  html.rrRaceViewport .bottomNav {
+    height: 56px;
+    padding: 3px 4px calc(3px + env(safe-area-inset-bottom));
+  }
+
+  html.rrRaceViewport .tab {
+    gap: 1px;
+    border-radius: 9px;
+    font-size: 5px;
+  }
+
+  html.rrRaceViewport .tabIcon {
+    width: 16px;
+    height: 16px;
+  }
+
+  #screen-race .racerInnerNav button {
+    min-height: 25px;
+  }
+
+  #screen-race .rrRaceCommand {
+    height: var(--ui-race-command-h, 48px);
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "vehicle";
+    padding: 4px;
+  }
+
+  #screen-race .rrRaceCommandBadge {
+    display: none;
+  }
+
+  #screen-race .rrRaceVehicleMini {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  #screen-race .rrRaceVehiclePortrait {
+    width: 38px;
+    height: 34px;
+  }
+
+  #screen-race .rrRaceCommandStats {
+    display: none;
+  }
+
+  #screen-race .rrRaceMissionStrip {
+    display: none !important;
+    padding: 3px 5px;
+  }
+
+  .roadRunnerControls {
+    left: 6px;
+    right: 6px;
+    bottom: 5px;
+    gap: 7px;
+  }
+
+  .roadRunnerPedal {
+    min-height: 47px;
+    font-size: 12px;
+  }
+
+  .rrCollectionHud {
+    top: 59px !important;
+  }
+
+  .rrPostRunGrid {
+    grid-auto-rows: var(--rr-reward-h);
+  }
+}

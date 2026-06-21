@@ -1,0 +1,392 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: "365"
+        - generic [ref=e8]:
+          - generic [ref=e9]: Micro Garage
+          - text: Playable auto world · local save
+      - button "FS" [ref=e11] [cursor=pointer]
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - img "Coins icon" [ref=e15]
+          - generic [ref=e16]:
+            - generic [ref=e17]: "50"
+            - generic [ref=e18]: Coins
+          - button "Open Coins shop link" [ref=e19] [cursor=pointer]: +
+        - generic [ref=e20]:
+          - img "Parts icon" [ref=e21]
+          - generic [ref=e22]:
+            - generic [ref=e23]: "0"
+            - generic [ref=e24]: Parts
+          - button "Open Parts shop link" [ref=e25] [cursor=pointer]: +
+        - generic [ref=e26]:
+          - img "Tools icon" [ref=e27]
+          - generic [ref=e28]:
+            - generic [ref=e29]: "0"
+            - generic [ref=e30]: Tools
+          - button "Open Tools shop link" [ref=e31] [cursor=pointer]: +
+        - generic [ref=e32]:
+          - img "Scrap icon" [ref=e33]
+          - generic [ref=e34]:
+            - generic [ref=e35]: "10"
+            - generic [ref=e36]: Scrap
+          - button "Open Scrap shop link" [ref=e37] [cursor=pointer]: +
+        - generic [ref=e38]:
+          - img "Tune icon" [ref=e39]
+          - generic [ref=e40]:
+            - generic [ref=e41]: "0"
+            - generic [ref=e42]: Tune
+          - button "Open Tune shop link" [ref=e43] [cursor=pointer]: +
+        - generic [ref=e44]:
+          - img "Rep icon" [ref=e45]
+          - generic [ref=e46]:
+            - generic [ref=e47]: "0"
+            - generic [ref=e48]: Rep
+          - button "Open Rep shop link" [ref=e49] [cursor=pointer]: +
+      - generic "Stage 1" [ref=e50]:
+        - generic [ref=e52]:
+          - generic [ref=e53]: Stage
+          - generic [ref=e54]: "1"
+  - main [ref=e55]:
+    - generic [ref=e56]:
+      - generic [ref=e58]:
+        - generic [ref=e59]:
+          - img "Build Hub icon" [ref=e61]
+          - generic [ref=e62]:
+            - heading "Build Hub" [level=2] [ref=e63]
+            - paragraph [ref=e64]: Upgrade rooms, feed World inventory, and unlock Lines from one control board.
+          - generic [ref=e65]: Live Sync
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e68]:
+              - generic [ref=e69]: 20%
+              - generic [ref=e70]: Systems online
+            - meter "Garage systems online" [ref=e71]
+          - generic [ref=e79]:
+            - button "Build" [ref=e80] [cursor=pointer]:
+              - generic [ref=e81]: Build
+            - button "World" [ref=e82] [cursor=pointer]:
+              - generic [ref=e83]: World
+            - button "Lines" [ref=e84] [cursor=pointer]:
+              - generic [ref=e85]: Lines
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - generic [ref=e88]: 1/5
+              - generic [ref=e89]: Systems Built
+            - generic [ref=e90]:
+              - generic [ref=e91]: "+1"
+              - generic [ref=e92]: World Placements
+            - generic [ref=e93]:
+              - generic [ref=e94]: 1/7
+              - generic [ref=e95]: Linked Lines
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - img "365 Auto Shop Floor icon" [ref=e100]
+          - generic [ref=e101]:
+            - heading "365 Auto Shop Floor" [level=2] [ref=e102]
+            - paragraph [ref=e103]: Each room links to a Line and adds World inventory when its Build system exists.
+          - generic [ref=e104]: Room Map
+        - generic [ref=e106]:
+          - article [ref=e107]:
+            - generic [ref=e108]:
+              - img "Front Lot" [ref=e109]
+              - generic [ref=e110]: Lv 1
+              - generic [ref=e111]: Manual
+            - generic [ref=e112]:
+              - generic [ref=e113]:
+                - heading "🚗 Front Lot" [level=3] [ref=e114]
+                - generic [ref=e115]: Coins
+              - paragraph [ref=e116]: Customer cars arrive here. This is the first visual anchor for the companion game.
+              - meter "Front Lot room progress" [ref=e117]
+              - generic [ref=e124]:
+                - generic [ref=e125]: 8 Coins
+                - generic [ref=e126]: Manual
+              - generic [ref=e128]:
+                - generic [ref=e129]: "+1"
+                - generic [ref=e130]: Kiosk
+              - generic [ref=e131]:
+                - button "Line" [ref=e132] [cursor=pointer]:
+                  - generic [ref=e133]: Line
+                - button "World" [ref=e134] [cursor=pointer]:
+                  - generic [ref=e135]: World
+                - button "Build" [ref=e136] [cursor=pointer]:
+                  - generic [ref=e137]: Build
+          - article [ref=e138]:
+            - generic [ref=e139]:
+              - img "Parts Counter" [ref=e140]
+              - generic [ref=e141]: Locked
+              - generic [ref=e142]: Locked
+            - generic [ref=e143]:
+              - generic [ref=e144]:
+                - heading "📦 Parts Counter" [level=3] [ref=e145]
+                - generic [ref=e146]: Service Parts
+              - paragraph [ref=e147]: Build Parts Storage to open.
+              - meter "Parts Counter room progress" [ref=e148]
+              - generic [ref=e155]:
+                - generic [ref=e156]: 0 Service Parts
+                - generic [ref=e157]: Locked
+              - generic [ref=e159]:
+                - generic [ref=e160]: Pending
+                - generic [ref=e161]: Build to sync World
+              - generic [ref=e162]:
+                - button "Reqs" [ref=e163] [cursor=pointer]:
+                  - generic [ref=e164]: Reqs
+                - button "World" [ref=e165] [cursor=pointer]:
+                  - generic [ref=e166]: World
+                - button "Build" [ref=e167] [cursor=pointer]:
+                  - generic [ref=e168]: Build
+            - generic: 🔒
+          - article [ref=e169]:
+            - generic [ref=e170]:
+              - img "Service Bay" [ref=e171]
+              - generic [ref=e172]: Locked
+              - generic [ref=e173]: Locked
+            - generic [ref=e174]:
+              - generic [ref=e175]:
+                - heading "🧑‍🔧 Service Bay" [level=3] [ref=e176]
+                - generic [ref=e177]: Toolkits
+              - paragraph [ref=e178]: Build Parts Storage to open.
+              - meter "Service Bay room progress" [ref=e179]
+              - generic [ref=e186]:
+                - generic [ref=e187]: 0 Toolkits
+                - generic [ref=e188]: Locked
+              - generic [ref=e190]:
+                - generic [ref=e191]: Pending
+                - generic [ref=e192]: Build to sync World
+              - generic [ref=e193]:
+                - button "Reqs" [ref=e194] [cursor=pointer]:
+                  - generic [ref=e195]: Reqs
+                - button "World" [ref=e196] [cursor=pointer]:
+                  - generic [ref=e197]: World
+                - button "Build" [ref=e198] [cursor=pointer]:
+                  - generic [ref=e199]: Build
+            - generic: 🔒
+          - article [ref=e200]:
+            - generic [ref=e201]:
+              - img "Tow Yard" [ref=e202]
+              - generic [ref=e203]: Locked
+              - generic [ref=e204]: Locked
+            - generic [ref=e205]:
+              - generic [ref=e206]:
+                - heading "🪝 Tow Yard" [level=3] [ref=e207]
+                - generic [ref=e208]: Scrap
+              - paragraph [ref=e209]: Build 365 Companion Hub to open.
+              - meter "Tow Yard room progress" [ref=e210]
+              - generic [ref=e217]:
+                - generic [ref=e218]: 0 Scrap
+                - generic [ref=e219]: Locked
+              - generic [ref=e221]:
+                - generic [ref=e222]: Pending
+                - generic [ref=e223]: Build to sync World
+              - generic [ref=e224]:
+                - button "Reqs" [ref=e225] [cursor=pointer]:
+                  - generic [ref=e226]: Reqs
+                - button "World" [ref=e227] [cursor=pointer]:
+                  - generic [ref=e228]: World
+                - button "Build" [ref=e229] [cursor=pointer]:
+                  - generic [ref=e230]: Build
+            - generic: 🔒
+          - article [ref=e231]:
+            - generic [ref=e232]:
+              - img "Tuning Corner" [ref=e233]
+              - generic [ref=e234]: Locked
+              - generic [ref=e235]: Locked
+            - generic [ref=e236]:
+              - generic [ref=e237]:
+                - heading "⚙️ Tuning Corner" [level=3] [ref=e238]
+                - generic [ref=e239]: Tune Points
+              - paragraph [ref=e240]: Build Tuning Corner to open.
+              - meter "Tuning Corner room progress" [ref=e241]
+              - generic [ref=e248]:
+                - generic [ref=e249]: 0 Tune Points
+                - generic [ref=e250]: Locked
+              - generic [ref=e252]:
+                - generic [ref=e253]: Pending
+                - generic [ref=e254]: Build to sync World
+              - generic [ref=e255]:
+                - button "Reqs" [ref=e256] [cursor=pointer]:
+                  - generic [ref=e257]: Reqs
+                - button "World" [ref=e258] [cursor=pointer]:
+                  - generic [ref=e259]: World
+                - button "Build" [ref=e260] [cursor=pointer]:
+                  - generic [ref=e261]: Build
+            - generic: 🔒
+          - article [ref=e262]:
+            - generic [ref=e263]:
+              - img "2D Test Track" [ref=e264]
+              - generic [ref=e265]: Locked
+              - generic [ref=e266]: Locked
+            - generic [ref=e267]:
+              - generic [ref=e268]:
+                - heading "🏁 2D Test Track" [level=3] [ref=e269]
+                - generic [ref=e270]: Race Rep
+              - paragraph [ref=e271]: Build 2D Test Track to open.
+              - meter "2D Test Track room progress" [ref=e272]
+              - generic [ref=e279]:
+                - generic [ref=e280]: 0 Race Rep
+                - generic [ref=e281]: Locked
+              - generic [ref=e283]:
+                - generic [ref=e284]: Pending
+                - generic [ref=e285]: Build to sync World
+              - generic [ref=e286]:
+                - button "Reqs" [ref=e287] [cursor=pointer]:
+                  - generic [ref=e288]: Reqs
+                - button "World" [ref=e289] [cursor=pointer]:
+                  - generic [ref=e290]: World
+                - button "Build" [ref=e291] [cursor=pointer]:
+                  - generic [ref=e292]: Build
+            - generic: 🔒
+      - generic [ref=e294]:
+        - generic [ref=e295]:
+          - img "Garage Systems icon" [ref=e297]
+          - generic [ref=e298]:
+            - heading "Garage Systems" [level=2] [ref=e299]
+            - paragraph [ref=e300]: Buildings unlock mechanics, city inventory, resident support, and line requirements.
+          - generic [ref=e301]: 20% online
+        - generic [ref=e303]:
+          - article [ref=e304]:
+            - generic [ref=e305]:
+              - img "Parts Storage" [ref=e306]
+              - generic [ref=e307]: Lv 0/3
+            - generic [ref=e308]:
+              - generic [ref=e309]:
+                - generic [ref=e310]:
+                  - heading "Parts Storage" [level=4] [ref=e311]
+                  - paragraph [ref=e312]: Increases active board permit. This should be the first build objective.
+                - generic [ref=e313]: Ready
+              - meter "Parts Storage upgrade progress" [ref=e314]
+              - generic [ref=e321]:
+                - generic [ref=e322]: "Cost:"
+                - text: 120 Coins · 18 Parts
+              - paragraph [ref=e323]: "Unlocks: More board capacity"
+              - generic [ref=e324]:
+                - generic [ref=e326]:
+                  - generic [ref=e327]: Pending
+                  - generic [ref=e328]: Build to sync World
+                - generic [ref=e329]:
+                  - generic [ref=e330]:
+                    - generic [ref=e331]: Locked
+                    - generic [ref=e332]: Parts Delivery
+                  - generic [ref=e333]:
+                    - generic [ref=e334]: Locked
+                    - generic [ref=e335]: Mobile Mechanic
+              - generic [ref=e336]:
+                - button "Build" [disabled] [ref=e337] [cursor=pointer]
+                - button "World" [ref=e338] [cursor=pointer]
+                - button "Lines" [ref=e339] [cursor=pointer]
+          - article [ref=e340]:
+            - generic [ref=e341]:
+              - img "Tuning Corner" [ref=e342]
+              - generic [ref=e343]: Lv 0/2
+            - generic [ref=e344]:
+              - generic [ref=e345]:
+                - generic [ref=e346]:
+                  - heading "Tuning Corner" [level=4] [ref=e347]
+                  - paragraph [ref=e348]: Unlocks Performance Parts starter drops after the player proves the core loop.
+                - generic [ref=e349]: Ready
+              - meter "Tuning Corner upgrade progress" [ref=e350]
+              - generic [ref=e357]:
+                - generic [ref=e358]: "Cost:"
+                - text: 350 Coins · 55 Parts · 35 Tools
+              - paragraph [ref=e359]: "Unlocks: Performance Parts chain and Performance Bay line"
+              - generic [ref=e360]:
+                - generic [ref=e362]:
+                  - generic [ref=e363]: Pending
+                  - generic [ref=e364]: Build to sync World
+                - generic [ref=e366]:
+                  - generic [ref=e367]: Locked
+                  - generic [ref=e368]: Performance Bay
+              - generic [ref=e369]:
+                - button "Build" [disabled] [ref=e370] [cursor=pointer]
+                - button "World" [ref=e371] [cursor=pointer]
+                - button "Lines" [ref=e372] [cursor=pointer]
+          - article [ref=e373]:
+            - generic [ref=e374]:
+              - img "2D Test Track" [ref=e375]
+              - generic [ref=e376]: Lv 0/2
+            - generic [ref=e377]:
+              - generic [ref=e378]:
+                - generic [ref=e379]:
+                  - heading "2D Test Track" [level=4] [ref=e380]
+                  - paragraph [ref=e381]: Unlocks Racing Gear and stronger route rewards.
+                - generic [ref=e382]: Ready
+              - meter "2D Test Track upgrade progress" [ref=e383]
+              - generic [ref=e390]:
+                - generic [ref=e391]: "Cost:"
+                - text: 800 Coins · 35 Tune · 18 Rep
+              - paragraph [ref=e392]: "Unlocks: Racing Gear chain and Race Event line"
+              - generic [ref=e393]:
+                - generic [ref=e395]:
+                  - generic [ref=e396]: Pending
+                  - generic [ref=e397]: Build to sync World
+                - generic [ref=e399]:
+                  - generic [ref=e400]: Locked
+                  - generic [ref=e401]: Race Event
+              - generic [ref=e402]:
+                - button "Build" [disabled] [ref=e403] [cursor=pointer]
+                - button "World" [ref=e404] [cursor=pointer]
+                - button "Lines" [ref=e405] [cursor=pointer]
+          - article [ref=e406]:
+            - generic [ref=e407]:
+              - img "365 Companion Hub" [ref=e408]
+              - generic [ref=e409]: Lv 0/3
+            - generic [ref=e410]:
+              - generic [ref=e411]:
+                - generic [ref=e412]:
+                  - heading "365 Companion Hub" [level=4] [ref=e413]
+                  - paragraph [ref=e414]: Improves offline progress and profile value. No Supabase yet.
+                - generic [ref=e415]: Ready
+              - meter "365 Companion Hub upgrade progress" [ref=e416]
+              - generic [ref=e423]:
+                - generic [ref=e424]: "Cost:"
+                - text: 650 Coins · 25 Rep · 40 Tools
+              - paragraph [ref=e425]: "Unlocks: Better offline rewards"
+              - generic [ref=e426]:
+                - generic [ref=e428]:
+                  - generic [ref=e429]: Pending
+                  - generic [ref=e430]: Build to sync World
+                - generic [ref=e431]:
+                  - generic [ref=e432]:
+                    - generic [ref=e433]: Locked
+                    - generic [ref=e434]: Towing Job
+                  - generic [ref=e435]:
+                    - generic [ref=e436]: Locked
+                    - generic [ref=e437]: Dealer Showcase
+              - generic [ref=e438]:
+                - button "Build" [disabled] [ref=e439] [cursor=pointer]
+                - button "World" [ref=e440] [cursor=pointer]
+                - button "Lines" [ref=e441] [cursor=pointer]
+      - generic [ref=e443]:
+        - generic [ref=e444]:
+          - img "Supplier / Merge Upgrades icon" [ref=e446]
+          - generic [ref=e447]:
+            - heading "Supplier / Merge Upgrades" [level=3] [ref=e448]
+            - paragraph [ref=e449]: These support the merge board instead of replacing it.
+        - article [ref=e451]:
+          - img "Supplier Shelf icon" [ref=e453]
+          - generic [ref=e454]:
+            - generic [ref=e455]:
+              - generic [ref=e456]:
+                - heading "Supplier Shelf" [level=4] [ref=e457]
+                - paragraph [ref=e458]: +shelf capacity and board permit.
+              - generic [ref=e459]: Lv 0
+            - generic [ref=e460]: "Cost: 20 Tools"
+          - button "Buy" [disabled] [ref=e461] [cursor=pointer]
+  - navigation [ref=e462]:
+    - button "Home icon Home" [ref=e463] [cursor=pointer]:
+      - img "Home icon" [ref=e464]
+      - generic [ref=e465]: Home
+    - button "Race icon Race" [ref=e466] [cursor=pointer]:
+      - img "Race icon" [ref=e467]
+      - generic [ref=e468]: Race
+    - button "Parts icon Parts" [ref=e469] [cursor=pointer]:
+      - img "Parts icon" [ref=e470]
+      - generic [ref=e471]: Parts
+    - button "Garage icon Garage" [ref=e472] [cursor=pointer]:
+      - img "Garage icon" [ref=e473]
+      - generic [ref=e474]: Garage
+    - button "Menu icon Menu" [ref=e475] [cursor=pointer]:
+      - img "Menu icon" [ref=e476]
+      - generic [ref=e477]: Menu

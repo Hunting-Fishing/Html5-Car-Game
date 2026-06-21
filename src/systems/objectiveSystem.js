@@ -2,14 +2,14 @@ export function getObjectiveList(state) {
   return [
     {
       key: 'firstTap',
-      title: 'Start your first route',
-      body: 'Tap Race Boost once on the Race screen.',
+      title: 'Tap Race',
+      body: 'Tap the Race boost/GAS control to start moving.',
       done: state.objectives.firstTap
     },
     {
       key: 'firstMerge',
-      title: 'Merge two starter items',
-      body: 'Use the Merge Bay. Supplier only gives Level 1 items.',
+      title: 'Merge Parts',
+      body: 'Use the Merge Bay to combine two matching starter items.',
       done: state.objectives.firstMerge
     },
     {
@@ -17,6 +17,18 @@ export function getObjectiveList(state) {
       title: 'Build Parts Storage',
       body: 'Use parts and coins to increase your board permit.',
       done: state.objectives.buildStorage
+    },
+    {
+      key: 'idleLineUpgrade',
+      title: 'Upgrade Street Route',
+      body: 'Open Business Lines and upgrade the starter Street Route.',
+      done: state.objectives.idleLineUpgrade
+    },
+    {
+      key: 'previewGhostRace',
+      title: 'Choose Rivals',
+      body: 'Open the Race Leaderboard, search users, and choose up to 3 friends or best players.',
+      done: state.objectives.previewGhostRace
     },
     {
       key: 'unlockPerformance',
@@ -47,6 +59,7 @@ export function getObjectiveList(state) {
 
 export function applyDerivedObjectives(state) {
   state.objectives.buildStorage = state.buildings.partsStorage > 0 || state.objectives.buildStorage;
+  state.objectives.idleLineUpgrade = (state.idleLines?.lines?.streetRoute?.level || 0) > 1 || state.objectives.idleLineUpgrade;
   state.objectives.unlockPerformance = state.buildings.tuningCorner > 0 || state.objectives.unlockPerformance;
   state.objectives.unlockTrack = state.buildings.testTrack > 0 || state.objectives.unlockTrack;
   state.objectives.stageFive = state.stage >= 5 || state.objectives.stageFive;

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 72" role="img" aria-label="Resource capsule frame">
+  <defs>
+    <linearGradient id="capsule" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f87bd"/>
+      <stop offset=".52" stop-color="#0c4163"/>
+      <stop offset="1" stop-color="#041725"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="8" width="212" height="56" rx="20" fill="url(#capsule)" stroke="#6edaff" stroke-width="4"/>
+  <path d="M18 17h184" stroke="#ffffff" stroke-opacity=".24" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="38" cy="36" r="20" fill="#001523" stroke="#9be9ff" stroke-opacity=".42" stroke-width="2"/>
+</svg>
