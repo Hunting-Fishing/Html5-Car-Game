@@ -1,7 +1,9 @@
 export function defaultState() {
   return {
-    version: 10,
+    version: 11,
     activeScreen: 'hub',
+    driveTab: 'idle',
+    lotTab: 'town',
     playerName: 'Garage Rookie',
     createdAt: Date.now(),
     lastSaveAt: Date.now(),
@@ -26,7 +28,30 @@ export function defaultState() {
       heat: 0,
       problem: null,
       lifetimeMeters: 0,
-      completedStages: 0
+      completedStages: 0,
+      trafficCooldown: 0
+    },
+    hill: {
+      running: false,
+      gasHeld: false,
+      distance: 0,
+      fuel: 100,
+      tilt: 0,
+      best: 0,
+      speed: 0
+    },
+    shop: {
+      wash: 1,
+      detail: 0,
+      service: 0,
+      lotRental: 0,
+      showcaseShop: 0,
+      banked: 0
+    },
+    lot: {
+      owned: { office: 1 },
+      pending: 0,
+      lastCollectAt: Date.now()
     },
     upgrades: {
       tapCrew: 1,
@@ -51,6 +76,14 @@ export function defaultState() {
       totalMerges: 0,
       highestItemLevel: 1
     },
+    daily: {
+      day: new Date().toDateString(),
+      taps: 0,
+      merges: 0,
+      hills: 0,
+      lotCollects: 0,
+      claimed: {}
+    },
     objectives: {
       firstTap: false,
       firstMerge: false,
@@ -64,11 +97,13 @@ export function defaultState() {
       welcome: false,
       race: false,
       merge: false,
-      showcase: false
+      showcase: false,
+      lot: false,
+      hill: false
     },
     pendingOffline: null,
     log: [
-      'Welcome to 365 Micro Garage. Tap Race, merge starter parts, and build the garage systems.'
+      '365 Micro Garage: Drive, Merge, build the Lot, and run the idle shop. All wallets are shared.'
     ]
   };
 }

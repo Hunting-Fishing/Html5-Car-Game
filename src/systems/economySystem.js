@@ -35,10 +35,11 @@ export function labelCurrency(key) {
 
 export function addXp(state, amount) {
   state.xp += amount;
-  const needed = state.level * 80;
+  let needed = state.level * 80;
   while (state.xp >= needed) {
-    state.xp -= state.level * 80;
+    state.xp -= needed;
     state.level += 1;
     state.currencies.coins += state.level * 35;
+    needed = state.level * 80;
   }
 }

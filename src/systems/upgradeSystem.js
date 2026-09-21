@@ -30,6 +30,8 @@ export function buyBuilding(state, key) {
   if (!canAfford(state, cost)) return { ok: false, message: 'Not enough resources.' };
   spendCost(state, cost);
   state.buildings[key] = (state.buildings[key] || 0) + 1;
+  if (!state.lot.owned) state.lot.owned = {};
+  state.lot.owned[key] = 1;
   if (key === 'partsStorage') state.objectives.buildStorage = true;
   if (key === 'tuningCorner') state.objectives.unlockPerformance = true;
   if (key === 'testTrack') state.objectives.unlockTrack = true;
