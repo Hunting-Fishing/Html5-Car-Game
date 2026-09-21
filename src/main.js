@@ -9,6 +9,8 @@ import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './s
 import { buyUpgrade, upgradeCost, buyBuilding, nextBuildingCost } from './systems/upgradeSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
+const WEBSITE_URL = 'https://www.365motorsales.com';
+
 let state = loadState();
 let lastTime = performance.now();
 let renderLock = false;
@@ -54,7 +56,7 @@ function renderShell() {
         <div class="topLine">
           <div class="brand">
             <div class="brandLogo">365</div>
-            <div class="brandText"><b>Micro Garage</b><span>Idle racing companion · local save</span></div>
+            <div class="brandText"><b>Micro Garage</b><span>365 Motor Sales companion</span></div>
           </div>
           <div class="stagePill" id="stagePill">Stage 1</div>
         </div>
@@ -119,6 +121,13 @@ function renderHub() {
       ${next ? `<div class="notice good"><b>${next.title}</b><br>${next.body}</div>` : `<div class="notice good"><b>Objective set complete.</b><br>Continue building resources, upgrades, and routes.</div>`}
     </section>
 
+    <section class="card brandCard">
+      <div class="cardTitle">
+        <div><h2>365 Motor Sales</h2><p>Real vehicles. Real deals. Play the companion game, then check the lot.</p></div>
+      </div>
+      <button class="btn gold" data-action="openWebsite">View Real Deals → 365motorsales.com</button>
+    </section>
+
     <section class="card">
       <div class="cardTitle">
         <div><h2>Companion Loop</h2><p>This app creates micro progress for the larger 365 ecosystem.</p></div>
@@ -150,6 +159,7 @@ function renderRace() {
   const mode = RACE_MODES[state.race.mode];
   const stats = getRaceStats(state);
   const problem = state.race.problem ? PROBLEMS[state.race.problem] : null;
+  const isShowcase = state.race.mode === 'showcase';
   return `
     <section class="card">
       <div class="cardTitle">
@@ -163,6 +173,15 @@ function renderRace() {
       ${meterLine('Heat', state.race.heat, 100, state.race.heat > 70 ? 'red' : 'yellow')}
       <button class="tapButton" data-action="tapRace">TAP RACE BOOST</button>
     </section>
+
+    ${isShowcase ? `
+      <section class="card brandCard">
+        <div class="cardTitle">
+          <div><h3>📣 Dealer Showcase</h3><p>Earn Reputation for 365 vehicle events. After your run, check real inventory.</p></div>
+        </div>
+        <button class="btn gold" data-action="openWebsite">Browse 365 Inventory →</button>
+      </section>
+    ` : ''}
 
     ${problem ? renderProblem(problem) : `<section class="notice good">Route is clear. Tap for burst income or let the idle driver continue.</section>`}
 
@@ -289,6 +308,17 @@ function renderProfile() {
   const completed = objectives.filter((o) => o.done).length;
   const garageValue = Math.round(state.currencies.coins + state.stage * 100 + state.merge.totalMerges * 18 + Object.values(state.buildings).reduce((a, b) => a + b, 0) * 500);
   return `
+    <section class="card brandCard">
+      <div class="cardTitle">
+        <div><h2>365 Motor Sales</h2><p>Official companion game for the dealership.</p></div>
+        <span class="pill">Official</span>
+      </div>
+      <p style="margin:0 0 10px;color:var(--muted);font-size:12px;line-height:1.4;">
+        Play, earn reputation in Dealer Showcase, then visit the real lot for current inventory and deals.
+      </p>
+      <button class="btn gold" data-action="openWebsite">Open 365motorsales.com</button>
+    </section>
+
     <section class="card">
       <div class="cardTitle"><div><h2>${state.playerName}</h2><p>Local-only profile. Git repo stage. No Supabase yet.</p></div><span class="pill">Lv ${state.level}</span></div>
       ${meterLine('XP', state.xp, state.level * 80, '')}
@@ -340,6 +370,13 @@ function handleClick(event) {
     state.activeScreen = target.dataset.screen;
     render();
     queueSave();
+    return;
+  }
+
+  if (action === 'openWebsite') {
+    window.open(WEBSITE_URL, '_blank', 'noopener,noreferrer');
+    toast('Opening 365motorsales.com…');
+    addLog('Visited 365 Motor Sales website.');
     return;
   }
 
