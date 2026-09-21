@@ -1,17 +1,15 @@
 # 365 Micro Garage Companion
 
-Mobile-first idle racing / merge companion game for **365 Motor Sales**.
+Mobile-first companion game for **365 Motor Sales**. Four connected modes, one wallet.
 
-Style: idle collector (Simpsons Tapped Out / Adventure Capitalist) with automotive theme.
+## Modes
 
-## Features
+- **Drive** — Adventure Capitalist idle routes (Street, Delivery, Fuel Saver, Rough, Showcase) plus a **Hill Run** (hold GAS, manage flip risk).
+- **Merge** — supplier drops Level 1 only. Higher items unlock better shop income.
+- **Lot Town** — Simpsons Tapped Out style plots. Tap to build and collect.
+- **Idle Shop** — buy businesses that print coins while you play other modes.
 
-- Idle racing with fuel, breakdowns, heat, traffic
-- Merge bay (Level 1 supplier drops only)
-- Garage buildings that unlock systems
-- Offline progress
-- 365 Motor Sales website CTAs (especially Dealer Showcase)
-- PWA + Capacitor-ready for iOS/Android
+All currencies are shared. Lot buildings unlock merge chains. Fuel Saver cans feed Hill Runs. Showcase reputation points players at [365motorsales.com](https://www.365motorsales.com).
 
 ## Quick start
 
@@ -20,46 +18,7 @@ npm install
 npm run dev
 ```
 
-## Production build
-
-```bash
-npm run build
-npm run preview
-```
-
-Output: `dist/` — host anywhere static.
-
-## Mobile (Capacitor)
-
-```bash
-npm run build
-npm run cap:add:android   # once
-npm run cap:add:ios       # once (macOS)
-npm run cap:android       # open Android Studio
-npm run cap:ios           # open Xcode
-```
-
-Full guide: see **DEPLOY.md**.
-
-## Screens
-
-Hub · Race · Merge · Build · Profile
-
-## Game loop
-
-```text
-Tap / idle race
-→ fix route problems
-→ earn micro resources
-→ merge Level 1 parts
-→ build garage systems
-→ unlock performance & racing chains
-→ upgrade idle output
-→ visit 365motorsales.com for real deals
-```
-
 ## Notes
 
-- Local save only (no Supabase yet)
-- No real-time PVP
-- No trademarked manufacturer logos
+- Local save only (`autoMergeGarageV11LocalOnly`)
+- No live PVP, no manufacturer logos, no real-money prizes in v1
