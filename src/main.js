@@ -21,12 +21,19 @@ boot();
 
 function boot() {
   normalizeMergeState(state);
-  // Fallback if old save still points to removed creator tab
+  if (!state.tips) state.tips = { welcome: false, race: false, merge: false, showcase: false };
   if (state.activeScreen === 'creator') state.activeScreen = 'profile';
   renderShell();
   render();
   root.addEventListener('click', handleClick);
   requestAnimationFrame(gameLoop);
+
+  if (state.pendingOffline) {
+    const o = state.pendingOffline;
+    const mins = Math.max(1, Math.round(o.seconds / 60));
+    toast(`Welcome back! +${fmt(o.coins)} coins from ${mins}m offline.`);
+    addLog(`Offline progress: +${fmt(o.coins)} coins, +${fmt(o.meters)}m.`);
+  }
 }
 
 function gameLoop(now) {
@@ -108,11 +115,43 @@ function updateTopBar() {
   ['coins', 'parts', 'tools', 'scrap', 'tune', 'rep'].forEach((key) => setText(`cur-${key}`, fmt(c[key])));
 }
 
+function tipCard(key, title, body) {
+  if (state.tips?.[key]) return '';
+  return `
+    <section class="card tipCard">
+      <div class="cardTitle">
+        <div><h3>💡 ${title}</h3><p>${body}</p></div>
+        <button class="btn small ghost" data-action="dismissTip" data-tip="${key}">Got it</button>
+      </div>
+    </section>
+  `;
+}
+
+function offlineBanner() {
+  const o = state.pendingOffline;
+  if (!o) return '';
+  const mins = Math.max(1, Math.round(o.seconds / 60));
+  return `
+    <section class="card tipCard">
+      <div class="cardTitle">
+        <div>
+          <h3>⏱ Offline Progress</h3>
+          <p>You were away ~${mins} min. Collected <b>+${fmt(o.coins)}</b> coins${o.parts ? `, <b>+${fmt(o.parts)}</b> parts` : ''} and <b>+${fmt(o.meters)}</b> meters.</p>
+        </div>
+      </div>
+      <button class="btn primary" data-action="claimOffline">Nice — continue</button>
+    </section>
+  `;
+}
+
 function renderHub() {
   const objectives = getObjectiveList(state);
   const next = objectives.find((item) => !item.done);
   const stats = getRaceStats(state);
   return `
+    ${offlineBanner()}
+    ${tipCard('welcome', 'Quick start', 'Tap Race to earn, Merge Level 1 parts, then Build garage systems. Keep the daily goal moving.')}
+
     <section class="card">
       <div class="cardTitle">
         <div><h2>Today’s Goal</h2><p>Clear objectives keep this feeling like a mobile idle game.</p></div>
@@ -161,6 +200,8 @@ function renderRace() {
   const problem = state.race.problem ? PROBLEMS[state.race.problem] : null;
   const isShowcase = state.race.mode === 'showcase';
   return `
+    ${tipCard('race', 'How racing works', 'Tap for a boost or let idle drive. Watch Fuel, Condition, and Heat — those pause the route until fixed.')}
+
     <section class="card">
       <div class="cardTitle">
         <div><h2>Idle Racing</h2><p>Not about first place. The enemy is fuel, breakdowns, heat, traffic, and route cost.</p></div>
@@ -175,6 +216,7 @@ function renderRace() {
     </section>
 
     ${isShowcase ? `
+      ${tipCard('showcase', 'Dealer Showcase', 'This mode earns Reputation for 365 events. After a few stages, visit the real inventory.')}
       <section class="card brandCard">
         <div class="cardTitle">
           <div><h3>📣 Dealer Showcase</h3><p>Earn Reputation for 365 vehicle events. After your run, check real inventory.</p></div>
@@ -203,10 +245,19 @@ function renderProblem(problem) {
   return `
     <section class="card problemCard">
       <div class="cardTitle">
-        <div><h3>${problem.icon} ${problem.label}</h3><p>${problem.description}</p></div>
+        <div>
+          <h3>${problem.icon} ${problem.label}</h3>
+          <p>${problem.description}</p>
+          <p style="margin-top:6px;color:#ffd2d8;font-size:11px;">Race is paused until you fix this. Pick one option below.</p>
+        </div>
       </div>
       <div class="grid2">
-        ${problem.fixes.map((fix, index) => `<button class="btn red" data-action="fixProblem" data-fix="${index}">${fix.label}<br><small>${fix.amount} ${fix.resource}</small></button>`).join('')}
+        ${problem.fixes.map((fix, index) => `
+          <button class="btn red" data-action="fixProblem" data-fix="${index}">
+            <strong>${fix.label}</strong><br>
+            <small>Costs ${fix.amount} ${fix.resource}</small>
+          </button>
+        `).join('')}
       </div>
     </section>
   `;
@@ -217,6 +268,8 @@ function renderMerge() {
   const active = activeBoardCount(state);
   const limit = boardLimit(state);
   return `
+    ${tipCard('merge', 'Merge basics', 'Supplier only drops Level 1. Tap two matching items to merge. Higher levels unlock better resources.')}
+
     <section class="card">
       <div class="cardTitle">
         <div><h2>Merge Bay</h2><p>Supplier drops Level 1 only. Every higher item must be earned by merging.</p></div>
@@ -377,6 +430,22 @@ function handleClick(event) {
     window.open(WEBSITE_URL, '_blank', 'noopener,noreferrer');
     toast('Opening 365motorsales.com…');
     addLog('Visited 365 Motor Sales website.');
+    return;
+  }
+
+  if (action === 'dismissTip') {
+    const key = target.dataset.tip;
+    if (key && state.tips) state.tips[key] = true;
+    render();
+    queueSave();
+    return;
+  }
+
+  if (action === 'claimOffline') {
+    state.pendingOffline = null;
+    toast('Offline rewards claimed.');
+    render();
+    queueSave();
     return;
   }
 
