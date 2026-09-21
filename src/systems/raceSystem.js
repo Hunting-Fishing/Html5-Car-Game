@@ -3,11 +3,11 @@ import { addCurrency, addXp, spendCost } from './economySystem.js';
 
 export function getRaceStats(state) {
   const mode = RACE_MODES[state.race.mode];
-  const tapPower = 5 + state.upgrades.tapCrew * 3 + state.buildings.testTrack * 2;
-  const idlePower = 0.55 + state.upgrades.idleDriver * 0.28 + state.buildings.companionHub * 0.12;
-  const rewardMult = 1 + state.upgrades.routeScout * 0.06 + state.upgrades.dealerBoost * 0.08 + state.buildings.testTrack * 0.08;
-  const fuelMax = 100 + state.upgrades.fuelPlan * 10;
-  const conditionMax = 100 + state.upgrades.pitKit * 8;
+  const tapPower = 6 + state.upgrades.tapCrew * 3.2 + state.buildings.testTrack * 2.2;
+  const idlePower = 0.7 + state.upgrades.idleDriver * 0.32 + state.buildings.companionHub * 0.15;
+  const rewardMult = 1 + state.upgrades.routeScout * 0.07 + (state.upgrades.dealerBoost || 0) * 0.08 + state.buildings.testTrack * 0.09;
+  const fuelMax = 100 + state.upgrades.fuelPlan * 12;
+  const conditionMax = 100 + state.upgrades.pitKit * 10;
   return { mode, tapPower, idlePower, rewardMult, fuelMax, conditionMax };
 }
 
@@ -15,12 +15,12 @@ export function tapRace(state) {
   if (state.race.problem) return { ok: false, message: `Fix ${PROBLEMS[state.race.problem].label} first.` };
   const stats = getRaceStats(state);
   state.race.progress += stats.tapPower;
-  state.race.fuel -= stats.mode.fuelDrain * 1.4 * Math.max(0.55, 1 - state.upgrades.fuelPlan * 0.03);
-  state.race.condition -= stats.mode.conditionDrain * 1.15 * Math.max(0.55, 1 - state.upgrades.pitKit * 0.035);
-  state.race.heat += stats.mode.heatGain * Math.max(0.5, 1 - state.upgrades.routeScout * 0.04);
+  state.race.fuel -= stats.mode.fuelDrain * 1.25 * Math.max(0.5, 1 - state.upgrades.fuelPlan * 0.035);
+  state.race.condition -= stats.mode.conditionDrain * 1.05 * Math.max(0.5, 1 - state.upgrades.pitKit * 0.04);
+  state.race.heat += stats.mode.heatGain * Math.max(0.45, 1 - state.upgrades.routeScout * 0.045);
   state.race.lifetimeMeters += stats.tapPower;
   state.objectives.firstTap = true;
-  addCurrency(state, 'coins', 1 + state.upgrades.tapCrew);
+  addCurrency(state, 'coins', 1.5 + state.upgrades.tapCrew * 1.1);
   checkRaceState(state);
   return { ok: true, message: `+${Math.round(stats.tapPower)}m route boost.` };
 }
@@ -28,13 +28,13 @@ export function tapRace(state) {
 export function tickRace(state, dt) {
   if (state.race.problem) return;
   const stats = getRaceStats(state);
-  const distance = stats.idlePower * dt * 4;
+  const distance = stats.idlePower * dt * 4.2;
   state.race.progress += distance;
-  state.race.fuel -= stats.mode.fuelDrain * dt * Math.max(0.5, 1 - state.upgrades.fuelPlan * 0.035);
-  state.race.condition -= stats.mode.conditionDrain * dt * Math.max(0.55, 1 - state.upgrades.pitKit * 0.04);
-  state.race.heat += stats.mode.heatGain * dt * Math.max(0.5, 1 - state.upgrades.routeScout * 0.045);
+  state.race.fuel -= stats.mode.fuelDrain * dt * Math.max(0.48, 1 - state.upgrades.fuelPlan * 0.04);
+  state.race.condition -= stats.mode.conditionDrain * dt * Math.max(0.5, 1 - state.upgrades.pitKit * 0.045);
+  state.race.heat += stats.mode.heatGain * dt * Math.max(0.45, 1 - state.upgrades.routeScout * 0.05);
   state.race.lifetimeMeters += distance;
-  const idleCoin = (0.12 + state.upgrades.idleDriver * 0.05) * dt;
+  const idleCoin = (0.16 + state.upgrades.idleDriver * 0.06) * dt;
   addCurrency(state, 'coins', idleCoin);
   checkRaceState(state);
 }
@@ -44,9 +44,9 @@ export function changeRaceMode(state, modeKey) {
   state.race.mode = modeKey;
   state.race.problem = null;
   state.race.progress = 0;
-  state.race.fuel = Math.min(getRaceStats(state).fuelMax, state.race.fuel + 20);
-  state.race.condition = Math.min(getRaceStats(state).conditionMax, state.race.condition + 10);
-  state.race.heat = Math.max(0, state.race.heat - 15);
+  state.race.fuel = Math.min(getRaceStats(state).fuelMax, state.race.fuel + 25);
+  state.race.condition = Math.min(getRaceStats(state).conditionMax, state.race.condition + 12);
+  state.race.heat = Math.max(0, state.race.heat - 18);
   return { ok: true, message: `Mode changed to ${RACE_MODES[modeKey].label}.` };
 }
 
@@ -58,10 +58,10 @@ export function fixProblem(state, fixIndex = 0) {
   if (!fix) return { ok: false, message: 'Unknown fix.' };
   if (!spendCost(state, { [fix.resource]: fix.amount })) return { ok: false, message: `Need ${fix.amount} ${fix.resource}.` };
 
-  if (problemKey === 'fuel') state.race.fuel = Math.min(getRaceStats(state).fuelMax, 70);
-  if (problemKey === 'condition') state.race.condition = Math.min(getRaceStats(state).conditionMax, 72);
-  if (problemKey === 'heat') state.race.heat = 18;
-  if (problemKey === 'traffic') state.race.progress += 18;
+  if (problemKey === 'fuel') state.race.fuel = Math.min(getRaceStats(state).fuelMax, 80);
+  if (problemKey === 'condition') state.race.condition = Math.min(getRaceStats(state).conditionMax, 80);
+  if (problemKey === 'heat') state.race.heat = 12;
+  if (problemKey === 'traffic') state.race.progress += 22;
 
   state.race.problem = null;
   state.objectives.fixProblem = true;
@@ -85,7 +85,7 @@ function checkRaceState(state) {
     state.race.problem = 'heat';
     return;
   }
-  if (Math.random() < 0.0025 && state.race.progress > 20) {
+  if (Math.random() < 0.002 && state.race.progress > 25) {
     state.race.problem = 'traffic';
     return;
   }
@@ -96,12 +96,12 @@ function completeStage(state, stats) {
   state.race.progress = 0;
   state.race.completedStages += 1;
   state.stage += 1;
-  const rewardBase = Math.round((38 + state.stage * 8) * stats.mode.rewardRate * stats.rewardMult);
+  const rewardBase = Math.round((45 + state.stage * 9) * stats.mode.rewardRate * stats.rewardMult);
   addCurrency(state, 'coins', rewardBase);
-  addCurrency(state, stats.mode.reward, Math.max(1, Math.round(rewardBase / 16)));
-  addXp(state, 18 + state.stage * 2);
-  state.race.fuel = Math.min(stats.fuelMax, state.race.fuel + 14);
-  state.race.condition = Math.min(stats.conditionMax, state.race.condition + 8);
-  state.race.heat = Math.max(0, state.race.heat - 22);
+  addCurrency(state, stats.mode.reward, Math.max(1, Math.round(rewardBase / 14)));
+  addXp(state, 20 + state.stage * 2);
+  state.race.fuel = Math.min(stats.fuelMax, state.race.fuel + 18);
+  state.race.condition = Math.min(stats.conditionMax, state.race.condition + 12);
+  state.race.heat = Math.max(0, state.race.heat - 26);
   if (state.stage >= 5) state.objectives.stageFive = true;
 }

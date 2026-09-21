@@ -1,0 +1,9 @@
+{
+  "appId": "com.motorsales365.microgarage",
+  "appName": "365 Micro Garage",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {}
+}

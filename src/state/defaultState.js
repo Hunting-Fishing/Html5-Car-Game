@@ -1,6 +1,6 @@
 export function defaultState() {
   return {
-    version: 9,
+    version: 10,
     activeScreen: 'hub',
     playerName: 'Garage Rookie',
     createdAt: Date.now(),
@@ -10,13 +10,13 @@ export function defaultState() {
     level: 1,
     xp: 0,
     currencies: {
-      coins: 0,
-      scrap: 10,
-      parts: 0,
-      tools: 0,
+      coins: 80,
+      scrap: 18,
+      parts: 12,
+      tools: 6,
       tune: 0,
-      rep: 0,
-      fuelCans: 2
+      rep: 2,
+      fuelCans: 3
     },
     race: {
       mode: 'street',
@@ -44,7 +44,7 @@ export function defaultState() {
     },
     merge: {
       supplierTimer: 2,
-      supplierDuration: 5,
+      supplierDuration: 4.5,
       supplierSlots: [null, null, null],
       board: Array.from({ length: 16 }, () => null),
       selectedIndex: null,

@@ -33,37 +33,37 @@ export const RACE_MODES = {
   street: {
     label: 'Street Loop', icon: '🌆',
     description: 'Balanced route. Earn coins while managing heat, fuel, and reliability.',
-    reward: 'coins', stageLength: 100, fuelDrain: 0.34, conditionDrain: 0.18, heatGain: 0.34, coinRate: 1
+    reward: 'coins', stageLength: 90, fuelDrain: 0.30, conditionDrain: 0.16, heatGain: 0.30, rewardRate: 1.05
   },
   delivery: {
     label: 'Parts Delivery', icon: '📦',
     description: 'Micro delivery run. More service parts, more fuel pressure.',
-    reward: 'parts', stageLength: 115, fuelDrain: 0.44, conditionDrain: 0.16, heatGain: 0.18, coinRate: 0.82
+    reward: 'parts', stageLength: 105, fuelDrain: 0.40, conditionDrain: 0.15, heatGain: 0.16, rewardRate: 0.9
   },
   economy: {
     label: 'Fuel Saver', icon: '⛽',
     description: 'Slower route. Better fuel survival and fewer breakdowns.',
-    reward: 'fuelCans', stageLength: 130, fuelDrain: 0.18, conditionDrain: 0.12, heatGain: 0.12, coinRate: 0.62
+    reward: 'fuelCans', stageLength: 120, fuelDrain: 0.15, conditionDrain: 0.11, heatGain: 0.10, rewardRate: 0.7
   },
   rough: {
     label: 'Rough Road', icon: '🪨',
     description: 'Rough route. Higher scrap rewards, more breakdown risk.',
-    reward: 'scrap', stageLength: 120, fuelDrain: 0.32, conditionDrain: 0.44, heatGain: 0.10, coinRate: 0.96
+    reward: 'scrap', stageLength: 110, fuelDrain: 0.28, conditionDrain: 0.38, heatGain: 0.09, rewardRate: 1.05
   },
   showcase: {
     label: 'Dealer Showcase', icon: '📣',
     description: 'Clean promotional run. Earn reputation for 365 vehicle showcase events.',
-    reward: 'rep', stageLength: 125, fuelDrain: 0.25, conditionDrain: 0.15, heatGain: 0.30, coinRate: 0.72
+    reward: 'rep', stageLength: 100, fuelDrain: 0.22, conditionDrain: 0.13, heatGain: 0.24, rewardRate: 0.95
   }
 };
 
 export const UPGRADES = [
-  { key: 'tapCrew', icon: '👆', name: 'Tap Boost Crew', description: '+tap power and manual income.', resource: 'coins', baseCost: 75, costRate: 1.32 },
-  { key: 'idleDriver', icon: '🧑‍🔧', name: 'Idle Driver', description: '+idle meters per second.', resource: 'coins', baseCost: 120, costRate: 1.36 },
-  { key: 'routeScout', icon: '🗺️', name: 'Route Scout', description: '-police heat gain and better stage rewards.', resource: 'rep', baseCost: 16, costRate: 1.35 },
-  { key: 'fuelPlan', icon: '⛽', name: 'Fuel Planning', description: '+max fuel and reduced fuel drain.', resource: 'parts', baseCost: 18, costRate: 1.34 },
-  { key: 'pitKit', icon: '🛠️', name: 'Pit Kit', description: '+condition protection and cheaper fixes.', resource: 'scrap', baseCost: 14, costRate: 1.32 },
-  { key: 'supplierShelf', icon: '📦', name: 'Supplier Shelf', description: '+shelf capacity and board permit.', resource: 'tools', baseCost: 20, costRate: 1.38 }
+  { key: 'tapCrew', icon: '👆', name: 'Tap Boost Crew', description: '+tap power and manual income.', resource: 'coins', baseCost: 55, costRate: 1.30 },
+  { key: 'idleDriver', icon: '🧑‍🔧', name: 'Idle Driver', description: '+idle meters per second.', resource: 'coins', baseCost: 90, costRate: 1.33 },
+  { key: 'routeScout', icon: '🗺️', name: 'Route Scout', description: '-police heat gain and better stage rewards.', resource: 'rep', baseCost: 12, costRate: 1.32 },
+  { key: 'fuelPlan', icon: '⛽', name: 'Fuel Planning', description: '+max fuel and reduced fuel drain.', resource: 'parts', baseCost: 14, costRate: 1.32 },
+  { key: 'pitKit', icon: '🛠️', name: 'Pit Kit', description: '+condition protection and cheaper fixes.', resource: 'scrap', baseCost: 10, costRate: 1.30 },
+  { key: 'supplierShelf', icon: '📦', name: 'Supplier Shelf', description: '+shelf capacity and board permit.', resource: 'tools', baseCost: 16, costRate: 1.34 }
 ];
 
 export const BUILDINGS = [
@@ -71,33 +71,33 @@ export const BUILDINGS = [
     key: 'partsStorage', icon: '🏚️', name: 'Parts Storage', max: 3,
     description: 'Increases active board permit. This should be the first build objective.',
     unlocks: 'More board capacity',
-    costs: [{ coins: 120, parts: 18 }, { coins: 420, parts: 55, tools: 18 }, { coins: 1200, parts: 140, tools: 60 }]
+    costs: [{ coins: 80, parts: 12 }, { coins: 280, parts: 40, tools: 12 }, { coins: 900, parts: 100, tools: 45 }]
   },
   {
     key: 'tuningCorner', icon: '🔬', name: 'Tuning Corner', max: 2,
     description: 'Unlocks Performance Parts starter drops after the player proves the core loop.',
     unlocks: 'Performance Parts chain',
-    costs: [{ coins: 350, parts: 55, tools: 35 }, { coins: 1600, parts: 120, tools: 95, tune: 20 }]
+    costs: [{ coins: 240, parts: 40, tools: 24 }, { coins: 1100, parts: 90, tools: 70, tune: 14 }]
   },
   {
     key: 'testTrack', icon: '🛣️', name: '2D Test Track', max: 2,
     description: 'Unlocks Racing Gear and stronger route rewards.',
     unlocks: 'Racing Gear chain',
-    costs: [{ coins: 800, tune: 35, rep: 18 }, { coins: 2600, tune: 95, rep: 70 }]
+    costs: [{ coins: 550, tune: 24, rep: 12 }, { coins: 1800, tune: 70, rep: 50 }]
   },
   {
     key: 'companionHub', icon: '📱', name: '365 Companion Hub', max: 3,
     description: 'Improves offline progress and profile value. No Supabase yet.',
     unlocks: 'Better offline rewards',
-    costs: [{ coins: 650, rep: 25, tools: 40 }, { coins: 1900, rep: 75, tools: 90 }, { coins: 5000, rep: 180, tools: 190 }]
+    costs: [{ coins: 420, rep: 16, tools: 28 }, { coins: 1300, rep: 55, tools: 65 }, { coins: 3500, rep: 140, tools: 140 }]
   }
 ];
 
 export const PROBLEMS = {
-  fuel: { icon: '⛽', label: 'Out of Fuel', description: 'Race paused until fuel is restored.', fixes: [{ resource: 'fuelCans', amount: 1, label: 'Use Fuel Can' }, { resource: 'coins', amount: 80, label: 'Buy Fuel' }] },
-  condition: { icon: '💨', label: 'Breakdown', description: 'Car condition is too low.', fixes: [{ resource: 'scrap', amount: 16, label: 'Patch Repair' }, { resource: 'parts', amount: 12, label: 'Replace Part' }] },
-  heat: { icon: '🚨', label: 'Police Heat', description: 'Cool down the route before another run.', fixes: [{ resource: 'rep', amount: 12, label: 'Legal Event Permit' }, { resource: 'coins', amount: 120, label: 'Pay Ticket' }] },
-  traffic: { icon: '🚧', label: 'Traffic Jam', description: 'Progress slowed. Clear the route.', fixes: [{ resource: 'coins', amount: 55, label: 'Reroute' }, { resource: 'tools', amount: 8, label: 'Traffic Crew' }] }
+  fuel: { icon: '⛽', label: 'Out of Fuel', description: 'Race paused until fuel is restored.', fixes: [{ resource: 'fuelCans', amount: 1, label: 'Use Fuel Can' }, { resource: 'coins', amount: 50, label: 'Buy Fuel' }] },
+  condition: { icon: '💨', label: 'Breakdown', description: 'Car condition is too low.', fixes: [{ resource: 'scrap', amount: 10, label: 'Patch Repair' }, { resource: 'parts', amount: 8, label: 'Replace Part' }] },
+  heat: { icon: '🚨', label: 'Police Heat', description: 'Cool down the route before another run.', fixes: [{ resource: 'rep', amount: 8, label: 'Legal Event Permit' }, { resource: 'coins', amount: 80, label: 'Pay Ticket' }] },
+  traffic: { icon: '🚧', label: 'Traffic Jam', description: 'Progress slowed. Clear the route.', fixes: [{ resource: 'coins', amount: 35, label: 'Reroute' }, { resource: 'tools', amount: 5, label: 'Traffic Crew' }] }
 };
 
 export const CREATOR_RULES = [
