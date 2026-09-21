@@ -3,8 +3,7 @@ export const SCREENS = [
   { id: 'race', label: 'Race', icon: '🚗' },
   { id: 'merge', label: 'Merge', icon: '🔧' },
   { id: 'garage', label: 'Build', icon: '🏗️' },
-  { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'creator', label: 'Creator', icon: '📋' }
+  { id: 'profile', label: 'Profile', icon: '👤' }
 ];
 
 export const CHAINS = {
@@ -34,27 +33,27 @@ export const RACE_MODES = {
   street: {
     label: 'Street Loop', icon: '🌆',
     description: 'Balanced route. Earn coins while managing heat, fuel, and reliability.',
-    reward: 'coins', stageLength: 100, fuelDrain: 0.34, conditionDrain: 0.18, heatGain: 0.34, rewardRate: 1
+    reward: 'coins', stageLength: 100, fuelDrain: 0.34, conditionDrain: 0.18, heatGain: 0.34, coinRate: 1
   },
   delivery: {
     label: 'Parts Delivery', icon: '📦',
     description: 'Micro delivery run. More service parts, more fuel pressure.',
-    reward: 'parts', stageLength: 115, fuelDrain: 0.44, conditionDrain: 0.16, heatGain: 0.18, rewardRate: 0.82
+    reward: 'parts', stageLength: 115, fuelDrain: 0.44, conditionDrain: 0.16, heatGain: 0.18, coinRate: 0.82
   },
   economy: {
     label: 'Fuel Saver', icon: '⛽',
     description: 'Slower route. Better fuel survival and fewer breakdowns.',
-    reward: 'fuelCans', stageLength: 130, fuelDrain: 0.18, conditionDrain: 0.12, heatGain: 0.12, rewardRate: 0.62
+    reward: 'fuelCans', stageLength: 130, fuelDrain: 0.18, conditionDrain: 0.12, heatGain: 0.12, coinRate: 0.62
   },
   rough: {
     label: 'Rough Road', icon: '🪨',
     description: 'Rough route. Higher scrap rewards, more breakdown risk.',
-    reward: 'scrap', stageLength: 120, fuelDrain: 0.32, conditionDrain: 0.44, heatGain: 0.10, rewardRate: 0.96
+    reward: 'scrap', stageLength: 120, fuelDrain: 0.32, conditionDrain: 0.44, heatGain: 0.10, coinRate: 0.96
   },
   showcase: {
     label: 'Dealer Showcase', icon: '📣',
     description: 'Clean promotional run. Earn reputation for 365 vehicle showcase events.',
-    reward: 'rep', stageLength: 125, fuelDrain: 0.25, conditionDrain: 0.15, heatGain: 0.30, rewardRate: 0.72
+    reward: 'rep', stageLength: 125, fuelDrain: 0.25, conditionDrain: 0.15, heatGain: 0.30, coinRate: 0.72
   }
 };
 
