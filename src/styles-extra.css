@@ -1,0 +1,12 @@
+.currencyGrid.seven { grid-template-columns: repeat(7, 1fr); }
+.shelf.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.shelf.cols-5, .shelf.cols-6 { grid-template-columns: repeat(3, 1fr); }
+.lotGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.lotPlot { border-radius: 16px; border: 1px solid var(--line); background: rgba(0,0,0,.22); padding: 10px 8px; text-align: center; min-height: 118px; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.lotPlot b { font-size: 12px; }
+.lotPlot span, .lotPlot small { font-size: 10px; color: var(--muted); }
+.lotPlot.owned { background: linear-gradient(180deg, rgba(53,229,138,.2), rgba(11,33,48,.96)); border-color: rgba(53,229,138,.35); }
+.tapButton.gas { background: radial-gradient(circle at top, #7cffb2, #12975c 72%); color: #04140c; box-shadow: 0 12px 0 #0b5c38, 0 20px 28px rgba(0,0,0,.35); }
+.cell.chain-performance { border-color: rgba(167,139,250,.45); }
+.cell.chain-racing { border-color: rgba(255,93,115,.4); }
+.cell.chain-tools { border-color: rgba(90,183,255,.35); }
