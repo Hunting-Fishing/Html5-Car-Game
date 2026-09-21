@@ -60,6 +60,13 @@ export function defaultState() {
       fixProblem: false,
       stageFive: false
     },
+    tips: {
+      welcome: false,
+      race: false,
+      merge: false,
+      showcase: false
+    },
+    pendingOffline: null,
     log: [
       'Welcome to 365 Micro Garage. Tap Race, merge starter parts, and build the garage systems.'
     ]
