@@ -41,6 +41,7 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .tabIcon { font-size: 22px; }
 .tab.active { background: linear-gradient(180deg, rgba(53,229,138,.18), rgba(45,212,191,.08)); color: var(--text); border: 1px solid rgba(53,229,138,.25); }
 .card { background: linear-gradient(180deg, rgba(22,61,84,.95), rgba(11,33,48,.96)); border: 1px solid var(--line); border-radius: 20px; padding: 13px; margin-bottom: 11px; box-shadow: 0 12px 26px rgba(0,0,0,.22); }
+.card.brandCard { border-color: rgba(255,209,102,.35); background: linear-gradient(180deg, rgba(255,209,102,.12), rgba(11,33,48,.96)); }
 .cardTitle { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; margin-bottom: 9px; }
 .cardTitle h2, .cardTitle h3 { margin: 0; font-size: 16px; }
 .cardTitle p { margin: 3px 0 0; color: var(--muted); font-size: 11px; line-height: 1.35; }
