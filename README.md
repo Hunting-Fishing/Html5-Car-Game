@@ -1,21 +1,20 @@
 # 365 Micro Garage Companion
 
-Live game (after Pages is enabled):
-**https://hunting-fishing.github.io/Html5-Car-Game/**
+The Actions **build succeeds**. Live hosting fails until Pages is turned on in this repo.
 
-Mobile-first companion for **365 Motor Sales**. Drive, Merge, Lot Town, and Idle Shop share one wallet.
+## Make it live (required once)
 
-## Play
+1. Open https://github.com/Hunting-Fishing/Html5-Car-Game/settings/pages
+2. Source: **Deploy from a branch**
+3. Branch: **gh-pages** / folder: **/ (root)** → Save
+4. Wait 1 minute, then open:
+   https://hunting-fishing.github.io/Html5-Car-Game/
+
+If `gh-pages` is missing, run Actions → Deploy GitHub Pages → Run workflow first.
+
+## Local
 
 ```bash
 npm install
 npm run dev
 ```
-
-## Go live
-
-1. Repo Settings → Pages → Source: **GitHub Actions**
-2. Actions → Deploy GitHub Pages → Run workflow
-3. Share https://hunting-fishing.github.io/Html5-Car-Game/
-
-Showcase mode links to https://www.365motorsales.com
