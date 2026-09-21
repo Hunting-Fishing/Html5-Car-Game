@@ -9,6 +9,8 @@ import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './s
 import { buyUpgrade, upgradeCost, buyBuilding, nextBuildingCost } from './systems/upgradeSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
+const WEBSITE_URL = 'https://www.365motorsales.com';
+
 let state = loadState();
 let lastTime = performance.now();
 let renderLock = false;
@@ -19,10 +21,19 @@ boot();
 
 function boot() {
   normalizeMergeState(state);
+  if (!state.tips) state.tips = { welcome: false, race: false, merge: false, showcase: false };
+  if (state.activeScreen === 'creator') state.activeScreen = 'profile';
   renderShell();
   render();
   root.addEventListener('click', handleClick);
   requestAnimationFrame(gameLoop);
+
+  if (state.pendingOffline) {
+    const o = state.pendingOffline;
+    const mins = Math.max(1, Math.round(o.seconds / 60));
+    toast(`Welcome back! +${fmt(o.coins)} coins from ${mins}m offline.`);
+    addLog(`Offline progress: +${fmt(o.coins)} coins, +${fmt(o.meters)}m.`);
+  }
 }
 
 function gameLoop(now) {
@@ -52,7 +63,7 @@ function renderShell() {
         <div class="topLine">
           <div class="brand">
             <div class="brandLogo">365</div>
-            <div class="brandText"><b>Micro Garage</b><span>Idle racing companion · local save</span></div>
+            <div class="brandText"><b>Micro Garage</b><span>365 Motor Sales companion</span></div>
           </div>
           <div class="stagePill" id="stagePill">Stage 1</div>
         </div>
@@ -96,7 +107,6 @@ function renderActiveScreen() {
   if (state.activeScreen === 'merge') el.innerHTML = renderMerge();
   if (state.activeScreen === 'garage') el.innerHTML = renderGarage();
   if (state.activeScreen === 'profile') el.innerHTML = renderProfile();
-  if (state.activeScreen === 'creator') el.innerHTML = renderCreator();
 }
 
 function updateTopBar() {
@@ -105,17 +115,56 @@ function updateTopBar() {
   ['coins', 'parts', 'tools', 'scrap', 'tune', 'rep'].forEach((key) => setText(`cur-${key}`, fmt(c[key])));
 }
 
+function tipCard(key, title, body) {
+  if (state.tips?.[key]) return '';
+  return `
+    <section class="card tipCard">
+      <div class="cardTitle">
+        <div><h3>💡 ${title}</h3><p>${body}</p></div>
+        <button class="btn small ghost" data-action="dismissTip" data-tip="${key}">Got it</button>
+      </div>
+    </section>
+  `;
+}
+
+function offlineBanner() {
+  const o = state.pendingOffline;
+  if (!o) return '';
+  const mins = Math.max(1, Math.round(o.seconds / 60));
+  return `
+    <section class="card tipCard">
+      <div class="cardTitle">
+        <div>
+          <h3>⏱ Offline Progress</h3>
+          <p>You were away ~${mins} min. Collected <b>+${fmt(o.coins)}</b> coins${o.parts ? `, <b>+${fmt(o.parts)}</b> parts` : ''} and <b>+${fmt(o.meters)}</b> meters.</p>
+        </div>
+      </div>
+      <button class="btn primary" data-action="claimOffline">Nice — continue</button>
+    </section>
+  `;
+}
+
 function renderHub() {
   const objectives = getObjectiveList(state);
   const next = objectives.find((item) => !item.done);
   const stats = getRaceStats(state);
   return `
+    ${offlineBanner()}
+    ${tipCard('welcome', 'Quick start', 'Tap Race to earn, Merge Level 1 parts, then Build garage systems. Keep the daily goal moving.')}
+
     <section class="card">
       <div class="cardTitle">
         <div><h2>Today’s Goal</h2><p>Clear objectives keep this feeling like a mobile idle game.</p></div>
         <span class="pill">${next ? 'Next' : 'Complete'}</span>
       </div>
       ${next ? `<div class="notice good"><b>${next.title}</b><br>${next.body}</div>` : `<div class="notice good"><b>Objective set complete.</b><br>Continue building resources, upgrades, and routes.</div>`}
+    </section>
+
+    <section class="card brandCard">
+      <div class="cardTitle">
+        <div><h2>365 Motor Sales</h2><p>Real vehicles. Real deals. Play the companion game, then check the lot.</p></div>
+      </div>
+      <button class="btn gold" data-action="openWebsite">View Real Deals → 365motorsales.com</button>
     </section>
 
     <section class="card">
@@ -126,7 +175,7 @@ function renderHub() {
         <button class="btn primary" data-action="screen" data-screen="race">Race / Click</button>
         <button class="btn" data-action="screen" data-screen="merge">Merge Parts</button>
         <button class="btn" data-action="screen" data-screen="garage">Build Garage</button>
-        <button class="btn ghost" data-action="screen" data-screen="creator">Creator Rules</button>
+        <button class="btn ghost" data-action="screen" data-screen="profile">Profile</button>
       </div>
     </section>
 
@@ -149,7 +198,10 @@ function renderRace() {
   const mode = RACE_MODES[state.race.mode];
   const stats = getRaceStats(state);
   const problem = state.race.problem ? PROBLEMS[state.race.problem] : null;
+  const isShowcase = state.race.mode === 'showcase';
   return `
+    ${tipCard('race', 'How racing works', 'Tap for a boost or let idle drive. Watch Fuel, Condition, and Heat — those pause the route until fixed.')}
+
     <section class="card">
       <div class="cardTitle">
         <div><h2>Idle Racing</h2><p>Not about first place. The enemy is fuel, breakdowns, heat, traffic, and route cost.</p></div>
@@ -162,6 +214,16 @@ function renderRace() {
       ${meterLine('Heat', state.race.heat, 100, state.race.heat > 70 ? 'red' : 'yellow')}
       <button class="tapButton" data-action="tapRace">TAP RACE BOOST</button>
     </section>
+
+    ${isShowcase ? `
+      ${tipCard('showcase', 'Dealer Showcase', 'This mode earns Reputation for 365 events. After a few stages, visit the real inventory.')}
+      <section class="card brandCard">
+        <div class="cardTitle">
+          <div><h3>📣 Dealer Showcase</h3><p>Earn Reputation for 365 vehicle events. After your run, check real inventory.</p></div>
+        </div>
+        <button class="btn gold" data-action="openWebsite">Browse 365 Inventory →</button>
+      </section>
+    ` : ''}
 
     ${problem ? renderProblem(problem) : `<section class="notice good">Route is clear. Tap for burst income or let the idle driver continue.</section>`}
 
@@ -183,10 +245,19 @@ function renderProblem(problem) {
   return `
     <section class="card problemCard">
       <div class="cardTitle">
-        <div><h3>${problem.icon} ${problem.label}</h3><p>${problem.description}</p></div>
+        <div>
+          <h3>${problem.icon} ${problem.label}</h3>
+          <p>${problem.description}</p>
+          <p style="margin-top:6px;color:#ffd2d8;font-size:11px;">Race is paused until you fix this. Pick one option below.</p>
+        </div>
       </div>
       <div class="grid2">
-        ${problem.fixes.map((fix, index) => `<button class="btn red" data-action="fixProblem" data-fix="${index}">${fix.label}<br><small>${fix.amount} ${fix.resource}</small></button>`).join('')}
+        ${problem.fixes.map((fix, index) => `
+          <button class="btn red" data-action="fixProblem" data-fix="${index}">
+            <strong>${fix.label}</strong><br>
+            <small>Costs ${fix.amount} ${fix.resource}</small>
+          </button>
+        `).join('')}
       </div>
     </section>
   `;
@@ -197,6 +268,8 @@ function renderMerge() {
   const active = activeBoardCount(state);
   const limit = boardLimit(state);
   return `
+    ${tipCard('merge', 'Merge basics', 'Supplier only drops Level 1. Tap two matching items to merge. Higher levels unlock better resources.')}
+
     <section class="card">
       <div class="cardTitle">
         <div><h2>Merge Bay</h2><p>Supplier drops Level 1 only. Every higher item must be earned by merging.</p></div>
@@ -288,6 +361,17 @@ function renderProfile() {
   const completed = objectives.filter((o) => o.done).length;
   const garageValue = Math.round(state.currencies.coins + state.stage * 100 + state.merge.totalMerges * 18 + Object.values(state.buildings).reduce((a, b) => a + b, 0) * 500);
   return `
+    <section class="card brandCard">
+      <div class="cardTitle">
+        <div><h2>365 Motor Sales</h2><p>Official companion game for the dealership.</p></div>
+        <span class="pill">Official</span>
+      </div>
+      <p style="margin:0 0 10px;color:var(--muted);font-size:12px;line-height:1.4;">
+        Play, earn reputation in Dealer Showcase, then visit the real lot for current inventory and deals.
+      </p>
+      <button class="btn gold" data-action="openWebsite">Open 365motorsales.com</button>
+    </section>
+
     <section class="card">
       <div class="cardTitle"><div><h2>${state.playerName}</h2><p>Local-only profile. Git repo stage. No Supabase yet.</p></div><span class="pill">Lv ${state.level}</span></div>
       ${meterLine('XP', state.xp, state.level * 80, '')}
@@ -305,26 +389,22 @@ function renderProfile() {
     </section>
 
     <section class="card">
+      <div class="cardTitle"><div><h3>Creator Mode Rules</h3><p>Guidelines while we continue building the companion app.</p></div></div>
+      <div class="notice good" style="margin-bottom:10px;"><b>Current rule:</b> Git repo first. Local save only. Supabase later after the game loop is stable.</div>
+      ${CREATOR_RULES.map((rule) => `
+        <div class="ruleBlock" style="margin-bottom:10px;">
+          <h4>${rule.mode}</h4>
+          <div class="doDont">
+            <div class="notice good"><b>Do</b><ul>${rule.do.map((item) => `<li>${item}</li>`).join('')}</ul></div>
+            <div class="notice bad"><b>Don’t</b><ul>${rule.dont.map((item) => `<li>${item}</li>`).join('')}</ul></div>
+          </div>
+        </div>
+      `).join('')}
+    </section>
+
+    <section class="card">
       <button class="btn red" data-action="reset">Reset Local Save</button>
     </section>
-  `;
-}
-
-function renderCreator() {
-  return `
-    <section class="card">
-      <div class="cardTitle"><div><h2>Creator Mode Rules</h2><p>Use this screen while we build new modes so the companion app does not lose focus.</p></div></div>
-      <div class="notice good"><b>Current rule:</b> Git repo first. Local save only. Supabase later after the game loop is stable.</div>
-    </section>
-    ${CREATOR_RULES.map((rule) => `
-      <section class="ruleBlock">
-        <h4>${rule.mode}</h4>
-        <div class="doDont">
-          <div class="notice good"><b>Do</b><ul>${rule.do.map((item) => `<li>${item}</li>`).join('')}</ul></div>
-          <div class="notice bad"><b>Don’t</b><ul>${rule.dont.map((item) => `<li>${item}</li>`).join('')}</ul></div>
-        </div>
-      </section>
-    `).join('')}
   `;
 }
 
@@ -341,6 +421,29 @@ function handleClick(event) {
 
   if (action === 'screen') {
     state.activeScreen = target.dataset.screen;
+    render();
+    queueSave();
+    return;
+  }
+
+  if (action === 'openWebsite') {
+    window.open(WEBSITE_URL, '_blank', 'noopener,noreferrer');
+    toast('Opening 365motorsales.com…');
+    addLog('Visited 365 Motor Sales website.');
+    return;
+  }
+
+  if (action === 'dismissTip') {
+    const key = target.dataset.tip;
+    if (key && state.tips) state.tips[key] = true;
+    render();
+    queueSave();
+    return;
+  }
+
+  if (action === 'claimOffline') {
+    state.pendingOffline = null;
+    toast('Offline rewards claimed.');
     render();
     queueSave();
     return;
