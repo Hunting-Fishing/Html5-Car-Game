@@ -19,6 +19,8 @@ boot();
 
 function boot() {
   normalizeMergeState(state);
+  // Fallback if old save still points to removed creator tab
+  if (state.activeScreen === 'creator') state.activeScreen = 'profile';
   renderShell();
   render();
   root.addEventListener('click', handleClick);
@@ -96,7 +98,6 @@ function renderActiveScreen() {
   if (state.activeScreen === 'merge') el.innerHTML = renderMerge();
   if (state.activeScreen === 'garage') el.innerHTML = renderGarage();
   if (state.activeScreen === 'profile') el.innerHTML = renderProfile();
-  if (state.activeScreen === 'creator') el.innerHTML = renderCreator();
 }
 
 function updateTopBar() {
@@ -126,7 +127,7 @@ function renderHub() {
         <button class="btn primary" data-action="screen" data-screen="race">Race / Click</button>
         <button class="btn" data-action="screen" data-screen="merge">Merge Parts</button>
         <button class="btn" data-action="screen" data-screen="garage">Build Garage</button>
-        <button class="btn ghost" data-action="screen" data-screen="creator">Creator Rules</button>
+        <button class="btn ghost" data-action="screen" data-screen="profile">Profile</button>
       </div>
     </section>
 
@@ -305,26 +306,22 @@ function renderProfile() {
     </section>
 
     <section class="card">
+      <div class="cardTitle"><div><h3>Creator Mode Rules</h3><p>Guidelines while we continue building the companion app.</p></div></div>
+      <div class="notice good" style="margin-bottom:10px;"><b>Current rule:</b> Git repo first. Local save only. Supabase later after the game loop is stable.</div>
+      ${CREATOR_RULES.map((rule) => `
+        <div class="ruleBlock" style="margin-bottom:10px;">
+          <h4>${rule.mode}</h4>
+          <div class="doDont">
+            <div class="notice good"><b>Do</b><ul>${rule.do.map((item) => `<li>${item}</li>`).join('')}</ul></div>
+            <div class="notice bad"><b>Don’t</b><ul>${rule.dont.map((item) => `<li>${item}</li>`).join('')}</ul></div>
+          </div>
+        </div>
+      `).join('')}
+    </section>
+
+    <section class="card">
       <button class="btn red" data-action="reset">Reset Local Save</button>
     </section>
-  `;
-}
-
-function renderCreator() {
-  return `
-    <section class="card">
-      <div class="cardTitle"><div><h2>Creator Mode Rules</h2><p>Use this screen while we build new modes so the companion app does not lose focus.</p></div></div>
-      <div class="notice good"><b>Current rule:</b> Git repo first. Local save only. Supabase later after the game loop is stable.</div>
-    </section>
-    ${CREATOR_RULES.map((rule) => `
-      <section class="ruleBlock">
-        <h4>${rule.mode}</h4>
-        <div class="doDont">
-          <div class="notice good"><b>Do</b><ul>${rule.do.map((item) => `<li>${item}</li>`).join('')}</ul></div>
-          <div class="notice bad"><b>Don’t</b><ul>${rule.dont.map((item) => `<li>${item}</li>`).join('')}</ul></div>
-        </div>
-      </section>
-    `).join('')}
   `;
 }
 
