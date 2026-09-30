@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Grass tile">
+  <rect width="128" height="128" fill="#68bd58"/>
+  <path d="M0 0h64v64H0zM64 64h64v64H64z" fill="#76cf65" opacity=".55"/>
+  <path d="M18 42c12-16 22-11 31 0M82 28c10-12 20-8 28 0M35 101c13-15 23-11 32 0" fill="none" stroke="#3f8f40" stroke-width="5" stroke-linecap="round" opacity=".65"/>
+</svg>

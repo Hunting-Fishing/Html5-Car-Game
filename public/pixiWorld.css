@@ -1,0 +1,65 @@
+.pixiWorldShell {
+  padding: 0;
+  overflow: hidden;
+}
+
+.pixiWorldHeader {
+  padding: 12px 12px 8px;
+}
+
+.pixiWorldHeader h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.pixiWorldHeader p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.pixiWorldHost {
+  height: 610px;
+  min-height: 610px;
+  border-top: 1px solid rgba(255,255,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  background: #143447;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.pixiWorldHost canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pixiWorldHud {
+  padding: 9px 12px 12px;
+  background: rgba(0,0,0,.16);
+}
+
+.pixiWorldHud .hint {
+  font-size: 10px;
+  color: #dff6ff;
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+
+.pixiProxyRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.pixiWorldProxy[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 380px) {
+  .pixiWorldHost {
+    height: 560px;
+    min-height: 560px;
+  }
+}

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 34" role="img" aria-label="Segmented meter track">
+  <rect x="3" y="5" width="294" height="24" rx="12" fill="#071923" stroke="#7ee2ff" stroke-opacity=".45" stroke-width="3"/>
+  <path d="M63 7v20M121 7v20M179 7v20M237 7v20" stroke="#00111c" stroke-width="5"/>
+  <path d="M16 10h268" stroke="#fff" stroke-opacity=".12" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,43 @@
+.rrGaugeDash {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  width: 146px;
+  padding: 0;
+}
+
+.rrGaugeDashGrid {
+  gap: 6px;
+}
+
+.rrDial {
+  background:
+    radial-gradient(circle at center, rgba(7,17,29,.92) 0 46%, transparent 47%),
+    conic-gradient(from 225deg, #22c55e 0deg 130deg, #facc15 130deg 200deg, #ef4444 200deg 270deg, rgba(255,255,255,.16) 270deg 360deg);
+  border: 2px solid rgba(255,255,255,.2);
+  box-shadow: 0 4px 10px rgba(0,0,0,.26), inset 0 0 0 3px rgba(255,255,255,.08), inset 0 0 12px rgba(0,0,0,.55);
+}
+
+.rrGaugeStatus {
+  margin-top: 3px;
+  grid-template-columns: 30px 1fr;
+}
+
+.rrGearBadge,
+.rrDamageRisk.rrGaugeRisk {
+  background-color: rgba(3,13,24,.68);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 2px 6px rgba(0,0,0,.16);
+}
+
+.rrGaugeHelp {
+  display: none !important;
+}
+
+@media (max-width: 430px) {
+  .rrGaugeDash {
+    width: 136px;
+    top: 35px;
+    right: 8px;
+  }
+}

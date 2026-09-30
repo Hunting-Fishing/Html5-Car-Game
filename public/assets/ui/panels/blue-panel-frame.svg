@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-label="Blue game panel frame">
+  <defs>
+    <linearGradient id="outer" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#44ccff"/>
+      <stop offset=".48" stop-color="#147fb6"/>
+      <stop offset="1" stop-color="#062a46"/>
+    </linearGradient>
+  </defs>
+  <rect x="7" y="7" width="346" height="226" rx="28" fill="url(#outer)" stroke="#b2f2ff" stroke-width="6"/>
+  <rect x="24" y="26" width="312" height="188" rx="18" fill="#041928" stroke="#144a67" stroke-width="4"/>
+  <path d="M30 22h300" stroke="#fff" stroke-opacity=".22" stroke-width="7" stroke-linecap="round"/>
+  <path d="M20 196h24v24H20zM316 20h24v24h-24z" fill="#ffd166" opacity=".82"/>
+</svg>

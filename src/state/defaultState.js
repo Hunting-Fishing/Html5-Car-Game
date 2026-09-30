@@ -1,6 +1,6 @@
 export function defaultState() {
   return {
-    version: 11,
+    version: 10,
     activeScreen: 'hub',
     driveTab: 'idle',
     lotTab: 'town',
@@ -12,10 +12,10 @@ export function defaultState() {
     level: 1,
     xp: 0,
     currencies: {
-      coins: 80,
-      scrap: 18,
-      parts: 12,
-      tools: 6,
+      coins: 50,
+      scrap: 10,
+      parts: 0,
+      tools: 0,
       tune: 0,
       rep: 2,
       fuelCans: 3
@@ -53,6 +53,39 @@ export function defaultState() {
       pending: 0,
       lastCollectAt: Date.now()
     },
+    idleLines: {
+      lifetimeCollections: 0,
+      managers: {
+        streetRoute: false,
+        partsDelivery: false,
+        mobileMechanic: false,
+        fuelRun: false,
+        towingJob: false,
+        dealerShowcase: false,
+        performanceBay: false,
+        raceEvent: false
+      },
+      autoCollect: {
+        streetRoute: true,
+        partsDelivery: true,
+        mobileMechanic: true,
+        fuelRun: true,
+        towingJob: true,
+        dealerShowcase: true,
+        performanceBay: true,
+        raceEvent: true
+      },
+      lines: {
+        streetRoute: { level: 1, cycle: 0, collected: 0 },
+        partsDelivery: { level: 0, cycle: 0, collected: 0 },
+        mobileMechanic: { level: 0, cycle: 0, collected: 0 },
+        fuelRun: { level: 0, cycle: 0, collected: 0 },
+        towingJob: { level: 0, cycle: 0, collected: 0 },
+        dealerShowcase: { level: 0, cycle: 0, collected: 0 },
+        performanceBay: { level: 0, cycle: 0, collected: 0 },
+        raceEvent: { level: 0, cycle: 0, collected: 0 }
+      }
+    },
     upgrades: {
       tapCrew: 1,
       idleDriver: 1,
@@ -87,6 +120,9 @@ export function defaultState() {
     objectives: {
       firstTap: false,
       firstMerge: false,
+      idleLineUpgrade: false,
+      previewGhostRace: false,
+      firstManager: false,
       buildStorage: false,
       unlockPerformance: false,
       unlockTrack: false,
@@ -103,7 +139,7 @@ export function defaultState() {
     },
     pendingOffline: null,
     log: [
-      '365 Micro Garage: Drive, Merge, build the Lot, and run the idle shop. All wallets are shared.'
+      'Welcome to 365 Micro Garage. Collect Street Route income, upgrade idle lines, then use Merge Bay to support the garage.'
     ]
   };
 }
