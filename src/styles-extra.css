@@ -10,3 +10,4 @@
 .cell.chain-performance { border-color: rgba(167,139,250,.45); }
 .cell.chain-racing { border-color: rgba(255,93,115,.4); }
 .cell.chain-tools { border-color: rgba(90,183,255,.35); }
+.cell.locked { opacity: 0.38; pointer-events: none; }
