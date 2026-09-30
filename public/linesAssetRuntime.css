@@ -1,0 +1,266 @@
+#screen-lines {
+  --lines-card-art: url("/assets/Lines/gui/line-card.svg");
+  --lines-panel-art: url("/assets/Lines/gui/panel-frame.svg");
+  --lines-progress-track: url("/assets/Lines/gui/progress-track.svg");
+  --lines-progress-fill: url("/assets/Lines/gui/progress-fill.svg");
+}
+
+#screen-lines .linesIntroCard,
+#screen-lines .lineCard {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(125,220,255,.2), transparent 30%),
+    linear-gradient(180deg, rgba(22,82,117,.98), rgba(8,31,50,.98)) !important;
+  background-size: auto !important;
+}
+
+#screen-lines .linesIntroCard::before,
+#screen-lines .lineCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--lines-card-art);
+  background-size: 100% 100%;
+  opacity: .48;
+  z-index: 0;
+}
+
+#screen-lines .linesIntroCard::before {
+  background-image: var(--lines-panel-art);
+  opacity: .52;
+}
+
+#screen-lines .linesIntroCard > *,
+#screen-lines .lineCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+#screen-lines .lineCard {
+  border-color: rgba(125, 220, 255, .28);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.1), 0 12px 24px rgba(0,0,0,.24);
+}
+
+#screen-lines .lockedLine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("/assets/Lines/gui/locked-overlay.svg");
+  background-size: 100% 100%;
+  opacity: .36;
+  z-index: 0;
+}
+
+#screen-lines .lineIcon {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.16);
+  background: linear-gradient(135deg, rgba(125,220,255,.22), rgba(53,229,138,.12));
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.16), 0 8px 14px rgba(0,0,0,.24);
+}
+
+#screen-lines .lineIconAsset {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#screen-lines .lineEmojiFallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  font-size: 22px;
+}
+
+#screen-lines .lineIconAsset:not([src]),
+#screen-lines .lineIconAsset[src=""] {
+  display: none;
+}
+
+#screen-lines .lineIconAsset:not([src]) + .lineEmojiFallback,
+#screen-lines .lineIconAsset[src=""] + .lineEmojiFallback {
+  opacity: 1;
+}
+
+#screen-lines .lineStatusPill {
+  gap: 5px;
+  padding: 4px 7px 4px 4px;
+  background: rgba(3, 16, 23, .46);
+  border-color: rgba(255,255,255,.16);
+  color: #eaf8ff;
+}
+
+#screen-lines .lineStatusAsset,
+#screen-lines .lineButtonAsset {
+  display: inline-block;
+  flex: 0 0 auto;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+#screen-lines .lineStatusAsset {
+  width: 28px;
+  height: 18px;
+}
+
+#screen-lines .lineButtonAsset {
+  width: 22px;
+  height: 22px;
+}
+
+#screen-lines .lineProgress:not(.segMeter) {
+  position: relative;
+  height: 14px;
+  border: 0;
+  background: transparent;
+}
+
+#screen-lines .lineProgress:not(.segMeter)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--lines-progress-track);
+  background-size: 100% 100%;
+}
+
+#screen-lines .lineProgress:not(.segMeter) div {
+  position: relative;
+  min-width: 10px;
+  border-radius: 999px;
+  background-image: var(--lines-progress-fill);
+  background-size: 100% 100%;
+  background-color: transparent;
+  z-index: 1;
+}
+
+#screen-lines .lineProgress.segMeter {
+  height: 22px;
+  margin: 8px 0;
+}
+
+#screen-lines .lineButtons .btn,
+#screen-lines .lineManager .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.08;
+}
+
+#screen-lines .lineRequirement {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 7px;
+  align-items: center;
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(2,12,20,.38);
+}
+
+#screen-lines .lineRequirement.met {
+  border-color: rgba(53,229,138,.30);
+  background: rgba(53,229,138,.08);
+}
+
+#screen-lines .lineRequirement.open {
+  border-color: rgba(255,209,102,.30);
+  background: rgba(255,209,102,.07);
+}
+
+#screen-lines .lineRequirementText {
+  min-width: 0;
+}
+
+#screen-lines .lineRequirementText b,
+#screen-lines .lineRequirement strong {
+  display: block;
+  color: #f8fbff;
+  font-size: 11px;
+  line-height: 1.05;
+}
+
+#screen-lines .lineRequirementText span {
+  display: block;
+  margin-top: 2px;
+  color: #b7d5e3;
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+#screen-lines .lineRequirementMeter:not(.segMeter) {
+  grid-column: 1 / -1;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(0,0,0,.32);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+#screen-lines .lineRequirementMeter:not(.segMeter) span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffd166, #35e58a);
+}
+
+#screen-lines .lineRequirementMeter.segMeter {
+  grid-column: 1 / -1;
+  height: 22px;
+  margin-top: 1px;
+}
+
+#screen-lines .lineManagerGrid,
+#screen-lines .lineManagerNeed {
+  display: grid;
+  gap: 7px;
+}
+
+#screen-lines .lineManagerGrid {
+  grid-template-columns: 1fr auto;
+  align-items: stretch;
+}
+
+#screen-lines .lineManagerGrid .notice {
+  margin: 0;
+}
+
+#screen-lines .lineManagerGrid .btn {
+  min-width: 105px;
+}
+
+#screen-lines .linesAssetPreload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: .01;
+  pointer-events: none;
+}
+
+@media (max-width: 380px) {
+  #screen-lines .lineHead {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  #screen-lines .lineStatusPill {
+    grid-column: 1 / -1;
+    width: max-content;
+  }
+
+  #screen-lines .lineRequirement,
+  #screen-lines .lineManagerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  #screen-lines .lineRequirement strong {
+    justify-self: start;
+  }
+}

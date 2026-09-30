@@ -1,70 +1,49 @@
-import { Application, Container, Graphics, Text } from 'pixi.js';
+import { Application, Assets, Container, Sprite, Text } from 'pixi.js';
+import { getRaceMode, getRaceProgressRatio } from './raceProgress.js';
+
+const STARTER_CAR_SPRITE = '/assets/race/cars/starter_compact.png';
+const ROUTE_BACKGROUNDS = {
+  street: '/assets/race/backgrounds/street_loop.png',
+  delivery: '/assets/race/backgrounds/parts_delivery.png',
+  economy: '/assets/race/backgrounds/fuel_saver.png',
+  rough: '/assets/race/backgrounds/rough_road.png',
+  showcase: '/assets/race/backgrounds/dealer_showcase.png'
+};
+const RACE_SCENE_ASSETS = {
+  road: '/assets/race/fx/road_strip.png',
+  speedStreaks: '/assets/race/fx/speed_streaks.png',
+  boostRing: '/assets/race/fx/tap_boost_ring.png',
+  checkpointFlag: '/assets/race/fx/checkpoint_flag.png',
+  warningPanel: '/assets/race/fx/warning_panel.png',
+  warningBadge: '/assets/race/fx/warning_badge.png'
+};
+const RACE_ASSET_MANIFEST = [
+  STARTER_CAR_SPRITE,
+  ...Object.values(ROUTE_BACKGROUNDS),
+  ...Object.values(RACE_SCENE_ASSETS)
+];
+const ROAD_SPACING = 420;
 
 let app;
-let car;
 let scene;
-let sky;
-let hills;
-let road;
-let roadMarks = [];
-let exhaustParticles = [];
-let warningText;
-let modeText;
+let background;
+let activeBackgroundKey = '';
+let roadLayer;
+let milestoneLayer;
+let streakLayer;
+let rewardLayer;
+let car;
+let carSprite;
+let boostGlow;
+let warningBanner;
+let roadSprites = [];
+let streaks = [];
+let floatingRewards = [];
 let hostElement;
-let currentModeKey = 'street';
-
-const MODE_THEMES = {
-  street: {
-    sky: 0x0d2638,
-    hills: 0x12384f,
-    road: 0x1e2830,
-    roadEdge: 0x415260,
-    mark: 0xf7f2d2,
-    carBody: 0x35e58a,
-    carAccent: 0x0ea5e9,
-    label: 'STREET LOOP'
-  },
-  delivery: {
-    sky: 0x1a2a1a,
-    hills: 0x2d4a2d,
-    road: 0x2a322a,
-    roadEdge: 0x4a5c4a,
-    mark: 0xe8f0d0,
-    carBody: 0xf59e0b,
-    carAccent: 0xdc2626,
-    label: 'PARTS DELIVERY'
-  },
-  economy: {
-    sky: 0x0c2a24,
-    hills: 0x1a4a3c,
-    road: 0x1e2e28,
-    roadEdge: 0x3a5a4a,
-    mark: 0xd4f0e0,
-    carBody: 0x22c55e,
-    carAccent: 0x14b8a6,
-    label: 'FUEL SAVER'
-  },
-  rough: {
-    sky: 0x2a1a0c,
-    hills: 0x4a3520,
-    road: 0x3a2e22,
-    roadEdge: 0x5a4a38,
-    mark: 0xe8d4a8,
-    carBody: 0xef4444,
-    carAccent: 0xf97316,
-    label: 'ROUGH ROAD'
-  },
-  showcase: {
-    sky: 0x1a1030,
-    hills: 0x2d1f4a,
-    road: 0x221a38,
-    roadEdge: 0x4a3a6a,
-    mark: 0xf0e0ff,
-    carBody: 0xa78bfa,
-    carAccent: 0xfbbf24,
-    label: 'DEALER SHOWCASE'
-  }
-};
+let lastProgress = 0;
+let lastRewardProgress = 0;
+let speedIntensity = 0.15;
+let boostTimer = 0;
 
 export async function mountRaceCanvas(host) {
   hostElement = host;
@@ -77,36 +56,25 @@ export async function mountRaceCanvas(host) {
   app = new Application();
   await app.init({ backgroundAlpha: 0, antialias: true, resizeTo: host });
   host.appendChild(app.canvas);
+  await Assets.load(RACE_ASSET_MANIFEST);
 
   scene = new Container();
   app.stage.addChild(scene);
 
-  sky = new Graphics();
-  scene.addChild(sky);
+  roadLayer = new Container();
+  milestoneLayer = new Container();
+  streakLayer = new Container();
+  rewardLayer = new Container();
 
-  hills = new Graphics();
-  scene.addChild(hills);
+  setRouteBackground('street');
+  createRoadSprites();
+  createMilestones();
+  createSpeedStreaks();
+  createCar();
+  createWarningBanner();
+  warningBanner.visible = false;
 
-  road = new Graphics();
-  scene.addChild(road);
-
-  for (let i = 0; i < 14; i += 1) {
-    const mark = new Graphics();
-    roadMarks.push(mark);
-    scene.addChild(mark);
-  }
-
-  car = new Container();
-  scene.addChild(car);
-  buildCar(MODE_THEMES.street);
-
-  warningText = new Text({
-    text: '',
-    style: { fill: '#ffd166', fontSize: 16, fontWeight: '900' }
-  });
-  warningText.x = 12;
-  warningText.y = 10;
-  scene.addChild(warningText);
+  scene.addChild(roadLayer, milestoneLayer, streakLayer, car, rewardLayer, warningBanner);
 
   modeText = new Text({
     text: 'STREET LOOP',
@@ -120,25 +88,19 @@ export async function mountRaceCanvas(host) {
   applyTheme('street');
 
   app.ticker.add((ticker) => {
-    const speed = 2.6 * ticker.deltaTime;
-    roadMarks.forEach((mark) => {
-      mark.x -= speed;
-      if (mark.x < -100) mark.x += 92 * 14;
-    });
-    if (car) {
-      car.y = 118 + Math.sin(Date.now() / 130) * 1.8;
-    }
-    // simple exhaust drift
-    exhaustParticles.forEach((p, i) => {
-      p.x -= 1.8 * ticker.deltaTime;
-      p.alpha -= 0.035 * ticker.deltaTime;
-      p.scale.set(Math.max(0.2, p.scale.x - 0.02 * ticker.deltaTime));
-      if (p.alpha <= 0) {
-        scene.removeChild(p);
-        exhaustParticles.splice(i, 1);
-      }
-    });
+    const dt = ticker.deltaTime;
+    animateRoad(dt);
+    animateStreaks(dt);
+    animateCar(dt);
+    animateRewards(dt);
   });
+
+  window.__racePixiAssetState = {
+    car: STARTER_CAR_SPRITE,
+    backgrounds: ROUTE_BACKGROUNDS,
+    fx: RACE_SCENE_ASSETS,
+    graphicsFree: true
+  };
 }
 
 function buildCar(theme) {
@@ -234,45 +196,215 @@ function applyTheme(modeKey) {
 }
 
 export function updateRaceCanvas(state) {
-  if (!app || !car || !warningText) return;
+  if (!app || !car || !warningBanner) return;
+  const raceState = state.race || {};
+  const modeKey = raceState.mode || 'street';
+  const mode = getRaceMode(modeKey);
+  const progress = Math.max(0, Number(raceState.progress) || 0);
+  const progressRatio = getRaceProgressRatio(raceState);
+  const progressDelta = Math.max(0, progress - lastProgress);
 
-  // Switch theme when mode changes
-  if (state.race.mode !== currentModeKey) {
-    applyTheme(state.race.mode);
+  setRouteBackground(modeKey);
+  car.x = 72 + progressRatio * 212;
+  car.scale.set(raceState.problem ? 0.9 : 1);
+  speedIntensity = Math.max(0.12, Math.min(1, progressDelta / 9 + (boostTimer > 0 ? 0.65 : 0)));
+
+  if (progress - lastRewardProgress >= 18) {
+    spawnReward(`+${Math.round(progress - lastRewardProgress)}m`, car.x + 12, car.y - 70, 0x6dff9f);
+    lastRewardProgress = progress;
   }
 
-  const progressRatio = Math.min(1, state.race.progress / 130);
-  car.x = 55 + progressRatio * 180;
-  car.scale.set(state.race.problem ? 0.93 : 1);
+  updateMilestones(progressRatio);
+  warningBanner.visible = false;
 
-  if (state.race.problem) {
-    warningText.text = '⚠ ROUTE PROBLEM';
-    warningText.style.fill = '#ff5d73';
-  } else {
-    warningText.text = `STAGE ${state.stage}`;
-    warningText.style.fill = '#ffd166';
-  }
+  lastProgress = progress;
 }
 
 export function pulseCar() {
   if (!car) return;
-  car.scale.set(1.1);
-  setTimeout(() => {
-    if (car) car.scale.set(1);
-  }, 130);
+  boostTimer = 0.45;
+  car.scale.set(1.12);
+  spawnReward('BOOST', car.x + 18, car.y - 78, 0xffe05f);
+}
 
-  // Exhaust puff
-  if (scene) {
-    for (let i = 0; i < 4; i += 1) {
-      const p = new Graphics();
-      p.circle(0, 0, 5 + Math.random() * 4).fill({ color: 0x94a3b8, alpha: 0.55 });
-      p.x = car.x + 8;
-      p.y = car.y + 48 + Math.random() * 8;
-      p.scale.set(0.8 + Math.random() * 0.4);
-      scene.addChild(p);
-      exhaustParticles.push(p);
-    }
+function setRouteBackground(key) {
+  const nextKey = ROUTE_BACKGROUNDS[key] ? key : 'street';
+  if (activeBackgroundKey === nextKey && background) return;
+  activeBackgroundKey = nextKey;
+  const nextBackground = Sprite.from(ROUTE_BACKGROUNDS[nextKey]);
+  nextBackground.width = 900;
+  nextBackground.height = 230;
+  nextBackground.alpha = 0.98;
+  if (background && scene) scene.removeChild(background);
+  background = nextBackground;
+  if (scene) scene.addChildAt(background, 0);
+}
+
+function createRoadSprites() {
+  roadLayer.removeChildren();
+  roadSprites = [];
+  for (let i = 0; i < 3; i += 1) {
+    const road = Sprite.from(RACE_SCENE_ASSETS.road);
+    road.x = -24 + i * ROAD_SPACING;
+    road.y = 118 + (i % 2) * 2;
+    road.width = 512;
+    road.height = 116;
+    road.alpha = 0.98;
+    roadSprites.push(road);
+    roadLayer.addChild(road);
   }
+}
+
+function createMilestones() {
+  milestoneLayer.removeChildren();
+  for (let i = 1; i <= 4; i += 1) {
+    const marker = new Container();
+    marker.x = 72 + i * 52;
+    marker.y = 121 + Math.sin(i) * 10;
+    const flag = Sprite.from(RACE_SCENE_ASSETS.checkpointFlag);
+    flag.anchor.set(0.18, 0.24);
+    flag.width = 48;
+    flag.height = 44;
+    flag.tint = i === 4 ? 0xffffff : 0x8dffad;
+    const label = new Text({ text: `${i * 25}%`, style: { fill: '#06131d', fontSize: 8, fontWeight: '900' } });
+    label.x = 10;
+    label.y = 4;
+    marker.addChild(flag, label);
+    marker.alpha = 0.48;
+    marker.scale.set(0.9);
+    milestoneLayer.addChild(marker);
+  }
+}
+
+function updateMilestones(progressRatio) {
+  milestoneLayer.children.forEach((marker, index) => {
+    const unlocked = progressRatio >= (index + 1) * 0.25;
+    marker.alpha = unlocked ? 1 : 0.42;
+    marker.scale.set(unlocked ? 1.07 : 0.9);
+  });
+}
+
+function createSpeedStreaks() {
+  streakLayer.removeChildren();
+  streaks = [];
+  for (let i = 0; i < 9; i += 1) {
+    const streak = Sprite.from(RACE_SCENE_ASSETS.speedStreaks);
+    streak.x = 420 + i * 55;
+    streak.y = 64 + (i % 5) * 22;
+    streak.width = 62 + i * 5;
+    streak.height = 18;
+    streak.alpha = 0;
+    streaks.push(streak);
+    streakLayer.addChild(streak);
+  }
+}
+
+function createCar() {
+  car = new Container();
+  boostGlow = Sprite.from(RACE_SCENE_ASSETS.boostRing);
+  boostGlow.anchor.set(0.5);
+  boostGlow.width = 176;
+  boostGlow.height = 96;
+  boostGlow.y = 18;
+  boostGlow.alpha = 0;
+
+  carSprite = Sprite.from(STARTER_CAR_SPRITE);
+  carSprite.anchor.set(0.5, 0.72);
+  carSprite.width = 132;
+  carSprite.height = 98;
+  carSprite.y = 7;
+
+  car.addChild(boostGlow, carSprite);
+  car.x = 72;
+  car.y = 146;
+}
+
+function createWarningBanner() {
+  warningBanner = new Container();
+  warningBanner.x = 16;
+  warningBanner.y = 14;
+  const bg = Sprite.from(RACE_SCENE_ASSETS.warningPanel);
+  bg.width = 250;
+  bg.height = 48;
+  bg.alpha = 0.93;
+  const cap = Sprite.from(RACE_SCENE_ASSETS.warningBadge);
+  cap.x = 7;
+  cap.y = 5;
+  cap.width = 43;
+  cap.height = 34;
+  const warningText = new Text({ text: '', style: { fill: '#ffffff', fontSize: 15, fontWeight: '900' } });
+  warningText.x = 58;
+  warningText.y = 8;
+  const warningSubText = new Text({ text: '', style: { fill: '#bfe9f5', fontSize: 9, fontWeight: '800' } });
+  warningSubText.x = 58;
+  warningSubText.y = 27;
+  warningBanner.addChild(bg, cap, warningText, warningSubText);
+}
+
+function spawnReward(text, x, y, color = 0xffffff) {
+  if (!rewardLayer) return;
+  const node = new Text({
+    text,
+    style: {
+      fill: color,
+      fontSize: 18,
+      fontWeight: '900',
+      stroke: { color: '#06131d', width: 4 }
+    }
+  });
+  node.anchor.set(0.5);
+  node.x = x;
+  node.y = y;
+  node.life = 1;
+  rewardLayer.addChild(node);
+  floatingRewards.push(node);
+}
+
+function animateRoad(dt) {
+  const speed = (2.1 + speedIntensity * 4.6) * dt;
+  roadSprites.forEach((road) => {
+    road.x -= speed;
+    if (road.x < -ROAD_SPACING - 24) road.x += ROAD_SPACING * roadSprites.length;
+  });
+}
+
+function animateStreaks(dt) {
+  streaks.forEach((streak, index) => {
+    streak.alpha = Math.max(0, speedIntensity - 0.18) * (0.38 + index * 0.035);
+    streak.x -= (5 + speedIntensity * 20 + index * 0.35) * dt;
+    if (streak.x < -120) {
+      streak.x = 420 + index * 58;
+      streak.y = 58 + ((index + Math.floor(performance.now() / 260)) % 5) * 22;
+    }
+  });
+}
+
+function animateCar(dt) {
+  if (!car) return;
+  boostTimer = Math.max(0, boostTimer - dt / 60);
+  const bob = Math.sin(performance.now() / 115) * (1.2 + speedIntensity * 1.8);
+  car.y = 146 + bob;
+  car.rotation = Math.sin(performance.now() / 220) * 0.018;
+  boostGlow.alpha = Math.max(boostTimer * 1.9, speedIntensity > 0.55 ? speedIntensity * 0.42 : 0);
+  boostGlow.scale.set(1 + speedIntensity * 0.18, 0.82 + speedIntensity * 0.18);
+  if (boostTimer <= 0 && car.scale.x > 1) {
+    const next = Math.max(1, car.scale.x - dt * 0.05);
+    car.scale.set(next);
+  }
+}
+
+function animateRewards(dt) {
+  floatingRewards = floatingRewards.filter((node) => {
+    node.life -= dt / 60;
+    node.y -= dt * 0.62;
+    node.alpha = Math.max(0, node.life);
+    node.scale.set(1 + (1 - node.life) * 0.16);
+    if (node.life <= 0) {
+      node.parent?.removeChild(node);
+      return false;
+    }
+    return true;
+  });
 }
 
 function resize() {

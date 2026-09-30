@@ -1,0 +1,409 @@
+/* 365 Auto City - strong mobile game UI skin. This is intentionally visible even when no art-pack button PNG is found. */
+:root {
+  --game-gold-a: #ffe08a;
+  --game-gold-b: #f4a51c;
+  --game-green-a: #5cf18d;
+  --game-green-b: #18a852;
+  --game-blue-a: #63d4ff;
+  --game-blue-b: #1477bd;
+  --game-panel-a: #1d6b9a;
+  --game-panel-b: #0b2a4a;
+  --game-dark: #06131d;
+  --ui-top-hud-frame: url("/assets/ui/hud/top-hud-frame.svg");
+  --ui-hud-resource: url("/assets/ui/hud/resource-capsule.svg");
+  --ui-stage-badge: url("/assets/ui/hud/stage-badge.svg");
+  --ui-panel-frame: url("/assets/ui/panels/blue-panel-frame.svg");
+  --ui-card-frame: url("/assets/ui/cards/game-card-frame.svg");
+  --ui-row-card-frame: url("/assets/ui/cards/row-card-frame.svg");
+  --ui-upgrade-card-frame: url("/assets/ui/cards/upgrade-card-frame.svg");
+  --ui-blue-cta: url("/assets/ui/buttons/blue-cta.svg");
+  --ui-green-cta: url("/assets/ui/buttons/green-cta.svg");
+  --ui-orange-cta: url("/assets/ui/buttons/orange-cta.svg");
+  --ui-red-cta: url("/assets/ui/buttons/red-cta.svg");
+  --ui-nav-bar-frame: url("/assets/ui/nav/nav-bar-frame.svg");
+  --ui-nav-tab-idle: url("/assets/ui/nav/nav-tab-idle.svg");
+  --ui-nav-tab: url("/assets/ui/nav/nav-tab.svg");
+  --ui-meter-track: url("/assets/ui/meters/segmented-meter-track.svg");
+  --ui-merge-slot-empty: url("/assets/ui/merge/merge-slot-empty.svg");
+  --ui-merge-slot-ready: url("/assets/ui/merge/merge-slot-ready.svg");
+  --ui-merge-slot-selected: url("/assets/ui/merge/merge-slot-selected.svg");
+  --ui-merge-slot-locked: url("/assets/ui/merge/merge-slot-locked.svg");
+  --ui-fx-cyan-glow: url("/assets/ui/fx/cyan-glow.svg");
+}
+
+.appShell {
+  max-width: 520px;
+  grid-template-rows: 114px minmax(0, 1fr) 84px;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(79, 209, 255, .22), transparent 40%),
+    linear-gradient(180deg, #092a45, #06131d 74%);
+}
+
+.topBar {
+  min-height: 114px;
+  padding: 8px 10px 7px;
+  background:
+    var(--ui-top-hud-frame),
+    radial-gradient(circle at 18% -22%, rgba(255,255,255,.22), transparent 34%),
+    linear-gradient(180deg, rgba(55, 154, 207, .98), rgba(8, 47, 78, .98));
+  background-size: 100% 100%, auto, auto;
+  border-bottom: 3px solid rgba(0,0,0,.34);
+  box-shadow: inset 0 -2px 0 rgba(255,255,255,.14), 0 5px 12px rgba(0,0,0,.32);
+}
+
+.topLine {
+  margin-bottom: 7px;
+}
+
+.brandLogo {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #9affef 0%, #33f0b0 48%, #1297d6 100%);
+  border: 2px solid rgba(255,255,255,.45);
+  box-shadow: inset 0 4px 0 rgba(255,255,255,.38), inset 0 -5px 0 rgba(0,0,0,.14), 0 7px 0 rgba(0,0,0,.22), 0 11px 20px rgba(0,0,0,.28);
+}
+
+.brandText b {
+  font-size: 16px;
+  text-shadow: 0 3px 0 rgba(0,0,0,.24);
+}
+
+.stagePill {
+  min-height: 42px;
+  background:
+    var(--ui-stage-badge),
+    radial-gradient(circle at 30% 0, rgba(255,255,255,.48), transparent 42%),
+    linear-gradient(180deg, #ffe79a, #f5aa1f 68%, #b45f08);
+  background-size: 100% 100%, auto, auto;
+  color: #2b1700;
+  border: 2px solid rgba(70, 35, 0, .42);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.48), 0 5px 0 rgba(0,0,0,.24), 0 8px 14px rgba(0,0,0,.22);
+}
+
+.currencyGrid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.cur {
+  min-height: 42px;
+  border-radius: 15px;
+  padding: 5px 12px 5px 4px;
+  background:
+    var(--ui-hud-resource),
+    radial-gradient(circle at 26% 0, rgba(255,255,255,.2), transparent 42%),
+    linear-gradient(180deg, rgba(42, 130, 180, .98), rgba(8, 45, 76, .98));
+  background-size: 100% 100%, auto, auto;
+  border: 2px solid rgba(255,255,255,.16);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.16), 0 4px 0 rgba(0,0,0,.22);
+}
+
+.curIcon {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cur b {
+  color: #ffffff;
+  font-size: clamp(8px, 2.2vw, 11px);
+  text-shadow: 0 2px 0 rgba(0,0,0,.28);
+}
+
+.card, .lineCard, .pixiWorldShell {
+  border-radius: 24px !important;
+  padding: 14px !important;
+  background:
+    var(--ui-panel-frame),
+    var(--ui-pack-panel),
+    linear-gradient(180deg, rgba(34, 104, 146, .96), rgba(10, 35, 57, .98)) !important;
+  background-size: 100% 100%, 100% 100%, auto !important;
+  border: 3px solid rgba(255,255,255,.13) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.16), 0 10px 0 rgba(0,0,0,.18), 0 18px 28px rgba(0,0,0,.30) !important;
+}
+
+.gamePanel {
+  padding: 4px !important;
+  border: 2px solid rgba(161,231,255,.72) !important;
+  background:
+    var(--ui-card-frame),
+    linear-gradient(180deg, #34bdf5 0%, #126da3 52%, #073353 100%) !important;
+  background-size: 100% 100%, auto !important;
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.28), 0 6px 0 rgba(1,10,19,.62), 0 16px 28px rgba(0,0,0,.34) !important;
+}
+
+.gamePanel.RouteCard,
+.gamePanel.GarageCard,
+.gamePanel.ObjectiveCard,
+.gamePanel.RewardPanel {
+  background:
+    var(--ui-card-frame),
+    linear-gradient(180deg, #45d2ff 0%, #147fba 48%, #073353 100%) !important;
+  background-size: 100% 100%, auto !important;
+}
+
+.gamePanel.ProblemAlert {
+  border-color: rgba(255,184,102,.85) !important;
+  background:
+    var(--ui-card-frame),
+    linear-gradient(180deg, #ffcd76 0%, #f97316 34%, #7f1d1d 100%) !important;
+  background-size: 100% 100%, auto !important;
+}
+
+.segMeter {
+  border-color: rgba(0,0,0,.42) !important;
+  background:
+    var(--ui-meter-track),
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 42%),
+    linear-gradient(180deg, #102c3d, #030b12) !important;
+  background-size: 100% 100%, auto, auto !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 3px 0 rgba(0,0,0,.34) !important;
+}
+
+.pixiWorldHeader {
+  margin: -4px -4px 10px;
+  padding: 14px 14px 12px;
+  border-radius: 18px 18px 10px 10px;
+  background: linear-gradient(180deg, #277faf, #0d3e68);
+  border-bottom: 3px solid rgba(0,0,0,.28);
+}
+
+.pixiWorldHeader h2,
+.cardTitle h2,
+.cardTitle h3 {
+  color: #ffffff;
+  text-shadow: 0 3px 0 rgba(0,0,0,.30);
+}
+
+.btn {
+  border-radius: 18px !important;
+  border: 2px solid rgba(0,0,0,.34) !important;
+  background:
+    var(--ui-blue-cta),
+    linear-gradient(180deg, #63d4ff, #1477bd) !important;
+  background-size: 100% 100%, auto !important;
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.30), 0 5px 0 rgba(0,0,0,.24), 0 8px 13px rgba(0,0,0,.24) !important;
+  text-shadow: 0 2px 0 rgba(0,0,0,.24);
+  letter-spacing: .1px;
+}
+
+.btn.primary {
+  background:
+    var(--ui-green-cta),
+    var(--ui-pack-button),
+    linear-gradient(180deg, var(--game-green-a), var(--game-green-b)) !important;
+  background-size: 100% 100%, 100% 100%, auto !important;
+  color: #062313 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.28);
+}
+
+.btn.gold {
+  background:
+    var(--ui-orange-cta),
+    linear-gradient(180deg, var(--game-gold-a), var(--game-gold-b)) !important;
+  background-size: 100% 100%, auto !important;
+  color: #2b1700 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.34);
+}
+
+.btn.red {
+  background:
+    var(--ui-red-cta),
+    linear-gradient(180deg, #ff7891, #d82946) !important;
+  background-size: 100% 100%, auto !important;
+  color: #ffffff !important;
+}
+
+.btn.ghost {
+  background:
+    var(--ui-blue-cta),
+    linear-gradient(180deg, #2e6f94, #153951) !important;
+  background-size: 100% 100%, auto !important;
+  color: #e9fbff !important;
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.20), 0 1px 0 rgba(0,0,0,.24) !important;
+}
+
+.bottomNav {
+  height: 84px;
+  padding: 7px 5px calc(7px + env(safe-area-inset-bottom));
+  background:
+    var(--ui-nav-bar-frame),
+    linear-gradient(180deg, #0a2b45, #04111d);
+  background-size: 100% 100%, auto;
+  border-top: 3px solid rgba(255,255,255,.12);
+  box-shadow: 0 -8px 18px rgba(0,0,0,.30);
+}
+
+.tab {
+  border-radius: 16px;
+  border: 1px solid rgba(125,220,255,.20) !important;
+  background:
+    linear-gradient(180deg, rgba(18,76,112,.78), rgba(4,21,34,.90)) !important;
+  color: #bde8f7;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 3px 0 rgba(0,0,0,.20) !important;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+
+.tabIcon {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.tab.active {
+  background:
+    linear-gradient(180deg, rgba(42,222,119,.95), rgba(12,126,82,.98)) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,209,102,.62) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.24), 0 0 0 2px rgba(255,209,102,.18), 0 4px 0 rgba(0,0,0,.24) !important;
+  text-shadow: 0 2px 0 rgba(0,0,0,.30);
+}
+
+.gameRowCard,
+.upgrade,
+.building,
+.objective,
+.ruleBlock,
+.lineCard {
+  background:
+    var(--ui-row-card-frame),
+    linear-gradient(180deg, rgba(11,54,82,.96), rgba(2,17,31,.98)) !important;
+  background-size: 100% 100%, auto !important;
+  border-color: rgba(125,220,255,.38) !important;
+}
+
+.upgrade.gameRowCard,
+.building.GarageCard,
+.shopRoom.GarageCard {
+  background:
+    var(--ui-upgrade-card-frame),
+    linear-gradient(180deg, rgba(11,54,82,.96), rgba(2,17,31,.98)) !important;
+  background-size: 100% 100%, auto !important;
+}
+
+.shelfSlot,
+.cell {
+  background:
+    var(--ui-merge-slot-empty),
+    rgba(0,0,0,.22) !important;
+  background-size: 100% 100%, auto !important;
+  border-color: rgba(125,220,255,.24) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.08), 0 5px 0 rgba(0,0,0,.18);
+}
+
+.shelfSlot.ready,
+.cell:has(.itemIcon),
+.cell:has(.mergeItemArt) {
+  background:
+    var(--ui-merge-slot-ready),
+    linear-gradient(180deg, rgba(53,229,138,.18), rgba(45,212,191,.07)) !important;
+  background-size: 100% 100%, auto !important;
+}
+
+.cell.selected {
+  background:
+    var(--ui-merge-slot-selected),
+    linear-gradient(180deg, rgba(255,209,102,.2), rgba(5,27,43,.98)) !important;
+  background-size: 100% 100%, auto !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 3px rgba(255,209,102,.22), 0 0 18px rgba(45,212,191,.22) !important;
+}
+
+.cell.locked,
+.shelfSlot.locked,
+.cell:disabled,
+.shelfSlot:disabled {
+  background:
+    var(--ui-merge-slot-locked),
+    linear-gradient(180deg, #26323d, #111827) !important;
+  background-size: 100% 100%, auto !important;
+}
+
+.shelfSlot.ready::after,
+.cell.selected::after {
+  content: "";
+  position: absolute;
+  inset: -22%;
+  background-image: var(--ui-fx-cyan-glow);
+  background-size: 100% 100%;
+  opacity: .38;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.mobileCityHud {
+  border-radius: 0 0 22px 22px;
+  background:
+    var(--ui-panel-frame),
+    var(--ui-pack-panel),
+    linear-gradient(180deg, rgba(23, 91, 132, .98), rgba(7, 28, 48, .98));
+  background-size: 100% 100%, 100% 100%, auto;
+  border-top: 3px solid rgba(255,255,255,.14);
+}
+
+.mobileBuildTray,
+.mobilePlacedSheet {
+  border-radius: 22px;
+  background:
+    var(--ui-panel-frame),
+    var(--ui-pack-panel),
+    linear-gradient(180deg, rgba(35, 112, 158, .98), rgba(9, 38, 66, .98));
+  background-size: 100% 100%, 100% 100%, auto;
+  border: 3px solid rgba(255,255,255,.16);
+}
+
+.mobileBuildingList .btn {
+  min-height: 54px;
+  font-size: 11px;
+}
+
+.mobileBuildingList .btn.primary {
+  outline: 3px solid #fff4a7;
+  outline-offset: 2px;
+}
+
+.notice.good {
+  border: 2px solid rgba(75, 255, 155, .35);
+  background: linear-gradient(180deg, rgba(53, 229, 138, .16), rgba(8, 65, 52, .82));
+}
+
+@media (max-width: 380px) {
+  .appShell {
+    grid-template-rows: 100px minmax(0, 1fr) 70px;
+  }
+
+  .topBar {
+    min-height: 100px;
+    padding: 7px 8px 6px;
+  }
+
+  .brandLogo {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+  }
+
+  .currencyGrid {
+    gap: 3px;
+  }
+
+  .cur {
+    min-height: 35px;
+    border-radius: 12px;
+    padding: 4px 10px 4px 3px;
+  }
+
+  .stagePill {
+    min-height: 35px;
+    border-radius: 13px;
+  }
+}
