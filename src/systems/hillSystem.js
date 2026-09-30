@@ -5,6 +5,10 @@ export function startHill(state) {
   if ((state.currencies.fuelCans || 0) < 1 && state.race.fuel < 20) {
     return { ok: false, message: 'Need fuel or a fuel can.' };
   }
+  if (state.race.fuel < 20) {
+    state.currencies.fuelCans -= 1;
+    state.race.fuel = Math.max(state.race.fuel, 80);
+  }
   state.driveTab = 'hill';
   state.race.mode = 'hill';
   state.hill.running = true;
