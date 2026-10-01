@@ -1767,9 +1767,13 @@ function buildWorld() {
   addTraffic(pathH(1, 'east'), { color: 0xfacc15, accent: 0xfffbeb, direction: 'east', speed: 86, scale: 0.72, assetKey: 'yellowCar' });
   addTraffic(pathH(1, 'west'), { color: 0x35e58a, accent: 0xe0f2fe, direction: 'west', truck: true, speed: 68, scale: 0.78, assetKey: 'greenTruck' });
   addTraffic(pathH(2, 'east'), { color: 0x22c55e, accent: 0xdcfce7, direction: 'east', speed: 76, scale: 0.72, assetKey: 'deliveryVan' });
+  addTraffic(pathH(2, 'west'), { color: 0xfb7185, accent: 0xffe4e6, direction: 'west', speed: 70, scale: 0.7, assetKey: 'compactCar' });
   addTraffic(pathH(3, 'west'), { color: 0x2dd4bf, accent: 0xecfeff, direction: 'west', truck: true, speed: 64, scale: 0.78, assetKey: 'towTruck' });
+  addTraffic(pathH(3, 'east'), { color: 0xa78bfa, accent: 0xede9fe, direction: 'east', speed: 74, scale: 0.7, assetKey: 'blueCar' });
   addTraffic(pathV(1, 'north'), { color: 0xfacc15, accent: 0xfffbeb, direction: 'north', truck: true, speed: 58, scale: 0.76, assetKey: 'deliveryVan' });
+  addTraffic(pathV(1, 'south'), { color: 0xf97316, accent: 0xffedd5, direction: 'south', speed: 62, scale: 0.7, assetKey: 'yellowCar' });
   addTraffic(pathV(0, 'south'), { color: 0x38bdf8, accent: 0xe0f2fe, direction: 'south', truck: true, speed: 54, scale: 0.76, assetKey: 'towTruck' });
+  addTraffic(pathV(0, 'north'), { color: 0x4ade80, accent: 0xdcfce7, direction: 'north', speed: 66, scale: 0.7, assetKey: 'compactCar' });
 
   [
     { key: 'tree', x: 390, y: 175, w: 58, h: 72 },

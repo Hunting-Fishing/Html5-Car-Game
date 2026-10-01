@@ -55,7 +55,10 @@ function renderTrafficCar(car) {
 }
 
 function renderWorldPerson(person) {
-  return `<div class="worldPerson" style="left:${person.x}%; top:${person.y}%" title="${person.label}">${renderDataIcon(person, person.label, 'worldPersonIcon')}</div>`;
+  const art = person.asset
+    ? `<img src="${person.asset}" alt="${person.label}" loading="eager">`
+    : renderDataIcon(person, person.label, 'worldPersonIcon');
+  return `<div class="worldPerson walk${person.key}" style="left:${person.x}%; top:${person.y}%" title="${person.label}">${art}</div>`;
 }
 
 function renderWorldLocation(location) {

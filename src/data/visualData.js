@@ -1,8 +1,11 @@
-const UI_ICON_BASE = '/assets/ui/icons';
-const LINE_ICON_BASE = '/assets/Lines/icons';
-const BUILD_ROOM_ICON_BASE = '/assets/Build/rooms';
-const ROAD_RUNNER_ICON_BASE = '/assets/road-runner';
-const iconPath = (base, file) => `${base}/${file}`;
+import { publicAsset } from './assetUrl.js';
+import { WORLD_ASSETS } from './worldAssetMap.js';
+
+const UI_ICON_BASE = 'assets/ui/icons';
+const LINE_ICON_BASE = 'assets/Lines/icons';
+const BUILD_ROOM_ICON_BASE = 'assets/Build/rooms';
+const ROAD_RUNNER_ICON_BASE = 'assets/road-runner';
+const iconPath = (base, file) => publicAsset(`${base}/${file}`);
 
 export const AUTO_WORLD_LOCATIONS = [
   {
@@ -81,21 +84,23 @@ export const AUTO_WORLD_LOCATIONS = [
 ];
 
 export const WORLD_TRAFFIC = [
-  { key: 'greenCompactA', asset: '/assets/vehicles/iso-car-green.svg', lane: 'horizontalA', delay: 0, speedClass: 'normal' },
-  { key: 'whiteVanA', asset: '/assets/vehicles/iso-van-white.svg', lane: 'horizontalB', delay: -3.1, speedClass: 'slow' },
-  { key: 'orangePickupA', asset: '/assets/vehicles/iso-pickup-orange.svg', lane: 'verticalA', delay: -1.7, speedClass: 'normal' },
-  { key: 'tealDeliveryA', asset: '/assets/vehicles/iso-delivery-teal.svg', lane: 'verticalB', delay: -5.4, speedClass: 'slow' },
-  { key: 'yellowTowA', asset: '/assets/vehicles/iso-tow-yellow.svg', lane: 'horizontalC', delay: -6.3, speedClass: 'normal' },
-  { key: 'blueCompactB', asset: '/assets/vehicles/iso-car-blue.svg', lane: 'horizontalA', delay: -7.8, speedClass: 'slow' },
-  { key: 'yellowSedanB', asset: '/assets/vehicles/iso-sedan-yellow.svg', lane: 'horizontalC', delay: -2.8, speedClass: 'slow' },
-  { key: 'greenCompactC', asset: '/assets/vehicles/iso-car-green.svg', lane: 'roadLoopA', delay: -4.2, speedClass: 'normal' }
+  { key: 'greenCompactA', asset: WORLD_ASSETS.vehicles.compactCar, lane: 'horizontalA', delay: 0, speedClass: 'normal' },
+  { key: 'whiteVanA', asset: WORLD_ASSETS.vehicles.deliveryVan, lane: 'horizontalB', delay: -3.1, speedClass: 'slow' },
+  { key: 'orangePickupA', asset: WORLD_ASSETS.vehicles.yellowCar, lane: 'verticalA', delay: -1.7, speedClass: 'normal' },
+  { key: 'tealDeliveryA', asset: WORLD_ASSETS.vehicles.greenTruck, lane: 'verticalB', delay: -5.4, speedClass: 'slow' },
+  { key: 'yellowTowA', asset: WORLD_ASSETS.vehicles.towTruck, lane: 'horizontalC', delay: -6.3, speedClass: 'normal' },
+  { key: 'blueCompactB', asset: WORLD_ASSETS.vehicles.blueCar, lane: 'horizontalA', delay: -7.8, speedClass: 'slow' },
+  { key: 'yellowSedanB', asset: WORLD_ASSETS.vehicles.yellowCar, lane: 'horizontalC', delay: -2.8, speedClass: 'slow' },
+  { key: 'greenCompactC', asset: WORLD_ASSETS.vehicles.compactCar, lane: 'roadLoopA', delay: -4.2, speedClass: 'normal' }
 ];
 
 export const WORLD_PEOPLE = [
-  { key: 'buyer', icon: iconPath(UI_ICON_BASE, 'profile.png'), fallbackIcon: '\u{1F9CD}', x: 20, y: 35, label: 'buyer' },
-  { key: 'mechanic', icon: iconPath(LINE_ICON_BASE, 'mobile-mechanic.svg'), fallbackIcon: '\u{1F468}\u200D\u{1F527}', x: 38, y: 56, label: 'mechanic' },
-  { key: 'yardWorker', icon: iconPath(UI_ICON_BASE, 'tools.png'), fallbackIcon: '\u{1F9D1}\u200D\u{1F3ED}', x: 82, y: 78, label: 'yard' },
-  { key: 'driver', icon: iconPath(UI_ICON_BASE, 'race.png'), fallbackIcon: '\u{1F6B6}', x: 56, y: 82, label: 'driver' }
+  { key: 'buyer', asset: WORLD_ASSETS.people.residentBlue, x: 20, y: 35, label: 'buyer' },
+  { key: 'mechanic', asset: WORLD_ASSETS.people.mechanic, x: 38, y: 56, label: 'mechanic' },
+  { key: 'yardWorker', asset: WORLD_ASSETS.people.residentOrange, x: 82, y: 78, label: 'yard' },
+  { key: 'driver', asset: WORLD_ASSETS.people.driver, x: 56, y: 82, label: 'driver' },
+  { key: 'residentGreen', asset: WORLD_ASSETS.people.residentGreen, x: 68, y: 28, label: 'shopper' },
+  { key: 'residentPurple', asset: WORLD_ASSETS.people.residentPurple, x: 14, y: 72, label: 'neighbor' }
 ];
 
 export const AUTO_SHOP_ROOMS = [

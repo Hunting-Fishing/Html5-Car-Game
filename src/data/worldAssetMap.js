@@ -1,4 +1,6 @@
-export const WORLD_ASSET_BASE = '/assets/World';
+import { publicAsset } from './assetUrl.js';
+
+export const WORLD_ASSET_BASE = publicAsset('assets/World');
 
 export const WORLD_ASSETS = {
   terrain: {
