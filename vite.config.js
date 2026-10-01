@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: './',
+  base: '/Html5-Car-Game/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

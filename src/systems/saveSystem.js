@@ -2,6 +2,7 @@ import { defaultState } from '../state/defaultState.js';
 
 const SAVE_KEY = 'autoMergeGarageV10LocalOnly';
 const OLD_SAVE_KEY = 'autoMergeGarageV9LocalOnly';
+const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
 
 export function loadState() {
   try {
