@@ -28,14 +28,12 @@ import { renderProfileScreen } from './ui/screens/ProfileScreen.js';
 import { renderCreatorScreen } from './ui/screens/CreatorScreen.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, addCurrency, addXp } from './systems/economySystem.js';
-import { applyDerivedObjectives, claimDaily } from './systems/objectiveSystem.js';
+import { applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState } from './systems/mergeSystem.js';
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
 import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
 import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, toggleLineAutoCollect, getLineState } from './systems/idleLineSystem.js';
-import { tickShop, buyBusiness } from './systems/shopSystem.js';
-import { tickLot, collectLot, buyLotPlot } from './systems/lotSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
 const WEBSITE_URL = 'https://www.365motorsales.com';
@@ -79,8 +77,6 @@ function gameLoop(now) {
   tickRace(state, dt);
   tickIdleLines(state, dt);
   tickSupplier(state, dt);
-  tickShop(state, dt);
-  tickLot(state, dt);
   applyDerivedObjectives(state);
   emitPassiveRewardFeedback({ state, before: feedbackBefore, addLog });
   publishBuildCommunicationState(state);
@@ -230,10 +226,6 @@ function handleClick(event) {
   if (action === 'cell') result = selectOrMergeCell(state, Number(target.dataset.index));
   if (action === 'upgrade') result = buyUpgrade(state, target.dataset.key);
   if (action === 'building') result = buyBuilding(state, target.dataset.key);
-  if (action === 'buyPlot') result = buyLotPlot(state, target.dataset.key);
-  if (action === 'collectLot') result = collectLot(state);
-  if (action === 'buyBiz') result = buyBusiness(state, target.dataset.key);
-  if (action === 'claimDaily') result = claimDaily(state, target.dataset.key);
   if (action === 'reset') {
     if (confirm('Reset local save?')) {
       state = resetState();
