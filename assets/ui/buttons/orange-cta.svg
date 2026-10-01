@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 78" role="img" aria-label="Orange button">
+  <defs>
+    <linearGradient id="orange" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe178"/>
+      <stop offset=".56" stop-color="#ffad28"/>
+      <stop offset="1" stop-color="#d46b0c"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="228" height="62" rx="18" fill="url(#orange)" stroke="#fff0a8" stroke-width="4"/>
+  <path d="M24 16h192" stroke="#fff" stroke-opacity=".42" stroke-width="5" stroke-linecap="round"/>
+  <path d="M9 65h222" stroke="#873200" stroke-opacity=".48" stroke-width="6" stroke-linecap="round"/>
+</svg>
