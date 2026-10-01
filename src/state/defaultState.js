@@ -12,10 +12,10 @@ export function defaultState() {
     level: 1,
     xp: 0,
     currencies: {
-      coins: 50,
-      scrap: 10,
-      parts: 0,
-      tools: 0,
+      coins: 160,
+      scrap: 16,
+      parts: 8,
+      tools: 8,
       tune: 0,
       rep: 2,
       fuelCans: 3

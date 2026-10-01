@@ -57,6 +57,11 @@ function applyInitialScreenParam() {
 function boot() {
   normalizeMergeState(state);
   ensureIdleLineState(state);
+  if ((state.currencies.coins || 0) < 80 && (state.buildings?.partsStorage || 0) < 1) {
+    state.currencies.coins = Math.max(state.currencies.coins || 0, 160);
+    state.currencies.parts = Math.max(state.currencies.parts || 0, 8);
+    state.currencies.tools = Math.max(state.currencies.tools || 0, 8);
+  }
   mountShell(root, { screens: SCREENS });
   render();
   root.addEventListener('click', handleClick);
@@ -83,16 +88,6 @@ function gameLoop(now) {
   updateRaceCanvas(state);
   updateTopBar();
   updateGuide();
-
-  if (!renderLock && ['race', 'hub', 'merge', 'lines', 'garage', 'world'].includes(state.activeScreen)) {
-    renderLock = true;
-    setTimeout(() => {
-      renderLock = false;
-      renderActiveScreen();
-      updateGuide();
-      queueSave();
-    }, 650);
-  }
   requestAnimationFrame(gameLoop);
 }
 

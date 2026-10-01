@@ -41,39 +41,9 @@ export function renderRaceScreen(state) {
     badge: `Stage ${state.stage}`,
     className: 'raceCockpitFrame',
     body: `
-      <div class="raceCockpitBadges">
-        <span class="raceBadge progressBadge">${progress}/${stageLength}m</span>
-        ${problem ? `<span class="raceBadge problem">${problem.label}</span>` : ''}
-      </div>
-
-      <section class="raceCanvasWrap">
+      <div class="raceCanvasWrap">
         <div class="raceCanvas raceCockpitCanvas" id="raceCanvas"></div>
-        ${problem ? renderProblem(problem) : ''}
-        ${CompactStatStrip({
-          stats: [
-            { label: 'Progress', value: progress, max: stageLength, displayValue: `${progress}m`, tone: 'good', icon: 'race' },
-            { label: 'Fuel', value: Math.round(state.race.fuel), max: stats.fuelMax, displayValue: `${Math.round(state.race.fuel)}%`, tone: state.race.fuel < 25 ? 'bad' : 'good', icon: 'fuel' },
-            { label: 'Condition', value: Math.round(state.race.condition), max: stats.conditionMax, displayValue: `${Math.round(state.race.condition)}%`, tone: state.race.condition < 25 ? 'bad' : 'good', icon: 'tools' },
-            { label: 'Heat', value: Math.round(state.race.heat), max: 100, displayValue: `${Math.round(state.race.heat)}%`, tone: 'dangerHigh', dangerHigh: true, icon: 'rep' }
-          ]
-        })}
-        <button class="tapButton raceBoostButton" data-action="tapRace" data-guide-target="raceBoost">Tap Boost</button>
-      </section>
-
-      ${BottomSheet({
-        tabs: [
-          { key: 'modes', label: 'Modes', active: true },
-          { key: 'upgrades', label: 'Upgrades' }
-        ],
-        activeTab: 'modes',
-        className: 'raceCockpitBottomSheet',
-        body: `
-          <div class="raceSheetStack">
-            ${renderModeSection(state)}
-            ${renderUpgradeSection(state)}
-          </div>
-        `
-      })}
+      </div>
     `
   });
 }
