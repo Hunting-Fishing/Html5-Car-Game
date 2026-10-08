@@ -60,26 +60,34 @@ export function setTireScreech({ active = false, intensity = 0 } = {}) {
     const audio = ctx || (ctx = new AudioContext());
     if (audio.state === 'suspended') audio.resume();
     if (!screech) {
-      const buffer = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
+      const buffer = audio.createBuffer(1, audio.sampleRate * 2, audio.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < data.length; i += 1) data[i] = Math.random() * 2 - 1;
       const source = audio.createBufferSource();
       source.buffer = buffer;
       source.loop = true;
-      const filter = audio.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.value = 1400;
-      filter.Q.value = 0.7;
+      const low = audio.createBiquadFilter();
+      const high = audio.createBiquadFilter();
+      low.type = 'bandpass';
+      low.frequency.value = 420;
+      low.Q.value = 0.6;
+      high.type = 'bandpass';
+      high.frequency.value = 1800;
+      high.Q.value = 4;
       const gain = audio.createGain();
       gain.gain.value = 0.0001;
-      source.connect(filter);
-      filter.connect(gain);
+      source.connect(low);
+      source.connect(high);
+      low.connect(gain);
+      high.connect(gain);
       gain.connect(audio.destination);
       source.start();
-      screech = { source, filter, gain };
+      screech = { source, low, high, gain };
     }
-    screech.filter.frequency.setTargetAtTime(900 + intensity * 1800, audio.currentTime, 0.05);
-    screech.gain.gain.setTargetAtTime(0.012 + intensity * 0.04, audio.currentTime, 0.05);
+    const wobble = 1 + Math.sin(audio.currentTime * 17) * 0.04;
+    screech.low.frequency.setTargetAtTime(320 + intensity * 180, audio.currentTime, 0.06);
+    screech.high.frequency.setTargetAtTime((1400 + intensity * 900) * wobble, audio.currentTime, 0.04);
+    screech.gain.gain.setTargetAtTime(0.02 + intensity * 0.05, audio.currentTime, 0.05);
   } catch {}
 }
 
