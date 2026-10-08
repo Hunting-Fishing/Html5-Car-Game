@@ -85,8 +85,17 @@ export function renderHubScreen(state) {
           const reward = Object.entries(order.reward).map(([k, v]) => `+${v} ${k}`).join(', ');
           return `<div class="rewardTicker"><b>${order.title}</b><span>${claimed ? 'Paid' : done ? reward : 'Not finished'}</span>${done && !claimed ? `<button class="btn small gold" data-action="claimDaily" data-key="${order.key}">Claim</button>` : ''}</div>`;
         }).join('')}
+      `<section class="hubRouteStrip">
+        <div class="hubRouteHead"><div><h3>Showcase</h3><p>Dealer run for 365 Motor Sales. No store, no packs.</p></div></div>
+        <div class="rewardTicker"><b>Dealer Showcase</b><span>Reputation route plus the live lot.</span></div>
+        <button class="btn gold" data-action="openShowcase">Run Showcase</button>
         <a class="btn primary" href="https://www.365motorsales.com" target="_blank" rel="noopener">Visit 365 Motor Sales</a>
-      </section>`
+      </section>`,
+      state.pendingOffline?.coins ? `<section class="hubRouteStrip">
+        <div class="hubRouteHead"><div><h3>While you were away</h3><p>${Math.max(1, Math.round(state.pendingOffline.seconds / 60))}m of idle garage pay.</p></div></div>
+        <div class="rewardTicker"><b>Offline</b><span>+${state.pendingOffline.coins} coins, +${state.pendingOffline.parts || 0} parts</span></div>
+        <button class="btn gold" data-action="claimOffline">Collect offline pay</button>
+      </section>` : ''
     ].join('')
   });
 }

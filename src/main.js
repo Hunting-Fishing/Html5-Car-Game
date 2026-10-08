@@ -165,8 +165,29 @@ function handleClick(event) {
   }
 
   if (action === 'resourceShop') {
-    const label = target.dataset.resource || 'resource';
-    toast(`${label[0].toUpperCase()}${label.slice(1)} shop link is ready for a future store hook.`);
+    window.open(WEBSITE_URL, '_blank', 'noopener');
+    toast('Parts packs are not for sale here. The lot is on 365 Motor Sales.');
+    return;
+  }
+
+  if (action === 'openShowcase') {
+    changeRaceMode(state, 'showcase');
+    state.activeScreen = 'race';
+    window.open(WEBSITE_URL, '_blank', 'noopener');
+    toast('Dealer Showcase is running. The lot site is open.');
+    render();
+    queueSave();
+    return;
+  }
+
+  if (action === 'claimOffline') {
+    const pay = state.pendingOffline;
+    if (!pay) return;
+    addLog(`Offline pay collected: +${pay.coins} coins.`);
+    state.pendingOffline = null;
+    toast('Offline pay collected.');
+    render();
+    queueSave();
     return;
   }
 
