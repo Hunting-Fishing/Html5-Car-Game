@@ -50,18 +50,14 @@ export function renderGarageScreen(state) {
     badge: `${buildPct}% online`,
     className: 'garagePlayArea',
     body: `
-      <div class="buildAssetPreload" aria-hidden="true">
-        ${BUILD_ASSET_LIST.map((item) => `<img class="buildAssetPreloadImage" data-build-asset="${item.category}:${item.key}" src="${item.src}" alt="" loading="eager">`).join('')}
+      <section class="garageHero">
+        <div><b>${buildPct}%</b><span>Shop online</span></div>
+        <div><b>${buildComm.unlockedLineCount}/${buildComm.totalLineCount}</b><span>Lines open</span></div>
+        <button class="btn gold" data-action="screen" data-screen="lines">Open Lines</button>
+      </section>
+      <div class="garageCardGrid">
+        ${AUTO_SHOP_ROOMS.map((room) => renderGarageCard(state, room)).join('')}
       </div>
-      ${SubTabBar({
-        tabs: [
-          { label: 'Build Rooms', screen: 'garage', active: true, icon: BUILD_ICON_ASSETS.buildMode },
-          { label: 'Business Lines', screen: 'lines', icon: BUILD_ICON_ASSETS.lineSync }
-        ]
-      })}
-      ${renderBuildSummaryStrip(buildComm, buildPct)}
-      ${renderShopFloorPrimary(state, selectedRoom)}
-      ${renderGarageDrawer(state, drawerTab, selectedRoom, selectedSystem)}
     `
   });
 }
@@ -111,6 +107,23 @@ function selectedGarageSystem(state) {
   return BUILDINGS.find((building) => building.key === saved)
     || BUILDINGS.find((building) => building.key === 'partsStorage')
     || BUILDINGS[0];
+}
+
+function renderGarageCard(state, room) {
+  const data = getRoomPresentation(state, room);
+  const building = data.requiredBuilding;
+  const cost = building ? nextBuildingCost(state, building) : null;
+  const canBuy = cost && canAfford(state, cost);
+  return `
+    <article class="garageCard ${data.unlocked ? '' : 'lockedRoom'}">
+      <div class="garageCardArt"><img src="${buildRoomAssetForKey(room.key) || room.asset}" alt=""></div>
+      <div class="garageCardBody">
+        <b>${room.name}</b>
+        <small>${data.unlocked ? `Lv ${data.level} · ${data.roomStatus}` : data.lockedText}</small>
+        <button class="btn gold" data-action="building" data-key="${building?.key || ''}" ${canBuy ? '' : 'disabled'}>${cost ? costToText(cost) : 'Open'}</button>
+      </div>
+    </article>
+  `;
 }
 
 function renderShopFloorPrimary(state, selectedRoom) {
