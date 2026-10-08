@@ -1193,7 +1193,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
   const stars = completed && wearPct < 40 ? 3 : completed || wearPct < 75 ? 2 : 1;
   const title = completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
   const subtitle = completed ? `${game.route.label} finished` : `${game.route.label} - ${pct}% complete`;
-  const starHtml = [1, 2, 3].map((n) => `<b style="color:${n <= stars ? '#ffe27a' : '#6d8496'};font-size:28px">${n <= stars ? '★' : '☆'}</b>`).join('');
+  const starHtml = [1, 2, 3].map((n) => `<div style="text-align:center"><b style="display:block;color:${n <= stars ? '#ffe27a' : '#6d8496'};font-size:32px;line-height:1">${n <= stars ? '★' : '☆'}</b><small style="color:${n <= stars ? '#ffe27a' : '#9eb4c4'}">Level ${n}</small></div>`).join('');
   const rewardTile = ({ type, amount, label, detail = '' }) => {
     const icon = { coins: ASSET_PATHS.coin, parts: ASSET_PATHS.parts, tools: ASSET_PATHS.tools }[type] || ASSET_PATHS.coin;
     return `<div class="rrPostRunReward" data-rr-reward="${type}">
@@ -1223,7 +1223,8 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
     missionHtml
   ].join('');
   panel.innerHTML = `<div style="display:grid;gap:8px;color:#fff">
-    <div style="text-align:center">${starHtml}<div style="font-size:18px;font-weight:800">${title}</div><div style="font-size:11px;opacity:.8">${subtitle}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">${starHtml}</div>
+    <div style="text-align:center;font-size:16px;font-weight:800">${title} · ${stars}/3</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       <div style="background:#1c4668;border-radius:10px;padding:8px"><b style="font-size:18px">+${formatSmall(game.coins)}</b><div style="font-size:10px">Coins collected</div></div>
       <div style="background:#1c4668;border-radius:10px;padding:8px"><b style="font-size:18px">+${formatSmall(bonus)}</b><div style="font-size:10px">Distance bonus</div></div>
