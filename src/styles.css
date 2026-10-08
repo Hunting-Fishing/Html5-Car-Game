@@ -13,26 +13,26 @@
   --orange: #ff9f1c;
   --red: #ff5d73;
   --pink: #ff4fc4;
-  --ui-top-hud-frame: url("/assets/ui/hud/top-hud-frame.svg");
-  --ui-hud-resource: url("/assets/ui/hud/resource-capsule.svg");
-  --ui-stage-badge: url("/assets/ui/hud/stage-badge.svg");
-  --ui-panel-frame: url("/assets/ui/panels/blue-panel-frame.svg");
-  --ui-card-frame: url("/assets/ui/cards/game-card-frame.svg");
-  --ui-row-card-frame: url("/assets/ui/cards/row-card-frame.svg");
-  --ui-upgrade-card-frame: url("/assets/ui/cards/upgrade-card-frame.svg");
-  --ui-blue-cta: url("/assets/ui/buttons/blue-cta.svg");
-  --ui-green-cta: url("/assets/ui/buttons/green-cta.svg");
-  --ui-orange-cta: url("/assets/ui/buttons/orange-cta.svg");
-  --ui-red-cta: url("/assets/ui/buttons/red-cta.svg");
-  --ui-nav-bar-frame: url("/assets/ui/nav/nav-bar-frame.svg");
-  --ui-nav-tab-idle: url("/assets/ui/nav/nav-tab-idle.svg");
-  --ui-nav-tab: url("/assets/ui/nav/nav-tab.svg");
-  --ui-meter-track: url("/assets/ui/meters/segmented-meter-track.svg");
-  --ui-merge-slot-empty: url("/assets/ui/merge/merge-slot-empty.svg");
-  --ui-merge-slot-ready: url("/assets/ui/merge/merge-slot-ready.svg");
-  --ui-merge-slot-selected: url("/assets/ui/merge/merge-slot-selected.svg");
-  --ui-merge-slot-locked: url("/assets/ui/merge/merge-slot-locked.svg");
-  --ui-fx-cyan-glow: url("/assets/ui/fx/cyan-glow.svg");
+  --ui-top-hud-frame: url("/Html5-Car-Game/assets/ui/hud/top-hud-frame.svg");
+  --ui-hud-resource: url("/Html5-Car-Game/assets/ui/hud/resource-capsule.svg");
+  --ui-stage-badge: url("/Html5-Car-Game/assets/ui/hud/stage-badge.svg");
+  --ui-panel-frame: url("/Html5-Car-Game/assets/ui/panels/blue-panel-frame.svg");
+  --ui-card-frame: url("/Html5-Car-Game/assets/ui/cards/game-card-frame.svg");
+  --ui-row-card-frame: url("/Html5-Car-Game/assets/ui/cards/row-card-frame.svg");
+  --ui-upgrade-card-frame: url("/Html5-Car-Game/assets/ui/cards/upgrade-card-frame.svg");
+  --ui-blue-cta: url("/Html5-Car-Game/assets/ui/buttons/blue-cta.svg");
+  --ui-green-cta: url("/Html5-Car-Game/assets/ui/buttons/green-cta.svg");
+  --ui-orange-cta: url("/Html5-Car-Game/assets/ui/buttons/orange-cta.svg");
+  --ui-red-cta: url("/Html5-Car-Game/assets/ui/buttons/red-cta.svg");
+  --ui-nav-bar-frame: url("/Html5-Car-Game/assets/ui/nav/nav-bar-frame.svg");
+  --ui-nav-tab-idle: url("/Html5-Car-Game/assets/ui/nav/nav-tab-idle.svg");
+  --ui-nav-tab: url("/Html5-Car-Game/assets/ui/nav/nav-tab.svg");
+  --ui-meter-track: url("/Html5-Car-Game/assets/ui/meters/segmented-meter-track.svg");
+  --ui-merge-slot-empty: url("/Html5-Car-Game/assets/ui/merge/merge-slot-empty.svg");
+  --ui-merge-slot-ready: url("/Html5-Car-Game/assets/ui/merge/merge-slot-ready.svg");
+  --ui-merge-slot-selected: url("/Html5-Car-Game/assets/ui/merge/merge-slot-selected.svg");
+  --ui-merge-slot-locked: url("/Html5-Car-Game/assets/ui/merge/merge-slot-locked.svg");
+  --ui-fx-cyan-glow: url("/Html5-Car-Game/assets/ui/fx/cyan-glow.svg");
   --bottom-nav-safe-area: calc(74px + env(safe-area-inset-bottom));
   --top-hud-safe-area: 108px;
   --race-control-safe-area: 188px;
@@ -57,7 +57,7 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .screenControlButton:active { transform: translateY(1px); }
 .walletRow { display: grid; grid-template-columns: minmax(0, 1fr) 66px; gap: 6px; align-items: stretch; }
 .currencyGrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; min-width: 0; }
-.cur { position: relative; border: 1px solid rgba(125,220,255,.22); background: var(--ui-hud-resource), radial-gradient(circle at 28% 0, rgba(255,255,255,.18), transparent 40%), linear-gradient(180deg, #1f6d9b, #0c304c); background-size: 100% 100%, auto, auto; border-radius: 15px; padding: 5px 12px 5px 4px; text-align: left; min-width: 0; min-height: 42px; display: grid; grid-template-columns: 15px minmax(0, 1fr); gap: 2px; align-items: center; box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 4px 0 rgba(0,0,0,.2); }
+.cur { position: relative; border: 1px solid rgba(125,220,255,.22); background: var(--ui-hud-resource), radial-gradient(circle at 28% 0, rgba(255,255,255,.18), transparent 40%), linear-gradient(180deg, #1f6d9b, #0c304c); background-size: 100% 100%, auto, auto; border-radius: 15px; padding: 5px 8px 5px 4px; text-align: left; min-width: 0; min-height: 42px; display: grid; grid-template-columns: 15px minmax(0, 1fr); gap: 2px; align-items: center; box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 4px 0 rgba(0,0,0,.2); overflow: hidden; }
 .curIcon { width: 15px; height: 15px; display: block; object-fit: contain; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)); }
 .curCopy { min-width: 0; display: grid; gap: 1px; }
 .cur b { display: block; font-size: clamp(8px, 2.2vw, 11px); line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }

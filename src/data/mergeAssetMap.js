@@ -38,7 +38,7 @@ export const MERGE_ASSETS = {
   'Fuel Rail': publicAsset('/assets/Merge/performance/fuel-rail.svg'),
   'Injectors': publicAsset('/assets/Merge/performance/injectors.svg'),
   'Camshaft': publicAsset('/assets/Merge/performance/camshaft.svg'),
-  'Pistons': publicAsset('/assets/Merge/performance/pistons.svg'),
+  'Pistons': publicAsset('/assets/Merge/performance/piston.svg'),
   'Crankshaft': publicAsset('/assets/Merge/performance/crankshaft.svg'),
   'ECU Tune': publicAsset('/assets/Merge/performance/ecu-tune.svg'),
   'Turbo Kit': publicAsset('/assets/Merge/performance/turbo-kit.svg'),

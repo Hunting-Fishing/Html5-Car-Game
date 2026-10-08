@@ -58,7 +58,7 @@ export function renderMergeScreen(state) {
         </div>
 
         <div class="mergeBoardArea">
-          <div class="board mergeBoardGrid" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => renderBoardCell(state, item, index, pairSet)).join('')}</div>
+          <div class="board mergeBoardGrid" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => index >= limit ? `<button class="cell locked" type="button" disabled><span class="emptyText">Locked</span></button>` : renderBoardCell(state, item, index, pairSet)).join('')}</div>
         </div>
 
         <div class="mergeRecipeDrawer">
