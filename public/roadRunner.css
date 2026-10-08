@@ -55,6 +55,11 @@
   margin-top: 2px;
 }
 
+.tach { display: grid; justify-items: center; min-width: 78px; }
+.tach svg { width: 78px; height: 46px; }
+.tach b { margin-top: -6px; color: #fff; font-size: 11px; }
+.tach span { color: #aee4f4; font-size: 9px; }
+
 .roadRunnerGameFrame {
   position: relative;
   height: min(58vh, 440px);
