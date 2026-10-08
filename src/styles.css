@@ -74,13 +74,7 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .garageHero div { padding: 10px; border-radius: 16px; background: linear-gradient(180deg, #1d6fb8, #123a66); color: #fff; }
 .garageHero b { display: block; font-size: 22px; }
 .garageHero button { grid-column: 1 / -1; }
-.garageCardGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.garageCard { display: grid; gap: 6px; padding: 8px; border-radius: 16px; background: #10283c; border: 2px solid rgba(255,255,255,.12); }
-.garageCardArt { height: 72px; border-radius: 12px; overflow: hidden; background: #17324a; }
-.garageCardArt img { width: 100%; height: 100%; object-fit: cover; }
-.garageCardBody b { display: block; color: #fff; }
-.garageCardBody small { display: block; color: #b7e7f6; font-size: 10px; margin: 2px 0 6px; }
-.garageCard.lockedRoom { opacity: .7; }
+.garageRoomCard .adcapIcon img { width: 42px; height: 42px; object-fit: cover; border-radius: 50%; }
 .adcapIcon { position: relative; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: #16324a; border: 3px solid #0b1c2b; }
 .adcapIcon b { position: absolute; right: -2px; bottom: -2px; min-width: 18px; border-radius: 999px; background: #111; color: #fff; font-size: 10px; text-align: center; }
 .adcapBuy, .adcapTrack, .adcapManager { border: 0; border-radius: 8px; min-height: 54px; font-weight: 900; }

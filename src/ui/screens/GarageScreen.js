@@ -115,13 +115,20 @@ function renderGarageCard(state, room) {
   const cost = building ? nextBuildingCost(state, building) : null;
   const canBuy = cost && canAfford(state, cost);
   return `
-    <article class="garageCard ${data.unlocked ? '' : 'lockedRoom'}">
-      <div class="garageCardArt"><img src="${buildRoomAssetForKey(room.key) || room.asset}" alt=""></div>
-      <div class="garageCardBody">
-        <b>${room.name}</b>
-        <small>${data.unlocked ? `Lv ${data.level} · ${data.roomStatus}` : data.lockedText}</small>
-        <button class="btn gold" data-action="building" data-key="${building?.key || ''}" ${canBuy ? '' : 'disabled'}>${cost ? costToText(cost) : 'Open'}</button>
+    <article class="adcapRow garageRoomCard ${data.unlocked ? '' : 'lockedLine'}">
+      <div class="adcapIcon"><img src="${buildRoomAssetForKey(room.key) || room.asset}" alt=""><b>${data.level || 0}</b></div>
+      <button class="adcapBuy" data-action="building" data-key="${building?.key || ''}" ${canBuy ? '' : 'disabled'}>
+        <b>${cost ? costToText(cost) : 'Open'}</b>
+        <small>${room.name}</small>
+      </button>
+      <div class="adcapTrack" disabled>
+        <span class="adcapFill" style="width:${data.unlocked ? data.progress : 0}%"></span>
+        <em>${data.unlocked ? data.roomStatus : 'Locked'}</em>
       </div>
+      <button class="adcapManager" data-action="screen" data-screen="lines">
+        <b>${data.manager ? 'On' : 'Go'}</b>
+        <small>Line</small>
+      </button>
     </article>
   `;
 }
