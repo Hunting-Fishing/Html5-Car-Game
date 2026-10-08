@@ -22,28 +22,28 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 .adcapManager { background: rgba(90, 168, 214, .9) !important; color: #06141e !important; }
 .adcapBuy b, .adcapManager b { display: block; font-size: 12px; line-height: 1.2; font-weight: 700; }
 .adcapBuy small, .adcapManager small { display: block; margin-top: 1px; font-size: 10px; font-weight: 500; line-height: 1.2; opacity: .75; }
-#screen-race .roadRunnerShell { position: relative; }
+#screen-race .roadRunnerShell { position: relative; min-height: 100%; }
 #screen-race .roadRunnerEndPanel.rrPostRunPanel {
   position: absolute !important;
   left: 8px !important;
   right: 8px !important;
-  top: 46px !important;
+  top: 52px !important;
   bottom: 8px !important;
   height: auto !important;
   max-height: none !important;
-  z-index: 70 !important;
+  z-index: 80 !important;
   display: flex !important;
-  flex-direction: column;
+  flex-direction: column !important;
   overflow: hidden !important;
-  border-radius: 18px !important;
-  padding-bottom: 8px !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
 }
-#screen-race .rrPostRunStars { display: flex; justify-content: center; gap: 8px; color: #8aa0b3; font-size: 28px; line-height: 1; }
+#screen-race .rrPostRunHero, #screen-race .rrPostRunActions { flex: 0 0 auto; }
+#screen-race .rrPostRunStars { display: flex !important; justify-content: center; gap: 10px; color: #8aa0b3; font-size: 28px; line-height: 1; }
 #screen-race .rrPostRunStars .on { color: #f6c445; }
-#screen-race .rrPostRunActions { display: grid !important; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: auto; }
-#screen-race .rrPostRunActions button { min-height: 42px !important; font-size: 12px !important; color: #102033 !important; background: #d7e4ef !important; border-radius: 12px !important; }
-#screen-race .rrPostRunActions button.primary { background: #6ee7a8 !important; }
-#screen-race .rrPostRunActions button.gold { background: #f6c445 !important; }
+#screen-race .rrPostRunGrid, #screen-race .rrPostRunDetails { flex: 1 1 auto; min-height: 0; }
+#screen-race .rrPostRunActions { display: grid !important; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
+#screen-race .rrPostRunActions button { min-height: 44px !important; font-size: 12px !important; color: #102033 !important; background: #d7e4ef !important; border-radius: 12px !important; opacity: 1 !important; }
 #screen-race:has([data-rr-end-panel]:not([hidden])) .racePedalRow,
 #screen-race:has([data-rr-end-panel]:not([hidden])) .racerInnerNav { pointer-events: none; opacity: .35; }
 #screen-race .rrPostRunGrid { grid-template-columns: 1fr 1fr !important; }
