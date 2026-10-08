@@ -250,21 +250,41 @@ function renderCapitalistLine(state, item) {
   const { line, current, unlocked, level, cycleMs, income, upgradeCost, collectReady, upgradeAffordable, managerOwned, managerCost } = item;
   const progress = unlocked ? Math.min(100, Math.round((current.cycle / Math.max(1, cycleMs)) * 100)) : 0;
   const guideTarget = line.key === 'streetRoute' && !state.objectives?.idleLineUpgrade ? ' data-guide-target="upgradeStreetRoute"' : '';
+  const secondsLeft = unlocked ? Math.max(0, (cycleMs - current.cycle) / 1000).toFixed(1) : '';
   return `
-    <article class="capitalistRow ${unlocked ? '' : 'lockedLine'}">
-      ${renderLineIcon(line)}
-      <div class="capitalistMain">
-        <div class="lineCompactHead"><b>${line.name}</b><span>Lv ${level}</span></div>
-        <div class="capitalistBar"><span style="width:${progress}%"></span></div>
-        <small>${unlocked ? `${fmt(income)} ${line.outputLabel} · ${(cycleMs / 1000).toFixed(1)}s` : unlockText(line)}</small>
-      </div>
-      <div class="lineCompactActions">
-        <button class="btn small gold" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}>Collect</button>
-        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${upgradeAffordable ? '' : 'disabled'}>Buy ${costToText(upgradeCost)}</button>
-        <button class="btn small" data-action="buyManager" data-line="${line.key}" ${unlocked && !managerOwned && level >= line.manager.unlockLevel ? '' : 'disabled'}>${managerOwned ? 'Manager' : 'Hire'}</button>
-      </div>
+    <article class="adcapRow ${unlocked ? '' : 'lockedLine'}" data-line-key="${line.key}">
+      <div class="adcapIcon">${renderLineIcon(line)}<b>${level}</b></div>
+      <button class="adcapBuy" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${upgradeAffordable ? '' : 'disabled'}>
+        <b>${unlocked ? costToText(upgradeCost) : 'Locked'}</b>
+        <small>${unlocked ? `+${fmt(income)} ${line.outputLabel}` : unlockText(line)}</small>
+      </button>
+      <button class="adcapTrack" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}>
+        <span class="adcapFill" data-line-progress style="width:${progress}%"></span>
+        <em>${collectReady ? 'Collect' : secondsLeft ? `${secondsLeft}s` : 'Locked'}</em>
+      </button>
+      <button class="adcapManager" data-action="buyManager" data-line="${line.key}" ${unlocked && !managerOwned && level >= line.manager.unlockLevel ? '' : 'disabled'}>
+        <b>${managerOwned ? 'On' : level}</b>
+        <small>${managerOwned ? 'Auto' : 'Mgr'}</small>
+      </button>
     </article>
   `;
+}
+
+export function updateLineBars(state) {
+  document.querySelectorAll('.adcapRow').forEach((row) => {
+    const key = row.dataset.lineKey;
+    const line = IDLE_LINES.find((item) => item.key === key);
+    if (!line || !isLineUnlocked(state, line)) return;
+    const current = getLineState(state, line.key);
+    const cycleMs = getLineCycleMs(state, line);
+    const progress = Math.min(100, (current.cycle / Math.max(1, cycleMs)) * 100);
+    const fill = row.querySelector('[data-line-progress]');
+    const label = row.querySelector('.adcapTrack em');
+    const ready = canCollectLine(state, line);
+    if (fill) fill.style.width = `${progress}%`;
+    if (label) label.textContent = ready ? 'Collect' : `${Math.max(0, (cycleMs - current.cycle) / 1000).toFixed(1)}s`;
+    row.querySelector('.adcapTrack')?.toggleAttribute('disabled', !ready);
+  });
 }
 
 function renderLineRow(state, item, featuredKey) {
