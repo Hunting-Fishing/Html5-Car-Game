@@ -2,8 +2,8 @@
   overflow: hidden;
 }
 
-.roadRunnerHeader { display: none; }
-#screen-race .roadRunnerControls { display: none; }
+.roadRunnerHeader {
+  display: none;
   padding: 14px;
   border-radius: 18px 18px 10px 10px;
   background: linear-gradient(180deg, #287fb1, #0d3e68);
