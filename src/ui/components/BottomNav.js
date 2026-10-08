@@ -14,7 +14,7 @@ export function renderScreenIcon(screen) {
 }
 
 export function renderPrimaryNavTab(tab) {
-  return `<button class="tab" type="button" data-action="screen" data-screen="${tab.screen}" data-nav-tab="${tab.id}" data-active-screens="${tab.activeScreens.join(',')}" aria-label="${tab.label} tab">${renderScreenIcon(tab)}<span>${tab.label}</span></button>`;
+  return `<button class="tab" type="button" data-action="screen" data-screen="${tab.screen}" data-nav-tab="${tab.id}" data-active-screens="${tab.activeScreens.join(',')}" aria-label="${tab.label} tab">${renderScreenIcon(tab)}<span>${tab.label}</span><i class="tabReady" data-ready-for="${tab.id}" hidden></i></button>`;
 }
 
 export function renderBottomNav() {

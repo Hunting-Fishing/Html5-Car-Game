@@ -25,79 +25,14 @@ export function renderHubScreen(state) {
 
   return ScreenFrame({
     title: 'Home',
-    subtitle: 'Today, routes, and quick actions.',
+    subtitle: 'Claim what is ready, then run the shop.',
     badge: 'Today',
     className: 'hubMobileHome',
     body: [
-      SubTabBar({
-        tabs: [
-          { label: 'Today', screen: 'hub', active: true, icon: 'home' },
-          { label: 'World Map', screen: 'world', icon: 'home' }
-        ]
-      }),
-      ObjectiveCard({
-        icon: 'home',
-        title: next ? next.title : 'Objective Set Complete',
-        subtitle: next ? 'Recommended next step' : 'Keep building the garage loop.',
-        badge: next ? 'Next' : 'Done',
-        heading: 'h2',
-        className: 'hubMainObjective',
-        body: next
-          ? `
-            <div class="hubObjectiveCopy">${next.body}</div>
-            ${ActionDock({ actions: [recommended] })}
-          `
-          : `
-            <div class="hubObjectiveCopy">Continue building resources, upgrades, and routes.</div>
-            ${ActionDock({ actions: [{ label: 'Run Race', screen: 'race', icon: 'race', className: 'primary' }] })}
-          `
-      }),
-      ActionDock({
-        actions: [
-          { label: 'Race', screen: 'race', icon: 'race', className: 'primary' },
-          { label: 'Parts', screen: 'merge', icon: 'parts' },
-          { label: 'Garage', screen: 'garage', icon: 'garage' },
-          { label: 'World', screen: 'world', icon: 'home', className: 'gold' }
-        ]
-      }),
-      `
-        <section class="hubRouteStrip">
-          <div class="hubRouteHead">
-            <div><h3>Route Status</h3><p>${stats.mode.label}</p></div>
-            <span class="pill">${Math.floor(state.race.progress)}/${stats.mode.stageLength}m</span>
-          </div>
-          ${CompactStatStrip({
-            stats: [
-              { label: 'Progress', value: Math.floor(state.race.progress), max: stats.mode.stageLength, tone: 'good', icon: 'race' },
-              { label: 'Fuel', value: Math.round(state.race.fuel), max: stats.fuelMax, tone: state.race.fuel < 25 ? 'bad' : 'good', icon: 'fuel' },
-              { label: 'Condition', value: Math.round(state.race.condition), max: stats.conditionMax, tone: state.race.condition < 25 ? 'bad' : 'good', icon: 'tools' },
-              { label: 'Heat', value: Math.round(state.race.heat), max: 100, tone: 'dangerHigh', dangerHigh: true, icon: 'rep' }
-            ]
-          })}
-        </section>
-      `,
-      `<div class="rewardTicker"><b>Recent</b><span>${recentReward}</span></div>`,
-      `<section class="hubRouteStrip">
-        <div class="hubRouteHead"><div><h3>Today's service orders</h3><p>Claim once. Resets with the local day.</p></div></div>
-        ${DAILY_ORDERS.map((order) => {
-          const done = order.check(state);
-          const claimed = Boolean(state.daily?.claimed?.[order.key]);
-          const reward = Object.entries(order.reward).map(([k, v]) => `+${v} ${k}`).join(', ');
-          return `<div class="rewardTicker"><b>${order.title}</b><span>${claimed ? 'Paid' : done ? reward : 'Not finished'}</span>${done && !claimed ? `<button class="btn small gold" data-action="claimDaily" data-key="${order.key}">Claim</button>` : ''}</div>`;
-        }).join('')}
-        <a class="btn primary" href="https://www.365motorsales.com" target="_blank" rel="noopener">Visit 365 Motor Sales</a>
-      </section>`,
-      `<section class="hubRouteStrip">
-        <div class="hubRouteHead"><div><h3>Showcase</h3><p>Dealer run for 365 Motor Sales. No store, no packs.</p></div></div>
-        <div class="rewardTicker"><b>Dealer Showcase</b><span>Reputation route plus the live lot.</span></div>
-        <button class="btn gold" data-action="openShowcase">Run Showcase</button>
-        <a class="btn primary" href="https://www.365motorsales.com" target="_blank" rel="noopener">Visit 365 Motor Sales</a>
-      </section>`,
-      state.pendingOffline?.coins ? `<section class="hubRouteStrip">
-        <div class="hubRouteHead"><div><h3>While you were away</h3><p>${Math.max(1, Math.round(state.pendingOffline.seconds / 60))}m of idle garage pay.</p></div></div>
-        <div class="rewardTicker"><b>Offline</b><span>+${state.pendingOffline.coins} coins, +${state.pendingOffline.parts || 0} parts</span></div>
-        <button class="btn gold" data-action="claimOffline">Collect offline pay</button>
-      </section>` : ''
+      state.pendingOffline?.coins ? `<section class="adcapRow"><div class="adcapIcon"><b>$</b></div><button class="adcapBuy" data-action="claimOffline"><b>Collect</b><small>+${state.pendingOffline.coins} coins</small></button><div class="adcapTrack"><em>Away ${Math.max(1, Math.round(state.pendingOffline.seconds / 60))}m</em></div><button class="adcapManager" data-action="claimOffline"><b>Pay</b></button></section>` : '',
+      ...DAILY_ORDERS.filter((order) => order.check(state) && !state.daily?.claimed?.[order.key]).map((order) => `<section class="adcapRow"><div class="adcapIcon"><b>!</b></div><button class="adcapBuy" data-action="claimDaily" data-key="${order.key}"><b>Claim</b><small>${order.title}</small></button><div class="adcapTrack"><span class="adcapFill" style="width:100%"></span><em>Ready</em></div><button class="adcapManager" data-action="claimDaily" data-key="${order.key}"><b>Go</b></button></section>`),
+      `<section class="adcapRow"><div class="adcapIcon"><b>Go</b></div><button class="adcapBuy" data-action="screen" data-screen="${recommended.screen}"><b>${recommended.label}</b><small>${next ? next.title : 'Shop is running'}</small></button><div class="adcapTrack"><em>Next</em></div><button class="adcapManager" data-action="screen" data-screen="lines"><b>Lines</b></button></section>`,
+      `<a class="btn primary" href="https://www.365motorsales.com" target="_blank" rel="noopener">Visit 365 Motor Sales</a>`
     ].join('')
   });
 }

@@ -271,7 +271,8 @@ function renderCapitalistLine(state, item) {
 }
 
 export function updateLineBars(state) {
-  document.querySelectorAll('.adcapRow').forEach((row) => {
+  let ready = 0;
+  document.querySelectorAll('.adcapRow[data-line-key]').forEach((row) => {
     const key = row.dataset.lineKey;
     const line = IDLE_LINES.find((item) => item.key === key);
     if (!line || !isLineUnlocked(state, line)) return;
@@ -280,11 +281,17 @@ export function updateLineBars(state) {
     const progress = Math.min(100, (current.cycle / Math.max(1, cycleMs)) * 100);
     const fill = row.querySelector('[data-line-progress]');
     const label = row.querySelector('.adcapTrack em');
-    const ready = canCollectLine(state, line);
+    const canCollect = canCollectLine(state, line);
+    if (canCollect) ready += 1;
     if (fill) fill.style.width = `${progress}%`;
-    if (label) label.textContent = ready ? 'Collect' : `${Math.max(0, (cycleMs - current.cycle) / 1000).toFixed(1)}s`;
-    row.querySelector('.adcapTrack')?.toggleAttribute('disabled', !ready);
+    if (label) label.textContent = canCollect ? 'Collect' : `${Math.max(0, (cycleMs - current.cycle) / 1000).toFixed(1)}s`;
+    row.querySelector('.adcapTrack')?.toggleAttribute('disabled', !canCollect);
   });
+  const badge = document.querySelector('[data-ready-for="garage"]');
+  if (badge) {
+    badge.hidden = ready === 0;
+    badge.textContent = String(ready);
+  }
 }
 
 function renderLineRow(state, item, featuredKey) {
