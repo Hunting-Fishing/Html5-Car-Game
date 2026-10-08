@@ -22,7 +22,7 @@ import { updateFirstSessionGuide } from './ui/guides/FirstSessionGuide.js';
 import { renderHubScreen } from './ui/screens/HubScreen.js';
 import { renderWorldScreen } from './ui/screens/WorldScreen.js';
 import { renderRaceScreen } from './ui/screens/RaceScreen.js';
-import { renderLinesScreen, updateLineBars } from './ui/screens/LinesScreen.js';
+import { renderLinesScreen, updateLineBars, updateReadyBadge } from './ui/screens/LinesScreen.js';
 import { renderMergeScreen } from './ui/screens/MergeScreen.js';
 import { renderGarageScreen } from './ui/screens/GarageScreen.js';
 import { renderProfileScreen } from './ui/screens/ProfileScreen.js';
@@ -109,6 +109,7 @@ function gameLoop(now) {
   updateRaceCanvas(state);
   updateTopBar();
   if (state.activeScreen === 'lines') updateLineBars(state);
+  updateReadyBadge(state);
   updateGuide();
   requestAnimationFrame(gameLoop);
 }

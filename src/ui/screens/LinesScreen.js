@@ -287,11 +287,14 @@ export function updateLineBars(state) {
     if (label) label.textContent = canCollect ? 'Collect' : `${Math.max(0, (cycleMs - current.cycle) / 1000).toFixed(1)}s`;
     row.querySelector('.adcapTrack')?.toggleAttribute('disabled', !canCollect);
   });
+}
+
+export function updateReadyBadge(state) {
+  const ready = IDLE_LINES.filter((line) => isLineUnlocked(state, line) && canCollectLine(state, line)).length;
   const badge = document.querySelector('[data-ready-for="garage"]');
-  if (badge) {
-    badge.hidden = ready === 0;
-    badge.textContent = String(ready);
-  }
+  if (!badge) return;
+  badge.hidden = ready === 0;
+  badge.textContent = String(ready);
 }
 
 function renderLineRow(state, item, featuredKey) {
