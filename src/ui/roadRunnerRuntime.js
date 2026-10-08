@@ -1,3 +1,4 @@
+import { publicAsset } from '../data/assetUrl.js';
 import { setEngineSound, stopEngineSound, setTireScreech, stopTireScreech } from './sfx.js';
 import {
   DAMAGE_SPEED_KMH,
