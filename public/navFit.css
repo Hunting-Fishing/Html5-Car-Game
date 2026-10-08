@@ -22,18 +22,22 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 .adcapManager { background: rgba(90, 168, 214, .9) !important; color: #06141e !important; }
 .adcapBuy b, .adcapManager b { display: block; font-size: 12px; line-height: 1.2; font-weight: 700; }
 .adcapBuy small, .adcapManager small { display: block; margin-top: 1px; font-size: 10px; font-weight: 500; line-height: 1.2; opacity: .75; }
-#screen-race .roadRunnerShell { position: relative; }
 #screen-race .roadRunnerEndPanel.rrPostRunPanel {
-  position: absolute !important;
-  inset: 8px !important;
-  z-index: 60 !important;
+  position: fixed !important;
+  inset: 12px 12px 78px !important;
+  z-index: 80 !important;
   display: flex !important;
   flex-direction: column;
-  overflow: auto !important;
+  justify-content: space-between;
+  overflow: hidden !important;
+  border-radius: 18px !important;
 }
 #screen-race .roadRunnerEndPanel[hidden] { display: none !important; }
+#screen-race .rrPostRunGrid { grid-template-columns: 1fr 1fr !important; margin: 6px 0 !important; }
 #screen-race .rrPostRunActions { display: grid !important; grid-template-columns: 1fr; gap: 8px; }
-#screen-race .rrPostRunActions button { min-height: 42px !important; font-size: 14px !important; }
+#screen-race .rrPostRunActions button { min-height: 44px !important; font-size: 15px !important; }
+#screen-race:has([data-rr-end-panel]:not([hidden])) .racePedalRow,
+#screen-race:has([data-rr-end-panel]:not([hidden])) .racerInnerNav { pointer-events: none; opacity: .35; }
 #screen-race .roadRunnerEndPanel.rrPostRunPanel {
   position: absolute !important;
   inset: 8px !important;
