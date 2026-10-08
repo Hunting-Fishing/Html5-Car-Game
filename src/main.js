@@ -11,7 +11,7 @@ import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
 import './ui/linesAssetRuntime.js';
 import './ui/buildAssetRuntime.js';
-import { gsap } from 'gsap';
+import { playSfx } from './ui/sfx.js';
 import { SCREENS } from './data/gameData.js';
 import { AUTO_WORLD_LOCATIONS } from './data/visualData.js';
 import { mountShell, renderScreenContent, setActiveScreen } from './ui/components/Shell.js';
@@ -245,6 +245,7 @@ function handleClick(event) {
 
   if (action === 'tapRace') {
     result = tapRace(state);
+    playSfx('tap');
     pulseCar();
     gsap.fromTo(target, { scale: 1 }, { scale: 1.04, duration: 0.08, yoyo: true, repeat: 1 });
   }
@@ -274,6 +275,8 @@ function handleClick(event) {
     return;
   }
   applyDerivedObjectives(state);
+  if (result?.ok && action === 'cell') playSfx('merge');
+  if (result?.ok && (action === 'collectLine' || action === 'claimDaily' || action === 'claimOffline')) playSfx(action === 'collectLine' ? 'collect' : 'claim');
   if (result?.message) {
     emitRewardFeedback({ state, result, before: feedbackBefore, action });
     if (result.ok) addLog(result.message);

@@ -20,7 +20,6 @@
     "@vitejs/plugin-legacy": "latest",
     "canvas-confetti": "latest",
     "gsap": "latest",
-    "howler": "latest",
     "lucide-static": "latest",
     "phaser": "latest",
     "pixi.js": "latest",
