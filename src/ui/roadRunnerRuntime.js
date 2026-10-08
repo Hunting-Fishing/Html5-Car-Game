@@ -1193,7 +1193,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
   const stars = completed && wearPct < 40 ? 3 : completed || wearPct < 75 ? 2 : 1;
   const title = completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
   const subtitle = completed ? `${game.route.label} finished` : `${game.route.label} - ${pct}% complete`;
-  const starHtml = [1, 2, 3].map((n) => `<span class="${n <= stars ? 'on' : ''}">${n <= stars ? '★' : '☆'}</span>`).join('');
+  const starHtml = [1, 2, 3].map((n) => `<b style="color:${n <= stars ? '#ffe27a' : '#6d8496'};font-size:28px">${n <= stars ? '★' : '☆'}</b>`).join('');
   const rewardTile = ({ type, amount, label, detail = '' }) => {
     const icon = { coins: ASSET_PATHS.coin, parts: ASSET_PATHS.parts, tools: ASSET_PATHS.tools }[type] || ASSET_PATHS.coin;
     return `<div class="rrPostRunReward" data-rr-reward="${type}">
@@ -1222,7 +1222,22 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
     game.tools > 0 ? rewardTile({ type: 'tools', amount: game.tools, label: 'Tools' }) : '',
     missionHtml
   ].join('');
-  panel.innerHTML = `<div class="rrPostRunHero"><div class="rrPostRunStars">${starHtml}</div><div class="rrPostRunPlace">${pct}%</div><div class="rrPostRunHeading"><h3 class="rrPostRunTitle">${title}</h3><p class="rrPostRunSubtitle">${subtitle}</p></div></div><div class="rrPostRunGrid">${rewardHtml}</div><div class="rrPostRunDetails"><div class="rrPostRunDetail"><b>${Math.floor(game.distanceM)}m</b>Distance</div><div class="rrPostRunDetail"><b>${Math.round(game.maxKmh)} km/h</b>Top Speed</div><div class="rrPostRunDetail"><b>${wearPct}%</b>Wear</div><div class="rrPostRunDetail"><b>${formatSmall(saveData.bestDistance)}m</b>Best Distance</div></div><div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Retry</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Continue</button><button type="button" class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>`;
+  panel.innerHTML = `<div style="display:grid;gap:8px;color:#fff">
+    <div style="text-align:center">${starHtml}<div style="font-size:18px;font-weight:800">${title}</div><div style="font-size:11px;opacity:.8">${subtitle}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div style="background:#1c4668;border-radius:10px;padding:8px"><b style="font-size:18px">+${formatSmall(game.coins)}</b><div style="font-size:10px">Coins collected</div></div>
+      <div style="background:#1c4668;border-radius:10px;padding:8px"><b style="font-size:18px">+${formatSmall(bonus)}</b><div style="font-size:10px">Distance bonus</div></div>
+      <div style="background:#3a2a68;border-radius:10px;padding:8px"><b style="font-size:18px">+${formatSmall(game.parts)}</b><div style="font-size:10px">Parts collected</div></div>
+      <div style="background:#1c4668;border-radius:10px;padding:8px"><b style="font-size:18px">${stars}/3</b><div style="font-size:10px">Star rating</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;font-size:10px;text-align:center">
+      <div><b>${Math.floor(game.distanceM)}m</b><div>Distance</div></div>
+      <div><b>${Math.round(game.maxKmh)}</b><div>km/h</div></div>
+      <div><b>${wearPct}%</b><div>Wear</div></div>
+      <div><b>${formatSmall(saveData.bestDistance)}m</b><div>Best</div></div>
+    </div>
+    <div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Retry</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Continue</button><button type="button" class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>
+  </div>`;
   panel.hidden = false;
 }
 
