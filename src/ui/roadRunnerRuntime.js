@@ -967,7 +967,7 @@ function shellHtml() {
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
         <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerControls"><button class="roadRunnerPedal brake" data-rr-control="brake">BRAKE / REV</button><button class="roadRunnerPedal gas" data-rr-control="gas" data-guide-target="raceBoost">GAS</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
-        <button class="raceGasPedal" type="button" data-rr-control="gas" data-guide-target="raceBoost">GAS</button>
+        <button class="raceGasPedal" type="button" data-rr-control="gas" data-guide-target="raceBoost" aria-label="Gas pedal"><span class="raceGasHinge"></span><span class="raceGasPad"><b>GAS</b></span></button>
       </section>
       <section class="racerPage ${activeTab === 'leaderboard' ? 'active' : ''}" data-rr-page="leaderboard"><div data-road-runner-leaderboard></div></section>
       <section class="racerPage ${activeTab === 'garage' ? 'active' : ''}" data-rr-page="garage"><div data-road-runner-garage></div></section>
