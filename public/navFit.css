@@ -29,15 +29,18 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   right: 8px !important;
   top: 52px !important;
   bottom: 8px !important;
-  height: auto !important;
-  max-height: none !important;
-  z-index: 80 !important;
-  display: flex !important;
-  flex-direction: column !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  align-content: start;
+  min-height: 0 !important;
   overflow: hidden !important;
-  padding: 10px !important;
+  padding: 8px !important;
   box-sizing: border-box !important;
+  z-index: 80 !important;
 }
+#screen-race .rrPostRunHero { grid-row: 1; }
+#screen-race .rrPostRunGrid, #screen-race .rrPostRunDetails { grid-row: 2; min-height: 0; overflow: hidden; }
+#screen-race .rrPostRunActions { grid-row: 3; }
 #screen-race .rrPostRunHero, #screen-race .rrPostRunActions { flex: 0 0 auto; }
 #screen-race .rrPostRunHero { padding: 0 !important; }
 #screen-race .rrPostRunStars { font-size: 18px !important; gap: 6px !important; }
