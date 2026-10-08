@@ -70,8 +70,10 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .rrPostRunReward b,
 #screen-race .rrPostRunReward span,
 #screen-race .rrPostRunDetail b { display: block !important; position: static !important; line-height: 1.2 !important; }
-#screen-race .rrPostRunStars { display: flex !important; justify-content: center; font-size: 14px !important; }
-#screen-race .rrPostRunTitle { font-size: 13px !important; }
-#screen-race .rrPostRunSubtitle, #screen-race .rrPostRunReward span, #screen-race .rrPostRunDetail { font-size: 9px !important; }
-#screen-race .rrPostRunReward b, #screen-race .rrPostRunDetail b, #screen-race .rrPostRunPlace { font-size: 12px !important; }
-#screen-race .rrPostRunActions button { min-height: 32px !important; font-size: 10px !important; }
+#screen-race .roadRunnerEndPanel.rrPostRunPanel { top: 64px !important; padding: 6px !important; }
+#screen-race .rrPostRunStars { display: flex !important; justify-content: center; font-size: 12px !important; }
+#screen-race .rrPostRunTitle { font-size: 12px !important; }
+#screen-race .rrPostRunSubtitle, #screen-race .rrPostRunReward span, #screen-race .rrPostRunDetail { font-size: 8px !important; }
+#screen-race .rrPostRunReward b, #screen-race .rrPostRunDetail b, #screen-race .rrPostRunPlace { font-size: 10px !important; }
+#screen-race .rrPostRunReward, #screen-race .rrPostRunDetail { padding: 2px 4px !important; }
+#screen-race .rrPostRunActions button { min-height: 28px !important; font-size: 9px !important; }
