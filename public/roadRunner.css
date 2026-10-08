@@ -202,13 +202,19 @@
   line-height: 1.35;
 }
 
+#screen-race .racePedalRow {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  padding: 4px 0 8px;
+}
 #screen-race .raceGasPedal {
   display: grid;
   justify-items: center;
   align-items: end;
-  width: 108px;
-  height: 132px;
-  margin: 6px auto 10px;
+  width: 92px;
+  height: 118px;
+  margin: 0;
   padding: 0;
   border: 0;
   border-radius: 10px 10px 16px 16px;
@@ -258,7 +264,15 @@
   letter-spacing: .16em;
   text-shadow: 0 1px 0 #000;
 }
+#screen-race .raceBrakePedal .raceGasPad {
+  background:
+    repeating-linear-gradient(180deg, rgba(255,255,255,.05) 0 1px, transparent 1px 5px),
+    linear-gradient(180deg, #6a3038, #3a171c 72%);
+}
+#screen-race .raceBrakePedal .raceGasPad b { color: #f1c7cd; letter-spacing: .08em; font-size: 10px; }
 #screen-race .raceGasPedal.active .raceGasPad {
+  transform: perspective(140px) rotateX(22deg) translateY(4px);
+}
   transform: perspective(140px) rotateX(22deg) translateY(4px);
   background:
     repeating-linear-gradient(180deg, rgba(255,255,255,.04) 0 1px, transparent 1px 5px),
