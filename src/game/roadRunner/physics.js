@@ -87,8 +87,8 @@ export function computeVehicleTelemetry({
     const rpmFloor = gear === 1
       ? profile.idleRpm
       : profile.idleRpm + (profile.redlineRpm - profile.idleRpm) * profile.shiftDropRatio;
-    const loadBoost = throttle ? 0.015 : 0;
-    const brakeReduction = braking ? 0.04 : 0;
+    const loadBoost = throttle ? 0.28 : -0.12;
+    const brakeReduction = braking ? 0.18 : 0;
     const rpmProgress = clamp(gearProgress + loadBoost - brakeReduction, 0, 1);
     rpm = Math.round(rpmFloor + (profile.redlineRpm - rpmFloor) * rpmProgress);
   }

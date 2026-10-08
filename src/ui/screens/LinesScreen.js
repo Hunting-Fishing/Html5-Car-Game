@@ -29,26 +29,13 @@ export function renderLinesScreen(state) {
   const featured = selectFeaturedLine(lines);
 
   return ScreenFrame({
-    title: 'Business Lines',
-    subtitle: 'Compact idle routes, collections, managers, and unlocks.',
+    title: 'Businesses',
+    subtitle: 'Buy levels, wait for the bar, collect. Hire a manager to auto-collect.',
     badge: `${buildComm.unlockedLineCount}/${buildComm.totalLineCount}`,
     className: 'linesCompactFrame',
     body: `
-      ${SubTabBar({
-        tabs: [
-          { label: 'Build Rooms', screen: 'garage', icon: BUILD_ICON_ASSETS.buildMode },
-          { label: 'Business Lines', screen: 'lines', active: true, icon: BUILD_ICON_ASSETS.lineSync }
-        ]
-      })}
-      ${renderLinesStatusStrip(state, lines)}
-      ${renderLineFilterChips(lines)}
-      <div class="linesCompactList">
-        ${lines.map((line) => renderLineRow(state, line, featured?.line.key)).join('')}
-      </div>
-      ${featured ? renderFeaturedLineDetail(state, featured) : ''}
-      ${renderBuildLineBridge(buildComm)}
-      <div class="linesAssetPreload" aria-hidden="true">
-        ${Object.entries(LINES_GUI_ASSETS).map(([key, src]) => `<img class="linesGuiAsset" data-lines-gui="${key}" src="${src}" alt="" loading="eager">`).join('')}
+      <div class="capitalistList">
+        ${lines.map((item) => renderCapitalistLine(state, item)).join('')}
       </div>
     `
   });
@@ -256,6 +243,27 @@ function renderManagerRequirement(state, line, level, managerOwned, managerCost,
         <span>Hire ${line.manager.name}<br><small>${managerReady ? costToText(managerCost) : `Needs Lv ${line.manager.unlockLevel}`}</small></span>
       </button>
     </div>
+  `;
+}
+
+function renderCapitalistLine(state, item) {
+  const { line, current, unlocked, level, cycleMs, income, upgradeCost, collectReady, upgradeAffordable, managerOwned, managerCost } = item;
+  const progress = unlocked ? Math.min(100, Math.round((current.cycle / Math.max(1, cycleMs)) * 100)) : 0;
+  const guideTarget = line.key === 'streetRoute' && !state.objectives?.idleLineUpgrade ? ' data-guide-target="upgradeStreetRoute"' : '';
+  return `
+    <article class="capitalistRow ${unlocked ? '' : 'lockedLine'}">
+      ${renderLineIcon(line)}
+      <div class="capitalistMain">
+        <div class="lineCompactHead"><b>${line.name}</b><span>Lv ${level}</span></div>
+        <div class="capitalistBar"><span style="width:${progress}%"></span></div>
+        <small>${unlocked ? `${fmt(income)} ${line.outputLabel} · ${(cycleMs / 1000).toFixed(1)}s` : unlockText(line)}</small>
+      </div>
+      <div class="lineCompactActions">
+        <button class="btn small gold" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}>Collect</button>
+        <button class="btn small primary" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${upgradeAffordable ? '' : 'disabled'}>Buy ${costToText(upgradeCost)}</button>
+        <button class="btn small" data-action="buyManager" data-line="${line.key}" ${unlocked && !managerOwned && level >= line.manager.unlockLevel ? '' : 'disabled'}>${managerOwned ? 'Manager' : 'Hire'}</button>
+      </div>
+    </article>
   `;
 }
 

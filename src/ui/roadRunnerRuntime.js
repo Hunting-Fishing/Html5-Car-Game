@@ -960,7 +960,7 @@ function shellHtml() {
     ['missions', 'Missions', 'goals']
   ];
   return `<section class="card roadRunnerShell GamePanel" data-component="GamePanel" data-rr-active-tab="${activeTab}">
-    <div class="roadRunnerHud"><div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div><div class="roadRunnerStat"><b data-rr-speed>0 km/h</b><span>Speed</span></div><div class="roadRunnerStat"><b data-rr-fuel>100%</b><span>Fuel</span></div></div>
+    <div class="roadRunnerHud"><div class="roadRunnerStat"><b data-rr-speed>0</b><span>KM/H</span></div><div class="roadRunnerStat"><b data-rr-rpm>825</b><span>RPM</span></div><div class="roadRunnerStat"><b data-rr-gear>G1</b><span>Gear</span></div><div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div><div class="roadRunnerStat"><b data-rr-fuel>100%</b><span>Fuel</span></div></div>
     <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" ${key === 'leaderboard' ? 'data-guide-target="previewGhostRace"' : ''} onclick="window.rrSetTab?.('${key}')"><b>${label}</b></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
@@ -990,8 +990,10 @@ function updateHud() {
   refreshRaceCommand();
   const fuelPct = clamp(Math.floor(game.fuel / game.stats.maxFuel * 100), 0, 100);
   const nextFuel = nextFuelMeters();
+  setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)}`);
+  setText('[data-rr-rpm]', `${Math.round(game.telemetry.rpm)}`);
+  setText('[data-rr-gear]', game.telemetry.gearLabel || 'G1');
   setText('[data-rr-distance]', `${Math.floor(game.distanceM)}m`);
-  setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)} km/h`);
   setText('[data-rr-fuel]', `${fuelPct}% · ${nextFuel}m`);
   setText('[data-rr-wear]', `${Math.floor(Math.min(100, game.wear / game.stats.wearLimit * 100))}%`);
   setText('[data-rr-coins]', `${formatSmall(saveData.coins)} +${game.coins}`);
