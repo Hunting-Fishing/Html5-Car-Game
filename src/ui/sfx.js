@@ -49,7 +49,45 @@ export function setEngineSound({ rpm = 800, throttle = false, active = true } = 
   } catch {}
 }
 
-export function stopEngineSound() {
+let screech;
+
+export function setTireScreech({ active = false, intensity = 0 } = {}) {
+  if (localStorage.getItem('mg-mute') === '1' || !active || intensity < 0.08) {
+    stopTireScreech();
+    return;
+  }
+  try {
+    const audio = ctx || (ctx = new AudioContext());
+    if (audio.state === 'suspended') audio.resume();
+    if (!screech) {
+      const buffer = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i += 1) data[i] = Math.random() * 2 - 1;
+      const source = audio.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      const filter = audio.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1400;
+      filter.Q.value = 0.7;
+      const gain = audio.createGain();
+      gain.gain.value = 0.0001;
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(audio.destination);
+      source.start();
+      screech = { source, filter, gain };
+    }
+    screech.filter.frequency.setTargetAtTime(900 + intensity * 1800, audio.currentTime, 0.05);
+    screech.gain.gain.setTargetAtTime(0.012 + intensity * 0.04, audio.currentTime, 0.05);
+  } catch {}
+}
+
+export function stopTireScreech() {
+  if (!screech) return;
+  try { screech.source.stop(); } catch {}
+  screech = null;
+}
   if (!engine) return;
   try { engine.fundamental.stop(); engine.overtone.stop(); } catch {}
   engine = null;

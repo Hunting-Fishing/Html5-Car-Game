@@ -1,4 +1,4 @@
-import { setEngineSound, stopEngineSound } from './sfx.js';
+import { setEngineSound, stopEngineSound, setTireScreech, stopTireScreech } from './sfx.js';
 import {
   DAMAGE_SPEED_KMH,
   calculateHazardEffect,
@@ -994,6 +994,8 @@ function updateHud() {
   setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)}`);
   setText('[data-rr-rpm]', `${Math.round(game.telemetry.rpm)}`);
   setEngineSound({ rpm: game.telemetry.rpm, throttle: input.gas, active: Boolean(document.querySelector('#screen-race.active')) });
+  const sliding = input.brake && game.telemetry.kmh > 18;
+  setTireScreech({ active: Boolean(document.querySelector('#screen-race.active')), intensity: sliding ? Math.min(1, game.telemetry.kmh / 80) : 0 });
   const needle = document.querySelector('[data-rr-needle]');
   if (needle) {
     const idle = game.telemetry.idleRpm || 800;
@@ -2261,6 +2263,7 @@ function inject() {
   const screen = document.querySelector('#screen-race.active');
   if (!screen) {
     stopEngineSound();
+    stopTireScreech();
     return;
   }
   requestAnimationFrame(() => mountRoadRunner(false));
