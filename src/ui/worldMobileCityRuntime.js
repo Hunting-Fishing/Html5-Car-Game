@@ -1,3 +1,4 @@
+import { publicAsset } from '../data/assetUrl.js';
 import * as PIXI from 'pixi.js';
 
 const WORLD = { width: 960, height: 1720, startX: -220, startY: -300 };
@@ -40,12 +41,12 @@ const FIXED_BUILDINGS = [
 ];
 
 const DIRECT_VEHICLE_CANDIDATES = [
-  '/assets/vendor/kenney/car-kit/Previews/sedan.png',
-  '/assets/vendor/kenney/car-kit/Previews/hatchback-sports.png',
-  '/assets/vendor/kenney/car-kit/Previews/taxi.png',
-  '/assets/vendor/kenney/car-kit/Previews/truck.png',
-  '/assets/vendor/kenney/car-kit/Previews/van.png',
-  '/assets/vendor/kenney/car-kit/Previews/delivery.png'
+  publicAsset('/assets/vendor/kenney/car-kit/Previews/sedan.png'),
+  publicAsset('/assets/vendor/kenney/car-kit/Previews/hatchback-sports.png'),
+  publicAsset('/assets/vendor/kenney/car-kit/Previews/taxi.png'),
+  publicAsset('/assets/vendor/kenney/car-kit/Previews/truck.png'),
+  publicAsset('/assets/vendor/kenney/car-kit/Previews/van.png'),
+  publicAsset('/assets/vendor/kenney/car-kit/Previews/delivery.png')
 ];
 
 let app = null;
@@ -96,7 +97,7 @@ async function pathExists(path) {
 
 async function loadManifest() {
   try {
-    const res = await fetch('/assets/generated/kenney-manifest.json', { cache: 'no-store' });
+    const res = await fetch(publicAsset('/assets/generated/kenney-manifest.json'), { cache: 'no-store' });
     if (!res.ok) throw new Error(`manifest HTTP ${res.status}`);
     manifest = await res.json();
     console.info('[365 Auto City] Kenney manifest loaded:', manifest.counts || manifest);
@@ -134,7 +135,7 @@ async function resolveVehicleSet() {
   };
 
   const direct = await findDirect(DIRECT_VEHICLE_CANDIDATES);
-  const fallback = direct || '/assets/vehicles/iso-car-blue.svg';
+  const fallback = direct || publicAsset('/assets/vehicles/iso-car-blue.svg');
   return {
     carA: fromManifest.carA || fallback,
     carB: fromManifest.carB || fromManifest.carA || fallback,

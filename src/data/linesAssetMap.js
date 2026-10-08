@@ -1,4 +1,5 @@
-export const LINES_ASSET_BASE = '/assets/Lines';
+import { publicAsset } from './assetUrl.js';
+export const LINES_ASSET_BASE = publicAsset('/assets/Lines');
 
 // Idle business line replacement art belongs under public/assets/Lines.
 // Icons are used by compact rows and manager/collection status panels.

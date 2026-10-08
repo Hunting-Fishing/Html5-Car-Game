@@ -1,6 +1,7 @@
-const UI_ICON_BASE = '/assets/ui/icons';
-const UI_NAV_BASE = '/assets/ui/nav';
-const ROAD_RUNNER_ICON_BASE = '/assets/road-runner';
+import { publicAsset } from './assetUrl.js';
+const UI_ICON_BASE = publicAsset('/assets/ui/icons');
+const UI_NAV_BASE = publicAsset('/assets/ui/nav');
+const ROAD_RUNNER_ICON_BASE = publicAsset('/assets/road-runner');
 
 // Player-facing UI icons live in public/assets/ui/icons.
 // Keep these paths stable so designers can replace PNG/SVG files without

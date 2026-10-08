@@ -1,6 +1,7 @@
 import './styles.css';
 import './ui/screenControlRuntime.js';
 import './ui/assetFallbackRuntime.js';
+import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
@@ -43,6 +44,25 @@ let saveQueued = false;
 let raceMounted = false;
 let renderLock = false;
 const root = document.querySelector('#app');
+
+function fixAssetSrc(value) {
+  const raw = String(value || '');
+  if (!raw.includes('/assets/')) return raw;
+  if (raw.includes('/Html5-Car-Game/assets/')) return raw;
+  const path = raw.replace(/^https?:\/\/[^/]+/, '');
+  const idx = path.indexOf('/assets/');
+  return idx >= 0 ? publicAsset(path.slice(idx + 1)) : raw;
+}
+
+function repairAssetImages(node = document) {
+  node.querySelectorAll?.('img').forEach((img) => {
+    const fixed = fixAssetSrc(img.getAttribute('src'));
+    if (fixed && fixed !== img.getAttribute('src')) img.src = fixed;
+  });
+}
+
+repairAssetImages();
+new MutationObserver(() => repairAssetImages()).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
 
 applyInitialScreenParam();
 boot();

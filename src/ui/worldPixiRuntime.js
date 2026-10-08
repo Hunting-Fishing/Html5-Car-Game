@@ -1,3 +1,4 @@
+import { publicAsset } from '../data/assetUrl.js';
 import * as PIXI from 'pixi.js';
 
 const WORLD = {
@@ -7,8 +8,8 @@ const WORLD = {
   startY: -280
 };
 
-const KENNEY_ROOT = '/assets/vendor/kenney/car-kit/Previews/';
-const KENNEY_NESTED = '/assets/vendor/kenney/car-kit/kenney_car-kit/Previews/';
+const KENNEY_ROOT = publicAsset('/assets/vendor/kenney/car-kit/Previews/');
+const KENNEY_NESTED = publicAsset('/assets/vendor/kenney/car-kit/kenney_car-kit/Previews/');
 
 const VEHICLE_CANDIDATES = {
   green: ['hatchback-sports.png', 'sedan.png'],
@@ -22,14 +23,14 @@ const VEHICLE_CANDIDATES = {
 };
 
 const FALLBACK_ASSETS = {
-  green: '/assets/vehicles/iso-car-green.svg',
-  blue: '/assets/vehicles/iso-car-blue.svg',
-  yellow: '/assets/vehicles/iso-sedan-yellow.svg',
-  pickup: '/assets/vehicles/iso-pickup-orange.svg',
-  van: '/assets/vehicles/iso-van-white.svg',
-  delivery: '/assets/vehicles/iso-delivery-teal.svg',
-  tow: '/assets/vehicles/iso-tow-yellow.svg',
-  broken: '/assets/vehicles/iso-broken-red.svg'
+  green: publicAsset('/assets/vehicles/iso-car-green.svg'),
+  blue: publicAsset('/assets/vehicles/iso-car-blue.svg'),
+  yellow: publicAsset('/assets/vehicles/iso-sedan-yellow.svg'),
+  pickup: publicAsset('/assets/vehicles/iso-pickup-orange.svg'),
+  van: publicAsset('/assets/vehicles/iso-van-white.svg'),
+  delivery: publicAsset('/assets/vehicles/iso-delivery-teal.svg'),
+  tow: publicAsset('/assets/vehicles/iso-tow-yellow.svg'),
+  broken: publicAsset('/assets/vehicles/iso-broken-red.svg')
 };
 
 const ROADS = {

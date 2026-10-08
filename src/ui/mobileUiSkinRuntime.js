@@ -1,3 +1,4 @@
+import { publicAsset } from '../data/assetUrl.js';
 function includesAny(value, words) {
   const v = String(value || '').toLowerCase();
   return words.some((word) => v.includes(String(word).toLowerCase()));
@@ -22,7 +23,7 @@ function cssUrl(path) {
 
 async function loadUiSkin() {
   try {
-    const res = await fetch('/assets/generated/kenney-manifest.json', { cache: 'no-store' });
+    const res = await fetch(publicAsset('/assets/generated/kenney-manifest.json'), { cache: 'no-store' });
     if (!res.ok) throw new Error(`manifest HTTP ${res.status}`);
     const manifest = await res.json();
 

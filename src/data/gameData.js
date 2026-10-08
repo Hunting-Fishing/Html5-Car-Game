@@ -1,9 +1,10 @@
-const UI_ICON_BASE = '/assets/ui/icons';
-const RACE_ROUTE_ICON_BASE = '/assets/race/routes';
-const LINE_ICON_BASE = '/assets/Lines/icons';
-const BUILD_SYSTEM_ICON_BASE = '/assets/Build/systems';
-const MERGE_ICON_BASE = '/assets/Merge';
-const ROAD_RUNNER_ICON_BASE = '/assets/road-runner';
+import { publicAsset } from './assetUrl.js';
+const UI_ICON_BASE = publicAsset('/assets/ui/icons');
+const RACE_ROUTE_ICON_BASE = publicAsset('/assets/race/routes');
+const LINE_ICON_BASE = publicAsset('/assets/Lines/icons');
+const BUILD_SYSTEM_ICON_BASE = publicAsset('/assets/Build/systems');
+const MERGE_ICON_BASE = publicAsset('/assets/Merge');
+const ROAD_RUNNER_ICON_BASE = publicAsset('/assets/road-runner');
 const iconPath = (base, file) => `${base}/${file}`;
 
 export const SCREENS = [

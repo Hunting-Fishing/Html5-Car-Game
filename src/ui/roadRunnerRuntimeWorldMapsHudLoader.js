@@ -1,8 +1,9 @@
+import { publicAsset } from '../data/assetUrl.js';
 const HUD_ICONS = {
-  coins: '/assets/road-runner/token-coin.svg',
-  parts: '/assets/road-runner/token-parts.svg',
-  tools: '/assets/road-runner/tool-kit.svg',
-  fuel: '/assets/road-runner/token-energy.svg'
+  coins: publicAsset('/assets/road-runner/token-coin.svg'),
+  parts: publicAsset('/assets/road-runner/token-parts.svg'),
+  tools: publicAsset('/assets/road-runner/tool-kit.svg'),
+  fuel: publicAsset('/assets/road-runner/token-energy.svg')
 };
 
 function needleAngle(value, max) {

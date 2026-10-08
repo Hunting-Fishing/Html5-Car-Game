@@ -1,3 +1,4 @@
+import { publicAsset } from '../data/assetUrl.js';
 import {
   DAMAGE_SPEED_KMH,
   calculateHazardEffect,
@@ -107,29 +108,29 @@ const WEEKLY_MISSION_POOL = [
 
 const ASSET_PATHS = {
   ...RACER_VEHICLE_ASSETS,
-  hatchback: '/assets/race/cars/starter_compact.png',
+  hatchback: publicAsset('/assets/race/cars/starter_compact.png'),
   ghostA: RACER_VEHICLE_ASSETS.greenCompact,
   ghostB: RACER_VEHICLE_ASSETS.pickup,
   ghostC: RACER_VEHICLE_ASSETS.serviceVan,
-  coin: '/assets/road-runner/token-coin.svg',
-  fuel: '/assets/road-runner/token-energy.svg',
-  parts: '/assets/road-runner/token-parts.svg',
-  tools: '/assets/road-runner/tool-kit.svg',
-  fuelStation: '/assets/road-runner/fuel-station.svg',
-  partsStore: '/assets/road-runner/parts-store.svg',
-  mechanicShop: '/assets/road-runner/mechanic-shop.svg',
-  wreck: '/assets/road-runner/wrecked-car.svg',
-  routeTrack: '/assets/race/backgrounds/street_loop.png',
-  routeBarangay: '/assets/race/backgrounds/street_loop.png',
-  routeFarm: '/assets/race/backgrounds/parts_delivery.png',
-  routeMountain: '/assets/race/backgrounds/rough_road.png',
-  routePort: '/assets/race/backgrounds/dealer_showcase.png',
-  roadStrip: '/assets/race/fx/road_strip.png',
-  speedStreaks: '/assets/race/fx/speed_streaks.png',
-  boostRing: '/assets/race/fx/tap_boost_ring.png',
-  checkpointFlag: '/assets/race/fx/checkpoint_flag.png',
-  warningPanel: '/assets/race/fx/warning_panel.png',
-  warningBadge: '/assets/race/fx/warning_badge.png'
+  coin: publicAsset('/assets/road-runner/token-coin.svg'),
+  fuel: publicAsset('/assets/road-runner/token-energy.svg'),
+  parts: publicAsset('/assets/road-runner/token-parts.svg'),
+  tools: publicAsset('/assets/road-runner/tool-kit.svg'),
+  fuelStation: publicAsset('/assets/road-runner/fuel-station.svg'),
+  partsStore: publicAsset('/assets/road-runner/parts-store.svg'),
+  mechanicShop: publicAsset('/assets/road-runner/mechanic-shop.svg'),
+  wreck: publicAsset('/assets/road-runner/wrecked-car.svg'),
+  routeTrack: publicAsset('/assets/race/backgrounds/street_loop.png'),
+  routeBarangay: publicAsset('/assets/race/backgrounds/street_loop.png'),
+  routeFarm: publicAsset('/assets/race/backgrounds/parts_delivery.png'),
+  routeMountain: publicAsset('/assets/race/backgrounds/rough_road.png'),
+  routePort: publicAsset('/assets/race/backgrounds/dealer_showcase.png'),
+  roadStrip: publicAsset('/assets/race/fx/road_strip.png'),
+  speedStreaks: publicAsset('/assets/race/fx/speed_streaks.png'),
+  boostRing: publicAsset('/assets/race/fx/tap_boost_ring.png'),
+  checkpointFlag: publicAsset('/assets/race/fx/checkpoint_flag.png'),
+  warningPanel: publicAsset('/assets/race/fx/warning_panel.png'),
+  warningBadge: publicAsset('/assets/race/fx/warning_badge.png')
 };
 
 let canvas = null;
@@ -833,7 +834,7 @@ function raceCommandHtml() {
   const missionText = mission ? mission.label : 'All progression done';
   return `
     <div class="rrRaceCommand RouteCard" data-component="RouteCard" data-rr-command data-rr-command-key="${raceCommandKey()}">
-      <span class="gameIconBadge rrRaceCommandBadge"><img class="gameIconBadgeImg" src="/assets/ui/icons/race.png" alt="Race icon" loading="eager" draggable="false"></span>
+      <span class="gameIconBadge rrRaceCommandBadge"><img class="gameIconBadgeImg" src=publicAsset('/assets/ui/icons/race.png') alt="Race icon" loading="eager" draggable="false"></span>
       <div class="rrRaceVehicleMini">
         <div class="rrRaceVehiclePortrait"><b>${vehicle.cls}</b><span>Car</span></div>
         <div class="rrRaceVehicleCopy">
@@ -1145,8 +1146,8 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
   const stars = completed && wearPct < 40 ? 3 : completed || wearPct < 75 ? 2 : 1;
   const title = completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
   const subtitle = completed ? `${game.route.label} finished` : `${game.route.label} - ${pct}% complete`;
-  const starAsset = '/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/star.svg';
-  const emptyStarAsset = '/assets/vendor/kenney/kenney_ui-pack/Vector/Grey/star_outline.svg';
+  const starAsset = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/star.svg');
+  const emptyStarAsset = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Grey/star_outline.svg');
   const starHtml = Array.from({ length: 3 }, (_, index) => `<img src="${index < stars ? starAsset : emptyStarAsset}" alt="">`).join('');
   const rewardTile = ({ type, amount, label, detail = '' }) => {
     const icon = { coins: ASSET_PATHS.coin, parts: ASSET_PATHS.parts, tools: ASSET_PATHS.tools }[type] || ASSET_PATHS.coin;
@@ -1176,9 +1177,9 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
     game.tools > 0 ? rewardTile({ type: 'tools', amount: game.tools, label: 'Tools' }) : '',
     missionHtml
   ].join('');
-  const retryIcon = '/assets/vendor/kenney/kenney_ui-pack/Vector/Extra/icon_repeat_light.svg';
+  const retryIcon = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Extra/icon_repeat_light.svg');
   const garageIcon = ASSET_PATHS.mechanicShop;
-  const missionsIcon = '/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/icon_checkmark.svg';
+  const missionsIcon = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/icon_checkmark.svg');
   panel.innerHTML = `<div class="rrPostRunHero"><div class="rrPostRunStars">${starHtml}</div><div class="rrPostRunPlace">${pct}%</div><div class="rrPostRunHeading"><h3 class="rrPostRunTitle">${title}</h3><p class="rrPostRunSubtitle">${subtitle}</p></div></div><div class="rrPostRunGrid">${rewardHtml}</div><div class="rrPostRunDetails"><div class="rrPostRunDetail"><b>${Math.floor(game.distanceM)}m</b>Distance</div><div class="rrPostRunDetail"><b>${Math.round(game.maxKmh)} km/h</b>Top Speed</div><div class="rrPostRunDetail"><b>${wearPct}%</b>Wear</div><div class="rrPostRunDetail"><b>${formatSmall(saveData.bestDistance)}m</b>Best Distance</div></div><div class="rrPostRunActions"><button class="rrPostRunActionRetry" onclick="window.restartHillRoute?.()" aria-label="Retry route"><img class="rrPostRunActionIcon" src="${retryIcon}" alt=""><span>Retry</span></button><button class="primary rrPostRunActionGarage" onclick="window.rrSetTab?.('garage')" aria-label="Open garage"><img class="rrPostRunActionIcon" src="${garageIcon}" alt=""><span>Garage</span></button><button class="gold rrPostRunActionMissions" onclick="window.rrSetTab?.('missions')" aria-label="Open missions"><img class="rrPostRunActionIcon" src="${missionsIcon}" alt=""><span>Missions</span></button></div>`;
   panel.hidden = false;
 }

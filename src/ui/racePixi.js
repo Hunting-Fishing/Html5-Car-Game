@@ -1,21 +1,22 @@
+import { publicAsset } from '../data/assetUrl.js';
 import { Application, Assets, Container, Sprite, Text } from 'pixi.js';
 import { getRaceMode, getRaceProgressRatio } from './raceProgress.js';
 
-const STARTER_CAR_SPRITE = '/assets/race/cars/starter_compact.png';
+const STARTER_CAR_SPRITE = publicAsset('/assets/race/cars/starter_compact.png');
 const ROUTE_BACKGROUNDS = {
-  street: '/assets/race/backgrounds/street_loop.png',
-  delivery: '/assets/race/backgrounds/parts_delivery.png',
-  economy: '/assets/race/backgrounds/fuel_saver.png',
-  rough: '/assets/race/backgrounds/rough_road.png',
-  showcase: '/assets/race/backgrounds/dealer_showcase.png'
+  street: publicAsset('/assets/race/backgrounds/street_loop.png'),
+  delivery: publicAsset('/assets/race/backgrounds/parts_delivery.png'),
+  economy: publicAsset('/assets/race/backgrounds/fuel_saver.png'),
+  rough: publicAsset('/assets/race/backgrounds/rough_road.png'),
+  showcase: publicAsset('/assets/race/backgrounds/dealer_showcase.png')
 };
 const RACE_SCENE_ASSETS = {
-  road: '/assets/race/fx/road_strip.png',
-  speedStreaks: '/assets/race/fx/speed_streaks.png',
-  boostRing: '/assets/race/fx/tap_boost_ring.png',
-  checkpointFlag: '/assets/race/fx/checkpoint_flag.png',
-  warningPanel: '/assets/race/fx/warning_panel.png',
-  warningBadge: '/assets/race/fx/warning_badge.png'
+  road: publicAsset('/assets/race/fx/road_strip.png'),
+  speedStreaks: publicAsset('/assets/race/fx/speed_streaks.png'),
+  boostRing: publicAsset('/assets/race/fx/tap_boost_ring.png'),
+  checkpointFlag: publicAsset('/assets/race/fx/checkpoint_flag.png'),
+  warningPanel: publicAsset('/assets/race/fx/warning_panel.png'),
+  warningBadge: publicAsset('/assets/race/fx/warning_badge.png')
 };
 const RACE_ASSET_MANIFEST = [
   STARTER_CAR_SPRITE,

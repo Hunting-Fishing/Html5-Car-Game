@@ -1,4 +1,5 @@
-export const BUILD_ASSET_BASE = '/assets/Build';
+import { publicAsset } from './assetUrl.js';
+export const BUILD_ASSET_BASE = publicAsset('/assets/Build');
 
 // Build/Garage replacement art belongs under public/assets/Build.
 // Room art is for shop-floor visuals; system art is for upgrade cards.
