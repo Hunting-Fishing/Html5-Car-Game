@@ -9,17 +9,17 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   overflow: hidden;
   padding: 4px 6px !important;
 }
-.capitalistList { display: grid; gap: 8px; }
-.adcapRow { display: grid !important; grid-template-columns: 48px minmax(0, 1.2fr) minmax(72px, .8fr) 64px; gap: 8px; align-items: center; padding: 8px; border-radius: 14px; background: rgba(8, 24, 38, .92); border: 1px solid rgba(255,255,255,.1); }
-.adcapIcon { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: #173044; border: 0; box-shadow: none; position: relative; }
-.adcapIcon img, .adcapIcon .lineIcon { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
-.adcapIcon b { position: absolute; right: -4px; bottom: -4px; background: #0c1218; color: #d7e7f2; border-radius: 999px; font-size: 9px; min-width: 16px; padding: 1px 4px; text-align: center; }
-.adcapBuy, .adcapTrack, .adcapManager { min-height: 44px !important; border: 0 !important; border-radius: 10px !important; padding: 6px 8px !important; background-image: none !important; box-shadow: none !important; font-weight: 700; }
-.adcapBuy { background: #f2b15a !important; color: #2c1a06 !important; text-align: left; }
-.adcapTrack { position: relative; overflow: hidden; background: #dfeee6 !important; color: #163628 !important; }
-.adcapFill { position: absolute; left: 0; top: 0; bottom: 0; background: #49b56a; }
-.adcapTrack em { position: relative; font-style: normal; font-size: 12px; }
-.adcapManager { background: #2f7eb8 !important; color: #fff !important; }
-.adcapBuy b, .adcapManager b { display: block; font-size: 12px; line-height: 1.2; }
-.adcapBuy small, .adcapManager small { display: block; margin-top: 1px; font-size: 10px; font-weight: 600; line-height: 1.2; opacity: .75; }
-.adcapRow.lockedLine { opacity: .5; }
+.capitalistList { display: grid; gap: 12px; }
+.adcapRow { display: grid !important; grid-template-columns: 46px minmax(0, 1.25fr) minmax(68px, .7fr) 58px; gap: 10px; align-items: center; padding: 10px; border-radius: 18px; background: linear-gradient(180deg, rgba(16, 40, 58, .88), rgba(8, 22, 34, .92)); border: 1px solid rgba(214, 184, 122, .28); }
+.adcapIcon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); box-shadow: none; position: relative; }
+.adcapIcon img, .adcapIcon .lineIcon { width: 30px; height: 30px; border-radius: 8px; object-fit: cover; }
+.adcapIcon b { position: absolute; right: -4px; bottom: -4px; background: #d6b87a; color: #1b1408; border-radius: 999px; font-size: 9px; min-width: 16px; padding: 1px 4px; text-align: center; }
+.adcapBuy, .adcapTrack, .adcapManager { min-height: 42px !important; border: 0 !important; border-radius: 12px !important; padding: 6px 8px !important; background-image: none !important; box-shadow: none !important; font-weight: 650; }
+.adcapBuy { background: rgba(214, 184, 122, .92) !important; color: #2a1d0b !important; text-align: left; }
+.adcapTrack { position: relative; overflow: hidden; background: rgba(255,255,255,.08) !important; color: #e8f6ef !important; }
+.adcapFill { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(92, 184, 128, .85); }
+.adcapTrack em { position: relative; font-style: normal; font-size: 11px; letter-spacing: .04em; }
+.adcapManager { background: rgba(90, 168, 214, .9) !important; color: #06141e !important; }
+.adcapBuy b, .adcapManager b { display: block; font-size: 12px; line-height: 1.2; font-weight: 700; }
+.adcapBuy small, .adcapManager small { display: block; margin-top: 1px; font-size: 10px; font-weight: 500; line-height: 1.2; opacity: .75; }
+.adcapRow.lockedLine { opacity: .45; }
