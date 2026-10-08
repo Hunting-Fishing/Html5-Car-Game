@@ -202,6 +202,12 @@ function loadSave() {
     };
     ensureMissionState(result);
     migrateLegacyBestTrail(result);
+    const wallet = companionWallet();
+    if (wallet) {
+      result.coins = wallet.coins;
+      result.parts = wallet.parts;
+      result.tools = wallet.tools;
+    }
     return result;
   } catch {
     const fallback = { coins: 0, parts: 0, tools: 0, bestDistance: 0, bestTrail: [], upgrades: defaultUpgrades(), unlockedVehicles: ['hatchback'], selectedVehicle: 'hatchback', completedMissions: [], selectedRivals: [], lifetimeFuel: 0, lifetimeWear: 0, lifetimeRepairs: 0, lifetime: { distance: 0, coinsEarned: 0, partsEarned: 0, runs: 0 }, missions: null };
@@ -210,8 +216,32 @@ function loadSave() {
   }
 }
 
+function companionWallet() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(COMPANION_SAVE_KEY) || '{}');
+    if (!parsed.currencies) return null;
+    return {
+      coins: Number(parsed.currencies.coins) || 0,
+      parts: Number(parsed.currencies.parts) || 0,
+      tools: Number(parsed.currencies.tools) || 0
+    };
+  } catch {
+    return null;
+  }
+}
+
 function saveGameData() {
   localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+  try {
+    const raw = localStorage.getItem(COMPANION_SAVE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    state.currencies = state.currencies || {};
+    state.currencies.coins = saveData.coins;
+    state.currencies.parts = saveData.parts;
+    state.currencies.tools = saveData.tools || 0;
+    localStorage.setItem(COMPANION_SAVE_KEY, JSON.stringify(state));
+  } catch {}
 }
 
 function companionProfile() {
