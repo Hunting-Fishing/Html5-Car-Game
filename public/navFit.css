@@ -104,5 +104,7 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .rrPostRunReward b { color: #fff !important; font-size: 16px !important; }
 #screen-race .rrPostRunReward span { color: #d7eef8 !important; font-size: 10px !important; }
 #screen-race .roadRunnerEndPanel[hidden] { display: none !important; }
-#screen-race .rrCollectionHud { display: none !important; }
+#screen-race .roadRunnerEndPanel.rrPostRunPanel:not([hidden]) { overflow: auto !important; background: #10283c !important; }
+#screen-race .roadRunnerEndPanel.rrPostRunPanel:not([hidden]) > div { display: grid !important; }
+.guideLayer, .firstSessionGuide, .sessionGuide { display: none !important; }
 #screen-race .guideCallout, #screen-race .coachMark, .guideBubble { display: none !important; }
