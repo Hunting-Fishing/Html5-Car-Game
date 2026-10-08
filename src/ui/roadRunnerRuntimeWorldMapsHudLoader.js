@@ -22,18 +22,7 @@ function ensureDriveHud() {
   if (!frame) return null;
 
   let collection = frame.querySelector('[data-rr-collection-hud]');
-  if (!collection) {
-    collection = document.createElement('div');
-    collection.className = 'rrCollectionHud';
-    collection.dataset.rrCollectionHud = 'true';
-    collection.innerHTML = [
-      collectionItem('coins', 'Coins'),
-      collectionItem('parts', 'Parts'),
-      collectionItem('tools', 'Tools'),
-      collectionItem('fuel', 'Fuel / Next')
-    ].join('');
-    frame.appendChild(collection);
-  }
+  if (collection) collection.remove();
 
   let gauge = frame.querySelector('[data-rr-gauge-dash]');
   if (!gauge) {
