@@ -100,5 +100,6 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .rrPostRunActions { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; }
 #screen-race .rrPostRunStars { display: flex !important; color: #f6c445 !important; font-size: 16px !important; }
 #screen-race .rrPostRunReward { background: rgba(255,255,255,.08) !important; }
+#screen-race .roadRunnerEndPanel[hidden] { display: none !important; }
 #screen-race .rrCollectionHud { display: none !important; }
 #screen-race .guideCallout, #screen-race .coachMark, .guideBubble { display: none !important; }
