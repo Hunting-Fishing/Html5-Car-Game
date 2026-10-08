@@ -2,7 +2,8 @@ import { publicAsset } from '../data/assetUrl.js';
 import {
   DAMAGE_SPEED_KMH,
   calculateHazardEffect,
-  computeVehicleTelemetry
+  computeVehicleTelemetry,
+  gearPull
 } from '../game/roadRunner/physics.js';
 import {
   GHOST_SAMPLE_INTERVAL_MS,
@@ -1829,8 +1830,10 @@ function update(dt) {
   const powerBand = 1 - Math.pow(speedRatio, 2.15) * 0.38;
   const launchTorque = 1 + Math.pow(Math.max(0, 1 - speedRatio), 1.15) * game.stats.launchBonus;
   const rangePull = speedRatio < 0.72 ? game.stats.midRangePull : game.stats.topEndPull;
-  const hillTorque = 1 + Math.max(0, slope) * (0.8 + (game.stats.climb - 1) * 3.2);
-  const gasForce = input.gas && game.fuel > 0 ? game.stats.acceleration * hillTorque * powerBand * launchTorque * rangePull * lowSpeedGrip * game.traction : 0;
+  const gear = game.telemetry?.gear || 1;
+  const pull = gearPull(gear);
+  const hillFight = 1 + Math.max(0, slope) * 0.85;
+  const gasForce = input.gas && game.fuel > 0 ? game.stats.acceleration * pull * hillFight * powerBand * launchTorque * rangePull * lowSpeedGrip * game.traction : 0;
   const gravityForce = -slope * 28 / game.stats.climb;
   const rollingDrag = game.stats.drag + Math.abs(game.speed) * 0.0065;
   if (gasForce > 0) {

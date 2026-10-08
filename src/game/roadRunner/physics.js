@@ -47,6 +47,12 @@ export function getDrivetrainProfile({
   };
 }
 
+const GEAR_RATIOS = [2.4, 1.7, 1.25, 0.95, 0.72];
+
+export function gearPull(gear) {
+  return GEAR_RATIOS[clamp(Math.round(gear) - 1, 0, 4)];
+}
+
 export function computeVehicleTelemetry({
   speed,
   topSpeed,
@@ -68,41 +74,42 @@ export function computeVehicleTelemetry({
   });
   const kmh = speedToKmh(speed, route);
   const isReverse = Number(speed) < -0.05;
-
   let gear = clamp(Math.round(Number(currentGear) || 1), 1, 5);
-  let rpm;
+
   if (isReverse) {
-    gear = 1;
     const reverseTopKmh = Math.max(1, speedToKmh(reverseTop, route));
     const reverseProgress = clamp(kmh / reverseTopKmh, 0, 1);
-    const reverseRpmLimit = profile.idleRpm + (profile.redlineRpm - profile.idleRpm) * 0.72;
-    rpm = Math.round(profile.idleRpm + (reverseRpmLimit - profile.idleRpm) * reverseProgress);
-  } else {
-    while (gear < 5 && kmh >= profile.shiftSpeedsKmh[gear]) gear += 1;
-    while (gear > 1 && kmh < profile.shiftSpeedsKmh[gear - 1] * 0.86) gear -= 1;
-
-    const gearStart = profile.shiftSpeedsKmh[gear - 1];
-    const gearEnd = Math.max(gearStart + 1, profile.shiftSpeedsKmh[gear]);
-    const gearProgress = clamp((kmh - gearStart) / (gearEnd - gearStart), 0, 1);
-    const rpmFloor = gear === 1
-      ? profile.idleRpm
-      : profile.idleRpm + (profile.redlineRpm - profile.idleRpm) * profile.shiftDropRatio;
-    const loadBoost = throttle ? 0.28 : -0.12;
-    const brakeReduction = braking ? 0.18 : 0;
-    const rpmProgress = clamp(gearProgress + loadBoost - brakeReduction, 0, 1);
-    rpm = Math.round(rpmFloor + (profile.redlineRpm - rpmFloor) * rpmProgress);
+    const reverseRpmLimit = profile.idleRpm + (profile.redlineRpm - profile.idleRpm) * 0.7;
+    const rpm = Math.round(profile.idleRpm + (reverseRpmLimit - profile.idleRpm) * (braking || throttle ? reverseProgress : reverseProgress * 0.4));
+    return gauge(profile, kmh, 1, 'R', rpm);
   }
 
+  const gearStart = profile.shiftSpeedsKmh[gear - 1];
+  const gearEnd = Math.max(gearStart + 1, profile.shiftSpeedsKmh[gear]);
+  const wheelProgress = clamp((kmh - gearStart) / (gearEnd - gearStart), 0, 1);
+  const band = profile.redlineRpm - profile.idleRpm;
+  const wheelRpm = profile.idleRpm + band * (gear === 1 ? wheelProgress * 0.72 : profile.shiftDropRatio + wheelProgress * (1 - profile.shiftDropRatio));
+  const targetRpm = braking
+    ? profile.idleRpm + band * 0.08
+    : throttle
+      ? Math.max(wheelRpm, profile.idleRpm + band * 0.9)
+      : Math.max(profile.idleRpm, wheelRpm * 0.82);
+  let rpm = Math.round(targetRpm);
+
+  if (throttle && rpm > profile.redlineRpm * 0.92 && kmh >= profile.shiftSpeedsKmh[gear] * 0.92) gear = Math.min(5, gear + 1);
+  if (!throttle && gear > 1 && kmh < profile.shiftSpeedsKmh[gear - 1] * 0.8) gear -= 1;
+  if (gear !== currentGear && gear > 1) rpm = Math.round(profile.idleRpm + band * profile.shiftDropRatio);
+
+  return gauge(profile, kmh, gear, `G${gear}`, rpm);
+}
+
+function gauge(profile, kmh, gear, gearLabel, rpm) {
   return {
     kmh,
     gear,
-    gearLabel: isReverse ? 'R' : `G${gear}`,
+    gearLabel,
     rpm,
-    rpmPct: clamp(
-      (rpm - profile.idleRpm) / Math.max(1, profile.redlineRpm - profile.idleRpm),
-      0,
-      1
-    ),
+    rpmPct: clamp((rpm - profile.idleRpm) / Math.max(1, profile.redlineRpm - profile.idleRpm), 0, 1),
     topSpeedKmh: profile.topSpeedKmh,
     speedometerMaxKmh: profile.speedometerMaxKmh,
     redlineRpm: profile.redlineRpm,
