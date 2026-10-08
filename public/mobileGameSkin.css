@@ -231,7 +231,8 @@
 }
 
 .bottomNav {
-  height: 84px;
+  height: auto;
+  min-height: 64px;
   padding: 7px 5px calc(7px + env(safe-area-inset-bottom));
   background:
     var(--ui-nav-bar-frame),
@@ -378,7 +379,7 @@
 
 @media (max-width: 380px) {
   .appShell {
-    grid-template-rows: 100px minmax(0, 1fr) 70px;
+    grid-template-rows: auto minmax(0, 1fr) auto;
   }
 
   .topBar {

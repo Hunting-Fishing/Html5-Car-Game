@@ -42,7 +42,7 @@
 html, body { margin: 0; height: 100%; height: 100dvh; background: radial-gradient(circle at top, #12344a 0, #06131d 55%, #03080d 100%); color: var(--text); overflow: hidden; }
 button, input { font: inherit; }
 button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation; }
-.appShell { height: 100dvh; max-width: 480px; margin: 0 auto; background: linear-gradient(180deg, #082033 0%, #071620 100%); overflow: hidden; border-inline: 1px solid rgba(255,255,255,.08); display: grid; grid-template-rows: 108px 1fr 74px; }
+.appShell { height: 100dvh; max-width: 480px; margin: 0 auto; background: linear-gradient(180deg, #082033 0%, #071620 100%); overflow: hidden; border-inline: 1px solid rgba(255,255,255,.08); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 .topBar { padding: 8px 10px 7px; border-bottom: 1px solid var(--line); background: var(--ui-top-hud-frame), radial-gradient(circle at 20% -20%, rgba(90,183,255,.28), transparent 34%), linear-gradient(180deg, rgba(16,52,75,.98), rgba(9,29,43,.94)); background-size: 100% 100%, auto, auto; }
 .topLine { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -71,10 +71,10 @@ button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation;
 .stageCopy small { font-size: 6px; text-transform: uppercase; letter-spacing: .08em; opacity: .75; }
 .stageCopy b { font-size: 15px; line-height: .95; }
 .screenHost { min-height: 0; overflow: hidden; position: relative; }
-.screen { height: 100%; display: none; overflow-y: auto; padding: 12px 12px 20px; scrollbar-width: none; }
+.screen { height: 100%; display: none; overflow-y: auto; padding: 12px 12px 16px; scrollbar-width: none; }
 .screen::-webkit-scrollbar { display: none; }
 .screen.active { display: block; }
-.bottomNav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--ui-nav-bar-frame), rgba(7,20,31,.98); background-size: 100% 100%, auto; }
+.bottomNav { position: relative; z-index: 20; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; height: auto; min-height: 64px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--ui-nav-bar-frame), rgba(7,20,31,.98); background-size: 100% 100%, auto; }
 .tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 52px; border-radius: 14px; border: 1px solid rgba(125,220,255,.18); color: #bde8f7; font-size: 8px; font-weight: 900; background: linear-gradient(180deg, rgba(15,64,96,.78), rgba(3,17,29,.86)); box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 3px 0 rgba(0,0,0,.20); overflow: hidden; }
 .tabIcon { width: 22px; height: 22px; display: block; object-fit: contain; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; filter: drop-shadow(0 2px 0 rgba(0,0,0,.34)); }
 .tab.active { color: #ffffff; border-color: rgba(255,209,102,.58); background: linear-gradient(180deg, rgba(34,197,94,.92), rgba(9,112,74,.96)); box-shadow: inset 0 2px 0 rgba(255,255,255,.24), 0 0 0 2px rgba(255,209,102,.22), 0 4px 0 rgba(0,0,0,.24); }
@@ -878,7 +878,7 @@ html.firstSessionGuideActive .rewardToastStack, html[data-active-screen="race"] 
 }
 @media (max-width: 380px) {
   :root { --bottom-nav-safe-area: calc(70px + env(safe-area-inset-bottom)); --top-hud-safe-area: 100px; --race-control-safe-area: 172px; }
-  .appShell { grid-template-rows: 100px 1fr 70px; }
+  .appShell { grid-template-rows: auto minmax(0, 1fr) auto; }
   .topBar { padding: 7px 8px 6px; }
   .topLine { margin-bottom: 5px; }
   .brandLogo { width: 44px; height: 44px; border-radius: 15px; font-size: 15px; }
@@ -907,7 +907,7 @@ html.firstSessionGuideActive .rewardToastStack, html[data-active-screen="race"] 
   .gameRowCard { gap: 7px; padding: 8px; border-radius: 15px; }
   .gameRowCard > .gameIconBadge { width: 34px; height: 34px; }
   .raceCanvas { height: 160px; }
-  .bottomNav { height: 64px; }
+  .bottomNav { height: auto; min-height: 60px; }
   .tabIcon { width: 20px; height: 20px; }
   .tab { font-size: 7px; }
 }
