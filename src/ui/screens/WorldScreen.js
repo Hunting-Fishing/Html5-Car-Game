@@ -6,8 +6,8 @@ import { SubTabBar } from '../components/SubTabBar.js';
 
 export function renderWorldScreen() {
   return ScreenFrame({
-    title: '365 Auto World',
-    subtitle: 'Tap buildings, people, and events around the city.',
+    title: 'World',
+    subtitle: 'Tap a building or person.',
     badge: 'World Map',
     className: 'worldPlayArea',
     body: `

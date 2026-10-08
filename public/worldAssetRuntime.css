@@ -78,13 +78,30 @@
   display: none !important;
 }
 
+#screen-world .pixiWorldShell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
 #screen-world .pixiWorldHost {
+  flex: 1 1 auto;
   height: auto !important;
-  min-height: 0 !important;
+  min-height: 320px !important;
   padding: 0;
   border-radius: 18px;
   overflow: hidden;
 }
+#screen-world .mobileCityHud {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  max-height: none;
+  margin-top: 8px;
+}
+#screen-world .mobileBuildSyncStatus,
+#screen-world .worldRuntimeTabs { display: none !important; }
 
 #screen-world .mobileCityHud {
   position: absolute;
