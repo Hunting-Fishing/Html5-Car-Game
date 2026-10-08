@@ -1,4 +1,4 @@
-import { publicAsset } from '../data/assetUrl.js';
+import { setEngineSound, stopEngineSound } from './sfx.js';
 import {
   DAMAGE_SPEED_KMH,
   calculateHazardEffect,
@@ -993,6 +993,7 @@ function updateHud() {
   const nextFuel = nextFuelMeters();
   setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)}`);
   setText('[data-rr-rpm]', `${Math.round(game.telemetry.rpm)}`);
+  setEngineSound({ rpm: game.telemetry.rpm, throttle: input.gas, active: Boolean(document.querySelector('#screen-race.active')) });
   const needle = document.querySelector('[data-rr-needle]');
   if (needle) {
     const idle = game.telemetry.idleRpm || 800;
@@ -2258,7 +2259,10 @@ window.advanceTime = (milliseconds) => {
 function inject() {
   document.documentElement.classList.toggle('rrRaceViewport', Boolean(document.querySelector('#screen-race.active')));
   const screen = document.querySelector('#screen-race.active');
-  if (!screen) return;
+  if (!screen) {
+    stopEngineSound();
+    return;
+  }
   requestAnimationFrame(() => mountRoadRunner(false));
 }
 
