@@ -699,6 +699,18 @@ function drawRoads() {
     if (roadAsset) world.addChild(roadAsset);
     world.addChild(rect(road.x + ROADS.width / 2 - 2, 0, 4, WORLD.height, { color: 0xf8fafc, alpha: 0.42 }));
   }
+  drawCrosswalks();
+}
+
+function drawCrosswalks() {
+  for (const h of ROADS.horizontal) {
+    for (const v of ROADS.vertical) {
+      for (let i = 0; i < 5; i++) {
+        world.addChild(rect(v.x + 10 + i * 14, h.y + 8, 8, ROADS.width - 16, { color: 0xf8fafc, alpha: 0.78 }));
+        world.addChild(rect(v.x + 8, h.y + 10 + i * 14, ROADS.width - 16, 8, { color: 0xf8fafc, alpha: 0.78 }));
+      }
+    }
+  }
 }
 
 function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation = 0, buildingState = null, onCollect = null }) {
@@ -759,11 +771,71 @@ function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', 
 }
 
 function pathPoint(path, distance) {
-  const a = path[0];
-  const b = path[1];
-  const len = Math.hypot(b.x - a.x, b.y - a.y);
-  const t = ((distance % len) + len) % len / len;
-  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+  if (!path?.length) return { x: 0, y: 0, facing: 1 };
+  if (path.length < 2) return { x: path[0].x, y: path[0].y, facing: 1 };
+  let total = 0;
+  const segs = [];
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1];
+    const b = path[i];
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    segs.push({ a, b, len });
+    total += len;
+  }
+  if (!total) return { x: path[0].x, y: path[0].y, facing: 1 };
+  let d = ((distance % total) + total) % total;
+  for (const seg of segs) {
+    if (d <= seg.len || seg === segs[segs.length - 1]) {
+      const t = seg.len ? Math.min(1, d / seg.len) : 0;
+      return {
+        x: seg.a.x + (seg.b.x - seg.a.x) * t,
+        y: seg.a.y + (seg.b.y - seg.a.y) * t,
+        facing: seg.b.x >= seg.a.x ? 1 : -1
+      };
+    }
+    d -= seg.len;
+  }
+  return { x: path[0].x, y: path[0].y, facing: 1 };
+}
+
+function sidewalkY(roadIndex, side) {
+  const road = ROADS.horizontal[roadIndex];
+  return side === 'north' ? road.y - 10 : road.y + ROADS.width + 10;
+}
+
+function sidewalkX(roadIndex, side) {
+  const road = ROADS.vertical[roadIndex];
+  return side === 'west' ? road.x - 10 : road.x + ROADS.width + 10;
+}
+
+function blockLoop(hIndex, vIndex) {
+  const top = sidewalkY(hIndex, 'south');
+  const bottom = sidewalkY(Math.min(hIndex + 1, ROADS.horizontal.length - 1), 'north');
+  const left = sidewalkX(vIndex, 'east');
+  const right = sidewalkX(Math.min(vIndex + 1, ROADS.vertical.length - 1), 'west');
+  return [
+    { x: left, y: top },
+    { x: right, y: top },
+    { x: right, y: bottom },
+    { x: left, y: bottom },
+    { x: left, y: top }
+  ];
+}
+
+function avenueLoop(roadIndex, side) {
+  const y = sidewalkY(roadIndex, side);
+  const left = 40;
+  const right = WORLD.width - 40;
+  const cross = sidewalkX(0, 'east');
+  return [
+    { x: left, y },
+    { x: cross, y },
+    { x: sidewalkX(1, 'west'), y },
+    { x: right, y },
+    { x: right, y: y + (side === 'north' ? -28 : 28) },
+    { x: left, y: y + (side === 'north' ? -28 : 28) },
+    { x: left, y }
+  ];
 }
 
 function laneY(index, lane) {
@@ -806,7 +878,7 @@ function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb) {
   p.scale.set(0.78);
   makeClickable(p, () => openResidentSheet(resident));
   world.addChild(p);
-  walkers.push({ sprite: p, path, d: Math.random() * 200, speed: 32, resident });
+  walkers.push({ sprite: p, path, d: Math.random() * 800, speed: 46, resident });
 }
 
 function roadRects() {
@@ -1788,12 +1860,15 @@ function buildWorld() {
     }
   });
 
-  addWalker([{ x: 210, y: 170 }, { x: 320, y: 170 }], RESIDENT_WANTS[0], 0x2563eb);
-  addWalker([{ x: 640, y: 190 }, { x: 820, y: 190 }], RESIDENT_WANTS[1], 0x16a34a);
-  addWalker([{ x: 210, y: 500 }, { x: 320, y: 500 }], RESIDENT_WANTS[2], 0xf97316);
-  addWalker([{ x: 630, y: 842 }, { x: 842, y: 842 }], RESIDENT_WANTS[3], 0x7c3aed);
-  addWalker([{ x: 300, y: 1180 }, { x: 490, y: 1180 }], RESIDENT_WANTS[4], 0x38bdf8);
-  addWalker([{ x: 620, y: 1170 }, { x: 820, y: 1170 }], RESIDENT_WANTS[5], 0xfacc15);
+  addWalker(blockLoop(0, 0), RESIDENT_WANTS[0], 0x2563eb);
+  addWalker(blockLoop(0, 1), RESIDENT_WANTS[1], 0x16a34a);
+  addWalker(blockLoop(1, 0), RESIDENT_WANTS[2], 0xf97316);
+  addWalker(blockLoop(1, 1), RESIDENT_WANTS[3], 0x7c3aed);
+  addWalker(blockLoop(2, 0), RESIDENT_WANTS[4], 0x38bdf8);
+  addWalker(blockLoop(2, 1), RESIDENT_WANTS[5], 0xfacc15);
+  addWalker(avenueLoop(0, 'north'), RESIDENT_WANTS[0], 0x2563eb);
+  addWalker(avenueLoop(1, 'south'), RESIDENT_WANTS[2], 0xf97316);
+  addWalker(avenueLoop(3, 'north'), RESIDENT_WANTS[4], 0x38bdf8);
 
   placementLayer = new PIXI.Container();
   placementLayer.zIndex = 4000;
@@ -1878,6 +1953,7 @@ async function mount(host) {
       const p = pathPoint(item.path, item.d);
       item.sprite.x = p.x;
       item.sprite.y = p.y;
+      item.sprite.scale.x = Math.abs(item.sprite.scale.x) * (p.facing || 1);
       item.sprite.zIndex = p.y + 45;
     }
     statusRefreshTimer += dt;
