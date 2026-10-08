@@ -17,18 +17,17 @@
   },
   "dependencies": {
     "@juggle/resize-observer": "^3.4.0",
-    "@vitejs/plugin-legacy": "latest",
-    "canvas-confetti": "latest",
-    "gsap": "latest",
-    "lucide-static": "latest",
-    "phaser": "latest",
-    "pixi.js": "latest",
+    "canvas-confetti": "1.9.4",
+    "gsap": "3.15.0",
+    "lucide-static": "1.17.0",
+    "phaser": "4.1.0",
+    "pixi.js": "8.19.0",
     "screenfull": "^6.0.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
     "playwright": "^1.61.0",
-    "vite": "latest",
-    "vite-plugin-pwa": "latest"
+    "vite": "8.0.16",
+    "vite-plugin-pwa": "1.3.0"
   }
 }
