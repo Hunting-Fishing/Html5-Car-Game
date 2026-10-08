@@ -30,6 +30,7 @@ import { renderCreatorScreen } from './ui/screens/CreatorScreen.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, addCurrency, addXp } from './systems/economySystem.js';
 import { applyDerivedObjectives } from './systems/objectiveSystem.js';
+import { claimDaily } from './systems/objectiveSystem.js';
 import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState } from './systems/mergeSystem.js';
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
 import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
@@ -241,6 +242,7 @@ function handleClick(event) {
   if (action === 'cell') result = selectOrMergeCell(state, Number(target.dataset.index));
   if (action === 'upgrade') result = buyUpgrade(state, target.dataset.key);
   if (action === 'building') result = buyBuilding(state, target.dataset.key);
+  if (action === 'claimDaily') result = claimDaily(state, target.dataset.key);
   if (action === 'reset') {
     if (confirm('Reset local save?')) {
       state = resetState();
@@ -293,6 +295,7 @@ function completeTowEvent() {
   addCurrency(state, 'scrap', rewardScrap);
   addXp(state, 10 + towLevel);
   state.race.condition = Math.min(getRaceStats(state).conditionMax, state.race.condition + 8);
+  state.daily.lotCollects = (state.daily.lotCollects || 0) + 1;
   return { ok: true, message: `Tow job complete: +${rewardCoins} coins, +${rewardScrap} scrap.` };
 }
 
@@ -309,3 +312,5 @@ function queueSave() {
     saveState(state);
   }, 300);
 }
+
+setInterval(() => saveState(state), 5000);

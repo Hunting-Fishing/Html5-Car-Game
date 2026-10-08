@@ -145,6 +145,7 @@ export function collectIdleLine(state, lineKey) {
   if (!canCollectLine(state, line)) return { ok: false, message: `${line.name} is still running.` };
   current.cycle -= getLineCycleMs(state, line);
   const reward = collectLineReward(state, line, false);
+  state.daily.lotCollects = (state.daily.lotCollects || 0) + 1;
   return { ok: true, message: `${line.name}: +${reward.amount} ${reward.label}.` };
 }
 

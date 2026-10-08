@@ -94,6 +94,7 @@ function checkRaceState(state, dt = 0.016) {
 function completeStage(state, stats) {
   state.race.progress = 0;
   state.race.completedStages += 1;
+  state.daily.hills = (state.daily.hills || 0) + 1;
   if (state.race.completedStages % 3 === 0) state.stage += 1;
   const rewardBase = Math.round((45 + state.stage * 9) * stats.mode.rewardRate * stats.rewardMult);
   addCurrency(state, 'coins', rewardBase);

@@ -4,6 +4,7 @@ import { SubTabBar } from '../components/SubTabBar.js';
 import { CompactStatStrip } from '../components/CompactStatStrip.js';
 import { ActionDock } from '../components/ActionDock.js';
 import { getObjectiveList } from '../../systems/objectiveSystem.js';
+import { DAILY_ORDERS } from '../../data/gameData.js';
 import { getRaceStats } from '../../systems/raceSystem.js';
 
 function recommendedActionForObjective(objective) {
@@ -75,7 +76,17 @@ export function renderHubScreen(state) {
           })}
         </section>
       `,
-      `<div class="rewardTicker"><b>Recent</b><span>${recentReward}</span></div>`
+      `<div class="rewardTicker"><b>Recent</b><span>${recentReward}</span></div>`,
+      `<section class="hubRouteStrip">
+        <div class="hubRouteHead"><div><h3>Today's service orders</h3><p>Claim once. Resets with the local day.</p></div></div>
+        ${DAILY_ORDERS.map((order) => {
+          const done = order.check(state);
+          const claimed = Boolean(state.daily?.claimed?.[order.key]);
+          const reward = Object.entries(order.reward).map(([k, v]) => `+${v} ${k}`).join(', ');
+          return `<div class="rewardTicker"><b>${order.title}</b><span>${claimed ? 'Paid' : done ? reward : 'Not finished'}</span>${done && !claimed ? `<button class="btn small gold" data-action="claimDaily" data-key="${order.key}">Claim</button>` : ''}</div>`;
+        }).join('')}
+        <a class="btn primary" href="https://www.365motorsales.com" target="_blank" rel="noopener">Visit 365 Motor Sales</a>
+      </section>`
     ].join('')
   });
 }
