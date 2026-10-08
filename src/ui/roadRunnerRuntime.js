@@ -1193,9 +1193,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
   const stars = completed && wearPct < 40 ? 3 : completed || wearPct < 75 ? 2 : 1;
   const title = completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
   const subtitle = completed ? `${game.route.label} finished` : `${game.route.label} - ${pct}% complete`;
-  const starAsset = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/star.svg');
-  const emptyStarAsset = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Grey/star_outline.svg');
-  const starHtml = Array.from({ length: 3 }, (_, index) => `<img src="${index < stars ? starAsset : emptyStarAsset}" alt="">`).join('');
+  const starHtml = '★★★'.slice(0, stars) + '☆☆☆'.slice(stars);
   const rewardTile = ({ type, amount, label, detail = '' }) => {
     const icon = { coins: ASSET_PATHS.coin, parts: ASSET_PATHS.parts, tools: ASSET_PATHS.tools }[type] || ASSET_PATHS.coin;
     return `<div class="rrPostRunReward" data-rr-reward="${type}">
@@ -1224,10 +1222,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
     game.tools > 0 ? rewardTile({ type: 'tools', amount: game.tools, label: 'Tools' }) : '',
     missionHtml
   ].join('');
-  const retryIcon = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Extra/icon_repeat_light.svg');
-  const garageIcon = ASSET_PATHS.mechanicShop;
-  const missionsIcon = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/icon_checkmark.svg');
-  panel.innerHTML = `<div class="rrPostRunHero"><div class="rrPostRunHeading"><h3 class="rrPostRunTitle">${title}</h3><p class="rrPostRunSubtitle">${subtitle}</p></div></div><div class="rrPostRunGrid">${rewardHtml}</div><div class="rrPostRunDetails"><div class="rrPostRunDetail"><b>${Math.floor(game.distanceM)}m</b>Distance</div><div class="rrPostRunDetail"><b>${Math.round(game.maxKmh)} km/h</b>Top Speed</div><div class="rrPostRunDetail"><b>${wearPct}%</b>Wear</div><div class="rrPostRunDetail"><b>${formatSmall(saveData.bestDistance)}m</b>Best Distance</div></div><div class="rrPostRunActions"><button onclick="window.restartHillRoute?.()">Retry</button><button class="primary" onclick="window.nextHillRace?.()">Next Race</button><button class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>`;
+  panel.innerHTML = `<div class="rrPostRunHero"><div class="rrPostRunStars">${starHtml}</div><div class="rrPostRunPlace">${pct}%</div><div class="rrPostRunHeading"><h3 class="rrPostRunTitle">${title}</h3><p class="rrPostRunSubtitle">${subtitle}</p></div></div><div class="rrPostRunGrid">${rewardHtml}</div><div class="rrPostRunDetails"><div class="rrPostRunDetail"><b>${Math.floor(game.distanceM)}m</b>Distance</div><div class="rrPostRunDetail"><b>${Math.round(game.maxKmh)} km/h</b>Top Speed</div><div class="rrPostRunDetail"><b>${wearPct}%</b>Wear</div><div class="rrPostRunDetail"><b>${formatSmall(saveData.bestDistance)}m</b>Best Distance</div></div><div class="rrPostRunActions"><button onclick="window.restartHillRoute?.()">Retry</button><button class="primary" onclick="window.nextHillRace?.()">Next Race</button><button class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>`;
   panel.hidden = false;
 }
 
