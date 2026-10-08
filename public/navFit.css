@@ -98,8 +98,11 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .rrPostRunGrid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
 #screen-race .rrPostRunDetails { display: grid !important; grid-template-columns: 1fr 1fr 1fr 1fr !important; }
 #screen-race .rrPostRunActions { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; }
-#screen-race .rrPostRunStars { display: flex !important; color: #f6c445 !important; font-size: 16px !important; }
-#screen-race .rrPostRunReward { background: rgba(255,255,255,.08) !important; }
+#screen-race .rrPostRunStars { display: flex !important; justify-content: center; gap: 8px; color: #f6c445 !important; font-size: 28px !important; text-shadow: 0 2px 0 #5a3b00; }
+#screen-race .rrPostRunStars .on { color: #ffe27a !important; }
+#screen-race .rrPostRunReward { background: #1c4668 !important; border: 1px solid rgba(255,255,255,.2) !important; border-radius: 10px !important; padding: 6px !important; }
+#screen-race .rrPostRunReward b { color: #fff !important; font-size: 16px !important; }
+#screen-race .rrPostRunReward span { color: #d7eef8 !important; font-size: 10px !important; }
 #screen-race .roadRunnerEndPanel[hidden] { display: none !important; }
 #screen-race .rrCollectionHud { display: none !important; }
 #screen-race .guideCallout, #screen-race .coachMark, .guideBubble { display: none !important; }
