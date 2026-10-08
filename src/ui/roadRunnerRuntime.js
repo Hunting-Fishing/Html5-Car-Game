@@ -961,7 +961,7 @@ function shellHtml() {
     ['missions', 'Missions', 'goals']
   ];
   return `<section class="card roadRunnerShell GamePanel" data-component="GamePanel" data-rr-active-tab="${activeTab}">
-    <div class="roadRunnerHud"><div class="roadRunnerStat"><b data-rr-speed>0</b><span>KM/H</span></div><div class="roadRunnerStat"><b data-rr-rpm>825</b><span>RPM</span></div><div class="roadRunnerStat"><b data-rr-gear>G1</b><span>Gear</span></div><div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div><div class="roadRunnerStat"><b data-rr-fuel>100%</b><span>Fuel</span></div></div>
+    <div class="roadRunnerHud"><div class="roadRunnerStat"><b data-rr-speed>0</b><span>KM/H</span></div><div class="tach" aria-label="RPM gauge"><svg viewBox="0 0 120 72"><path d="M14 62 A46 46 0 0 1 106 62" fill="none" stroke="#243140" stroke-width="8"/><path d="M86 24 A46 46 0 0 1 106 62" fill="none" stroke="#dc2626" stroke-width="8"/><line class="tachNeedle" data-rr-needle x1="60" y1="62" x2="60" y2="22" stroke="#f8fafc" stroke-width="2"/><circle cx="60" cy="62" r="4" fill="#e2e8f0"/></svg><b data-rr-rpm>825</b><span>RPM</span></div><div class="roadRunnerStat"><b data-rr-gear>G1</b><span>Gear</span></div><div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div><div class="roadRunnerStat"><b data-rr-fuel>100%</b><span>Fuel</span></div></div>
     <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" ${key === 'leaderboard' ? 'data-guide-target="previewGhostRace"' : ''} onclick="window.rrSetTab?.('${key}')"><b>${label}</b></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
@@ -993,6 +993,13 @@ function updateHud() {
   const nextFuel = nextFuelMeters();
   setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)}`);
   setText('[data-rr-rpm]', `${Math.round(game.telemetry.rpm)}`);
+  const needle = document.querySelector('[data-rr-needle]');
+  if (needle) {
+    const idle = game.telemetry.idleRpm || 800;
+    const redline = game.telemetry.redlineRpm || 7000;
+    const sweep = Math.max(0, Math.min(1, (game.telemetry.rpm - idle) / (redline - idle)));
+    needle.setAttribute('transform', `rotate(${-110 + sweep * 220} 60 62)`);
+  }
   setText('[data-rr-gear]', game.telemetry.gearLabel || 'G1');
   setText('[data-rr-distance]', `${Math.floor(game.distanceM)}m`);
   setText('[data-rr-fuel]', `${fuelPct}% · ${nextFuel}m`);
