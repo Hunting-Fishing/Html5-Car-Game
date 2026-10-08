@@ -39,7 +39,7 @@
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; height: 100%; background: radial-gradient(circle at top, #12344a 0, #06131d 55%, #03080d 100%); color: var(--text); overflow: hidden; }
+html, body { margin: 0; height: 100%; height: 100dvh; background: radial-gradient(circle at top, #12344a 0, #06131d 55%, #03080d 100%); color: var(--text); overflow: hidden; }
 button, input { font: inherit; }
 button { border: 0; color: inherit; cursor: pointer; touch-action: manipulation; }
 .appShell { height: 100dvh; max-width: 480px; margin: 0 auto; background: linear-gradient(180deg, #082033 0%, #071620 100%); overflow: hidden; border-inline: 1px solid rgba(255,255,255,.08); display: grid; grid-template-rows: 108px 1fr 74px; }
@@ -907,7 +907,7 @@ html.firstSessionGuideActive .rewardToastStack, html[data-active-screen="race"] 
   .gameRowCard { gap: 7px; padding: 8px; border-radius: 15px; }
   .gameRowCard > .gameIconBadge { width: 34px; height: 34px; }
   .raceCanvas { height: 160px; }
-  .bottomNav { height: 70px; }
+  .bottomNav { height: 64px; }
   .tabIcon { width: 20px; height: 20px; }
   .tab { font-size: 7px; }
 }
