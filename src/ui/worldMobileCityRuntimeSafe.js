@@ -10,7 +10,7 @@ const GRID = {
 };
 const ROADS = {
   width: 88,
-  sidewalk: 16,
+  sidewalk: 36,
   laneOffset: 18,
   horizontal: [
     { y: 235, label: 'Dealer / Factory Ave' },
@@ -800,12 +800,12 @@ function pathPoint(path, distance) {
 
 function sidewalkY(roadIndex, side) {
   const road = ROADS.horizontal[roadIndex];
-  return side === 'north' ? road.y - 10 : road.y + ROADS.width + 10;
+  return side === 'north' ? road.y - ROADS.sidewalk / 2 : road.y + ROADS.width + ROADS.sidewalk / 2;
 }
 
 function sidewalkX(roadIndex, side) {
   const road = ROADS.vertical[roadIndex];
-  return side === 'west' ? road.x - 10 : road.x + ROADS.width + 10;
+  return side === 'west' ? road.x - ROADS.sidewalk / 2 : road.x + ROADS.width + ROADS.sidewalk / 2;
 }
 
 function blockLoop(hIndex, vIndex) {
@@ -824,17 +824,14 @@ function blockLoop(hIndex, vIndex) {
 
 function avenueLoop(roadIndex, side) {
   const y = sidewalkY(roadIndex, side);
-  const left = 40;
-  const right = WORLD.width - 40;
-  const cross = sidewalkX(0, 'east');
   return [
-    { x: left, y },
-    { x: cross, y },
+    { x: 48, y },
+    { x: sidewalkX(0, 'west'), y },
+    { x: sidewalkX(0, 'east'), y },
     { x: sidewalkX(1, 'west'), y },
-    { x: right, y },
-    { x: right, y: y + (side === 'north' ? -28 : 28) },
-    { x: left, y: y + (side === 'north' ? -28 : 28) },
-    { x: left, y }
+    { x: sidewalkX(1, 'east'), y },
+    { x: WORLD.width - 48, y },
+    { x: 48, y }
   ];
 }
 
@@ -871,9 +868,9 @@ function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb) {
   const p = new PIXI.Container();
   p.addChild(roundRect(-8, -11, 16, 22, 7, shirt, { width: 2, color: 0x1e293b }));
   p.addChild(roundRect(-7, -27, 14, 14, 7, 0xfed7aa, { width: 2, color: 0x1e293b }));
-  const art = assetSprite(personAssetForKey(resident.key), 0, -4, 42, 60, 1);
+  const art = assetSprite(personAssetForKey(resident.key), 0, -30, 36, 48, 1);
   if (art) p.addChild(art);
-  const bubble = assetSprite(WORLD_ASSETS.ui.wantBubble, 19, -38, 34, 20, 0.92);
+  const bubble = assetSprite(WORLD_ASSETS.ui.wantBubble, 16, -58, 28, 16, 0.92);
   if (bubble) p.addChild(bubble);
   p.scale.set(0.78);
   makeClickable(p, () => openResidentSheet(resident));
