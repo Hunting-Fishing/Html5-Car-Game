@@ -161,6 +161,15 @@ function handleClick(event) {
   const action = target.dataset.action;
   let result = null;
 
+  if (action === 'toggleQuest') {
+    const menu = document.querySelector('#questMenu');
+    const button = document.querySelector('.questButton');
+    if (!menu) return;
+    menu.hidden = !menu.hidden;
+    button?.setAttribute('aria-expanded', String(!menu.hidden));
+    return;
+  }
+
   if (action === 'screenToggle') {
     window.toggleGameFullscreen?.();
     return;

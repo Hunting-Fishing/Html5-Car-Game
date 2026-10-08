@@ -24,6 +24,10 @@ export function renderTopHud() {
           <span class="stageTrophy" aria-hidden="true"></span>
           <span class="stageCopy"><small>Stage</small><b id="stagePillValue">1</b></span>
         </div>
+        <div class="questAnchor">
+          <button class="questButton" type="button" data-action="toggleQuest" aria-expanded="false">Quest</button>
+          <div class="questMenu" id="questMenu" hidden></div>
+        </div>
       </div>
     </header>
   `;

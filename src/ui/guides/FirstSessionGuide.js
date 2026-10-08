@@ -1,4 +1,5 @@
 import { UI_ICONS } from '../../data/uiIconMap.js';
+import { DAILY_ORDERS } from '../../data/gameData.js';
 
 const GUIDE_STEPS = [
   {
@@ -76,7 +77,8 @@ export function getFirstSessionGuideState(state) {
 }
 
 export function updateFirstSessionGuide(state, root = document) {
-  const host = root.querySelector('#firstSessionGuide');
+  const host = root.querySelector('#questMenu');
+  const button = root.querySelector('.questButton');
   if (!host) return;
 
   root.querySelectorAll('.guideTargetActive').forEach((target) => {
@@ -85,44 +87,14 @@ export function updateFirstSessionGuide(state, root = document) {
   });
 
   const guide = getFirstSessionGuideState(state);
-  if (guide.complete || !guide.step) {
-    host.hidden = true;
-    host.innerHTML = '';
-    host.removeAttribute('data-guide-step');
-    host.removeAttribute('data-guide-placement');
-    host.removeAttribute('data-guide-target-state');
-    root.documentElement?.classList.remove('firstSessionGuideActive');
-    return;
+  const wasOpen = !host.hidden;
+  host.innerHTML = renderQuestMenu(state, guide);
+  host.hidden = !wasOpen;
+  if (button) {
+    button.classList.toggle('hasQuest', !guide.complete);
+    button.setAttribute('aria-expanded', String(!host.hidden));
   }
-
-  host.hidden = false;
-  if (host.dataset.guideStep !== guide.step.key) {
-    host.dataset.guideStep = guide.step.key;
-    host.innerHTML = renderFirstSessionGuide(guide);
-  }
-  root.documentElement?.classList.add('firstSessionGuideActive');
-
-  const targets = findGuideTargets(guide.step, root);
-  if (guide.activeScreen !== guide.step.screen) {
-    host.hidden = true;
-    host.removeAttribute('data-guide-placement');
-    host.dataset.guideTargetState = 'missing';
-    root.documentElement?.classList.remove('firstSessionGuideActive');
-    return;
-  }
-
-  const topSafe = guide.activeScreen === 'race' || guide.step.key === 'previewGhostRace' || targets.length === 0;
-  host.dataset.guidePlacement = topSafe ? 'topSafe' : 'default';
-  host.dataset.guideTargetState = targets.length ? 'visible' : 'missing';
-  targets.slice(0, 4).forEach((target) => {
-    target.classList.add('guideTargetActive');
-    target.setAttribute('data-guide-active', guide.step.key);
-  });
-
-  if (guide.step.key !== lastGuideKey) {
-    lastGuideKey = guide.step.key;
-    scrollTargetIntoView(targets[0]);
-  }
+  root.documentElement?.classList.remove('firstSessionGuideActive');
 }
 
 function guidePayload(state, key) {
@@ -134,6 +106,18 @@ function guidePayload(state, key) {
     steps: GUIDE_STEPS,
     activeScreen: state?.activeScreen || 'hub'
   };
+}
+
+function renderQuestMenu(state, guide) {
+  const step = guide.step;
+  const ready = DAILY_ORDERS.filter((order) => order.check(state) && !state.daily?.claimed?.[order.key]);
+  const stepHtml = step
+    ? `<button class="questJump" type="button" data-action="screen" data-screen="${step.screen}">${step.title}</button>`
+    : `<p class="questQuiet">First jobs are done.</p>`;
+  const dailyHtml = ready.length
+    ? ready.map((order) => `<button class="questJump" type="button" data-action="claimDaily" data-key="${order.key}">Claim ${order.title}</button>`).join('')
+    : `<p class="questQuiet">No daily order is ready.</p>`;
+  return `<b>Quest</b>${stepHtml}<b>Today</b>${dailyHtml}`;
 }
 
 function renderFirstSessionGuide({ step, stepIndex, steps, activeScreen }) {

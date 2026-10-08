@@ -1193,7 +1193,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
   const stars = completed && wearPct < 40 ? 3 : completed || wearPct < 75 ? 2 : 1;
   const title = completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
   const subtitle = completed ? `${game.route.label} finished` : `${game.route.label} - ${pct}% complete`;
-  const starHtml = [1, 2, 3].map((n) => `<div style="text-align:center"><b style="display:block;color:${n <= stars ? '#ffe27a' : '#6d8496'};font-size:32px;line-height:1">${n <= stars ? '★' : '☆'}</b><small style="color:${n <= stars ? '#ffe27a' : '#9eb4c4'}">Level ${n}</small></div>`).join('');
+  const starHtml = [1, 2, 3].map((n) => `<div style="text-align:center"><b style="display:block;color:${n <= stars ? '#ffe27a' : '#6d8496'};font-size:22px;line-height:1">${n <= stars ? '★' : '☆'}</b><small style="color:${n <= stars ? '#ffe27a' : '#9eb4c4'};font-size:10px">Level ${n}</small></div>`).join('');
   const rewardTile = ({ type, amount, label, detail = '' }) => {
     const icon = { coins: ASSET_PATHS.coin, parts: ASSET_PATHS.parts, tools: ASSET_PATHS.tools }[type] || ASSET_PATHS.coin;
     return `<div class="rrPostRunReward" data-rr-reward="${type}">

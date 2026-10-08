@@ -5,6 +5,7 @@ import { ActionDock } from '../components/ActionDock.js';
 import { meterLine } from '../components/StatMeter.js';
 import { fmt } from '../../systems/economySystem.js';
 import { getObjectiveList } from '../../systems/objectiveSystem.js';
+import { DAILY_ORDERS } from '../../data/gameData.js';
 
 function escapeHtml(value = '') {
   return String(value)
@@ -49,6 +50,15 @@ export function renderProfileScreen(state) {
           { label: 'Home', screen: 'hub', icon: 'home' }
         ]
       })}
+
+      <section class="menuProfileHero assetFrame profilePanel">
+        <div class="menuProfileHead"><div><h3>Today</h3><p>Daily orders live here, not on top of the screens.</p></div></div>
+        ${DAILY_ORDERS.map((order) => {
+          const done = order.check(state);
+          const claimed = Boolean(state.daily?.claimed?.[order.key]);
+          return `<div class="rewardTicker"><b>${escapeHtml(order.title)}</b><span>${claimed ? 'Paid' : done ? 'Ready' : 'Open'}</span>${done && !claimed ? `<button class="btn small gold" data-action="claimDaily" data-key="${order.key}">Claim</button>` : ''}</div>`;
+        }).join('')}
+      </section>
 
       <section class="menuProfileHero assetFrame profilePanel">
         <div class="menuProfileHead">

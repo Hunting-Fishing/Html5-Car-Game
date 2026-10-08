@@ -106,5 +106,32 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .roadRunnerEndPanel[hidden] { display: none !important; }
 #screen-race .roadRunnerEndPanel.rrPostRunPanel:not([hidden]) { overflow: auto !important; background: #10283c !important; }
 #screen-race .roadRunnerEndPanel.rrPostRunPanel:not([hidden]) > div { display: grid !important; }
-.guideLayer, .firstSessionGuide, .sessionGuide { display: none !important; }
-#screen-race .guideCallout, #screen-race .coachMark, .guideBubble { display: none !important; }
+.questAnchor { position: relative; }
+.questButton { min-height: 36px; border: 0; border-radius: 12px; padding: 4px 10px; background: #f6c445; color: #2a1d0b; font-weight: 800; }
+.questButton.hasQuest { box-shadow: inset 0 0 0 2px #fff; }
+.questMenu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; width: min(260px, 72vw); display: grid; gap: 6px; padding: 10px; border-radius: 14px; background: #10283c; color: #fff; border: 1px solid rgba(255,255,255,.16); }
+.questMenu[hidden] { display: none !important; }
+.questMenu b { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: #d6b87a; }
+.questJump { min-height: 36px; border: 0; border-radius: 10px; background: #1c4668; color: #fff; text-align: left; padding: 6px 8px; }
+.questQuiet { margin: 0; font-size: 12px; color: #c7d7e2; }
+.firstSessionGuide { display: none !important; }
+#screen-race .roadRunnerEndPanel.rrPostRunPanel:not([hidden]) {
+  position: absolute !important;
+  left: 8px !important;
+  right: 8px !important;
+  top: 46px !important;
+  bottom: auto !important;
+  height: auto !important;
+  max-height: calc(100% - 54px) !important;
+  display: block !important;
+  overflow: auto !important;
+  background: #10283c !important;
+  border-radius: 16px !important;
+  padding: 8px !important;
+  z-index: 90 !important;
+}
+#screen-race .roadRunnerEndPanel.rrPostRunPanel:not([hidden]) > div {
+  display: grid !important;
+  gap: 8px !important;
+  grid-template-rows: none !important;
+}
