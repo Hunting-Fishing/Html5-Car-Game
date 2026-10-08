@@ -280,11 +280,13 @@
 #screen-race .raceGasPedal.active .raceGasPad {
   transform: perspective(140px) rotateX(22deg) translateY(4px);
 }
-  transform: perspective(140px) rotateX(22deg) translateY(4px);
-  background:
-    repeating-linear-gradient(180deg, rgba(255,255,255,.04) 0 1px, transparent 1px 5px),
-    linear-gradient(180deg, #343b44, #171c22 72%);
-}
+#screen-race .rrRaceCommand { display: none !important; }
+#screen-race .roadRunnerControls { display: none !important; }
+#screen-race .roadRunnerShell { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+#screen-race .racerPages { flex: 1; min-height: 0; }
+#screen-race [data-rr-page="drive"].active { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+#screen-race .racerInnerNav span { display: none; }
+#screen-race .racerInnerNav button { min-height: 36px; font-size: 10px; }
 #screen-race [data-rr-page="drive"] .roadRunnerGameFrame {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
