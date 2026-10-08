@@ -96,10 +96,13 @@ export function stopTireScreech() {
   try { screech.source.stop(); } catch {}
   screech = null;
 }
+export function stopEngineSound() {
   if (!engine) return;
   try { engine.fundamental.stop(); engine.overtone.stop(); } catch {}
   engine = null;
 }
+
+export function playSfx(name) {
   if (localStorage.getItem('mg-mute') === '1') return;
   try {
     if (name === 'tap') tone(520, 0.08);
