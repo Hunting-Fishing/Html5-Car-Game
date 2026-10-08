@@ -41,6 +41,7 @@ let roadSprites = [];
 let streaks = [];
 let floatingRewards = [];
 let hostElement;
+let modeText;
 let lastProgress = 0;
 let lastRewardProgress = 0;
 let speedIntensity = 0.15;
@@ -50,12 +51,13 @@ export async function mountRaceCanvas(host) {
   hostElement = host;
   if (app) {
     host.appendChild(app.canvas);
+    if (!app.ticker.started) app.ticker.start();
     resize();
     return;
   }
 
   app = new Application();
-  await app.init({ backgroundAlpha: 0, antialias: true, resizeTo: host });
+  await app.init({ backgroundAlpha: 0, antialias: true, resizeTo: host, preference: 'webgl' });
   host.appendChild(app.canvas);
   await Assets.load(RACE_ASSET_MANIFEST);
 
@@ -86,10 +88,11 @@ export async function mountRaceCanvas(host) {
   modeText.alpha = 0.75;
   scene.addChild(modeText);
 
-  applyTheme('street');
-
   app.ticker.add((ticker) => {
-    const dt = ticker.deltaTime;
+    if (!hostElement?.isConnected) {
+      app.ticker.stop();
+      return;
+    }
     animateRoad(dt);
     animateStreaks(dt);
     animateCar(dt);

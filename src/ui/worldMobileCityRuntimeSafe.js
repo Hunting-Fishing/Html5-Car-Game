@@ -1909,7 +1909,7 @@ function setupCamera(host) {
 async function createApp(host) {
   if (app) try { app.destroy(true); } catch {}
   app = new PIXI.Application();
-  await app.init({ resizeTo: host, backgroundColor: 0x153a50, antialias: true, resolution: Math.min(devicePixelRatio || 1, 2), autoDensity: true, preserveDrawingBuffer: true });
+  await app.init({ resizeTo: host, backgroundColor: 0x153a50, antialias: true, preference: 'webgl', resolution: Math.min(devicePixelRatio || 1, 2), autoDensity: true, preserveDrawingBuffer: true });
   host.innerHTML = '';
   host.appendChild(app.canvas);
 }
@@ -1970,7 +1970,10 @@ async function mount(host) {
 
 function inject() {
   const screen = document.querySelector('#screen-world.active');
-  if (!screen) return;
+  if (!screen) {
+    if (app?.ticker?.started) app.ticker.stop();
+    return;
+  }
   if (!screen.querySelector('.pixiWorldShell')) {
     screen.innerHTML = html();
     initialized = false;
@@ -1978,6 +1981,7 @@ function inject() {
   }
   const host = screen.querySelector('#pixiWorldHost');
   if (host) mount(host);
+  if (app?.ticker && !app.ticker.started) app.ticker.start();
 }
 
 const observer = new MutationObserver(() => inject());
