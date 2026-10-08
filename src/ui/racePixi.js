@@ -57,7 +57,7 @@ export async function mountRaceCanvas(host) {
   }
 
   app = new Application();
-  await app.init({ backgroundAlpha: 0, antialias: true, resizeTo: host, preference: 'webgl' });
+  await app.init({ backgroundAlpha: 0, antialias: true, resizeTo: host, preference: 'webgl', resolution: Math.min(devicePixelRatio || 1, 2), autoDensity: true });
   host.appendChild(app.canvas);
   await Assets.load(RACE_ASSET_MANIFEST);
 

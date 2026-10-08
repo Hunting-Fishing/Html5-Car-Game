@@ -1909,7 +1909,7 @@ function setupCamera(host) {
 async function createApp(host) {
   if (app) try { app.destroy(true); } catch {}
   app = new PIXI.Application();
-  await app.init({ resizeTo: host, backgroundColor: 0x153a50, antialias: true, preference: 'webgl', resolution: Math.min(devicePixelRatio || 1, 2), autoDensity: true, preserveDrawingBuffer: true });
+  await app.init({ resizeTo: host, backgroundColor: 0x153a50, antialias: true, preference: 'webgl', resolution: Math.min(devicePixelRatio || 1, 2), autoDensity: true });
   host.innerHTML = '';
   host.appendChild(app.canvas);
 }
