@@ -80,4 +80,6 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .rrPostRunSubtitle, #screen-race .rrPostRunReward span, #screen-race .rrPostRunDetail { font-size: 8px !important; }
 #screen-race .rrPostRunReward b, #screen-race .rrPostRunDetail b, #screen-race .rrPostRunPlace { font-size: 10px !important; }
 #screen-race .rrPostRunReward, #screen-race .rrPostRunDetail { padding: 2px 4px !important; }
-#screen-race .rrPostRunActions button { min-height: 28px !important; font-size: 9px !important; }
+#screen-race .roadRunnerEndPanel[hidden] { display: none !important; }
+.appShell:has(#screen-race.active) .currencyGrid { display: none; }
+#screen-race .roadRunnerHud { display: none; }
