@@ -37,6 +37,19 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   z-index: 40 !important;
 }
 #screen-race .rrPostRunGrid { grid-template-columns: 1fr 1fr !important; }
-#screen-race .rrPostRunTitle, #screen-race .rrPostRunSubtitle { position: static !important; margin: 4px 0 !important; }
+#screen-race .rrPostRunHeading { display: grid !important; gap: 2px; position: static !important; }
+#screen-race .rrPostRunTitle,
+#screen-race .rrPostRunSubtitle {
+  position: static !important;
+  display: block !important;
+  transform: none !important;
+  inset: auto !important;
+  white-space: normal !important;
+  line-height: 1.25 !important;
+  overflow: hidden;
+}
+#screen-race .rrPostRunReward b,
+#screen-race .rrPostRunReward span,
+#screen-race .rrPostRunDetail b { display: block !important; position: static !important; line-height: 1.2 !important; }
 #screen-race:has([data-rr-end-panel]:not([hidden])) .racePedalRow,
 #screen-race:has([data-rr-end-panel]:not([hidden])) .roadRunnerOverlay { display: none !important; }
