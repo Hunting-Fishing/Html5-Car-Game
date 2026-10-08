@@ -966,12 +966,13 @@ function shellHtml() {
     <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" ${key === 'leaderboard' ? 'data-guide-target="previewGhostRace"' : ''} onclick="window.rrSetTab?.('${key}')"><b>${label}</b></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
-        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div><div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div></div>
+        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div></div>
         <div class="racePedalRow">
           <button class="raceGasPedal raceBrakePedal" type="button" data-rr-control="brake" aria-label="Brake pedal"><span class="raceGasHinge"></span><span class="raceGasPad"><b>BRAKE</b></span></button>
           <button class="raceGasPedal" type="button" data-rr-control="gas" data-guide-target="raceBoost" aria-label="Gas pedal"><span class="raceGasHinge"></span><span class="raceGasPad"><b>GAS</b></span></button>
         </div>
       </section>
+      <div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div>
       <section class="racerPage ${activeTab === 'leaderboard' ? 'active' : ''}" data-rr-page="leaderboard"><div data-road-runner-leaderboard></div></section>
       <section class="racerPage ${activeTab === 'garage' ? 'active' : ''}" data-rr-page="garage"><div data-road-runner-garage></div></section>
       <section class="racerPage ${activeTab === 'vehicles' ? 'active' : ''}" data-rr-page="vehicles"><div data-road-runner-vehicles></div></section>
@@ -1226,7 +1227,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
   const retryIcon = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Extra/icon_repeat_light.svg');
   const garageIcon = ASSET_PATHS.mechanicShop;
   const missionsIcon = publicAsset('/assets/vendor/kenney/kenney_ui-pack/Vector/Yellow/icon_checkmark.svg');
-  panel.innerHTML = `<div class="rrPostRunHero"><div class="rrPostRunStars">${starHtml}</div><div class="rrPostRunPlace">${pct}%</div><div class="rrPostRunHeading"><h3 class="rrPostRunTitle">${title}</h3><p class="rrPostRunSubtitle">${subtitle}</p></div></div><div class="rrPostRunGrid">${rewardHtml}</div><div class="rrPostRunDetails"><div class="rrPostRunDetail"><b>${Math.floor(game.distanceM)}m</b>Distance</div><div class="rrPostRunDetail"><b>${Math.round(game.maxKmh)} km/h</b>Top Speed</div><div class="rrPostRunDetail"><b>${wearPct}%</b>Wear</div><div class="rrPostRunDetail"><b>${formatSmall(saveData.bestDistance)}m</b>Best Distance</div></div><div class="rrPostRunActions"><button class="rrPostRunActionRetry" onclick="window.restartHillRoute?.()" aria-label="Retry route"><img class="rrPostRunActionIcon" src="${retryIcon}" alt=""><span>Retry</span></button><button class="primary rrPostRunActionGarage" onclick="window.rrSetTab?.('garage')" aria-label="Open garage"><img class="rrPostRunActionIcon" src="${garageIcon}" alt=""><span>Garage</span></button><button class="gold rrPostRunActionMissions" onclick="window.rrSetTab?.('missions')" aria-label="Open missions"><img class="rrPostRunActionIcon" src="${missionsIcon}" alt=""><span>Missions</span></button></div>`;
+  panel.innerHTML = `<div class="rrPostRunHero"><div class="rrPostRunHeading"><h3 class="rrPostRunTitle">${title}</h3><p class="rrPostRunSubtitle">${subtitle}</p></div></div><div class="rrPostRunGrid">${rewardHtml}</div><div class="rrPostRunDetails"><div class="rrPostRunDetail"><b>${Math.floor(game.distanceM)}m</b>Distance</div><div class="rrPostRunDetail"><b>${Math.round(game.maxKmh)} km/h</b>Top Speed</div><div class="rrPostRunDetail"><b>${wearPct}%</b>Wear</div><div class="rrPostRunDetail"><b>${formatSmall(saveData.bestDistance)}m</b>Best Distance</div></div><div class="rrPostRunActions"><button onclick="window.restartHillRoute?.()">Retry</button><button class="primary" onclick="window.nextHillRace?.()">Next Race</button><button class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>`;
   panel.hidden = false;
 }
 
@@ -2090,6 +2091,13 @@ function mountRoadRunner(force = false) {
   }
 }
 
+window.nextHillRace = () => {
+  const keys = Object.keys(ROUTES);
+  const index = keys.indexOf(activeRoute);
+  const next = keys[(index + 1) % keys.length];
+  if (next && routeUnlocked(next)) activeRoute = next;
+  window.restartHillRoute();
+};
 window.restartHillRoute = () => {
   input.gas = false;
   input.brake = false;

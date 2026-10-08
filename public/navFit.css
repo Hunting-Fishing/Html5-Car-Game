@@ -22,7 +22,18 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 .adcapManager { background: rgba(90, 168, 214, .9) !important; color: #06141e !important; }
 .adcapBuy b, .adcapManager b { display: block; font-size: 12px; line-height: 1.2; font-weight: 700; }
 .adcapBuy small, .adcapManager small { display: block; margin-top: 1px; font-size: 10px; font-weight: 500; line-height: 1.2; opacity: .75; }
-#screen-race .roadRunnerGameFrame { position: relative !important; overflow: hidden !important; }
+#screen-race .roadRunnerShell { position: relative; }
+#screen-race .roadRunnerEndPanel.rrPostRunPanel {
+  position: absolute !important;
+  inset: 8px !important;
+  z-index: 60 !important;
+  display: flex !important;
+  flex-direction: column;
+  overflow: auto !important;
+}
+#screen-race .roadRunnerEndPanel[hidden] { display: none !important; }
+#screen-race .rrPostRunActions { display: grid !important; grid-template-columns: 1fr; gap: 8px; }
+#screen-race .rrPostRunActions button { min-height: 42px !important; font-size: 14px !important; }
 #screen-race .roadRunnerEndPanel.rrPostRunPanel {
   position: absolute !important;
   inset: 8px !important;
