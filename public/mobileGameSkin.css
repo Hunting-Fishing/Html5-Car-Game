@@ -33,7 +33,7 @@
 
 .appShell {
   max-width: 520px;
-  grid-template-rows: 114px minmax(0, 1fr) 84px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   background:
     radial-gradient(circle at 50% -10%, rgba(79, 209, 255, .22), transparent 40%),
     linear-gradient(180deg, #092a45, #06131d 74%);
@@ -82,7 +82,7 @@
 }
 
 .currencyGrid {
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
 }
 
@@ -231,7 +231,7 @@
 }
 
 .bottomNav {
-  height: auto;
+  height: auto !important;
   min-height: 64px;
   padding: 7px 5px calc(7px + env(safe-area-inset-bottom));
   background:

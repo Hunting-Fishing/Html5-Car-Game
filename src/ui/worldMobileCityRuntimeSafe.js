@@ -478,13 +478,10 @@ function targetFromToken(token) {
 function html() {
   return `
     <section class="card pixiWorldShell worldPlayArea">
-      <div class="worldRuntimeTabs subTabBar" role="tablist" aria-label="Home sections">
-        <button class="subTab" type="button" role="tab" data-action="screen" data-screen="hub" aria-selected="false"><span>Today</span></button>
-        <button class="subTab active" type="button" role="tab" data-action="screen" data-screen="world" aria-current="page" aria-selected="true"><span>World Map</span></button>
-      </div>
+      <div class="worldRuntimeTabs subTabBar" hidden></div>
       <div class="pixiWorldHeader worldMapPrimaryHeader">
-        <h2>365 Auto City - World Buildings</h2>
-        <p>Tap buildings, people, and city events.</p>
+        <h2>World</h2>
+        <p>Tap a building or person.</p>
       </div>
       <div class="pixiWorldHost worldMapPrimary" id="pixiWorldHost"></div>
       <div class="worldAssetPreload" aria-hidden="true">
@@ -500,12 +497,7 @@ function html() {
           </div>
         </div>
         <div class="mobileBuildSyncStatus"><span>Sync</span><b data-build-sync-total>+${totalSyncedWorldInventory()} world</b><small data-build-sync-lines>${getBuildSync()?.unlockedLineCount || 0}/${getBuildSync()?.totalLineCount || 0} lines</small></div>
-        <div class="mobileCityActions worldActionDock">
-          <button class="btn primary" data-action="worldTow">Dispatch Tow</button>
-          <button class="btn" data-action="screen" data-screen="garage">Manage Shop</button>
-          <button class="btn gold" data-action="screen" data-screen="lines">Upgrade Businesses</button>
-          <button class="btn ghost" data-action="screen" data-screen="race">Run Route</button>
-        </div>
+        <div class="mobileCityActions worldActionDock" hidden></div>
         <div class="mobileBuildTray" data-build-tray hidden>
           <div class="mobileTrayTitle mobileBuildTrayTitle"><span>Choose Building</span><span data-selected-building>${selectedDef().name}</span><span data-selected-rotation>0 deg</span></div>
           <div class="mobileBuildingList">

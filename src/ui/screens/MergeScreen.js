@@ -37,7 +37,7 @@ export function renderMergeScreen(state) {
         <div class="mergeUnifiedHeader">
           <span class="gameIconBadge">${renderDataIcon('parts', 'Parts icon', 'gameIconBadgeImg')}</span>
           <div class="mergeUnifiedTitle">
-            <h2>Merge Board</h2>
+            <h2>Parts</h2>
             <p>Merge pairs.</p>
           </div>
           <div class="mergeBayDock" aria-label="Merge Bay supplier slots">
@@ -58,7 +58,7 @@ export function renderMergeScreen(state) {
         </div>
 
         <div class="mergeBoardArea">
-          <div class="board mergeBoardGrid" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => index >= limit ? `<button class="cell locked" type="button" disabled><span class="emptyText">Locked</span></button>` : renderBoardCell(state, item, index, pairSet)).join('')}</div>
+          <div class="board mergeBoardGrid" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => index >= limit ? `<button class="cell locked" type="button" disabled aria-label="Locked slot"><span class="emptyText">🔒</span></button>` : renderBoardCell(state, item, index, pairSet)).join('')}</div>
         </div>
 
         <div class="mergeRecipeDrawer">
@@ -122,7 +122,7 @@ function renderMiniShelfSlot(item, index) {
 }
 
 function renderBoardCell(state, item, index, pairSet = new Set()) {
-  if (!item) return `<button class="cell" data-action="cell" data-index="${index}"><span class="emptyText">Open</span></button>`;
+  if (!item) return `<button class="cell" data-action="cell" data-index="${index}" aria-label="Empty slot"></button>`;
   const selected = state.merge.selectedIndex === index ? 'selected' : '';
   const guideTarget = !state.objectives?.firstMerge && pairSet.has(index) ? 'data-guide-target="mergePair"' : '';
   return `<button class="cell ${selected}" data-action="cell" data-index="${index}" ${guideTarget}>${renderItem(item)}</button>`;

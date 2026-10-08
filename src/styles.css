@@ -736,7 +736,7 @@ a.btn { display: inline-grid; place-items: center; color: inherit; text-align: c
 #screen-merge .mergeDrawerPane.active { display: grid; gap: 7px; }
 #screen-merge .mergeRecipesPane { max-height: 190px; overflow-y: auto; overflow-x: hidden; padding: 1px 2px 5px 1px; scrollbar-width: thin; overscroll-behavior: contain; touch-action: pan-y; }
 #screen-merge .mergeChainsPane { display: grid; gap: 7px; }
-#screen-merge .mergeChainCompactList { min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(112px, 40%); gap: 6px; overflow-x: auto; overflow-y: hidden; padding: 1px 1px 4px; scrollbar-width: thin; overscroll-behavior-inline: contain; touch-action: pan-x; scroll-snap-type: x proximity; }
+#screen-merge .mergeChainCompactList { min-width: 0; display: grid; grid-auto-flow: row; grid-template-columns: 1fr; gap: 6px; overflow: visible; padding: 1px; }
 #screen-merge .mergeChainCompact { min-width: 0; display: grid; gap: 3px; align-content: start; text-align: left; padding: 5px; border-radius: 14px; border: 1px solid rgba(125,220,255,.18); background: rgba(1,12,22,.48); color: #f4fdff; box-shadow: inset 0 1px 0 rgba(255,255,255,.07); scroll-snap-align: start; }
 #screen-merge .mergeChainCompact.unlocked { border-color: rgba(53,229,138,.34); background: linear-gradient(180deg, rgba(18,82,67,.62), rgba(1,12,22,.62)); }
 #screen-merge .mergeChainCompact.locked { filter: grayscale(.2); opacity: .74; }

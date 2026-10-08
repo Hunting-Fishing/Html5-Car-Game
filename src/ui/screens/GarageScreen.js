@@ -137,7 +137,7 @@ function renderShopRoomTile(state, room, selected) {
     <button class="shopRoom GarageCard garageRoomTile ${selected ? 'selected' : ''} ${data.unlocked ? '' : 'lockedRoom'}" type="button" data-action="garageRoom" data-room="${room.key}" data-component="GarageCard" data-build-room="${room.key}">
       <div class="roomArtWrap">
         <img class="roomArt buildAssetImage" src="${roomAsset}" alt="${room.name}" loading="eager">
-        <span class="roomLevelBadge">${data.unlocked ? `Lv ${data.level}` : 'Locked'}</span>
+        <span class="roomLevelBadge">${data.unlocked ? `Lv ${data.level}` : ''}</span>
         <span class="roomStatusBadge">${data.roomStatus}</span>
       </div>
       <div class="roomTileInfo">

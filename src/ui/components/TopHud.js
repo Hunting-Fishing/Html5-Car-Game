@@ -1,6 +1,6 @@
 import { renderCurrencyCapsule } from './ResourcePill.js';
 
-export const HUD_RESOURCE_KEYS = ['coins', 'parts', 'tools', 'scrap', 'fuelCans', 'tune', 'rep'];
+export const HUD_RESOURCE_KEYS = ['coins', 'parts', 'fuelCans'];
 
 export function renderTopHud() {
   return `
@@ -18,11 +18,7 @@ export function renderTopHud() {
         <div class="currencyGrid">
           ${renderCurrencyCapsule('coins', 'Coins')}
           ${renderCurrencyCapsule('parts', 'Parts')}
-          ${renderCurrencyCapsule('tools', 'Tools')}
-          ${renderCurrencyCapsule('scrap', 'Scrap')}
           ${renderCurrencyCapsule('fuelCans', 'Fuel')}
-          ${renderCurrencyCapsule('tune', 'Tune')}
-          ${renderCurrencyCapsule('rep', 'Rep')}
         </div>
         <div class="stagePill" aria-label="Stage 1">
           <span class="stageTrophy" aria-hidden="true"></span>
