@@ -85,6 +85,8 @@ export function renderHubScreen(state) {
           const reward = Object.entries(order.reward).map(([k, v]) => `+${v} ${k}`).join(', ');
           return `<div class="rewardTicker"><b>${order.title}</b><span>${claimed ? 'Paid' : done ? reward : 'Not finished'}</span>${done && !claimed ? `<button class="btn small gold" data-action="claimDaily" data-key="${order.key}">Claim</button>` : ''}</div>`;
         }).join('')}
+        <a class="btn primary" href="https://www.365motorsales.com" target="_blank" rel="noopener">Visit 365 Motor Sales</a>
+      </section>`,
       `<section class="hubRouteStrip">
         <div class="hubRouteHead"><div><h3>Showcase</h3><p>Dealer run for 365 Motor Sales. No store, no packs.</p></div></div>
         <div class="rewardTicker"><b>Dealer Showcase</b><span>Reputation route plus the live lot.</span></div>
