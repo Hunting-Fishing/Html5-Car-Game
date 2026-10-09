@@ -35,16 +35,23 @@ const GARAGE_UNLOCK_LEVEL = 3;
 const MAP_ART = publicAsset('/assets/race/maps/manila-map.png');
 const MAP_CAR = publicAsset('/assets/race/cars/starter_compact.png');
 const STAGE_WORLDS = [
-  { id: '1', name: 'Caloocan', routeKey: 'track', profile: 'track', theme: 'manila', seed: 4, skyA: '#8fd4ff', skyB: '#e7fbff', grass: '#5fbf57', road: '#3a4555', difficulty: 0.7, spot: { x: 58, y: 12 } },
-  { id: '2', name: 'Valenzuela', routeKey: 'barangay', profile: 'barangay', theme: 'manila', seed: 11, skyA: '#b7e6ff', skyB: '#fff6d8', grass: '#7fbf4a', road: '#4a4038', difficulty: 0.78, spot: { x: 32, y: 23 } },
-  { id: '3', name: 'Quezon City', routeKey: 'barangay', profile: 'barangay', theme: 'manila', seed: 7, skyA: '#8bdcff', skyB: '#e1fbff', grass: '#5fbf57', road: '#3a4555', difficulty: 0.86, spot: { x: 56, y: 34 } },
-  { id: '4', name: 'Manila', routeKey: 'port', profile: 'port', theme: 'manila', seed: 17, skyA: '#7fd4ff', skyB: '#e5fbff', grass: '#49a985', road: '#36414d', difficulty: 0.94, spot: { x: 30, y: 48 } },
-  { id: '5', name: 'Mandaluyong', routeKey: 'track', profile: 'track', theme: 'milan', seed: 18, skyA: '#9fd0ff', skyB: '#f3fbff', grass: '#67a85a', road: '#3c4654', difficulty: 1.02, spot: { x: 52, y: 54 } },
-  { id: '6', name: 'Makati', routeKey: 'track', profile: 'track', theme: 'singapore', seed: 23, skyA: '#d7e6f5', skyB: '#f4fbff', grass: '#218a62', road: '#2f6f9f', difficulty: 1.1, spot: { x: 46, y: 63 } },
-  { id: '7', name: 'Pasig', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 29, skyA: '#b9e7ff', skyB: '#eef8ff', grass: '#6eae48', road: '#5c4a38', difficulty: 1.18, spot: { x: 70, y: 58 } },
-  { id: '8', name: 'Pasay', routeKey: 'port', profile: 'port', theme: 'manila', seed: 31, skyA: '#7fd4ff', skyB: '#e4fbff', grass: '#49a985', road: '#36414d', difficulty: 1.26, spot: { x: 36, y: 67 } },
-  { id: '9', name: 'Taguig', routeKey: 'port', profile: 'port', theme: 'singapore', seed: 37, skyA: '#cfe8ff', skyB: '#f7fbff', grass: '#3d9a78', road: '#3d4652', difficulty: 1.34, spot: { x: 62, y: 72 } },
-  { id: '10', name: 'Muntinlupa', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 41, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.42, spot: { x: 48, y: 92 } }
+  { id: '1', name: 'Caloocan', landmark: 'Monumento', routeKey: 'track', profile: 'track', theme: 'manila', seed: 4, skyA: '#8fd4ff', skyB: '#e7fbff', grass: '#5fbf57', road: '#3a4555', difficulty: 0.7, spot: { x: 58, y: 12 } },
+  { id: '2', name: 'Valenzuela', landmark: 'Polo', routeKey: 'barangay', profile: 'barangay', theme: 'manila', seed: 11, skyA: '#b7e6ff', skyB: '#fff6d8', grass: '#7fbf4a', road: '#4a4038', difficulty: 0.76, spot: { x: 32, y: 23 } },
+  { id: '3', name: 'Malabon', landmark: 'Concepcion', routeKey: 'barangay', profile: 'barangay', theme: 'bangkok', seed: 13, skyA: '#ffe7a8', skyB: '#fff6d8', grass: '#c4a24a', road: '#6a543c', difficulty: 0.82, spot: { x: 28, y: 33 } },
+  { id: '4', name: 'Navotas', landmark: 'Fish Port', routeKey: 'port', profile: 'port', theme: 'manila', seed: 15, skyA: '#7fd4ff', skyB: '#e5fbff', grass: '#49a985', road: '#36414d', difficulty: 0.88, spot: { x: 15, y: 32 } },
+  { id: '5', name: 'Quezon City', landmark: 'Quezon Memorial', routeKey: 'track', profile: 'track', theme: 'milan', seed: 7, skyA: '#9fd0ff', skyB: '#f3fbff', grass: '#67a85a', road: '#3c4654', difficulty: 0.94, spot: { x: 56, y: 34 } },
+  { id: '6', name: 'Marikina', landmark: 'Riverbanks', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 19, skyA: '#b9e7ff', skyB: '#eef8ff', grass: '#6eae48', road: '#5c4a38', difficulty: 1.0, spot: { x: 82, y: 40 } },
+  { id: '7', name: 'Manila', landmark: 'Intramuros', routeKey: 'port', profile: 'port', theme: 'manila', seed: 17, skyA: '#7fd4ff', skyB: '#e5fbff', grass: '#49a985', road: '#36414d', difficulty: 1.06, spot: { x: 28, y: 48 } },
+  { id: '8', name: 'San Juan', landmark: 'Greenhills', routeKey: 'track', profile: 'track', theme: 'singapore', seed: 21, skyA: '#d7e6f5', skyB: '#f4fbff', grass: '#218a62', road: '#2f6f9f', difficulty: 1.12, spot: { x: 54, y: 49 } },
+  { id: '9', name: 'Mandaluyong', landmark: 'Shaw', routeKey: 'track', profile: 'track', theme: 'milan', seed: 18, skyA: '#9fd0ff', skyB: '#f3fbff', grass: '#67a85a', road: '#3c4654', difficulty: 1.18, spot: { x: 50, y: 56 } },
+  { id: '10', name: 'Pasig', landmark: 'Ortigas', routeKey: 'barangay', profile: 'barangay', theme: 'singapore', seed: 29, skyA: '#cfe8ff', skyB: '#f7fbff', grass: '#3d9a78', road: '#3d4652', difficulty: 1.24, spot: { x: 70, y: 58 } },
+  { id: '11', name: 'Makati', landmark: 'Ayala', routeKey: 'track', profile: 'track', theme: 'singapore', seed: 23, skyA: '#d7e6f5', skyB: '#f4fbff', grass: '#218a62', road: '#2f6f9f', difficulty: 1.3, spot: { x: 46, y: 63 } },
+  { id: '12', name: 'Pasay', landmark: 'Mall of Asia', routeKey: 'port', profile: 'port', theme: 'manila', seed: 31, skyA: '#7fd4ff', skyB: '#e4fbff', grass: '#49a985', road: '#36414d', difficulty: 1.36, spot: { x: 34, y: 67 } },
+  { id: '13', name: 'Pateros', landmark: 'Poblacion', routeKey: 'barangay', profile: 'barangay', theme: 'bangkok', seed: 33, skyA: '#ffe7a8', skyB: '#fff6d8', grass: '#c4a24a', road: '#6a543c', difficulty: 1.4, spot: { x: 64, y: 66 } },
+  { id: '14', name: 'Taguig', landmark: 'BGC', routeKey: 'port', profile: 'port', theme: 'singapore', seed: 37, skyA: '#cfe8ff', skyB: '#f7fbff', grass: '#3d9a78', road: '#3d4652', difficulty: 1.46, spot: { x: 60, y: 74 } },
+  { id: '15', name: 'Parañaque', landmark: 'Aseana', routeKey: 'port', profile: 'port', theme: 'dubai', seed: 39, skyA: '#ffe1a8', skyB: '#fff6df', grass: '#d2b56a', road: '#5c5348', difficulty: 1.52, spot: { x: 42, y: 80 } },
+  { id: '16', name: 'Las Piñas', landmark: 'Bamboo Organ', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 41, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.58, spot: { x: 32, y: 88 } },
+  { id: '17', name: 'Muntinlupa', landmark: 'Alabang', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 43, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.64, spot: { x: 48, y: 93 } }
 ];
 const GARAGE_SPOT = { x: 16, y: 44 };
 
@@ -57,6 +64,7 @@ function mainStages() {
       step: index + 1,
       routeKey: area.routeKey,
       name: area.name,
+      landmark: area.landmark,
       profile: area.profile,
       skyA: area.skyA,
       skyB: area.skyB,
@@ -1277,7 +1285,7 @@ function renderRoutesPanel() {
   const stages = allStages();
   const progress = saveData.stageProgress || { current: '1-1', stars: {} };
   const currentId = progress.current || '1-1';
-  const road = 'M 58 12 L 32 23 L 56 34 L 30 48 L 52 54 L 46 63 L 70 58 L 36 67 L 62 72 L 48 92';
+  const road = 'M 58 12 L 32 23 L 28 33 L 15 32 L 56 34 L 82 40 L 28 48 L 54 49 L 50 56 L 70 58 L 46 63 L 34 67 L 64 66 L 60 74 L 42 80 L 32 88 L 48 93';
   const spur = 'M 30 48 L 16 44';
   const nodes = stages.map((stage) => {
     const spot = stage.spot;
@@ -1287,10 +1295,10 @@ function renderRoutesPanel() {
     const starRow = [1, 2, 3].map((n) => `<i class="${n <= stars ? 'on' : ''}">★</i>`).join('');
     const car = stage.id === currentId ? `<img class="hillCar" src="${MAP_CAR}" alt="">` : '';
     const label = stage.secret ? 'Garage' : stage.step;
-    const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : stage.id;
+    const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : `${stage.name}${stage.landmark ? ' · ' + stage.landmark : ''}`;
     return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${spot.x}%;top:${spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked || stage.secret ? label : ''}</b><span>${starRow}</span></button>`;
   }).join('');
-  const tags = STAGE_WORLDS.map((area) => `<div class="townTag" style="left:${area.spot.x}%;top:${area.spot.y}%">${area.name}</div>`).join('');
+  const tags = STAGE_WORLDS.map((area) => `<div class="townTag" style="left:${area.spot.x}%;top:${area.spot.y}%"><b>${area.name}</b><small>${area.landmark}</small></div>`).join('');
   panel.innerHTML = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Metro Manila map with the real cities"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/><path class="spur" d="${spur}"/></svg>${tags}${nodes}</div>`;
   setText('[data-rr-route]', game?.route?.label || currentStage().name || currentId);
 }
