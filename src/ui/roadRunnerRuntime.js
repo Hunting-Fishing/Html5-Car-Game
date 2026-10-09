@@ -2392,11 +2392,17 @@ function mountRoadRunner(force = false) {
   }
 }
 
+function publishRaceStage(id) {
+  const stage = Number(id);
+  if (Number.isFinite(stage) && stage > 0) window.syncCompanionStage?.(stage);
+}
+
 window.selectStage = (id) => {
   if (!stageUnlocked(id)) return;
   saveData.stageProgress.current = id;
   activeRoute = stageById(id).routeKey;
   saveGameData();
+  publishRaceStage(id);
   activeTab = 'drive';
   mountRoadRunner(true);
 };
@@ -2412,6 +2418,7 @@ window.nextHillRace = () => {
     saveData.stageProgress.current = next.id;
     activeRoute = next.routeKey;
     saveGameData();
+    publishRaceStage(next.id);
   }
   activeTab = 'drive';
   mountRoadRunner(true);

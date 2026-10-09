@@ -75,9 +75,27 @@ function applyInitialScreenParam() {
   }
 }
 
+function readRaceStage() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('365_canvas_road_runner_v4') || '{}');
+    const stage = Number(parsed.stageProgress?.current);
+    return Number.isFinite(stage) && stage > 0 ? stage : 1;
+  } catch {
+    return 1;
+  }
+}
+
 function boot() {
   normalizeMergeState(state);
   ensureIdleLineState(state);
+  state.stage = Math.max(Number(state.stage) || 1, readRaceStage());
+  window.syncCompanionStage = (stage) => {
+    const next = Math.max(1, Math.floor(Number(stage) || 1));
+    if (state.stage === next) return;
+    state.stage = next;
+    updateTopBar();
+    queueSave();
+  };
   if ((state.currencies.coins || 0) < 80 && (state.buildings?.partsStorage || 0) < 1) {
     state.currencies.coins = Math.max(state.currencies.coins || 0, 160);
     state.currencies.parts = Math.max(state.currencies.parts || 0, 8);
