@@ -238,7 +238,43 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 .hudActions { flex: 0 0 auto !important; display: flex !important; gap: 6px !important; align-items: center !important; }
 .cur { min-width: 0 !important; min-height: 46px !important; padding: 6px 8px !important; overflow: hidden !important; }
 .cur b { font-size: 14px !important; line-height: 1.1 !important; }
-.cur span { font-size: 10px !important; line-height: 1.1 !important; }
+.topBar .currencyGrid {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+.topBar .cur {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  padding: 6px 10px !important;
+  overflow: hidden !important;
+  background: #123e5c !important;
+  background-image: none !important;
+}
+.topBar .curCopy { min-width: 0 !important; display: grid !important; }
+.topBar .cur b {
+  display: block !important;
+  color: #fff !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.topBar .cur span {
+  display: block !important;
+  color: #d7eef8 !important;
+  font-size: 11px !important;
+  line-height: 1.1 !important;
+}
+html.rrRaceViewport .currencyGrid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+html.rrRaceViewport .cur { min-height: 40px !important; }
+html.rrRaceViewport .cur b { font-size: 16px !important; }
+html.rrRaceViewport .cur span { font-size: 10px !important; }
 .curPlus { display: none !important; }
 .bottomNav {
   height: auto !important;
