@@ -174,7 +174,8 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .regionChips button { flex: 0 0 auto; border: 0; border-radius: 999px; padding: 6px 10px; background: #1c4668; color: #fff; font-size: 11px; font-weight: 800; }
 #screen-race .regionChips button.on { background: #f6c445; color: #2a1d0b; }
 #screen-race .phRegions { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
-#screen-race .phRegion { pointer-events: auto; fill-opacity: 0.08; stroke-width: 3px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+#screen-race .phCountryMap { cursor: pointer; }
+#screen-race .phRegion { pointer-events: auto; cursor: pointer; fill-opacity: 0.08; stroke-width: 3px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 #screen-race .phRegion.on { fill-opacity: 0.5; stroke: #ffe27a; stroke-width: 5px; }
 #screen-race .phRegionBadge { pointer-events: none; }
 #screen-race .phRegionBadge rect { stroke: #10283c; stroke-width: 0.25; }

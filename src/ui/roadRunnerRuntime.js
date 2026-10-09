@@ -1548,6 +1548,52 @@ const REGION_LOOK = {
   ncr: { color: '#eab308', ink: '#10283c', x: 33, y: 45 }
 };
 
+function regionRings(d) {
+  const rings = [];
+  let ring = [];
+  String(d).split(/(?=[MLZ])/).forEach((chunk) => {
+    if (chunk[0] === 'Z') {
+      if (ring.length) rings.push(ring);
+      ring = [];
+      return;
+    }
+    chunk.slice(1).trim().split(/\s+/).filter(Boolean).forEach((pair) => {
+      const [x, y] = pair.split(',').map(Number);
+      if (Number.isFinite(x) && Number.isFinite(y)) ring.push({ x, y });
+    });
+  });
+  if (ring.length) rings.push(ring);
+  return rings;
+}
+
+function pointInRing(x, y, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i];
+    const b = ring[j];
+    const crosses = (a.y > y) !== (b.y > y) && x < ((b.x - a.x) * (y - a.y)) / ((b.y - a.y) || 1e-6) + a.x;
+    if (crosses) inside = !inside;
+  }
+  return inside;
+}
+
+function regionAt(x, y) {
+  const hit = [...PH_REGIONS].reverse().find((region) => regionRings(region.d).some((ring) => pointInRing(x, y, ring)));
+  if (hit) return hit.id;
+  let best = '';
+  let bestDist = 12;
+  PH_REGIONS.forEach((region) => {
+    const look = REGION_LOOK[region.id];
+    if (!look) return;
+    const dist = Math.hypot(look.x - x, look.y - y);
+    if (dist < bestDist) {
+      best = region.id;
+      bestDist = dist;
+    }
+  });
+  return best;
+}
+
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
   const chips = PH_REGIONS.map((item) => {
@@ -1571,8 +1617,8 @@ function renderPhilippinesMap() {
   return `<div class="regionChips">${chips}</div><p class="phMapCaption">${caption} ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${areas}</svg>${dots}</div>${cards}`)}`;
 }
 
-window.rrSelectRegion = (id) => {
-  selectedRegion = selectedRegion === id ? '' : id;
+window.rrSelectRegion = (id, keep) => {
+  selectedRegion = !keep && selectedRegion === id ? '' : id;
   mapNotice = '';
   renderRoutesPanel();
 };
@@ -1697,11 +1743,12 @@ function bindMapZoom(root) {
     paint();
   }, { passive: false });
   view.addEventListener('pointerdown', (event) => {
-    if (event.target.closest('.mapZoomTools, .areaCards, .phRegion, button')) return;
+    if (event.target.closest('.mapZoomTools, .areaCards, button')) return;
+    moved = false;
+    if (event.target.closest('.phRegion')) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     lastX = event.clientX;
     lastY = event.clientY;
-    moved = false;
     view.setPointerCapture?.(event.pointerId);
   });
   view.addEventListener('pointermove', (event) => {
@@ -1728,7 +1775,16 @@ function bindMapZoom(root) {
     pointers.delete(event.pointerId);
     if (pointers.size < 2) pinch = 0;
   };
-  view.addEventListener('pointerup', release);
+  view.addEventListener('pointerup', (event) => {
+    const tap = !moved && !event.target.closest('.mapZoomTools, .areaCards, button, .phRegion');
+    release(event);
+    const map = tap ? view.querySelector('.phCountryMap') : null;
+    if (!map) return;
+    const rect = map.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const id = regionAt(((event.clientX - rect.left) / rect.width) * 100, ((event.clientY - rect.top) / rect.height) * 100);
+    if (id) window.rrSelectRegion(id, true);
+  });
   view.addEventListener('pointercancel', release);
   view.addEventListener('click', (event) => {
     if (!moved) return;
