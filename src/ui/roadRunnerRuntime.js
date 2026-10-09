@@ -52,43 +52,84 @@ const STAGE_WORLDS = [
   { id: '14', name: 'Taguig', landmark: 'BGC', routeKey: 'port', profile: 'port', theme: 'singapore', seed: 37, skyA: '#cfe8ff', skyB: '#f7fbff', grass: '#3d9a78', road: '#3d4652', difficulty: 1.46, spot: { x: 60, y: 74 } },
   { id: '15', name: 'Parañaque', landmark: 'Aseana', routeKey: 'port', profile: 'port', theme: 'dubai', seed: 39, skyA: '#ffe1a8', skyB: '#fff6df', grass: '#d2b56a', road: '#5c5348', difficulty: 1.52, spot: { x: 42, y: 80 } },
   { id: '16', name: 'Las Piñas', landmark: 'Bamboo Organ', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 41, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.58, spot: { x: 32, y: 88 } },
-  { id: '17', name: 'Muntinlupa', landmark: 'Alabang', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 43, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.64, spot: { x: 48, y: 93 } },
-  { id: '18', name: 'Meycauayan', landmark: 'St. Francis', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 45, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.7, spot: { x: 22, y: 15 } },
-  { id: '19', name: 'Antipolo', landmark: 'Cathedral', routeKey: 'mountain', profile: 'mountain', theme: 'denver', seed: 47, skyA: '#8ecfff', skyB: '#e7f4ff', grass: '#4f8f55', road: '#3d4652', difficulty: 1.76, spot: { x: 90, y: 36 } },
-  { id: '20', name: 'Cainta', landmark: 'Our Lady of Light', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 49, skyA: '#b9e7ff', skyB: '#eef8ff', grass: '#6eae48', road: '#5c4a38', difficulty: 1.82, spot: { x: 86, y: 50 } },
-  { id: '21', name: 'Taytay', landmark: 'St. John', routeKey: 'barangay', profile: 'barangay', theme: 'bangkok', seed: 51, skyA: '#ffe7a8', skyB: '#fff6d8', grass: '#c4a24a', road: '#6a543c', difficulty: 1.88, spot: { x: 86, y: 62 } },
-  { id: '22', name: 'Bacoor', landmark: 'St. Michael', routeKey: 'barangay', profile: 'barangay', theme: 'manila', seed: 53, skyA: '#8fd4ff', skyB: '#e7fbff', grass: '#5fbf57', road: '#3a4555', difficulty: 1.94, spot: { x: 18, y: 84 } },
-  { id: '23', name: 'Imus', landmark: 'The Pillar', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 55, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 2.0, spot: { x: 14, y: 94 } },
-  { id: '24', name: 'San Pedro', landmark: 'San Pedro Apostol', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 57, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 2.06, spot: { x: 58, y: 96 } },
-  { id: '25', name: 'Santa Rosa', landmark: 'Enchanted Kingdom', routeKey: 'track', profile: 'track', theme: 'monaco', seed: 59, skyA: '#7ddcff', skyB: '#e7fbff', grass: '#3f9d4a', road: '#2d3748', difficulty: 2.12, spot: { x: 72, y: 96 } },
-  { id: '26', name: 'Binondo', landmark: 'Chinatown', routeKey: 'barangay', profile: 'barangay', theme: 'bangkok', seed: 61, skyA: '#ffe7a8', skyB: '#fff6d8', grass: '#c4a24a', road: '#6a543c', difficulty: 2.18, spot: { x: 24, y: 43 } },
-  { id: '27', name: 'Diliman', landmark: 'UP Campus', routeKey: 'track', profile: 'track', theme: 'milan', seed: 63, skyA: '#9fd0ff', skyB: '#f3fbff', grass: '#67a85a', road: '#3c4654', difficulty: 2.24, spot: { x: 66, y: 26 } },
-  { id: '28', name: 'NAIA', landmark: 'Airport', routeKey: 'port', profile: 'port', theme: 'dubai', seed: 65, skyA: '#ffe1a8', skyB: '#fff6df', grass: '#d2b56a', road: '#5c5348', difficulty: 2.3, spot: { x: 30, y: 73 } }
+  { id: '17', name: 'Muntinlupa', landmark: 'Alabang', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 43, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.64, spot: { x: 48, y: 93 } }
 ];
 const GARAGE_SPOT = { x: 16, y: 44 };
+const PH_MAP = publicAsset('/assets/race/maps/philippines-map.png');
+const PH_CITIES = [
+  { id: 'laoag', name: 'Laoag', province: 'Ilocos Norte', spot: { x: 39, y: 22 }, missions: ['Sinking Bell Tower', 'Museo Ilocos Norte', 'Paoay Church'] },
+  { id: 'baguio', name: 'Baguio', province: 'Benguet', spot: { x: 43, y: 32 }, missions: ['Session Road', 'Burnham Park', 'Mines View'] },
+  { id: 'tuguegarao', name: 'Tuguegarao', province: 'Cagayan', spot: { x: 52, y: 22 }, missions: ['Callao Cave', 'Buntun Bridge', 'St. Peter Cathedral'] },
+  { id: 'manila', name: 'Manila', province: 'Metro Manila', spot: { x: 40, y: 44 }, local: true },
+  { id: 'batangas', name: 'Batangas', province: 'Batangas', spot: { x: 40, y: 49 }, missions: ['Taal Volcano', 'Basilica', 'Batangas Port'] },
+  { id: 'legazpi', name: 'Legazpi', province: 'Albay', spot: { x: 63, y: 52 }, missions: ['Mayon', 'Cagsawa', 'Embarcadero'] },
+  { id: 'puerto', name: 'Puerto Princesa', province: 'Palawan', spot: { x: 20, y: 66 }, missions: ['Underground River', 'Baywalk', 'Honda Bay'] },
+  { id: 'iloilo', name: 'Iloilo', province: 'Iloilo', spot: { x: 50, y: 64 }, missions: ['Molo Church', 'Calle Real', 'Iloilo River'] },
+  { id: 'bacolod', name: 'Bacolod', province: 'Negros Occidental', spot: { x: 54, y: 69 }, missions: ['Lacson Street', 'The Ruins', 'Capitol Park'] },
+  { id: 'cebu', name: 'Cebu', province: 'Cebu', spot: { x: 58, y: 67 }, missions: ["Magellan's Cross", 'Santo Niño', 'Colon Street'] },
+  { id: 'tacloban', name: 'Tacloban', province: 'Leyte', spot: { x: 70, y: 64 }, missions: ['San Juanico Bridge', 'MacArthur Landing', 'Sto. Niño Church'] },
+  { id: 'zamboanga', name: 'Zamboanga', province: 'Zamboanga', spot: { x: 46, y: 80 }, missions: ['Fort Pilar', 'Paseo del Mar', 'Yakan Village'] },
+  { id: 'cdo', name: 'Cagayan de Oro', province: 'Misamis Oriental', spot: { x: 64, y: 76 }, missions: ['Whitewater', 'St. Augustine', 'Mapawa'] },
+  { id: 'davao', name: 'Davao', province: 'Davao del Sur', spot: { x: 76, y: 84 }, missions: ['Philippine Eagle Center', "People's Park", 'Mount Apo'] },
+  { id: 'gensan', name: 'General Santos', province: 'South Cotabato', spot: { x: 68, y: 90 }, missions: ['Tuna Market', 'Sarangani Bay', 'Oval Plaza'] }
+];
 
 function mainStages() {
-  return STAGE_WORLDS.map((area, index) => {
-    const route = ROUTES[area.routeKey];
-    return {
-      id: area.id,
-      world: index + 1,
-      step: index + 1,
-      routeKey: area.routeKey,
-      name: area.name,
-      landmark: area.landmark,
-      profile: area.profile,
-      skyA: area.skyA,
-      skyB: area.skyB,
-      grass: area.grass,
-      roadColor: area.road,
-      seed: area.seed,
-      difficulty: area.difficulty,
-      theme: area.theme || area.name.toLowerCase(),
-      targetM: Math.round(route.meters * (0.4 + index * 0.05)),
-      spot: area.spot
-    };
+  const stages = [];
+  const profiles = ['track', 'barangay', 'port', 'mountain'];
+  PH_CITIES.forEach((city) => {
+    if (city.local) {
+      STAGE_WORLDS.forEach((area) => {
+        const route = ROUTES[area.routeKey];
+        const index = stages.length;
+        stages.push({
+          id: area.id,
+          cityId: city.id,
+          world: index + 1,
+          step: index + 1,
+          routeKey: area.routeKey,
+          name: area.name,
+          landmark: area.landmark,
+          profile: area.profile,
+          skyA: area.skyA,
+          skyB: area.skyB,
+          grass: area.grass,
+          roadColor: area.road,
+          seed: area.seed,
+          difficulty: area.difficulty,
+          theme: area.theme || area.name.toLowerCase(),
+          targetM: Math.round(route.meters * (0.4 + index * 0.02)),
+          spot: area.spot
+        });
+      });
+      return;
+    }
+    city.missions.forEach((mission, missionIndex) => {
+      const index = stages.length;
+      const routeKey = profiles[index % profiles.length];
+      const route = ROUTES[routeKey];
+      stages.push({
+        id: `${city.id}-${missionIndex + 1}`,
+        cityId: city.id,
+        world: index + 1,
+        step: missionIndex + 1,
+        routeKey,
+        name: city.name,
+        landmark: mission,
+        profile: routeKey,
+        skyA: '#8fd4ff',
+        skyB: '#e7fbff',
+        grass: '#5fbf57',
+        roadColor: '#3a4555',
+        seed: 20 + index,
+        difficulty: 0.7 + index * 0.03,
+        theme: 'manila',
+        targetM: Math.round(route.meters * (0.45 + missionIndex * 0.08)),
+        spot: city.spot
+      });
+    });
   });
+  return stages;
 }
 
 function secretStages() {
@@ -1292,6 +1333,61 @@ function vehicleCard(key, item) {
 }
 
 let mapLayer = 'countries';
+let selectedCityId = 'manila';
+
+function stagesForCity(cityId) {
+  return mainStages().filter((stage) => stage.cityId === cityId);
+}
+
+function cityById(cityId) {
+  return PH_CITIES.find((city) => city.id === cityId) || PH_CITIES[0];
+}
+
+function cityState(city) {
+  const list = stagesForCity(city.id);
+  const stars = list.map((stage) => Number(saveData.stageProgress?.stars?.[stage.id] || 0));
+  if (list.length && stars.every((count) => count > 0)) return 'cleared';
+  if (list.some((stage) => stage.id === saveData.stageProgress?.current)) return 'current';
+  if (list[0] && stageUnlocked(list[0].id)) return 'open';
+  return 'locked';
+}
+
+function renderPhilippinesMap() {
+  const pins = PH_CITIES.map((city) => {
+    const state = cityState(city);
+    const count = stagesForCity(city.id).length;
+    return `<button type="button" class="phCity ${state}" style="left:${city.spot.x}%;top:${city.spot.y}%" ${state === 'locked' ? 'disabled' : ''} onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${count} missions</small></button>`;
+  }).join('');
+  return `<p class="phMapCaption">The Philippines. Open a city to run its missions. Manila opens the metro map.</p><div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines">${pins}</div>`;
+}
+
+function renderCityMissions(cityId) {
+  const city = cityById(cityId);
+  const rows = stagesForCity(city.id).map((stage) => {
+    const stars = Number(saveData.stageProgress?.stars?.[stage.id] || 0);
+    const unlocked = stageUnlocked(stage.id);
+    const status = stars ? `${stars} star${stars === 1 ? '' : 's'}` : unlocked ? 'Open' : 'Locked';
+    return `<button type="button" class="cityMission ${unlocked ? '' : 'locked'}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.landmark}</b><small>${status}</small></button>`;
+  }).join('');
+  return `<div class="cityMissions"><button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><h3>${city.name}</h3><p>${city.province}</p><div class="cityMissionList">${rows}</div></div>`;
+}
+
+function renderManilaMap() {
+  const stages = [...stagesForCity('manila'), ...secretStages()];
+  const progress = saveData.stageProgress || { current: '1', stars: {} };
+  const currentId = progress.current || '1';
+  const road = 'M 58 12 L 32 23 L 28 33 L 15 32 L 56 34 L 82 40 L 28 48 L 54 49 L 50 56 L 70 58 L 46 63 L 34 67 L 64 66 L 60 74 L 42 80 L 32 88 L 48 93';
+  const nodes = stages.map((stage) => {
+    const stars = Number(progress.stars?.[stage.id] || 0);
+    const unlocked = stageUnlocked(stage.id);
+    const state = stage.id === currentId ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
+    const starRow = [1, 2, 3].map((n) => `<i class="${n <= stars ? 'on' : ''}">★</i>`).join('');
+    const label = stage.secret ? 'Garage' : stage.name.split(' ')[0];
+    const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : `${stage.name} · ${stage.landmark || ''}`;
+    return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${stage.spot.x}%;top:${stage.spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${label}</b><span>${starRow}</span></button>`;
+  }).join('');
+  return `<button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Metro Manila and the cities around it"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${nodes}</div>`;
+}
 
 function philippinesCleared() {
   return mainStages().every((stage) => Number(saveData.stageProgress?.stars?.[stage.id] || 0) > 0);
@@ -1316,31 +1412,26 @@ function renderCountryLadder() {
 function renderRoutesPanel() {
   const panel = document.querySelector('[data-road-runner-routes]');
   if (!panel) return;
-  const stages = allStages();
-  const progress = saveData.stageProgress || { current: '1-1', stars: {} };
-  const currentId = progress.current || '1-1';
-  const road = 'M 58 12 L 32 23 L 28 33 L 15 32 L 56 34 L 82 40 L 28 48 L 54 49 L 50 56 L 70 58 L 46 63 L 34 67 L 64 66 L 60 74 L 42 80 L 32 88 L 48 93';
-  const spur = 'M 30 48 L 16 44 M 32 23 L 22 15 M 82 40 L 90 36 M 82 40 L 86 50 L 86 62 M 32 88 L 18 84 L 14 94 M 48 93 L 58 96 L 72 96 M 28 48 L 24 43 M 56 34 L 66 26 M 34 67 L 30 73';
-  const nodes = stages.map((stage) => {
-    const spot = stage.spot;
-    const stars = Number(progress.stars?.[stage.id] || 0);
-    const unlocked = stageUnlocked(stage.id);
-    const state = stage.id === currentId ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
-    const starRow = [1, 2, 3].map((n) => `<i class="${n <= stars ? 'on' : ''}">★</i>`).join('');
-    const car = stage.id === currentId ? `<img class="hillCar" src="${MAP_CAR}" alt="">` : '';
-    const label = stage.secret ? 'Garage' : stage.step;
-    const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : `${stage.name}${stage.landmark ? ' · ' + stage.landmark : ''}`;
-    return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${spot.x}%;top:${spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked || stage.secret ? label : ''}</b><span>${starRow}</span></button>`;
-  }).join('');
-  const tags = STAGE_WORLDS.map((area) => `<div class="townTag" style="left:${area.spot.x}%;top:${area.spot.y}%"><b>${area.name}</b><small>${area.landmark}</small></div>`).join('');
-  const switcher = `<div class="mapSwitch"><button type="button" class="${mapLayer === 'countries' ? 'active' : ''}" onclick="window.rrMapLayer?.('countries')">Countries</button><button type="button" class="${mapLayer === 'cities' ? 'active' : ''}" onclick="window.rrMapLayer?.('cities')">Philippines</button></div>`;
-  const cities = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Metro Manila map with the real cities"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/><path class="spur" d="${spur}"/></svg>${tags}${nodes}</div>`;
-  panel.innerHTML = `${switcher}${mapLayer === 'cities' ? cities : renderCountryLadder()}`;
-  setText('[data-rr-route]', game?.route?.label || currentStage().name || currentId);
+  const onCountries = mapLayer === 'countries';
+  const switcher = `<div class="mapSwitch"><button type="button" class="${onCountries ? 'active' : ''}" onclick="window.rrMapLayer?.('countries')">Countries</button><button type="button" class="${onCountries ? '' : 'active'}" onclick="window.rrMapLayer?.('cities')">Philippines</button></div>`;
+  let body = renderCountryLadder();
+  if (mapLayer === 'cities') body = renderPhilippinesMap();
+  if (mapLayer === 'manila') body = renderManilaMap();
+  if (mapLayer === 'city') body = renderCityMissions(selectedCityId);
+  panel.innerHTML = `${switcher}${body}`;
+  setText('[data-rr-route]', game?.route?.label || currentStage().name || currentStage().id);
 }
 
 window.rrMapLayer = (layer) => {
-  mapLayer = layer === 'cities' ? 'cities' : 'countries';
+  mapLayer = layer === 'cities' || layer === 'manila' || layer === 'city' ? layer : 'countries';
+  renderRoutesPanel();
+};
+
+window.enterPhCity = (cityId) => {
+  const city = cityById(cityId);
+  if (cityState(city) === 'locked') return;
+  selectedCityId = city.id;
+  mapLayer = city.local ? 'manila' : 'city';
   renderRoutesPanel();
 };
 

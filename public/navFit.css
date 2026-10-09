@@ -170,6 +170,21 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .worldCountry.open { background: #2f8f55; }
 #screen-race .worldCountry b, #screen-race .worldCountry small { display: block; }
 #screen-race .worldCountry small { color: #d7eef8; font-size: 10px; }
+#screen-race .phMapCaption, #screen-race .cityMissions p { margin: 0 0 8px; color: #d7eef8; font-size: 12px; }
+#screen-race .phCity { position: absolute; z-index: 3; transform: translate(-50%, -50%); min-width: 72px; border: 0; border-radius: 999px; padding: 4px 8px; background: #10283c; color: #fff; text-align: center; }
+#screen-race .phCity b, #screen-race .phCity small { display: block; line-height: 1.1; }
+#screen-race .phCity b { font-size: 11px; }
+#screen-race .phCity small { font-size: 8px; color: #ffe27a; }
+#screen-race .phCity.locked { background: #243140; color: #9eb0bd; }
+#screen-race .phCity.current { background: #f6c445; color: #2a1d0b; }
+#screen-race .phCity.current small { color: #6a4a10; }
+#screen-race .phCity.cleared { background: #2f8f55; }
+#screen-race .mapBack { min-height: 34px; margin-bottom: 8px; border: 0; border-radius: 12px; padding: 0 12px; background: #1c4668; color: #fff; font-weight: 800; }
+#screen-race .cityMissions h3 { margin: 0 0 4px; color: #fff; }
+#screen-race .cityMissionList { display: grid; gap: 8px; }
+#screen-race .cityMission { display: flex; justify-content: space-between; gap: 8px; min-height: 48px; border: 0; border-radius: 12px; padding: 8px 10px; background: #1c4668; color: #fff; text-align: left; }
+#screen-race .cityMission.locked { background: #243140; color: #9eb0bd; }
+#screen-race .cityMission small { color: #ffe27a; }
 #screen-race .stageMapNote { margin: 0 0 8px; color: #b7c9d6; font-size: 12px; }
 #screen-race .stageWorld { margin: 0 0 14px; }
 #screen-race .stageWorld h4 { margin: 0 0 8px; color: #f6c445; font-size: 13px; }
@@ -187,8 +202,10 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .hillNode.current { background: #f6c445; color: #2a1d0b; }
 #screen-race .hillNode.cleared { background: #2f8f55; color: #fff; }
 #screen-race .hillNode.open { background: #1c4668; color: #fff; }
-#screen-race .hillNode.locked { background: #243140; color: transparent; }
-#screen-race .hillNode.locked::after { content: ''; position: absolute; width: 14px; height: 10px; border: 2px solid #c5d4df; border-radius: 2px; top: 22px; }
+#screen-race .hillNode.locked { background: #243140; color: #d5e2ea; }
+#screen-race .highwayMap .hillNode.locked::after { display: none; }
+#screen-race .highwayMap .hillNode:not(.secret) { width: auto; min-width: 58px; height: 34px; margin: -17px 0 0 -29px; padding: 0 6px; border-radius: 12px; }
+#screen-race .highwayMap .hillNode:not(.secret) b { font-size: 9px; }
 #screen-race .hillCar { position: absolute; width: 52px; height: auto; left: 4px; top: -30px; pointer-events: none; }
 #screen-race .stageTrail::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 8px; width: 6px; border-radius: 99px; background: #3d7a45; transform: translateX(-50%); }
 #screen-race .stageNode { position: relative; z-index: 1; width: 76px; min-height: 58px; border: 0; border-radius: 18px; display: grid; place-items: center; }
