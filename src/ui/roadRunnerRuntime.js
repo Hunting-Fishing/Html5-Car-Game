@@ -168,6 +168,26 @@ const PH_CITIES = [
   { id: 'bongao', name: 'Bongao', province: 'Tawi-Tawi', spot: { x: 32, y: 96 }, difficulty: 'Expert', after: 'jolo', need: { vehicle: 'exportVan' }, missions: ['Bud Bongao', 'Bongao Port', 'Capitol'] }
 ];
 
+const PH_REGIONS = [
+  { id: 'ilocos', name: 'Ilocos', d: 'M36,19 L44,18 L45,37 L36,37 Z', cities: ['laoag', 'vigan', 'sanfernando', 'dagupan'] },
+  { id: 'car', name: 'Cordillera', d: 'M43,23 L51,22 L51,34 L43,34 Z', cities: ['baguio', 'bontoc', 'lagawe', 'bangued', 'tabuk'] },
+  { id: 'cagayan', name: 'Cagayan Valley', d: 'M49,6 L56,6 L56,12 L50,12 Z M48,16 L57,17 L56,34 L48,33 Z', cities: ['basco', 'tuguegarao', 'ilagan', 'bayombong', 'cabarroguis'] },
+  { id: 'central', name: 'Central Luzon', d: 'M34,35 L56,34 L53,45 L34,46 Z', cities: ['angeles', 'tarlac', 'cabanatuan', 'malolos', 'balanga', 'olongapo', 'iba', 'baler'] },
+  { id: 'ncr', name: 'Metro Manila', d: 'M38,42 L43,42 L43,46 L38,46 Z', cities: ['manila'] },
+  { id: 'calabarzon', name: 'Calabarzon', d: 'M36,45 L53,45 L52,53 L36,53 Z', cities: ['batangas', 'lucena', 'antipolo', 'tagaytay', 'imus', 'bacoor', 'santarosa', 'calamba'] },
+  { id: 'mimaropa', name: 'Mimaropa', d: 'M12,56 L28,58 L26,84 L14,80 Z M28,48 L36,49 L35,58 L28,56 Z M44,52 L50,52 L50,60 L44,60 Z', cities: ['puerto', 'calapan', 'mamburao', 'boac', 'romblon'] },
+  { id: 'bicol', name: 'Bicol', d: 'M52,46 L70,46 L66,58 L52,57 Z', cities: ['naga', 'legazpi', 'daet', 'virac', 'sorsogon', 'masbate'] },
+  { id: 'westvis', name: 'Western Visayas', d: 'M43,59 L56,59 L55,72 L43,71 Z', cities: ['iloilo', 'kalibo', 'roxas', 'sanjose', 'jordan', 'bacolod'] },
+  { id: 'centralvis', name: 'Central Visayas', d: 'M55,63 L66,63 L65,76 L55,75 Z', cities: ['cebu', 'lapulapu', 'mandaue', 'tagbilaran', 'dumaguete', 'siquijor'] },
+  { id: 'eastvis', name: 'Eastern Visayas', d: 'M65,54 L79,54 L78,72 L65,71 Z', cities: ['tacloban', 'catbalogan', 'ormoc', 'maasin', 'naval', 'borongan', 'catarman'] },
+  { id: 'zambo', name: 'Zamboanga', d: 'M42,74 L57,74 L56,90 L42,89 Z', cities: ['zamboanga', 'dipolog', 'pagadian', 'ipil', 'isabela'] },
+  { id: 'northmin', name: 'Northern Mindanao', d: 'M55,72 L71,72 L70,82 L55,81 Z', cities: ['cdo', 'iligan', 'ozamiz', 'oroquieta', 'malaybalay', 'mambajao'] },
+  { id: 'davao', name: 'Davao', d: 'M71,77 L85,77 L84,90 L71,89 Z', cities: ['davao', 'tagum', 'mati', 'digos'] },
+  { id: 'soccsksargen', name: 'Soccsksargen', d: 'M59,82 L72,82 L72,94 L59,93 Z', cities: ['gensan', 'koronadal', 'kidapawan', 'isulan', 'alabel'] },
+  { id: 'caraga', name: 'Caraga', d: 'M70,69 L85,69 L83,83 L70,82 Z', cities: ['butuan', 'surigao', 'tandag', 'prosperidad', 'dinagat'] },
+  { id: 'barmm', name: 'Bangsamoro', d: 'M58,78 L66,78 L66,84 L58,84 Z M30,89 L50,89 L48,97 L30,97 Z', cities: ['cotabato', 'marawi', 'jolo', 'bongao'] }
+];
+
 function mainStages() {
   const stages = [];
   const profiles = ['track', 'barangay', 'port', 'mountain'];
@@ -1438,6 +1458,7 @@ function vehicleCard(key, item) {
 let mapLayer = 'countries';
 let selectedCityId = 'manila';
 let mapNotice = '';
+let selectedRegion = '';
 const mapView = { scale: 1, x: 0, y: 0 };
 
 function stagesForCity(cityId) {
@@ -1506,14 +1527,27 @@ function mapZoomHtml(inner) {
 }
 
 function renderPhilippinesMap() {
-  const pins = PH_CITIES.map((city) => {
+  const region = PH_REGIONS.find((item) => item.id === selectedRegion);
+  const chips = PH_REGIONS.map((item) => `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" onclick="window.rrSelectRegion?.('${item.id}')">${item.name}</button>`).join('');
+  const shapes = PH_REGIONS.map((item) => `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" onclick="window.rrSelectRegion?.('${item.id}')"></path>`).join('');
+  const dots = region ? region.cities.map((id) => {
+    const city = cityById(id);
+    return `<button type="button" class="phDot ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"></button>`;
+  }).join('') : '';
+  const sheet = region ? `<div class="regionSheet"><h3>${region.name}</h3><div class="regionCityList">${region.cities.map((id) => {
+    const city = cityById(id);
     const state = cityState(city);
-    const level = String(city.difficulty || 'Easy').toLowerCase();
-    const detail = city.id === 'manila' ? 'Starter Hatchback' : needLabel(city);
-    return `<button type="button" class="phCity ${state} ${level}" style="left:${city.spot.x}%;top:${city.spot.y}%" title="${state === 'locked' ? cityLockReason(city) : carsForNeed(city).join(', ')}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b>${difficultyMark(city.difficulty)}<small class="carNeed">${detail}</small></button>`;
-  }).join('');
-  return `<p class="phMapCaption">All regional cities are on the map. Start in Manila. Zoom in where the pins overlap. ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines">${pins}</div>`)}`;
+    return `<button type="button" class="regionCity ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${needLabel(city)}</em></button>`;
+  }).join('')}</div></div>` : '';
+  const caption = region ? `${region.name} is highlighted. Dots are its cities. ${mapNotice}` : `Tap a region. The border glows, then its cities open. ${mapNotice}`;
+  return `<div class="regionChips">${chips}</div><p class="phMapCaption">${caption}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${shapes}</svg>${dots}</div>`)}${sheet}`;
 }
+
+window.rrSelectRegion = (id) => {
+  selectedRegion = selectedRegion === id ? '' : id;
+  mapNotice = '';
+  renderRoutesPanel();
+};
 
 function renderCityMissions(cityId) {
   const city = cityById(cityId);
