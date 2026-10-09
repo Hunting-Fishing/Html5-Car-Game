@@ -32,21 +32,21 @@ const ROUTES = {
 };
 
 const GARAGE_UNLOCK_LEVEL = 3;
-const MAP_ART = publicAsset('/assets/race/maps/highway-map.jpg');
+const MAP_ART = publicAsset('/assets/race/maps/manila-map.png');
 const MAP_CAR = publicAsset('/assets/race/cars/starter_compact.png');
 const STAGE_WORLDS = [
-  { id: '1', name: 'Monaco', routeKey: 'track', profile: 'track', seed: 4, skyA: '#7ddcff', skyB: '#e7fbff', grass: '#3f9d4a', road: '#2d3748', difficulty: 0.7, spot: { x: 28, y: 9 } },
-  { id: '2', name: 'Milan', routeKey: 'track', profile: 'track', seed: 18, skyA: '#9fd0ff', skyB: '#f3fbff', grass: '#67a85a', road: '#3c4654', difficulty: 0.78, spot: { x: 56, y: 15 } },
-  { id: '3', name: 'Manila', routeKey: 'barangay', profile: 'barangay', seed: 7, skyA: '#8bdcff', skyB: '#e1fbff', grass: '#5fbf57', road: '#3a4555', difficulty: 0.86, spot: { x: 40, y: 26 } },
-  { id: '4', name: 'Bangkok', routeKey: 'barangay', profile: 'barangay', seed: 23, skyA: '#b7e6ff', skyB: '#fff6d8', grass: '#7fbf4a', road: '#4a4038', difficulty: 0.94, spot: { x: 58, y: 33 } },
-  { id: '5', name: 'Nairobi', routeKey: 'farm', profile: 'farm', seed: 11, skyA: '#c6ecff', skyB: '#fff4c8', grass: '#c4a24a', road: '#6a543c', difficulty: 1.02, spot: { x: 46, y: 44 } },
-  { id: '6', name: 'Lyon', routeKey: 'farm', profile: 'farm', seed: 29, skyA: '#b9e7ff', skyB: '#eef8ff', grass: '#6eae48', road: '#5c4a38', difficulty: 1.1, spot: { x: 62, y: 51 } },
-  { id: '7', name: 'Denver', routeKey: 'mountain', profile: 'mountain', seed: 13, skyA: '#8ecfff', skyB: '#e7f4ff', grass: '#4f8f55', road: '#3d4652', difficulty: 1.2, spot: { x: 44, y: 63 } },
-  { id: '8', name: 'Zurich', routeKey: 'mountain', profile: 'mountain', seed: 31, skyA: '#d5e8ff', skyB: '#f7fbff', grass: '#6f9460', road: '#4c5560', difficulty: 1.28, spot: { x: 64, y: 71 } },
-  { id: '9', name: 'Singapore', routeKey: 'port', profile: 'port', seed: 17, skyA: '#7fd4ff', skyB: '#e5fbff', grass: '#49a985', road: '#36414d', difficulty: 1.36, spot: { x: 48, y: 81 } },
-  { id: '10', name: 'Dubai', routeKey: 'port', profile: 'port', seed: 37, skyA: '#ffe1a8', skyB: '#fff6df', grass: '#d2b56a', road: '#5c5348', difficulty: 1.45, spot: { x: 52, y: 89 } }
+  { id: '1', name: 'Caloocan', routeKey: 'track', profile: 'track', theme: 'manila', seed: 4, skyA: '#8fd4ff', skyB: '#e7fbff', grass: '#5fbf57', road: '#3a4555', difficulty: 0.7, spot: { x: 58, y: 12 } },
+  { id: '2', name: 'Valenzuela', routeKey: 'barangay', profile: 'barangay', theme: 'manila', seed: 11, skyA: '#b7e6ff', skyB: '#fff6d8', grass: '#7fbf4a', road: '#4a4038', difficulty: 0.78, spot: { x: 32, y: 23 } },
+  { id: '3', name: 'Quezon City', routeKey: 'barangay', profile: 'barangay', theme: 'manila', seed: 7, skyA: '#8bdcff', skyB: '#e1fbff', grass: '#5fbf57', road: '#3a4555', difficulty: 0.86, spot: { x: 56, y: 34 } },
+  { id: '4', name: 'Manila', routeKey: 'port', profile: 'port', theme: 'manila', seed: 17, skyA: '#7fd4ff', skyB: '#e5fbff', grass: '#49a985', road: '#36414d', difficulty: 0.94, spot: { x: 30, y: 48 } },
+  { id: '5', name: 'Mandaluyong', routeKey: 'track', profile: 'track', theme: 'milan', seed: 18, skyA: '#9fd0ff', skyB: '#f3fbff', grass: '#67a85a', road: '#3c4654', difficulty: 1.02, spot: { x: 52, y: 54 } },
+  { id: '6', name: 'Makati', routeKey: 'track', profile: 'track', theme: 'singapore', seed: 23, skyA: '#d7e6f5', skyB: '#f4fbff', grass: '#218a62', road: '#2f6f9f', difficulty: 1.1, spot: { x: 46, y: 63 } },
+  { id: '7', name: 'Pasig', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 29, skyA: '#b9e7ff', skyB: '#eef8ff', grass: '#6eae48', road: '#5c4a38', difficulty: 1.18, spot: { x: 70, y: 58 } },
+  { id: '8', name: 'Pasay', routeKey: 'port', profile: 'port', theme: 'manila', seed: 31, skyA: '#7fd4ff', skyB: '#e4fbff', grass: '#49a985', road: '#36414d', difficulty: 1.26, spot: { x: 36, y: 67 } },
+  { id: '9', name: 'Taguig', routeKey: 'port', profile: 'port', theme: 'singapore', seed: 37, skyA: '#cfe8ff', skyB: '#f7fbff', grass: '#3d9a78', road: '#3d4652', difficulty: 1.34, spot: { x: 62, y: 72 } },
+  { id: '10', name: 'Muntinlupa', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 41, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.42, spot: { x: 48, y: 92 } }
 ];
-const GARAGE_SPOT = { x: 80, y: 8 };
+const GARAGE_SPOT = { x: 16, y: 44 };
 
 function mainStages() {
   return STAGE_WORLDS.map((area, index) => {
@@ -64,7 +64,7 @@ function mainStages() {
       roadColor: area.road,
       seed: area.seed,
       difficulty: area.difficulty,
-      theme: area.name.toLowerCase(),
+      theme: area.theme || area.name.toLowerCase(),
       targetM: Math.round(route.meters * (0.4 + index * 0.05)),
       spot: area.spot
     };
@@ -1277,8 +1277,8 @@ function renderRoutesPanel() {
   const stages = allStages();
   const progress = saveData.stageProgress || { current: '1-1', stars: {} };
   const currentId = progress.current || '1-1';
-  const road = 'M 28 9 L 56 15 L 40 26 L 58 33 L 46 44 L 62 51 L 44 63 L 64 71 L 48 81 L 52 89';
-  const spur = 'M 56 8 L 80 8';
+  const road = 'M 58 12 L 32 23 L 56 34 L 30 48 L 52 54 L 46 63 L 70 58 L 36 67 L 62 72 L 48 92';
+  const spur = 'M 30 48 L 16 44';
   const nodes = stages.map((stage) => {
     const spot = stage.spot;
     const stars = Number(progress.stars?.[stage.id] || 0);
@@ -1291,7 +1291,7 @@ function renderRoutesPanel() {
     return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${spot.x}%;top:${spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked || stage.secret ? label : ''}</b><span>${starRow}</span></button>`;
   }).join('');
   const tags = STAGE_WORLDS.map((area) => `<div class="townTag" style="left:${area.spot.x}%;top:${area.spot.y}%">${area.name}</div>`).join('');
-  panel.innerHTML = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Highway map from the test track to the port"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/><path class="spur" d="${spur}"/></svg>${tags}${nodes}</div>`;
+  panel.innerHTML = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Metro Manila map with the real cities"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/><path class="spur" d="${spur}"/></svg>${tags}${nodes}</div>`;
   setText('[data-rr-route]', game?.route?.label || currentStage().name || currentId);
 }
 
