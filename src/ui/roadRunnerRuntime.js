@@ -1550,10 +1550,13 @@ const REGION_LOOK = {
 
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
-  const chips = PH_REGIONS.map((item) => `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" onclick="window.rrSelectRegion?.('${item.id}')">${item.name}</button>`).join('');
+  const chips = PH_REGIONS.map((item) => {
+    const look = REGION_LOOK[item.id] || { color: '#1c4668' };
+    return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" style="background:${item.id === selectedRegion ? '#f6c445' : look.color}" onclick="window.rrSelectRegion?.('${item.id}')">${item.name}</button>`;
+  }).join('');
   const areas = PH_REGIONS.map((item) => {
     const look = REGION_LOOK[item.id] || { color: '#38bdf8', x: 50, y: 50 };
-    return `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" fill="${look.color}" onclick="window.rrSelectRegion?.('${item.id}')"><title>${item.name}</title></path><text class="phRegionLabel" x="${look.x}" y="${look.y}">${item.name}</text>`;
+    return `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" fill="${look.color}" onclick="window.rrSelectRegion?.('${item.id}')"><title>${item.name}</title></path><g class="phRegionBadge" transform="translate(${look.x} ${look.y})"><rect x="${-item.name.length * 0.95}" y="-2.3" width="${item.name.length * 1.9}" height="3.1" rx="0.6"></rect><text y="0.2">${item.name}</text></g>`;
   }).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
