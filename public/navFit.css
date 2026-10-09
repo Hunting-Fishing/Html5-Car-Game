@@ -299,7 +299,34 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
   border-radius: 14px !important;
 }
 .bottomNav .tab span { display: block !important; font-size: 11px !important; line-height: 1.1 !important; }
-.bottomNav .tab.active { background: #2f8f55 !important; color: #fff !important; }
+.bottomNav .tab.questReady {
+  position: relative;
+  animation: menuQuestGlow 1.35s ease-in-out infinite;
+  color: #ffe27a !important;
+}
+.bottomNav .tab.questReady::after {
+  content: '✦';
+  position: absolute;
+  top: 1px;
+  right: 8px;
+  color: #ffe27a;
+  font-size: 13px;
+  line-height: 1;
+  text-shadow: 0 0 8px #f6c445;
+  animation: menuSpark 1.1s ease-in-out infinite;
+  pointer-events: none;
+}
+.questButton.questReady {
+  animation: menuQuestGlow 1.35s ease-in-out infinite;
+}
+@keyframes menuQuestGlow {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(255, 226, 122, .85), 0 0 10px rgba(246, 196, 69, .45); }
+  50% { box-shadow: 0 0 0 3px #ffe27a, 0 0 18px #f6c445; }
+}
+@keyframes menuSpark {
+  0%, 100% { opacity: .45; transform: scale(.85); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
 .bottomNav .tabIcon { width: 22px !important; height: 22px !important; }
 #screen-profile .menuActionDock .actionDock { grid-template-columns: 1fr 1fr !important; }
 #screen-profile .menuActionDock .actionDockButton {

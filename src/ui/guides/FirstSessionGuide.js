@@ -91,8 +91,11 @@ export function updateFirstSessionGuide(state, root = document) {
   host.innerHTML = renderQuestMenu(state, guide);
   host.hidden = !wasOpen;
   if (button) {
-    button.classList.toggle('hasQuest', !guide.complete);
+    const claimReady = DAILY_ORDERS.some((order) => order.check(state) && !state.daily?.claimed?.[order.key]);
+    button.classList.toggle('hasQuest', !guide.complete || claimReady);
+    button.classList.toggle('questReady', claimReady);
     button.setAttribute('aria-expanded', String(!host.hidden));
+    root.querySelector('[data-nav-tab="menu"]')?.classList.toggle('questReady', claimReady);
   }
   root.documentElement?.classList.remove('firstSessionGuideActive');
 }
