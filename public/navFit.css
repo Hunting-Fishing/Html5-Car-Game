@@ -135,7 +135,23 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .stageMapNote { margin: 0 0 8px; color: #b7c9d6; font-size: 12px; }
 #screen-race .stageWorld { margin: 0 0 14px; }
 #screen-race .stageWorld h4 { margin: 0 0 8px; color: #f6c445; font-size: 13px; }
-#screen-race .stageTrail { position: relative; display: grid; gap: 12px; padding: 4px 12px 16px; }
+#screen-race .hillWorld { position: relative; height: 520px; margin: 0 0 12px; border-radius: 18px; overflow: hidden; background: #8fd8ff center / cover no-repeat; }
+#screen-race .hillWorld h4 { position: absolute; z-index: 3; top: 10px; left: 10px; margin: 0; padding: 6px 10px; border-radius: 12px; background: rgba(8,24,38,.84); color: #fff; font-size: 13px; }
+#screen-race .hillBoard { position: absolute; inset: 42px 0 8px; }
+#screen-race .hillRoad { position: absolute; inset: 0; width: 100%; height: 100%; }
+#screen-race .hillRoad .edge { fill: none; stroke: #efe2c4; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+#screen-race .hillRoad path:not(.edge) { fill: none; stroke: #3a332b; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+#screen-race .hillNode { position: absolute; z-index: 2; width: 54px; height: 54px; margin: -27px 0 0 -27px; border: 3px solid #fff; border-radius: 50%; display: grid; place-items: center; padding: 0; box-shadow: 0 4px 0 rgba(0,0,0,.28); }
+#screen-race .hillNode b { font-size: 16px; line-height: 1; }
+#screen-race .hillNode span { position: absolute; left: 0; right: 0; bottom: -14px; display: flex; justify-content: center; gap: 1px; font-size: 9px; color: #9eb0bd; }
+#screen-race .hillNode span i { font-style: normal; }
+#screen-race .hillNode span .on { color: #f6c445; }
+#screen-race .hillNode.current { background: #f6c445; color: #2a1d0b; }
+#screen-race .hillNode.cleared { background: #2f8f55; color: #fff; }
+#screen-race .hillNode.open { background: #1c4668; color: #fff; }
+#screen-race .hillNode.locked { background: #243140; color: transparent; }
+#screen-race .hillNode.locked::after { content: ''; position: absolute; width: 14px; height: 10px; border: 2px solid #c5d4df; border-radius: 2px; top: 22px; }
+#screen-race .hillCar { position: absolute; width: 52px; height: auto; left: 4px; top: -30px; pointer-events: none; }
 #screen-race .stageTrail::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 8px; width: 6px; border-radius: 99px; background: #3d7a45; transform: translateX(-50%); }
 #screen-race .stageNode { position: relative; z-index: 1; width: 76px; min-height: 58px; border: 0; border-radius: 18px; display: grid; place-items: center; }
 #screen-race .stageNode.left { justify-self: start; }

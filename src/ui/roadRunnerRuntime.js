@@ -32,13 +32,21 @@ const ROUTES = {
 };
 
 const STAGE_WORLDS = [
-  { routeKey: 'track', name: 'Test Track' },
-  { routeKey: 'barangay', name: 'Barangay' },
-  { routeKey: 'farm', name: 'Farm' },
-  { routeKey: 'mountain', name: 'Mountain' },
-  { routeKey: 'port', name: 'Port' }
+  { routeKey: 'track', name: 'Test Track', art: publicAsset('/assets/race/routes/track.svg') },
+  { routeKey: 'barangay', name: 'Barangay', art: publicAsset('/assets/race/routes/barangay.svg') },
+  { routeKey: 'farm', name: 'Farm', art: publicAsset('/assets/race/routes/farm.svg') },
+  { routeKey: 'mountain', name: 'Mountain', art: publicAsset('/assets/race/routes/mountain.svg') },
+  { routeKey: 'port', name: 'Port', art: publicAsset('/assets/race/routes/port.svg') }
 ];
 const STAGES_PER_WORLD = 5;
+const CLIMB_SPOTS = [
+  { x: 62, y: 86 },
+  { x: 28, y: 68 },
+  { x: 74, y: 50 },
+  { x: 32, y: 32 },
+  { x: 66, y: 14 }
+];
+const MAP_CAR = publicAsset('/assets/race/cars/starter_compact.png');
 
 function allStages() {
   const stages = [];
@@ -1223,15 +1231,20 @@ function renderRoutesPanel() {
   const stages = allStages();
   const currentId = saveData.stageProgress.current;
   const worlds = STAGE_WORLDS.map((world, worldIndex) => {
-    const nodes = stages.filter((stage) => stage.world === worldIndex + 1).map((stage, index) => {
+    const worldStages = stages.filter((stage) => stage.world === worldIndex + 1);
+    const road = `M ${CLIMB_SPOTS.map((spot) => `${spot.x} ${spot.y}`).join(' L ')}`;
+    const nodes = worldStages.map((stage, index) => {
+      const spot = CLIMB_SPOTS[index];
       const stars = Number(saveData.stageProgress.stars[stage.id] || 0);
       const unlocked = stageUnlocked(stage.id);
       const state = stage.id === currentId ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
-      return `<button type="button" class="stageNode ${index % 2 ? 'right' : 'left'} ${state}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.id}</b><small>${stars ? '★'.repeat(stars) : unlocked ? `${stage.targetM}m` : 'Locked'}</small></button>`;
+      const starRow = [1, 2, 3].map((n) => `<i class="${n <= stars ? 'on' : ''}">★</i>`).join('');
+      const car = stage.id === currentId ? `<img class="hillCar" src="${MAP_CAR}" alt="">` : '';
+      return `<button type="button" class="hillNode ${state}" style="left:${spot.x}%;top:${spot.y}%" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked ? stage.step : ''}</b><span>${starRow}</span></button>`;
     }).join('');
-    return `<section class="stageWorld"><h4>World ${worldIndex + 1} · ${world.name}</h4><div class="stageTrail">${nodes}</div></section>`;
+    return `<section class="hillWorld" style="background-image:url('${world.art}')"><h4>World ${worldIndex + 1} · ${world.name}</h4><div class="hillBoard"><svg class="hillRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${nodes}</div></section>`;
   }).join('');
-  panel.innerHTML = `<h3 class="racerPageTitle">Stage Map</h3><p class="stageMapNote">Clear a stage to open the next. The trail runs 1-1 to 5-5.</p>${worlds}`;
+  panel.innerHTML = `<h3 class="racerPageTitle">Stage Map</h3><p class="stageMapNote">Climb the road. Beat a stage to open the next hill.</p>${worlds}`;
 }
 
 function routeCard(key, route) {
