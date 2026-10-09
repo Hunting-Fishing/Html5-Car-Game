@@ -233,6 +233,50 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 }
 .cur b { font-size: 12px !important; }
 .cur span { font-size: 9px !important; }
+.walletRow { display: flex !important; gap: 6px !important; align-items: stretch !important; }
+.currencyGrid { flex: 1 1 auto !important; min-width: 0 !important; display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 6px !important; }
+.hudActions { flex: 0 0 auto !important; display: flex !important; gap: 6px !important; align-items: center !important; }
+.cur { min-width: 0 !important; min-height: 46px !important; padding: 6px 8px !important; overflow: hidden !important; }
+.cur b { font-size: 14px !important; line-height: 1.1 !important; }
+.cur span { font-size: 10px !important; line-height: 1.1 !important; }
+.curPlus { display: none !important; }
+.bottomNav {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 72px !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+  overflow: visible !important;
+  background: #061018 !important;
+  background-image: none !important;
+  padding: 6px 6px calc(8px + env(safe-area-inset-bottom)) !important;
+}
+.bottomNav .tab {
+  min-height: 58px !important;
+  height: auto !important;
+  overflow: visible !important;
+  background: #123044 !important;
+  background-image: none !important;
+  color: #e7f6ff !important;
+  font-size: 11px !important;
+  border-radius: 14px !important;
+}
+.bottomNav .tab span { display: block !important; font-size: 11px !important; line-height: 1.1 !important; }
+.bottomNav .tab.active { background: #2f8f55 !important; color: #fff !important; }
+.bottomNav .tabIcon { width: 22px !important; height: 22px !important; }
+#screen-profile .menuActionDock .actionDock { grid-template-columns: 1fr 1fr !important; }
+#screen-profile .menuActionDock .actionDockButton {
+  min-height: 48px !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-size: 13px !important;
+  padding: 8px !important;
+}
+#screen-profile .menuSettingsStrip { grid-template-columns: 1fr 1fr !important; }
+#screen-profile .menuSettingsStrip b { font-size: 13px !important; white-space: normal !important; }
+#screen-profile .menuSettingsStrip span { font-size: 11px !important; white-space: normal !important; }
 #screen-profile.active { overflow-y: auto !important; padding-bottom: 28px !important; }
 #screen-profile .screenFrame,
 #screen-profile .assetFrame,
