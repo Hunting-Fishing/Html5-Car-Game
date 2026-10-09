@@ -222,3 +222,28 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   grid-template-rows: none !important;
 }
 #screen-race:has([data-rr-end-panel]:not([hidden])) .racePedalRow { display: none !important; }
+.walletRow { grid-template-columns: minmax(0, 1fr) auto !important; }
+.currencyGrid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+.cur {
+  background: linear-gradient(180deg, #1f6d9b, #0c304c) !important;
+  background-image: none !important;
+  grid-template-columns: 18px minmax(0, 1fr) !important;
+  min-height: 40px;
+  padding: 4px 6px !important;
+}
+.cur b { font-size: 12px !important; }
+.cur span { font-size: 9px !important; }
+#screen-profile.active { overflow-y: auto !important; padding-bottom: 28px !important; }
+#screen-profile .screenFrame,
+#screen-profile .assetFrame,
+#screen-profile .assetPanel,
+#screen-profile .assetBottomSheet,
+#screen-profile .menuCompactFrame {
+  background: linear-gradient(180deg, rgba(16, 62, 94, .96), rgba(4, 20, 34, .98)) !important;
+  background-image: none !important;
+  overflow: visible !important;
+}
+#screen-profile .menuProfileHero,
+#screen-profile .menuSettingsStrip,
+#screen-profile .menuObjectiveCompact,
+#screen-profile .menuActionDock { position: relative; z-index: 1; }
