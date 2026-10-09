@@ -30,6 +30,24 @@
   </head>
   <body>
     <div id="app"></div>
+    <script>
+      (function () {
+        var key = 'mg-map-clear-4';
+        if (localStorage.getItem(key) === '1' || !('serviceWorker' in navigator)) return;
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
+        }).then(function () {
+          return window.caches ? caches.keys().then(function (keys) {
+            return Promise.all(keys.map(function (name) { return caches.delete(name); }));
+          }) : null;
+        }).then(function () {
+          localStorage.setItem(key, '1');
+          location.reload();
+        }).catch(function () {
+          localStorage.setItem(key, '1');
+        });
+      })();
+    </script>
     <script type="module" src="./src/main.js"></script>
   </body>
 </html>
