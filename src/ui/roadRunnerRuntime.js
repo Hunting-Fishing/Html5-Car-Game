@@ -90,7 +90,22 @@ const PH_CITIES = [
   { id: 'zamboanga', name: 'Zamboanga', province: 'Zamboanga', spot: { x: 46, y: 80 }, difficulty: 'Expert', after: 'iloilo', need: { vehicle: 'exportVan' }, missions: ['Fort Pilar', 'Paseo del Mar', 'Yakan Village'] },
   { id: 'cdo', name: 'Cagayan de Oro', province: 'Misamis Oriental', spot: { x: 64, y: 76 }, difficulty: 'Hard', after: 'tacloban', need: { class: 'offroad' }, missions: ['Whitewater', 'St. Augustine', 'Mapawa'] },
   { id: 'davao', name: 'Davao', province: 'Davao del Sur', spot: { x: 76, y: 84 }, difficulty: 'Expert', after: 'cdo', need: { vehicle: 'mountainCourier' }, missions: ['Philippine Eagle Center', "People's Park", 'Mount Apo'] },
-  { id: 'gensan', name: 'General Santos', province: 'South Cotabato', spot: { x: 68, y: 90 }, difficulty: 'Expert', after: 'davao', need: { vehicle: 'superCoupe' }, missions: ['Tuna Market', 'Sarangani Bay', 'Oval Plaza'] }
+  { id: 'gensan', name: 'General Santos', province: 'South Cotabato', spot: { x: 68, y: 90 }, difficulty: 'Expert', after: 'davao', need: { vehicle: 'superCoupe' }, missions: ['Tuna Market', 'Sarangani Bay', 'Oval Plaza'] },
+  { id: 'vigan', name: 'Vigan', province: 'Ilocos Sur', spot: { x: 40, y: 27 }, difficulty: 'Medium', after: 'laoag', need: { class: 'utility' }, missions: ['Calle Crisologo', 'Syquia Mansion', 'Bantay Bell Tower'] },
+  { id: 'angeles', name: 'Angeles', province: 'Pampanga', spot: { x: 43, y: 40 }, difficulty: 'Easy', after: 'manila', need: { class: 'starter' }, missions: ['Clark', 'Heritage District', 'Mount Arayat'] },
+  { id: 'cabanatuan', name: 'Cabanatuan', province: 'Nueva Ecija', spot: { x: 50, y: 37 }, difficulty: 'Medium', after: 'angeles', need: { class: 'utility' }, missions: ['Freedom Park', 'Cathedral', 'Gen. Luna'] },
+  { id: 'lucena', name: 'Lucena', province: 'Quezon', spot: { x: 48, y: 51 }, difficulty: 'Medium', after: 'batangas', need: { class: 'starter' }, missions: ['Perez Park', 'Quezon Capitol', 'Lucena Port'] },
+  { id: 'calapan', name: 'Calapan', province: 'Oriental Mindoro', spot: { x: 33, y: 53 }, difficulty: 'Medium', after: 'batangas', need: { class: 'utility' }, missions: ['Baywalk', 'Cathedral', 'Provincial Capitol'] },
+  { id: 'naga', name: 'Naga', province: 'Camarines Sur', spot: { x: 57, y: 49 }, difficulty: 'Medium', after: 'lucena', need: { class: 'offroad' }, missions: ['Peñafrancia', 'Plaza Rizal', 'Panicuason'] },
+  { id: 'masbate', name: 'Masbate', province: 'Masbate', spot: { x: 58, y: 57 }, difficulty: 'Hard', after: 'naga', need: { class: 'endurance' }, missions: ['Rodeo Grounds', 'Masbate Port', 'Palani Beach'] },
+  { id: 'kalibo', name: 'Kalibo', province: 'Aklan', spot: { x: 47, y: 61 }, difficulty: 'Hard', after: 'iloilo', need: { class: 'starter' }, missions: ['Ati-Atihan', 'Pastrana Park', 'Bakhawan'] },
+  { id: 'dumaguete', name: 'Dumaguete', province: 'Negros Oriental', spot: { x: 57, y: 73 }, difficulty: 'Hard', after: 'bacolod', need: { class: 'utility' }, missions: ['Boulevard', 'Silliman', 'Campanario'] },
+  { id: 'tagbilaran', name: 'Tagbilaran', province: 'Bohol', spot: { x: 63, y: 70 }, difficulty: 'Hard', after: 'cebu', need: { class: 'starter' }, missions: ['Blood Compact', 'Cathedral', 'Chocolate Hills'] },
+  { id: 'catbalogan', name: 'Catbalogan', province: 'Samar', spot: { x: 72, y: 59 }, difficulty: 'Hard', after: 'tacloban', need: { class: 'utility' }, missions: ['Capitol', 'Baywalk', 'Ulot River'] },
+  { id: 'dipolog', name: 'Dipolog', province: 'Zamboanga del Norte', spot: { x: 52, y: 75 }, difficulty: 'Hard', after: 'zamboanga', need: { class: 'offroad' }, missions: ['Boulevard', 'Cathedral', 'Linabo'] },
+  { id: 'butuan', name: 'Butuan', province: 'Agusan del Norte', spot: { x: 74, y: 78 }, difficulty: 'Expert', after: 'cdo', need: { class: 'endurance' }, missions: ['Balangay Shrine', 'Bood Promontory', 'Agusan River'] },
+  { id: 'surigao', name: 'Surigao', province: 'Surigao del Norte', spot: { x: 80, y: 72 }, difficulty: 'Hard', after: 'butuan', need: { class: 'utility' }, missions: ['Luneta', 'Provincial Capitol', 'Day-as'] },
+  { id: 'cotabato', name: 'Cotabato', province: 'Maguindanao', spot: { x: 60, y: 84 }, difficulty: 'Expert', after: 'gensan', need: { vehicle: 'offroad' }, missions: ['PC Hill', 'Rio Grande', 'City Hall'] }
 ];
 
 function mainStages() {
