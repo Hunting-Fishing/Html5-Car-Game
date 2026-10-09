@@ -1527,10 +1527,34 @@ function mapZoomHtml(inner) {
   return `<div class="mapZoom" data-map-zoom><div class="mapZoomTools"><button type="button" onclick="window.rrMapZoom?.(1)" aria-label="Zoom in">+</button><button type="button" onclick="window.rrMapZoom?.(-1)" aria-label="Zoom out">−</button><button type="button" onclick="window.rrMapZoom?.(0)" aria-label="Reset zoom">1:1</button></div><div class="mapZoomStage">${inner}</div></div>`;
 }
 
+const REGION_LOOK = {
+  ilocos: { color: '#d97706', x: 40, y: 28 },
+  car: { color: '#16a34a', x: 45, y: 27 },
+  cagayan: { color: '#2563eb', x: 52, y: 26 },
+  central: { color: '#dc2626', x: 43, y: 39 },
+  calabarzon: { color: '#ca8a04', x: 44, y: 48 },
+  mimaropa: { color: '#ea580c', x: 20, y: 68 },
+  bicol: { color: '#65a30d', x: 60, y: 51 },
+  westvis: { color: '#7c3aed', x: 48, y: 64 },
+  negros: { color: '#f97316', x: 54, y: 70 },
+  centralvis: { color: '#e11d48', x: 60, y: 68 },
+  eastvis: { color: '#ca8a04', x: 71, y: 63 },
+  zambo: { color: '#059669', x: 48, y: 82 },
+  northmin: { color: '#d97706', x: 63, y: 77 },
+  caraga: { color: '#0284c7', x: 77, y: 75 },
+  davao: { color: '#b91c1c', x: 78, y: 85 },
+  soccsksargen: { color: '#a16207', x: 66, y: 88 },
+  barmm: { color: '#db2777', x: 39, y: 93 },
+  ncr: { color: '#facc15', x: 40, y: 44 }
+};
+
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
   const chips = PH_REGIONS.map((item) => `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" onclick="window.rrSelectRegion?.('${item.id}')">${item.name}</button>`).join('');
-  const areas = PH_REGIONS.map((item) => `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" onclick="window.rrSelectRegion?.('${item.id}')"><title>${item.name}</title></path>`).join('');
+  const areas = PH_REGIONS.map((item) => {
+    const look = REGION_LOOK[item.id] || { color: '#38bdf8', x: 50, y: 50 };
+    return `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" fill="${look.color}" onclick="window.rrSelectRegion?.('${item.id}')"><title>${item.name}</title></path><text class="phRegionLabel" x="${look.x}" y="${look.y}">${item.name}</text>`;
+  }).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
     return `<button type="button" class="phDot ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"></button>`;
@@ -1540,7 +1564,7 @@ function renderPhilippinesMap() {
     const state = cityState(city);
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b>${difficultyMark(city.difficulty)}<small>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</small></button>`;
   }).join('')}</div></div>` : '';
-  const caption = region ? `${region.name} is selected. The cards are the cities in that area.` : 'Tap a colored area on the map. Its city cards open underneath.';
+  const caption = region ? `${region.name} is selected. Tap a city card.` : 'Tap a colored area. Then tap a city card.';
   return `<div class="regionChips">${chips}</div><p class="phMapCaption">${caption} ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${areas}</svg>${dots}</div>${cards}`)}`;
 }
 
@@ -1670,7 +1694,7 @@ function bindMapZoom(root) {
     paint();
   }, { passive: false });
   view.addEventListener('pointerdown', (event) => {
-    if (event.target.closest('.mapZoomTools')) return;
+    if (event.target.closest('.mapZoomTools, .areaCards, .phRegion, button')) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     lastX = event.clientX;
     lastY = event.clientY;

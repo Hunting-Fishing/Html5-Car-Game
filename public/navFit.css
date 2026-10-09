@@ -174,13 +174,14 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .regionChips button { flex: 0 0 auto; border: 0; border-radius: 999px; padding: 6px 10px; background: #1c4668; color: #fff; font-size: 11px; font-weight: 800; }
 #screen-race .regionChips button.on { background: #f6c445; color: #2a1d0b; }
 #screen-race .phRegions { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
-#screen-race .phRegion { pointer-events: auto; fill: transparent; stroke: transparent; }
-#screen-race .phRegion.on { fill: #f6c445; fill-opacity: 0.38; stroke: #fff4b5; stroke-width: 0.8; filter: drop-shadow(0 0 2px #ffe27a); }
+#screen-race .phRegion { pointer-events: auto; fill-opacity: 0.34; stroke: #10283c; stroke-width: 0.55; }
+#screen-race .phRegion.on { fill-opacity: 0.62; stroke: #fff; stroke-width: 1.2; filter: drop-shadow(0 0 2px #fff); }
+#screen-race .phRegionLabel { font-size: 2.2px; font-weight: 800; fill: #10283c; stroke: #fff; stroke-width: 0.28; pointer-events: none; }
 #screen-race .mapZoomTools { top: 8px; right: 8px; bottom: auto; }
-#screen-race .areaCards { position: absolute; left: 8px; right: 54px; bottom: 8px; z-index: 5; max-height: 42%; overflow: auto; padding: 8px; border-radius: 14px; background: rgba(8, 24, 38, .94); }
+#screen-race .areaCards { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 7; max-height: 46%; overflow: auto; padding: 8px; border-radius: 14px; background: rgba(8, 24, 38, .94); pointer-events: auto; }
 #screen-race .areaCards h3 { margin: 0 0 6px; color: #fff; font-size: 14px; }
 #screen-race .areaCardGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-#screen-race .areaCard { display: grid; gap: 2px; min-height: 58px; border: 0; border-radius: 12px; padding: 7px 8px; background: #1c4668; color: #fff; text-align: left; }
+#screen-race .areaCard { display: grid; gap: 2px; min-height: 64px; border: 0; border-radius: 12px; padding: 8px; background: #1c4668; color: #fff; text-align: left; cursor: pointer; touch-action: manipulation; }
 #screen-race .areaCard b { font-size: 12px; }
 #screen-race .areaCard small { color: #d7eef8; font-size: 10px; }
 #screen-race .areaCard.locked { background: #243140; color: #9eb0bd; }
@@ -202,7 +203,7 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .mapZoom { position: relative; height: min(70vh, 640px); overflow: hidden; border-radius: 16px; touch-action: none; background: #d7eef8; }
 #screen-race .mapZoomStage { transform-origin: 0 0; width: 100%; }
 #screen-race .mapZoom .highwayMap { min-height: 640px; }
-#screen-race .mapZoomTools { position: absolute; right: 8px; bottom: 8px; z-index: 6; display: grid; gap: 6px; }
+#screen-race .mapZoomTools { position: absolute; top: 8px; right: 8px; bottom: auto; z-index: 6; display: grid; gap: 6px; }
 #screen-race .mapZoomTools button { width: 40px; height: 36px; border: 0; border-radius: 10px; background: #10283c; color: #fff; font-weight: 800; }
 #screen-race .phCity b, #screen-race .phCity small { display: block; line-height: 1.1; }
 #screen-race .diffStars { display: block; color: #5d7384; font-size: 11px; letter-spacing: 1px; }
