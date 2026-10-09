@@ -1244,7 +1244,8 @@ function renderRoutesPanel() {
     }).join('');
     return `<section class="hillWorld" style="background-image:url('${world.art}')"><h4>World ${worldIndex + 1} · ${world.name}</h4><div class="hillBoard"><svg class="hillRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${nodes}</div></section>`;
   }).join('');
-  panel.innerHTML = `<h3 class="racerPageTitle">Stage Map</h3><p class="stageMapNote">Climb the road. Beat a stage to open the next hill.</p>${worlds}`;
+  panel.innerHTML = `<h3 class="racerPageTitle">Stage Map</h3><p class="stageMapNote">Drag the hills. Stage 1 is at the bottom of each climb.</p><div class="hillScroll">${worlds}</div>`;
+  requestAnimationFrame(() => panel.querySelector('.hillNode.current')?.scrollIntoView({ block: 'center' }));
 }
 
 function routeCard(key, route) {

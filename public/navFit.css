@@ -131,7 +131,17 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-hub .homeTile small { color: #d5e6f0; font-size: 11px; }
 #screen-hub .homeLink { display: block; text-align: center; color: #d6b87a; font-size: 13px; text-decoration: none; padding: 6px; }
 #screen-hub .adcapIcon img { width: 28px; height: 28px; object-fit: contain; }
-#screen-race [data-rr-page="routes"] { overflow: auto; }
+#screen-race .racerPages { min-height: 0 !important; overflow: hidden !important; }
+#screen-race [data-rr-page="routes"].active {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+#screen-race .hillWorld { margin: 0; border-radius: 0; }
 #screen-race .stageMapNote { margin: 0 0 8px; color: #b7c9d6; font-size: 12px; }
 #screen-race .stageWorld { margin: 0 0 14px; }
 #screen-race .stageWorld h4 { margin: 0 0 8px; color: #f6c445; font-size: 13px; }
