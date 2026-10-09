@@ -192,7 +192,7 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .cityReq small { font-size: 12px; }
 #screen-race .cityReq small.ready { color: #86efac; }
 #screen-race .cityReq small.missing { color: #fca5a5; }
-#screen-race .phCity b { font-size: 11px; }
+#screen-race .phCity b { font-size: 9px; }
 #screen-race .phCity small { font-size: 8px; color: #ffe27a; }
 #screen-race .phCity.locked { background: #243140; color: #9eb0bd; }
 #screen-race .phCity.current { background: #f6c445; color: #2a1d0b; }

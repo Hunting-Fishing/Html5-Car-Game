@@ -105,7 +105,67 @@ const PH_CITIES = [
   { id: 'dipolog', name: 'Dipolog', province: 'Zamboanga del Norte', spot: { x: 52, y: 75 }, difficulty: 'Hard', after: 'zamboanga', need: { class: 'offroad' }, missions: ['Boulevard', 'Cathedral', 'Linabo'] },
   { id: 'butuan', name: 'Butuan', province: 'Agusan del Norte', spot: { x: 74, y: 78 }, difficulty: 'Expert', after: 'cdo', need: { class: 'endurance' }, missions: ['Balangay Shrine', 'Bood Promontory', 'Agusan River'] },
   { id: 'surigao', name: 'Surigao', province: 'Surigao del Norte', spot: { x: 80, y: 72 }, difficulty: 'Hard', after: 'butuan', need: { class: 'utility' }, missions: ['Luneta', 'Provincial Capitol', 'Day-as'] },
-  { id: 'cotabato', name: 'Cotabato', province: 'Maguindanao', spot: { x: 60, y: 84 }, difficulty: 'Expert', after: 'gensan', need: { vehicle: 'offroad' }, missions: ['PC Hill', 'Rio Grande', 'City Hall'] }
+  { id: 'cotabato', name: 'Cotabato', province: 'Maguindanao', spot: { x: 60, y: 84 }, difficulty: 'Expert', after: 'gensan', need: { vehicle: 'offroad' }, missions: ['PC Hill', 'Rio Grande', 'City Hall'] },
+  { id: 'basco', name: 'Basco', province: 'Batanes', spot: { x: 52, y: 8 }, difficulty: 'Expert', after: 'laoag', need: { class: 'endurance' }, missions: ['Marlboro Hills', 'Valugan Boulder', 'Basco Lighthouse'] },
+  { id: 'sanfernando', name: 'San Fernando', province: 'La Union', spot: { x: 40, y: 30 }, difficulty: 'Easy', after: 'vigan', need: { class: 'starter' }, missions: ['Ma-Cho Temple', 'Poro Point', 'Botanical Garden'] },
+  { id: 'dagupan', name: 'Dagupan', province: 'Pangasinan', spot: { x: 39, y: 35 }, difficulty: 'Easy', after: 'sanfernando', need: { class: 'starter' }, missions: ['Tondaligan', 'Bonuan', 'Pantal River'] },
+  { id: 'bangued', name: 'Bangued', province: 'Abra', spot: { x: 42, y: 26 }, difficulty: 'Medium', after: 'vigan', need: { class: 'offroad' }, missions: ['Abra Capitol', 'Victoria Park', 'Calaba Bridge'] },
+  { id: 'bontoc', name: 'Bontoc', province: 'Mountain Province', spot: { x: 45, y: 28 }, difficulty: 'Hard', after: 'baguio', need: { class: 'offroad' }, missions: ['Bontoc Museum', 'Maligcong', 'Samoki'] },
+  { id: 'lagawe', name: 'Lagawe', province: 'Ifugao', spot: { x: 47, y: 30 }, difficulty: 'Hard', after: 'bontoc', need: { class: 'offroad' }, missions: ['Ifugao Capitol', 'Kiangan', 'Banaue Road'] },
+  { id: 'tabuk', name: 'Tabuk', province: 'Kalinga', spot: { x: 48, y: 24 }, difficulty: 'Medium', after: 'tuguegarao', need: { class: 'utility' }, missions: ['Kalinga Capitol', 'Chico River', 'Bulanao'] },
+  { id: 'bayombong', name: 'Bayombong', province: 'Nueva Vizcaya', spot: { x: 49, y: 32 }, difficulty: 'Medium', after: 'lagawe', need: { class: 'utility' }, missions: ['Capitol Park', 'St. Dominic', 'People\'s Museum'] },
+  { id: 'ilagan', name: 'Ilagan', province: 'Isabela', spot: { x: 51, y: 28 }, difficulty: 'Medium', after: 'tuguegarao', need: { class: 'starter' }, missions: ['Isabela Capitol', 'Fuyot Spring', 'Mammangi'] },
+  { id: 'cabarroguis', name: 'Cabarroguis', province: 'Quirino', spot: { x: 53, y: 31 }, difficulty: 'Medium', after: 'ilagan', need: { class: 'offroad' }, missions: ['Quirino Capitol', 'Siitan', 'Aglipay Caves'] },
+  { id: 'tarlac', name: 'Tarlac', province: 'Tarlac', spot: { x: 44, y: 38 }, difficulty: 'Easy', after: 'angeles', need: { class: 'starter' }, missions: ['Tarlac Capitol', 'Monasterio', 'Ninoy Aquino'] },
+  { id: 'malolos', name: 'Malolos', province: 'Bulacan', spot: { x: 42, y: 42 }, difficulty: 'Easy', after: 'manila', need: { class: 'starter' }, missions: ['Barasoain', 'Capitol', 'Kamestisuhan'] },
+  { id: 'balanga', name: 'Balanga', province: 'Bataan', spot: { x: 36, y: 45 }, difficulty: 'Easy', after: 'manila', need: { class: 'starter' }, missions: ['Plaza Mayor', 'Wetland Park', 'Mount Samat'] },
+  { id: 'olongapo', name: 'Olongapo', province: 'Zambales', spot: { x: 36, y: 40 }, difficulty: 'Medium', after: 'angeles', need: { class: 'utility' }, missions: ['Subic', 'Boardwalk', 'Zoobic'] },
+  { id: 'iba', name: 'Iba', province: 'Zambales', spot: { x: 37, y: 36 }, difficulty: 'Medium', after: 'olongapo', need: { class: 'utility' }, missions: ['Zambales Capitol', 'Iba Beach', 'Botolan'] },
+  { id: 'baler', name: 'Baler', province: 'Aurora', spot: { x: 55, y: 36 }, difficulty: 'Medium', after: 'cabanatuan', need: { class: 'offroad' }, missions: ['Sabang Beach', 'Baler Church', 'Dicasalarin'] },
+  { id: 'antipolo', name: 'Antipolo', province: 'Rizal', spot: { x: 45, y: 44 }, difficulty: 'Easy', after: 'manila', need: { class: 'starter' }, missions: ['Cathedral', 'Hinulugang Taktak', 'Pinto Art'] },
+  { id: 'tagaytay', name: 'Tagaytay', province: 'Cavite', spot: { x: 39, y: 47 }, difficulty: 'Easy', after: 'batangas', need: { class: 'starter' }, missions: ['Picnic Grove', 'Taal View', 'People\'s Park'] },
+  { id: 'imus', name: 'Imus', province: 'Cavite', spot: { x: 38, y: 46 }, difficulty: 'Easy', after: 'manila', need: { class: 'starter' }, missions: ['Cuartel', 'Imus Plaza', 'Cathedral'] },
+  { id: 'bacoor', name: 'Bacoor', province: 'Cavite', spot: { x: 37, y: 48 }, difficulty: 'Easy', after: 'imus', need: { class: 'starter' }, missions: ['St. Michael', 'Molino', 'Striker\'s'] },
+  { id: 'santarosa', name: 'Santa Rosa', province: 'Laguna', spot: { x: 44, y: 47 }, difficulty: 'Easy', after: 'manila', need: { class: 'starter' }, missions: ['Enchanted Kingdom', 'Nuvali', 'Plaza'] },
+  { id: 'calamba', name: 'Calamba', province: 'Laguna', spot: { x: 43, y: 49 }, difficulty: 'Easy', after: 'santarosa', need: { class: 'starter' }, missions: ['Rizal Shrine', 'Pansol', 'Calamba River'] },
+  { id: 'boac', name: 'Boac', province: 'Marinduque', spot: { x: 46, y: 54 }, difficulty: 'Medium', after: 'lucena', need: { class: 'utility' }, missions: ['Boac Cathedral', 'Plaza', 'Battle of Paye'] },
+  { id: 'romblon', name: 'Romblon', province: 'Romblon', spot: { x: 48, y: 58 }, difficulty: 'Hard', after: 'boac', need: { class: 'endurance' }, missions: ['Fort San Andres', 'Marble Port', 'Bonbon Beach'] },
+  { id: 'mamburao', name: 'Mamburao', province: 'Occidental Mindoro', spot: { x: 30, y: 50 }, difficulty: 'Medium', after: 'calapan', need: { class: 'offroad' }, missions: ['Mindoro Capitol', 'Mamburao Beach', 'Mount Calavite'] },
+  { id: 'daet', name: 'Daet', province: 'Camarines Norte', spot: { x: 54, y: 47 }, difficulty: 'Medium', after: 'naga', need: { class: 'starter' }, missions: ['Bagasbas', 'Rizal Monument', 'Capitol'] },
+  { id: 'virac', name: 'Virac', province: 'Catanduanes', spot: { x: 68, y: 50 }, difficulty: 'Hard', after: 'naga', need: { class: 'endurance' }, missions: ['Twin Rock', 'Capitol', 'Binurong Point'] },
+  { id: 'sorsogon', name: 'Sorsogon', province: 'Sorsogon', spot: { x: 62, y: 55 }, difficulty: 'Medium', after: 'legazpi', need: { class: 'starter' }, missions: ['Sorsogon Capitol', 'Rompeolas', 'Bacon Beach'] },
+  { id: 'roxas', name: 'Roxas', province: 'Capiz', spot: { x: 51, y: 62 }, difficulty: 'Medium', after: 'kalibo', need: { class: 'starter' }, missions: ['Roxas Cathedral', 'Baybay', 'Casanayan'] },
+  { id: 'sanjose', name: 'San Jose', province: 'Antique', spot: { x: 45, y: 65 }, difficulty: 'Medium', after: 'iloilo', need: { class: 'utility' }, missions: ['Antique Capitol', 'Esplanade', 'Bugtong Bato'] },
+  { id: 'jordan', name: 'Jordan', province: 'Guimaras', spot: { x: 51, y: 66 }, difficulty: 'Easy', after: 'iloilo', need: { class: 'starter' }, missions: ['Navalas', 'Guimaras Capitol', 'Ave Maria'] },
+  { id: 'siquijor', name: 'Siquijor', province: 'Siquijor', spot: { x: 60, y: 74 }, difficulty: 'Hard', after: 'dumaguete', need: { class: 'endurance' }, missions: ['St. Francis', 'Salagdoong', 'Cambugahay'] },
+  { id: 'lapulapu', name: 'Lapu-Lapu', province: 'Cebu', spot: { x: 60, y: 66 }, difficulty: 'Hard', after: 'cebu', need: { class: 'race' }, missions: ['Mactan Shrine', 'Mactan Beach', 'Airport'] },
+  { id: 'mandaue', name: 'Mandaue', province: 'Cebu', spot: { x: 59, y: 65 }, difficulty: 'Hard', after: 'cebu', need: { class: 'race' }, missions: ['Mantawi', 'Mandaue Cathedral', 'Ouano'] },
+  { id: 'ormoc', name: 'Ormoc', province: 'Leyte', spot: { x: 66, y: 66 }, difficulty: 'Hard', after: 'tacloban', need: { class: 'utility' }, missions: ['Lake Danao', 'Ormoc Port', 'Plaza'] },
+  { id: 'maasin', name: 'Maasin', province: 'Southern Leyte', spot: { x: 66, y: 70 }, difficulty: 'Medium', after: 'ormoc', need: { class: 'starter' }, missions: ['Maasin Cathedral', 'Camp Danao', 'Capitol'] },
+  { id: 'naval', name: 'Naval', province: 'Biliran', spot: { x: 68, y: 61 }, difficulty: 'Medium', after: 'tacloban', need: { class: 'starter' }, missions: ['Biliran Capitol', 'Naval Bay', 'Sambawan Road'] },
+  { id: 'borongan', name: 'Borongan', province: 'Eastern Samar', spot: { x: 76, y: 62 }, difficulty: 'Hard', after: 'catbalogan', need: { class: 'offroad' }, missions: ['Eastern Samar Capitol', 'Surf Beach', 'Baybay'] },
+  { id: 'catarman', name: 'Catarman', province: 'Northern Samar', spot: { x: 74, y: 56 }, difficulty: 'Hard', after: 'catbalogan', need: { class: 'utility' }, missions: ['Northern Samar Capitol', 'UEP', 'Catarman Bay'] },
+  { id: 'iligan', name: 'Iligan', province: 'Lanao del Norte', spot: { x: 60, y: 76 }, difficulty: 'Hard', after: 'cdo', need: { class: 'utility' }, missions: ['Maria Cristina', 'Tinago Falls', 'Timoga'] },
+  { id: 'ozamiz', name: 'Ozamiz', province: 'Misamis Occidental', spot: { x: 57, y: 78 }, difficulty: 'Medium', after: 'iligan', need: { class: 'starter' }, missions: ['Cotta Fort', 'Bukagan Hill', 'Ozamiz Port'] },
+  { id: 'oroquieta', name: 'Oroquieta', province: 'Misamis Occidental', spot: { x: 56, y: 74 }, difficulty: 'Medium', after: 'ozamiz', need: { class: 'starter' }, missions: ['Capitol', 'Paypayan', 'Cathedral'] },
+  { id: 'malaybalay', name: 'Malaybalay', province: 'Bukidnon', spot: { x: 68, y: 80 }, difficulty: 'Hard', after: 'cdo', need: { class: 'offroad' }, missions: ['Bukidnon Capitol', 'Kaamulan', 'Nasuli'] },
+  { id: 'mambajao', name: 'Mambajao', province: 'Camiguin', spot: { x: 66, y: 73 }, difficulty: 'Hard', after: 'cdo', need: { class: 'endurance' }, missions: ['White Island', 'Sunken Cemetery', 'Capitol'] },
+  { id: 'marawi', name: 'Marawi', province: 'Lanao del Sur', spot: { x: 62, y: 80 }, difficulty: 'Expert', after: 'iligan', need: { class: 'offroad' }, missions: ['Lake Lanao', 'Mindanao State', 'Padian'] },
+  { id: 'pagadian', name: 'Pagadian', province: 'Zamboanga del Sur', spot: { x: 54, y: 82 }, difficulty: 'Hard', after: 'zamboanga', need: { class: 'utility' }, missions: ['Rotunda', 'Capitol', 'Dao'] },
+  { id: 'ipil', name: 'Ipil', province: 'Zamboanga Sibugay', spot: { x: 50, y: 79 }, difficulty: 'Medium', after: 'zamboanga', need: { class: 'starter' }, missions: ['Sibugay Capitol', 'Public Market', 'Sunrise Boulevard'] },
+  { id: 'tagum', name: 'Tagum', province: 'Davao del Norte', spot: { x: 74, y: 80 }, difficulty: 'Medium', after: 'davao', need: { class: 'starter' }, missions: ['Energy Park', 'Capitol', 'Christ the King'] },
+  { id: 'mati', name: 'Mati', province: 'Davao Oriental', spot: { x: 82, y: 84 }, difficulty: 'Hard', after: 'davao', need: { class: 'endurance' }, missions: ['Dahican', 'Sleeping Dinosaur', 'Capitol'] },
+  { id: 'digos', name: 'Digos', province: 'Davao del Sur', spot: { x: 74, y: 87 }, difficulty: 'Easy', after: 'davao', need: { class: 'starter' }, missions: ['Davao del Sur Capitol', 'Kapatagan', 'Rizal Avenue'] },
+  { id: 'kidapawan', name: 'Kidapawan', province: 'Cotabato', spot: { x: 68, y: 82 }, difficulty: 'Hard', after: 'cotabato', need: { class: 'offroad' }, missions: ['City Hall', 'Lake Agco', 'Foot of Apo'] },
+  { id: 'koronadal', name: 'Koronadal', province: 'South Cotabato', spot: { x: 66, y: 88 }, difficulty: 'Medium', after: 'gensan', need: { class: 'starter' }, missions: ['South Cotabato Capitol', 'Oval', 'Saravia'] },
+  { id: 'isulan', name: 'Isulan', province: 'Sultan Kudarat', spot: { x: 64, y: 86 }, difficulty: 'Hard', after: 'cotabato', need: { class: 'utility' }, missions: ['Sultan Kudarat Capitol', 'Baras Bird', 'Plaza'] },
+  { id: 'alabel', name: 'Alabel', province: 'Sarangani', spot: { x: 70, y: 92 }, difficulty: 'Easy', after: 'gensan', need: { class: 'starter' }, missions: ['Sarangani Capitol', 'Lun Padidu', 'Beach'] },
+  { id: 'tandag', name: 'Tandag', province: 'Surigao del Sur', spot: { x: 78, y: 82 }, difficulty: 'Hard', after: 'surigao', need: { class: 'utility' }, missions: ['Capitol', 'Mabahin', 'Britania Road'] },
+  { id: 'prosperidad', name: 'Prosperidad', province: 'Agusan del Sur', spot: { x: 72, y: 82 }, difficulty: 'Hard', after: 'butuan', need: { class: 'offroad' }, missions: ['Agusan Capitol', 'Binatangan', 'Marsh Road'] },
+  { id: 'dinagat', name: 'San Jose', province: 'Dinagat Islands', spot: { x: 82, y: 70 }, difficulty: 'Expert', after: 'surigao', need: { class: 'endurance' }, missions: ['Dinagat Capitol', 'Lake Bababu', 'PBMA'] },
+  { id: 'isabela', name: 'Isabela', province: 'Basilan', spot: { x: 46, y: 88 }, difficulty: 'Expert', after: 'zamboanga', need: { class: 'utility' }, missions: ['Isabela Port', 'Menzi', 'Cathedral'] },
+  { id: 'jolo', name: 'Jolo', province: 'Sulu', spot: { x: 40, y: 92 }, difficulty: 'Expert', after: 'zamboanga', need: { class: 'endurance' }, missions: ['Jolo Plaza', 'Sulu Capitol', 'Tulay'] },
+  { id: 'bongao', name: 'Bongao', province: 'Tawi-Tawi', spot: { x: 32, y: 96 }, difficulty: 'Expert', after: 'jolo', need: { vehicle: 'exportVan' }, missions: ['Bud Bongao', 'Bongao Port', 'Capitol'] }
 ];
 
 function mainStages() {
@@ -1452,7 +1512,7 @@ function renderPhilippinesMap() {
     const detail = city.id === 'manila' ? 'Starter Hatchback' : needLabel(city);
     return `<button type="button" class="phCity ${state} ${level}" style="left:${city.spot.x}%;top:${city.spot.y}%" title="${state === 'locked' ? cityLockReason(city) : carsForNeed(city).join(', ')}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b>${difficultyMark(city.difficulty)}<small class="carNeed">${detail}</small></button>`;
   }).join('');
-  return `<p class="phMapCaption">Start in Manila, then branch out. Pinch or use + to look around. ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines">${pins}</div>`)}`;
+  return `<p class="phMapCaption">All regional cities are on the map. Start in Manila. Zoom in where the pins overlap. ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines">${pins}</div>`)}`;
 }
 
 function renderCityMissions(cityId) {
