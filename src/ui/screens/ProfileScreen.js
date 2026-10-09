@@ -56,7 +56,9 @@ export function renderProfileScreen(state) {
         ${DAILY_ORDERS.map((order) => {
           const done = order.check(state);
           const claimed = Boolean(state.daily?.claimed?.[order.key]);
-          return `<div class="rewardTicker"><b>${escapeHtml(order.title)}</b><span>${claimed ? 'Paid' : done ? 'Ready' : 'Open'}</span>${done && !claimed ? `<button class="btn small gold" data-action="claimDaily" data-key="${order.key}">Claim</button>` : ''}</div>`;
+          const status = claimed ? 'Paid' : done ? 'Ready' : 'Open';
+          const claim = done && !claimed ? `<button class="btn small gold" data-action="claimDaily" data-key="${order.key}">Claim</button>` : '';
+          return `<div class="rewardTicker menuRouteRow"><button type="button" data-action="screen" data-screen="${order.screen}" ${order.raceTab ? `data-rr-tab="${order.raceTab}"` : ''}><b>${escapeHtml(order.title)}</b><span>${status}</span><small>Go</small></button>${claim}</div>`;
         }).join('')}
       </section>
 
@@ -90,10 +92,10 @@ export function renderProfileScreen(state) {
       </section>
 
       <section id="profile-settings" class="menuSettingsStrip assetPanel settingsPanel">
-        <div><b>Local Save</b><span>Browser profile</span></div>
-        <div><b>Fullscreen</b><span>Use FS in HUD</span></div>
-        <div><b>Creator</b><span>Rules grouped here</span></div>
-        <div class="danger"><b>Reset</b><span>Test profiles only</span></div>
+        <button type="button" data-action="screen" data-screen="profile"><b>Local Save</b><span>Stay on this profile</span></button>
+        <button type="button" data-action="screenToggle"><b>Fullscreen</b><span>Open the full screen</span></button>
+        <button type="button" data-action="screen" data-screen="creator"><b>Creator</b><span>Open the rules</span></button>
+        <button type="button" class="danger" data-action="reset"><b>Reset</b><span>Clear this test profile</span></button>
       </section>
 
       <section class="menuObjectiveCompact assetPanel">
@@ -104,10 +106,11 @@ export function renderProfileScreen(state) {
           </div>
           <span class="pill">${doneCount}/${objectives.length}</span>
         </div>
-        <div class="menuObjectiveRow">
+        <button class="menuObjectiveRow" type="button" data-action="screen" data-screen="${nextObjective?.screen || 'hub'}" ${nextObjective?.raceTab ? `data-rr-tab="${nextObjective.raceTab}"` : ''}>
           <span class="checkIcon">${renderObjectiveStatusIcon(!nextObjective)}</span>
           <span>${nextObjective ? escapeHtml(nextObjective.body) : 'Keep racing, merging, and building.'}</span>
-        </div>
+          <small>Go</small>
+        </button>
         <div class="menuObjectiveDots" aria-label="Objective progress">${objectives.map((objective) => `<span class="${objective.done ? 'done' : ''}"></span>`).join('')}</div>
       </section>
     `

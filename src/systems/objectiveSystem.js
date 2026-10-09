@@ -7,54 +7,67 @@ export function getObjectiveList(state) {
       key: 'firstTap',
       title: 'Tap Race',
       body: 'Tap the Race boost/GAS control to start moving.',
+      screen: 'race',
+      raceTab: 'drive',
       done: state.objectives.firstTap
     },
     {
       key: 'firstMerge',
       title: 'Merge Parts',
       body: 'Use the Merge Bay to combine two matching starter items.',
+      screen: 'merge',
       done: state.objectives.firstMerge
     },
     {
       key: 'buildStorage',
       title: 'Build Parts Storage',
       body: 'Use parts and coins to increase your board permit.',
+      screen: 'garage',
       done: state.objectives.buildStorage
     },
     {
       key: 'idleLineUpgrade',
       title: 'Upgrade Street Route',
       body: 'Open Business Lines and upgrade the starter Street Route.',
+      screen: 'lines',
       done: state.objectives.idleLineUpgrade
     },
     {
       key: 'previewGhostRace',
       title: 'Choose Rivals',
       body: 'Open the Race Leaderboard, search users, and choose up to 3 friends or best players.',
+      screen: 'race',
+      raceTab: 'leaderboard',
       done: state.objectives.previewGhostRace
     },
     {
       key: 'unlockPerformance',
       title: 'Unlock Performance Parts',
       body: 'Build the Tuning Corner. Do not drop performance items early.',
+      screen: 'garage',
       done: state.objectives.unlockPerformance
     },
     {
       key: 'unlockTrack',
       title: 'Open the 2D Test Track',
       body: 'Build the Test Track to unlock racing gear.',
+      screen: 'garage',
       done: state.objectives.unlockTrack
     },
     {
       key: 'fixProblem',
       title: 'Fix one route problem',
       body: 'Resolve fuel, breakdown, police heat, or traffic once.',
+      screen: 'race',
+      raceTab: 'drive',
       done: state.objectives.fixProblem
     },
     {
       key: 'stageFive',
       title: 'Reach Stage 5',
       body: 'Keep upgrading and completing route stages.',
+      screen: 'race',
+      raceTab: 'routes',
       done: state.objectives.stageFive
     }
   ];

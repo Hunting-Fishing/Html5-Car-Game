@@ -310,7 +310,14 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
   font-size: 13px !important;
   padding: 8px !important;
 }
+#screen-profile .menuRouteRow { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+#screen-profile .menuRouteRow > button { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; width: 100%; min-height: 36px; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; }
+#screen-profile .menuRouteRow small,
+#screen-profile .menuObjectiveRow small { color: #f6c445; font-size: 11px; font-weight: 800; }
+#screen-profile .menuObjectiveRow { width: 100%; text-align: left; grid-template-columns: auto minmax(0, 1fr) auto; }
 #screen-profile .menuSettingsStrip { grid-template-columns: 1fr 1fr !important; }
+#screen-profile .menuSettingsStrip button { min-width: 0; padding: 10px 8px; border-radius: 13px; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.18); color: inherit; text-align: center; }
+#screen-profile .menuSettingsStrip button.danger { border-color: rgba(255,93,115,.32); background: rgba(255,93,115,.08); }
 #screen-profile .menuSettingsStrip b { font-size: 13px !important; white-space: normal !important; }
 #screen-profile .menuSettingsStrip span { font-size: 11px !important; white-space: normal !important; }
 #screen-profile.active { overflow-y: auto !important; padding-bottom: 28px !important; }

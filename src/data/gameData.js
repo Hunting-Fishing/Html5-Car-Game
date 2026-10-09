@@ -212,10 +212,10 @@ export const PROBLEMS = {
 };
 
 export const DAILY_ORDERS = [
-  { key: 'tap3', title: 'Boost a route 3 times', check: (s) => (s.daily.taps || 0) >= 3, reward: { coins: 40 } },
-  { key: 'merge2', title: 'Merge 2 items', check: (s) => (s.daily.merges || 0) >= 2, reward: { parts: 6, coins: 25 } },
-  { key: 'hill1', title: 'Finish one Hill Run', check: (s) => (s.daily.hills || 0) >= 1, reward: { fuelCans: 1, coins: 35 } },
-  { key: 'collectLot', title: 'Collect from the lot', check: (s) => (s.daily.lotCollects || 0) >= 1, reward: { coins: 30 } }
+  { key: 'tap3', title: 'Boost a route 3 times', screen: 'race', raceTab: 'drive', check: (s) => (s.daily.taps || 0) >= 3, reward: { coins: 40 } },
+  { key: 'merge2', title: 'Merge 2 items', screen: 'merge', check: (s) => (s.daily.merges || 0) >= 2, reward: { parts: 6, coins: 25 } },
+  { key: 'hill1', title: 'Finish one Hill Run', screen: 'race', raceTab: 'drive', check: (s) => (s.daily.hills || 0) >= 1, reward: { fuelCans: 1, coins: 35 } },
+  { key: 'collectLot', title: 'Collect from the lot', screen: 'lines', check: (s) => (s.daily.lotCollects || 0) >= 1, reward: { coins: 30 } }
 ];
 
 export const CREATOR_RULES = [

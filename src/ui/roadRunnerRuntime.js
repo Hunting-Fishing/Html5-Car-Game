@@ -2598,7 +2598,14 @@ function inject() {
     stopTireScreech();
     return;
   }
-  requestAnimationFrame(() => mountRoadRunner(false));
+  requestAnimationFrame(() => {
+    mountRoadRunner(false);
+    if (window.__openRaceTab) {
+      const tab = window.__openRaceTab;
+      window.__openRaceTab = '';
+      window.rrSetTab?.(tab);
+    }
+  });
 }
 
 window.addEventListener('resize', () => { resizeCanvas(); draw(); });

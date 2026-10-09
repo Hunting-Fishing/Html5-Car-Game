@@ -203,6 +203,7 @@ function handleClick(event) {
   }
 
   if (action === 'screen') {
+    if (target.dataset.rrTab) window.__openRaceTab = target.dataset.rrTab;
     state.activeScreen = target.dataset.screen;
     render();
     queueSave();
