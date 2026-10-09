@@ -1292,13 +1292,13 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
     game.tools > 0 ? rewardTile({ type: 'tools', amount: game.tools, label: 'Tools' }) : '',
     missionHtml
   ].join('');
-  panel.innerHTML = `<div style="display:grid;gap:8px;color:#fff">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">${starHtml}</div>
-    <div style="text-align:center;font-size:16px;font-weight:800">${title} · ${stars}/3</div>
+  panel.innerHTML = `<div style="display:grid;gap:6px;color:#fff">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">${starHtml}</div>
+    <div style="text-align:center;font-size:15px;font-weight:800;line-height:1.2">${title} · ${stars}/3</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-      <div style="background:#1c4668;border-radius:10px;padding:8px;text-align:center"><b style="font-size:16px">+${formatSmall(game.coins)}</b><div style="font-size:10px">Coins</div></div>
-      <div style="background:#1c4668;border-radius:10px;padding:8px;text-align:center"><b style="font-size:16px">+${formatSmall(bonus)}</b><div style="font-size:10px">Bonus</div></div>
-      <div style="background:#3a2a68;border-radius:10px;padding:8px;text-align:center"><b style="font-size:16px">+${formatSmall(game.parts)}</b><div style="font-size:10px">Parts</div></div>
+      <div style="background:#1c4668;border-radius:10px;padding:6px;text-align:center"><b style="font-size:15px">+${formatSmall(game.coins)}</b><div style="font-size:10px">Coins</div></div>
+      <div style="background:#1c4668;border-radius:10px;padding:6px;text-align:center"><b style="font-size:15px">+${formatSmall(bonus)}</b><div style="font-size:10px">Bonus</div></div>
+      <div style="background:#3a2a68;border-radius:10px;padding:6px;text-align:center"><b style="font-size:15px">+${formatSmall(game.parts)}</b><div style="font-size:10px">Parts</div></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;font-size:10px;text-align:center">
       <div><b>${Math.floor(game.distanceM)}m</b><div>Distance</div></div>
