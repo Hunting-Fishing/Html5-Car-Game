@@ -140,7 +140,11 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 }
 #screen-race .hillMap { position: absolute; inset: 0; overflow: hidden; touch-action: none; cursor: grab; }
 #screen-race .hillTrack { position: absolute; left: 0; right: 0; top: 0; }
-#screen-race .hillWorld { margin: 0; border-radius: 0; }
+#screen-race .highwayMap { position: relative; height: 1680px; background: #7ec8ef top center / 100% 100% no-repeat; }
+#screen-race .highwayRoad { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#screen-race .highwayRoad .edge { fill: none; stroke: rgba(255,244,214,.92); stroke-width: 2.4; stroke-linecap: round; }
+#screen-race .highwayRoad path:not(.edge) { fill: none; stroke: rgba(24,24,24,.72); stroke-width: 1.15; stroke-dasharray: 1.6 1.3; stroke-linecap: round; }
+#screen-race .townTag { position: absolute; z-index: 3; transform: translate(-50%, -28px); padding: 3px 8px; border-radius: 999px; background: rgba(8,24,38,.88); color: #fff; font-size: 11px; font-weight: 800; pointer-events: none; }
 #screen-race .stageMapNote { margin: 0 0 8px; color: #b7c9d6; font-size: 12px; }
 #screen-race .stageWorld { margin: 0 0 14px; }
 #screen-race .stageWorld h4 { margin: 0 0 8px; color: #f6c445; font-size: 13px; }

@@ -46,7 +46,15 @@ const CLIMB_SPOTS = [
   { x: 32, y: 32 },
   { x: 66, y: 14 }
 ];
+const MAP_ART = publicAsset('/assets/race/maps/highway-map.jpg');
 const MAP_CAR = publicAsset('/assets/race/cars/starter_compact.png');
+const TOWN_STOPS = [
+  [{ x: 34, y: 9 }, { x: 50, y: 6 }, { x: 64, y: 10 }, { x: 76, y: 13 }, { x: 52, y: 16 }],
+  [{ x: 24, y: 23 }, { x: 42, y: 26 }, { x: 58, y: 29 }, { x: 74, y: 24 }, { x: 48, y: 34 }],
+  [{ x: 22, y: 41 }, { x: 44, y: 44 }, { x: 58, y: 48 }, { x: 76, y: 45 }, { x: 48, y: 54 }],
+  [{ x: 32, y: 61 }, { x: 46, y: 66 }, { x: 58, y: 70 }, { x: 72, y: 67 }, { x: 48, y: 76 }],
+  [{ x: 30, y: 82 }, { x: 46, y: 80 }, { x: 56, y: 86 }, { x: 70, y: 84 }, { x: 46, y: 91 }]
+];
 
 function allStages() {
   const stages = [];
@@ -88,8 +96,7 @@ function stageUnlocked(id) {
 }
 
 function currentStage() {
-  const id = saveData.stageProgress?.current || '1-1';
-  return stageUnlocked(id) ? stageById(id) : stageById('1-1');
+  return stageById(saveData.stageProgress?.current || '1-1');
 }
 
 const GHOST_MODES = {
@@ -1064,6 +1071,7 @@ function updateHud() {
   const fuelPct = clamp(Math.floor(game.fuel / game.stats.maxFuel * 100), 0, 100);
   const nextFuel = nextFuelMeters();
   setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)}`);
+  setText('[data-rr-route]', game.stageCode || currentStage().id);
   setText('[data-rr-rpm]', `${Math.round(game.telemetry.rpm)}`);
   setEngineSound({ rpm: game.telemetry.rpm, throttle: input.gas, active: Boolean(document.querySelector('#screen-race.active')) });
   const sliding = input.brake && game.telemetry.kmh > 18;
@@ -1232,22 +1240,23 @@ function renderRoutesPanel() {
   if (!panel) return;
   const stages = allStages();
   const currentId = saveData.stageProgress.current;
-  const worlds = STAGE_WORLDS.map((world, worldIndex) => {
-    const worldStages = stages.filter((stage) => stage.world === worldIndex + 1);
-    const road = `M ${CLIMB_SPOTS.map((spot) => `${spot.x} ${spot.y}`).join(' L ')}`;
-    const nodes = worldStages.map((stage, index) => {
-      const spot = CLIMB_SPOTS[index];
-      const stars = Number(saveData.stageProgress.stars[stage.id] || 0);
-      const unlocked = stageUnlocked(stage.id);
-      const state = stage.id === currentId ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
-      const starRow = [1, 2, 3].map((n) => `<i class="${n <= stars ? 'on' : ''}">★</i>`).join('');
-      const car = stage.id === currentId ? `<img class="hillCar" src="${MAP_CAR}" alt="">` : '';
-      return `<button type="button" class="hillNode ${state}" style="left:${spot.x}%;top:${spot.y}%" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked ? stage.step : ''}</b><span>${starRow}</span></button>`;
-    }).join('');
-    return `<section class="hillWorld" style="background-image:url('${world.art}')"><h4>World ${worldIndex + 1} · ${world.name}</h4><div class="hillBoard"><svg class="hillRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${nodes}</div></section>`;
+  const road = 'M 62 1 C 50 8, 58 14, 48 20 C 36 26, 64 32, 50 38 C 62 46, 40 52, 48 60 C 40 68, 66 72, 50 80 C 46 86, 54 90, 50 97';
+  const nodes = stages.map((stage) => {
+    const spot = TOWN_STOPS[stage.world - 1][stage.step - 1];
+    const stars = Number(saveData.stageProgress.stars[stage.id] || 0);
+    const unlocked = stageUnlocked(stage.id);
+    const state = stage.id === currentId ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
+    const starRow = [1, 2, 3].map((n) => `<i class="${n <= stars ? 'on' : ''}">★</i>`).join('');
+    const car = stage.id === currentId ? `<img class="hillCar" src="${MAP_CAR}" alt="">` : '';
+    return `<button type="button" class="hillNode ${state}" style="left:${spot.x}%;top:${spot.y}%" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked ? stage.step : ''}</b><span>${starRow}</span></button>`;
   }).join('');
-  panel.innerHTML = `<div class="hillMap" data-hill-map><div class="hillTrack"><h3 class="racerPageTitle">Stage Map</h3><p class="stageMapNote">Drag the hills up and down.</p>${worlds}</div></div>`;
+  const tags = STAGE_WORLDS.map((world, index) => {
+    const spot = TOWN_STOPS[index][2];
+    return `<div class="townTag" style="left:${spot.x}%;top:${spot.y}%">${world.name}</div>`;
+  }).join('');
+  panel.innerHTML = `<div class="hillMap" data-hill-map><div class="hillTrack"><div class="highwayMap" style="background-image:url('${MAP_ART}')"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${tags}${nodes}</div></div></div>`;
   bindHillMap(panel);
+  setText('[data-rr-route]', currentId || currentStage().id);
 }
 
 function bindHillMap(root) {
@@ -2343,6 +2352,11 @@ window.rrSetTab = (tab) => {
   document.querySelector('.roadRunnerShell')?.setAttribute('data-rr-active-tab', tab);
   document.querySelectorAll('[data-rr-tab]').forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-rr-tab') === tab));
   document.querySelectorAll('[data-rr-page]').forEach((page) => page.classList.toggle('active', page.getAttribute('data-rr-page') === tab));
+  if (tab === 'drive' && game?.stageCode && game.stageCode !== currentStage().id) {
+    resetRun();
+    draw();
+  }
+  setText('[data-rr-route]', game?.stageCode || currentStage().id);
   if (tab === 'leaderboard') renderLeaderboardPanel();
   else if (tab === 'garage') renderGaragePanel();
   else if (tab === 'vehicles') renderVehiclePanel();
