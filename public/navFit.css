@@ -192,7 +192,10 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   background-image: none !important;
   box-shadow: none !important;
 }
-.questButton.hasQuest { box-shadow: inset 0 0 0 2px #fff; }
+.questButton.hasQuest { box-shadow: none; }
+.bottomNav .tab:not(.questReady) { animation: none !important; }
+.bottomNav .tab:not(.questReady)::after { content: none !important; }
+.questButton:not(.questReady) { animation: none !important; box-shadow: none !important; }
 .questMenu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; width: min(260px, 72vw); display: grid; gap: 6px; padding: 10px; border-radius: 14px; background: #10283c; color: #fff; border: 1px solid rgba(255,255,255,.16); }
 .questMenu[hidden] { display: none !important; }
 .questMenu b { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: #d6b87a; }

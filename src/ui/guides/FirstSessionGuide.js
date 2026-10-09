@@ -90,13 +90,21 @@ export function updateFirstSessionGuide(state, root = document) {
   const wasOpen = !host.hidden;
   host.innerHTML = renderQuestMenu(state, guide);
   host.hidden = !wasOpen;
-  if (button) {
-    const claimReady = DAILY_ORDERS.some((order) => order.check(state) && !state.daily?.claimed?.[order.key]);
-    button.classList.toggle('hasQuest', !guide.complete || claimReady);
-    button.classList.toggle('questReady', claimReady);
-    button.setAttribute('aria-expanded', String(!host.hidden));
-    root.querySelector('[data-nav-tab="menu"]')?.classList.toggle('questReady', claimReady);
+  const claimReady = DAILY_ORDERS.some((order) => {
+    try {
+      return Boolean(order.check(state)) && !state.daily?.claimed?.[order.key];
+    } catch {
+      return false;
+    }
+  });
+  root.querySelectorAll('.questReady, .hasQuest').forEach((el) => {
+    el.classList.remove('questReady', 'hasQuest');
+  });
+  if (claimReady) {
+    root.querySelector('[data-nav-tab="menu"]')?.classList.add('questReady');
+    button?.classList.add('questReady');
   }
+  button?.setAttribute('aria-expanded', String(!host.hidden));
   root.documentElement?.classList.remove('firstSessionGuideActive');
 }
 
