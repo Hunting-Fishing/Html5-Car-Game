@@ -1529,7 +1529,7 @@ function mapZoomHtml(inner) {
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
   const chips = PH_REGIONS.map((item) => `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" onclick="window.rrSelectRegion?.('${item.id}')">${item.name}</button>`).join('');
-  const shapes = PH_REGIONS.map((item) => `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" onclick="window.rrSelectRegion?.('${item.id}')"></path>`).join('');
+  const glow = region ? regionGlow(region) : '';
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
     return `<button type="button" class="phDot ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"></button>`;
@@ -1537,10 +1537,21 @@ function renderPhilippinesMap() {
   const sheet = region ? `<div class="regionSheet"><h3>${region.name}</h3><div class="regionCityList">${region.cities.map((id) => {
     const city = cityById(id);
     const state = cityState(city);
-    return `<button type="button" class="regionCity ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${needLabel(city)}</em></button>`;
+    return `<button type="button" class="regionCity ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
-  const caption = region ? `${region.name} is highlighted. Dots are its cities. ${mapNotice}` : `Tap a region. The border glows, then its cities open. ${mapNotice}`;
-  return `<div class="regionChips">${chips}</div><p class="phMapCaption">${caption}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${shapes}</svg>${dots}</div>`)}${sheet}`;
+  const caption = region ? `${region.name} is lit. Pick a city below the map.` : 'Choose a region. The map stays clear until you do.';
+  return `<div class="regionChips">${chips}</div><p class="phMapCaption">${caption} ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${glow}</svg>${dots}</div>`)}${sheet}`;
+}
+
+function regionGlow(region) {
+  const spots = region.cities.map((id) => cityById(id).spot);
+  const xs = spots.map((spot) => spot.x);
+  const ys = spots.map((spot) => spot.y);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const rx = Math.max(4.5, (Math.max(...xs) - Math.min(...xs)) / 2 + 2.4);
+  const ry = Math.max(3.2, (Math.max(...ys) - Math.min(...ys)) / 2 + 1.8);
+  return `<ellipse class="phGlow" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"></ellipse>`;
 }
 
 window.rrSelectRegion = (id) => {
