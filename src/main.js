@@ -173,8 +173,16 @@ function updateGuide() {
   updateFirstSessionGuide(state);
 }
 
+function closeQuestMenu() {
+  const menu = document.querySelector('#questMenu');
+  if (!menu || menu.hidden) return;
+  menu.hidden = true;
+  document.querySelector('.questButton')?.setAttribute('aria-expanded', 'false');
+}
+
 function handleClick(event) {
   const target = event.target.closest('[data-action]');
+  if (!event.target.closest('.questAnchor')) closeQuestMenu();
   if (!target) return;
   const action = target.dataset.action;
   let result = null;
@@ -187,6 +195,8 @@ function handleClick(event) {
     button?.setAttribute('aria-expanded', String(!menu.hidden));
     return;
   }
+
+  closeQuestMenu();
 
   if (action === 'screenToggle') {
     window.toggleGameFullscreen?.();

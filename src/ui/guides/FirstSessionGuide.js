@@ -6,6 +6,7 @@ const GUIDE_STEPS = [
     key: 'raceBoost',
     number: 1,
     screen: 'race',
+    raceTab: 'drive',
     title: 'Tap Boost',
     label: 'Race',
     icon: UI_ICONS.race,
@@ -42,6 +43,7 @@ const GUIDE_STEPS = [
     key: 'previewGhostRace',
     number: 5,
     screen: 'race',
+    raceTab: 'leaderboard',
     title: 'Open Leaderboard',
     label: 'Race',
     icon: UI_ICONS.race,
@@ -121,13 +123,18 @@ function guidePayload(state, key) {
 
 function renderQuestMenu(state, guide) {
   const step = guide.step;
-  const ready = DAILY_ORDERS.filter((order) => order.check(state) && !state.daily?.claimed?.[order.key]);
   const stepHtml = step
-    ? `<button class="questJump" type="button" data-action="screen" data-screen="${step.screen}">${step.title}</button>`
+    ? `<button class="questJump" type="button" data-action="screen" data-screen="${step.screen}" ${step.raceTab ? `data-rr-tab="${step.raceTab}"` : ''}>${step.title}</button>`
     : `<p class="questQuiet">First jobs are done.</p>`;
-  const dailyHtml = ready.length
-    ? ready.map((order) => `<button class="questJump" type="button" data-action="claimDaily" data-key="${order.key}">Claim ${order.title}</button>`).join('')
-    : `<p class="questQuiet">No daily order is ready.</p>`;
+  const dailyHtml = DAILY_ORDERS.map((order) => {
+    let status = 'Go';
+    try {
+      const done = order.check(state);
+      const claimed = Boolean(state.daily?.claimed?.[order.key]);
+      status = claimed ? 'Paid' : done ? 'Ready' : 'Go';
+    } catch {}
+    return `<button class="questJump" type="button" data-action="screen" data-screen="${order.screen || 'hub'}" ${order.raceTab ? `data-rr-tab="${order.raceTab}"` : ''}>${order.title}<small>${status}</small></button>`;
+  }).join('');
   return `<b>Quest</b>${stepHtml}<b>Today</b>${dailyHtml}`;
 }
 
