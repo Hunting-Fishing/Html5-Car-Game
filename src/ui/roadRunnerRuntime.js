@@ -1239,11 +1239,12 @@ function renderRoutesPanel() {
   const panel = document.querySelector('[data-road-runner-routes]');
   if (!panel) return;
   const stages = allStages();
-  const currentId = saveData.stageProgress.current;
+  const progress = saveData.stageProgress || { current: '1-1', stars: {} };
+  const currentId = progress.current || '1-1';
   const road = 'M 62 1 C 50 8, 58 14, 48 20 C 36 26, 64 32, 50 38 C 62 46, 40 52, 48 60 C 40 68, 66 72, 50 80 C 46 86, 54 90, 50 97';
   const nodes = stages.map((stage) => {
     const spot = TOWN_STOPS[stage.world - 1][stage.step - 1];
-    const stars = Number(saveData.stageProgress.stars[stage.id] || 0);
+    const stars = Number(progress.stars?.[stage.id] || 0);
     const unlocked = stageUnlocked(stage.id);
     const state = stage.id === currentId ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
     const starRow = [1, 2, 3].map((n) => `<i class="${n <= stars ? 'on' : ''}">★</i>`).join('');
@@ -1254,9 +1255,8 @@ function renderRoutesPanel() {
     const spot = TOWN_STOPS[index][2];
     return `<div class="townTag" style="left:${spot.x}%;top:${spot.y}%">${world.name}</div>`;
   }).join('');
-  panel.innerHTML = `<div class="hillMap" data-hill-map><div class="hillTrack"><div class="highwayMap" style="background-image:url('${MAP_ART}')"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${tags}${nodes}</div></div></div>`;
-  bindHillMap(panel);
-  setText('[data-rr-route]', currentId || currentStage().id);
+  panel.innerHTML = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Highway map from the test track to the port"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${tags}${nodes}</div>`;
+  setText('[data-rr-route]', currentId);
 }
 
 function bindHillMap(root) {
