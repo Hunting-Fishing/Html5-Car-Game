@@ -178,6 +178,13 @@ function stageUnlocked(id) {
   const stages = mainStages();
   const index = stages.findIndex((stage) => stage.id === id);
   if (index <= 0) return true;
+  const stage = stages[index];
+  if (stage.cityId === 'manila') {
+    const manila = stages.filter((item) => item.cityId === 'manila');
+    const localIndex = manila.findIndex((item) => item.id === id);
+    if (localIndex <= 0) return true;
+    return Number(saveData.stageProgress?.stars?.[manila[localIndex - 1].id] || 0) > 0;
+  }
   return Number(saveData.stageProgress?.stars?.[stages[index - 1].id] || 0) > 0;
 }
 
