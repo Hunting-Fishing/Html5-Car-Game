@@ -968,6 +968,8 @@ function resetRun() {
   route.length = Math.max(2400, Math.round(route.length * scale));
   route.meters = mapStage.targetM;
   route.terrain = makeTerrainProfile(route);
+  const badge = document.querySelector('[data-rr-route]');
+  if (badge) badge.textContent = mapStage.id;
   const stats = vehicleStats();
   const director = makeDirector(route);
   const stage = currentGhostStage();
@@ -1380,7 +1382,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
       <div><b>${wearPct}%</b><div>Wear</div></div>
       <div><b>${formatSmall(saveData.bestDistance)}m</b><div>Best</div></div>
     </div>
-    <div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Retry</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Map</button><button type="button" class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>
+    <div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Retry</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Next</button><button type="button" class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>
   </div>`;
   panel.hidden = false;
 }
@@ -2147,6 +2149,7 @@ function finishRun(completed) {
     const earned = wearPct < 40 ? 3 : wearPct < 75 ? 2 : 1;
     saveData.stageProgress = normalizeStageProgress(saveData.stageProgress);
     saveData.stageProgress.stars[id] = Math.max(Number(saveData.stageProgress.stars[id] || 0), earned);
+    game.clearedStage = id;
     recordGhostSample(true);
     const ghost = createLocalBestGhost({
       playerName: currentPlayerName(),
@@ -2259,18 +2262,20 @@ window.selectStage = (id) => {
   mountRoadRunner(true);
 };
 window.nextHillRace = () => {
-  const beaten = game?.stageCode || saveData.stageProgress?.current || '1-1';
-  const won = Boolean(game?.finishedRoute) || game?.finishReason === 'complete';
-  const next = allStages()[stageIndex(beaten) + 1];
+  const beaten = game?.clearedStage || game?.stageCode || saveData.stageProgress?.current || '1-1';
+  const won = Boolean(game?.clearedStage) || Boolean(game?.finishedRoute) || game?.finishReason === 'complete';
+  const index = stageIndex(beaten);
+  const next = index >= 0 ? allStages()[index + 1] : null;
+  hidePostRunPanel();
   if (won && next) {
     saveData.stageProgress = normalizeStageProgress(saveData.stageProgress);
+    saveData.stageProgress.stars[beaten] = Math.max(Number(saveData.stageProgress.stars[beaten] || 0), 1);
     saveData.stageProgress.current = next.id;
     activeRoute = next.routeKey;
     saveGameData();
   }
-  hidePostRunPanel();
-  window.rrSetTab?.('routes');
-  requestAnimationFrame(() => document.querySelector('.stageNode.current')?.scrollIntoView({ block: 'center' }));
+  activeTab = 'drive';
+  mountRoadRunner(true);
 };
 window.restartHillRoute = () => {
   input.gas = false;
