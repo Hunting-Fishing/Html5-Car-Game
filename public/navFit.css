@@ -224,7 +224,8 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .hillNode.locked { background: #243140; color: #d5e2ea; }
 #screen-race .highwayMap .hillNode.locked::after { display: none; }
 #screen-race .highwayMap .hillNode:not(.secret) { width: auto; min-width: 58px; height: 34px; margin: -17px 0 0 -29px; padding: 0 6px; border-radius: 12px; }
-#screen-race .highwayMap .hillNode:not(.secret) b { font-size: 9px; }
+#screen-race .highwayMap .hillNode:not(.secret) small.carNeed { color: #9be7ff; font-size: 8px; font-weight: 700; }
+#screen-race .highwayMap .hillNode .diffStars { font-size: 9px; }
 #screen-race .hillCar { position: absolute; width: 52px; height: auto; left: 4px; top: -30px; pointer-events: none; }
 #screen-race .stageTrail::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 8px; width: 6px; border-radius: 99px; background: #3d7a45; transform: translateX(-50%); }
 #screen-race .stageNode { position: relative; z-index: 1; width: 76px; min-height: 58px; border: 0; border-radius: 18px; display: grid; place-items: center; }

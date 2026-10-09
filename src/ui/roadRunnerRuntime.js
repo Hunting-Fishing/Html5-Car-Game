@@ -55,6 +55,25 @@ const STAGE_WORLDS = [
   { id: '17', name: 'Muntinlupa', landmark: 'Alabang', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 43, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.64, spot: { x: 48, y: 93 } }
 ];
 const GARAGE_SPOT = { x: 16, y: 44 };
+const MANILA_FACE = {
+  '1': { level: 'Easy', car: 'Starter Hatchback' },
+  '2': { level: 'Easy', car: 'Starter Hatchback' },
+  '3': { level: 'Easy', car: 'Utility vehicle' },
+  '4': { level: 'Easy', car: 'Utility vehicle' },
+  '5': { level: 'Easy', car: 'Starter Hatchback' },
+  '6': { level: 'Medium', car: 'Off-road vehicle', need: { class: 'offroad' } },
+  '7': { level: 'Easy', car: 'Starter Hatchback' },
+  '8': { level: 'Medium', car: 'City Taxi', need: { vehicle: 'cityTaxi' } },
+  '9': { level: 'Medium', car: 'Starter Hatchback' },
+  '10': { level: 'Medium', car: 'Race car', need: { class: 'race' } },
+  '11': { level: 'Hard', car: 'Race car', need: { class: 'race' } },
+  '12': { level: 'Medium', car: 'Utility vehicle', need: { class: 'utility' } },
+  '13': { level: 'Easy', car: 'Starter Hatchback' },
+  '14': { level: 'Hard', car: 'Race car', need: { class: 'race' } },
+  '15': { level: 'Medium', car: 'Utility vehicle', need: { class: 'utility' } },
+  '16': { level: 'Medium', car: 'Starter Hatchback' },
+  '17': { level: 'Hard', car: 'Endurance vehicle', need: { class: 'endurance' } }
+};
 const PH_MAP = publicAsset('/assets/race/maps/philippines-map.png');
 const PH_CITIES = [
   { id: 'manila', name: 'Manila', province: 'Metro Manila', spot: { x: 40, y: 44 }, local: true, difficulty: 'Easy' },
@@ -82,6 +101,7 @@ function mainStages() {
       STAGE_WORLDS.forEach((area) => {
         const route = ROUTES[area.routeKey];
         const index = stages.length;
+        const face = MANILA_FACE[area.id] || { level: 'Easy', car: 'Starter Hatchback' };
         stages.push({
           id: area.id,
           cityId: city.id,
@@ -97,6 +117,9 @@ function mainStages() {
           roadColor: area.road,
           seed: area.seed,
           difficulty: area.difficulty,
+          level: face.level,
+          car: face.car,
+          need: face.need || null,
           theme: area.theme || area.name.toLowerCase(),
           targetM: Math.round(route.meters * (0.4 + index * 0.02)),
           spot: area.spot
@@ -181,7 +204,8 @@ function stageUnlocked(id) {
   if (!cityOpen(city)) return false;
   const list = stagesForCity(stage.cityId);
   const localIndex = list.findIndex((item) => item.id === id);
-  if (localIndex <= 0) return true;
+  if (localIndex <= 0 && !(stage.need && !ownsVehicle(stage.need))) return true;
+  if (stage.need && !ownsVehicle(stage.need)) return false;
   return Number(saveData.stageProgress?.stars?.[list[localIndex - 1].id] || 0) > 0;
 }
 
@@ -1438,9 +1462,11 @@ function renderManilaMap() {
     const unlocked = stageUnlocked(stage.id);
     const state = stage.id === currentId ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
     const starRow = [1, 2, 3].map((n) => `<i class="${n <= stars ? 'on' : ''}">★</i>`).join('');
-    const label = stage.secret ? 'Garage' : stage.name.split(' ')[0];
-    const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : `${stage.name} · ${stage.landmark || ''}`;
-    return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${stage.spot.x}%;top:${stage.spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${label}</b><span>${starRow}</span></button>`;
+    const label = stage.secret ? 'Garage' : stage.name;
+    const level = stage.secret ? 'Expert' : stage.level || 'Easy';
+    const car = stage.secret ? 'Tuned car' : stage.car || 'Starter Hatchback';
+    const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : `${stage.name} · ${level} · ${car}`;
+    return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${stage.spot.x}%;top:${stage.spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${label}</b>${difficultyMark(level)}<small class="carNeed">${car}</small><span>${starRow}</span></button>`;
   }).join('');
   return `<button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><p class="phMapCaption">Manila is Easy. Zoom in to read the cities around it.</p>${mapZoomHtml(`<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Metro Manila and the cities around it"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${nodes}</div>`)}`;
 }
