@@ -31,57 +31,36 @@ const ROUTES = {
   port: { label: 'Port Export Route', profile: 'port', length: 15000, meters: 5000, reward: 1.35, difficulty: 1.45, skyA: '#93dfff', skyB: '#e4fbff', grass: '#49a985', road: '#36414d', seed: 5, unlock: 2700, bgAsset: 'routePort' }
 };
 
-const STAGES_PER_WORLD = 10;
 const GARAGE_UNLOCK_LEVEL = 3;
 const MAP_ART = publicAsset('/assets/race/maps/highway-map.jpg');
 const MAP_CAR = publicAsset('/assets/race/cars/starter_compact.png');
-
-function ringStops(cx, cy, rx, ry, count) {
-  return Array.from({ length: count }, (_, index) => {
-    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / count;
-    return { x: Math.round((cx + Math.cos(angle) * rx) * 10) / 10, y: Math.round((cy + Math.sin(angle) * ry) * 10) / 10 };
-  });
-}
-
-function gridStops(box) {
-  const cols = 5;
-  const rows = 2;
-  return Array.from({ length: 10 }, (_, index) => {
-    const col = index % cols;
-    const row = Math.floor(index / cols);
-    return {
-      x: Math.round((box.x + (box.w * col) / (cols - 1)) * 10) / 10,
-      y: Math.round((box.y + (box.h * row) / Math.max(1, rows - 1)) * 10) / 10
-    };
-  });
-}
-
 const STAGE_WORLDS = [
-  { routeKey: 'track', name: 'Test Track', label: { x: 28, y: 2 }, stops: ringStops(28, 9, 12, 4.2, 10) },
-  { routeKey: 'barangay', name: 'Barangay', label: { x: 50, y: 17 }, stops: gridStops({ x: 10, y: 20, w: 78, h: 13 }) },
-  { routeKey: 'farm', name: 'Farm', label: { x: 50, y: 36 }, stops: gridStops({ x: 10, y: 39, w: 78, h: 12 }) },
-  { routeKey: 'mountain', name: 'Mountain', label: { x: 50, y: 55 }, stops: gridStops({ x: 12, y: 58, w: 74, h: 15 }) },
-  { routeKey: 'port', name: 'Port', label: { x: 50, y: 77 }, stops: gridStops({ x: 24, y: 81, w: 52, h: 7 }) }
+  { id: '1', name: 'Test Track', routeKey: 'track', spot: { x: 28, y: 9 } },
+  { id: '2', name: 'Pit Straight', routeKey: 'track', spot: { x: 56, y: 15 } },
+  { id: '3', name: 'Barangay', routeKey: 'barangay', spot: { x: 40, y: 26 } },
+  { id: '4', name: 'Village Road', routeKey: 'barangay', spot: { x: 58, y: 33 } },
+  { id: '5', name: 'Farm', routeKey: 'farm', spot: { x: 46, y: 44 } },
+  { id: '6', name: 'Barn Bend', routeKey: 'farm', spot: { x: 62, y: 51 } },
+  { id: '7', name: 'Mountain', routeKey: 'mountain', spot: { x: 44, y: 63 } },
+  { id: '8', name: 'Tunnel', routeKey: 'mountain', spot: { x: 64, y: 71 } },
+  { id: '9', name: 'Port', routeKey: 'port', spot: { x: 48, y: 81 } },
+  { id: '10', name: 'Docks', routeKey: 'port', spot: { x: 52, y: 89 } }
 ];
 const GARAGE_SPOT = { x: 80, y: 8 };
 
 function mainStages() {
-  const stages = [];
-  STAGE_WORLDS.forEach((world, worldIndex) => {
-    const route = ROUTES[world.routeKey];
-    for (let step = 1; step <= STAGES_PER_WORLD; step += 1) {
-      stages.push({
-        id: `${worldIndex + 1}-${step}`,
-        world: worldIndex + 1,
-        step,
-        routeKey: world.routeKey,
-        name: world.name,
-        targetM: Math.round(route.meters * (0.25 + step * 0.07)),
-        spot: world.stops[step - 1]
-      });
-    }
+  return STAGE_WORLDS.map((area, index) => {
+    const route = ROUTES[area.routeKey];
+    return {
+      id: area.id,
+      world: index + 1,
+      step: index + 1,
+      routeKey: area.routeKey,
+      name: area.name,
+      targetM: Math.round(route.meters * (0.35 + index * 0.06)),
+      spot: area.spot
+    };
   });
-  return stages;
 }
 
 function secretStages() {
@@ -111,7 +90,7 @@ function stageById(id) {
 
 function normalizeStageProgress(progress) {
   const stars = progress?.stars && typeof progress.stars === 'object' ? progress.stars : {};
-  const current = allStages().some((stage) => stage.id === progress?.current) ? progress.current : '1-1';
+  const current = allStages().some((stage) => stage.id === progress?.current) ? progress.current : '1';
   return { current, stars };
 }
 
@@ -133,7 +112,7 @@ function stageUnlocked(id) {
 }
 
 function currentStage() {
-  return stageById(saveData.stageProgress?.current || '1-1');
+  return stageById(saveData.stageProgress?.current || '1');
 }
 
 const GHOST_MODES = {
@@ -1279,7 +1258,7 @@ function renderRoutesPanel() {
   const stages = allStages();
   const progress = saveData.stageProgress || { current: '1-1', stars: {} };
   const currentId = progress.current || '1-1';
-  const road = 'M 28 9 C 46 16, 40 24, 50 30 C 62 38, 36 44, 50 52 C 40 62, 64 70, 50 84';
+  const road = 'M 28 9 L 56 15 L 40 26 L 58 33 L 46 44 L 62 51 L 44 63 L 64 71 L 48 81 L 52 89';
   const spur = 'M 56 8 L 80 8';
   const nodes = stages.map((stage) => {
     const spot = stage.spot;
@@ -1292,7 +1271,13 @@ function renderRoutesPanel() {
     const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : stage.id;
     return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${spot.x}%;top:${spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked || stage.secret ? label : ''}</b><span>${starRow}</span></button>`;
   }).join('');
-  const tags = STAGE_WORLDS.map((world) => `<div class="townTag" style="left:${world.label.x}%;top:${world.label.y}%">${world.name}</div>`).join('');
+  const tags = [
+    ['Test Track', 28, 3],
+    ['Barangay', 40, 22],
+    ['Farm', 46, 40],
+    ['Mountain', 44, 58],
+    ['Port', 48, 77]
+  ].map(([name, x, y]) => `<div class="townTag" style="left:${x}%;top:${y}%">${name}</div>`).join('');
   panel.innerHTML = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Highway map from the test track to the port"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/><path class="spur" d="${spur}"/></svg>${tags}${nodes}</div>`;
   setText('[data-rr-route]', currentId);
 }

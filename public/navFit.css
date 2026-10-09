@@ -150,7 +150,7 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .highwayRoad .edge { fill: none; stroke: rgba(255,244,214,.95); stroke-width: 2.6; stroke-linecap: round; }
 #screen-race .highwayRoad path:not(.edge) { fill: none; stroke: rgba(20,20,20,.8); stroke-width: 1.2; stroke-dasharray: 1.6 1.3; stroke-linecap: round; }
 #screen-race .highwayRoad .spur { fill: none; stroke: #c4b5fd; stroke-width: 1.1; stroke-dasharray: 1.4 1.1; }
-#screen-race .highwayMap .hillNode { width: 32px; height: 36px; margin: -18px 0 0 -16px; border-radius: 11px; }
+#screen-race .highwayMap .hillNode { width: 42px; height: 42px; margin: -21px 0 0 -21px; border-radius: 14px; }
 #screen-race .highwayMap .hillNode b { font-size: 11px; }
 #screen-race .highwayMap .hillNode span { position: static; font-size: 7px; line-height: 1; }
 #screen-race .highwayMap .hillNode.secret { width: 74px; height: 40px; margin-left: -37px; border-radius: 14px; background: #6d28d9; color: #fff; }
