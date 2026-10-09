@@ -1600,21 +1600,19 @@ function renderPhilippinesMap() {
     const look = REGION_LOOK[item.id] || { color: '#1c4668' };
     return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" style="background:${item.id === selectedRegion ? '#f6c445' : look.color}" onclick="window.rrSelectRegion?.('${item.id}')">${item.name}</button>`;
   }).join('');
-  const areas = PH_REGIONS.map((item) => {
-    const look = REGION_LOOK[item.id] || { color: '#38bdf8', x: 50, y: 50 };
-    return `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" fill="${look.color}" stroke="${look.color}" onclick="window.rrSelectRegion?.('${item.id}')"><title>${item.name}</title></path><g class="phRegionBadge" transform="translate(${look.x} ${look.y})"><rect x="${-item.name.length * 1.15}" y="-2.6" width="${item.name.length * 2.3}" height="3.6" rx="0.8" fill="${look.color}"></rect><text y="0.35" fill="${look.ink || '#fff'}">${item.name}</text></g>`;
-  }).join('');
+  const areas = PH_REGIONS.map((item) => `<path class="phRegion" d="${item.d}" onclick="window.rrSelectRegion?.('${item.id}')"><title>${item.name}</title></path>`).join('');
+  const outline = region ? `<path class="phSelect" d="${region.d}"></path>` : '';
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
-    return `<button type="button" class="phDot ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"></button>`;
+    return `<button type="button" class="phPin ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" onclick="window.enterPhCity?.('${city.id}')"><i></i><b>${city.name}</b></button>`;
   }).join('') : '';
   const cards = region ? `<div class="areaCards"><h3>${region.name}</h3><div class="areaCardGrid">${region.cities.map((id) => {
     const city = cityById(id);
     const state = cityState(city);
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b>${difficultyMark(city.difficulty)}<small>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</small></button>`;
   }).join('')}</div></div>` : '';
-  const caption = region ? `${region.name} is selected. Tap a city card.` : 'Tap a colored area. Then tap a city card.';
-  return `<div class="regionChips">${chips}</div><p class="phMapCaption">${caption} ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${areas}</svg>${dots}</div>${cards}`)}`;
+  const caption = region ? `${region.name}. Dots mark its cities. Cards are under the map.` : 'Pick a region. The map stays clear, then its cities appear as dots.';
+  return `<div class="regionChips">${chips}</div><p class="phMapCaption">${caption} ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${areas}${outline}</svg>${dots}</div>`)}${cards}`;
 }
 
 window.rrSelectRegion = (id, keep) => {
