@@ -64,6 +64,7 @@ function mainStages() {
       roadColor: area.road,
       seed: area.seed,
       difficulty: area.difficulty,
+      theme: area.name.toLowerCase(),
       targetM: Math.round(route.meters * (0.4 + index * 0.05)),
       spot: area.spot
     };
@@ -78,6 +79,7 @@ function secretStages() {
     routeKey: 'track',
     name: 'Secret Garage',
     secret: true,
+    theme: 'garage',
     targetM: 1400,
     spot: GARAGE_SPOT
   }];
@@ -1003,6 +1005,8 @@ function resetRun() {
   route.road = mapStage.roadColor || route.road;
   route.seed = mapStage.seed || route.seed;
   route.difficulty = mapStage.difficulty || route.difficulty;
+  route.theme = mapStage.theme || 'monaco';
+  route.bgAsset = '';
   const scale = mapStage.targetM / ROUTES[activeRoute].meters;
   route.length = Math.max(2400, Math.round(route.length * scale));
   route.meters = mapStage.targetM;
@@ -1457,6 +1461,10 @@ function draw() {
 }
 
 function drawBackground(width, height, route, cameraX) {
+  if (route.theme) {
+    drawCityBackdrop(width, height, route, cameraX);
+    return;
+  }
   const bg = images[route.bgAsset];
   if (bg?.ready && bg.naturalWidth > 0) {
     const scale = height / Math.max(1, bg.naturalHeight);
@@ -1480,6 +1488,90 @@ function drawBackground(width, height, route, cameraX) {
     ctx.fillStyle = '#fff';
     roundedCloud(worldX - cameraX, 52 + (worldX % 110));
     ctx.globalAlpha = 1;
+  }
+}
+
+function drawCityBackdrop(width, height, route, cameraX) {
+  const horizon = height * 0.58;
+  const sky = ctx.createLinearGradient(0, 0, 0, horizon);
+  sky.addColorStop(0, route.skyA || '#7ddcff');
+  sky.addColorStop(1, route.skyB || '#eef8ff');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, width, horizon);
+  const look = {
+    monaco: { ground: '#3f9d4a', water: '#2d78c8', building: '#f4f7fb', roof: '#c23b3b', tree: '#1f7a45' },
+    milan: { ground: '#6a9a4e', building: '#e7d3b0', roof: '#8c3b2a', tree: '#2f6b32', spire: '#6e5b4b' },
+    manila: { ground: '#5fbf57', water: '#39b7d8', building: '#f2c14e', roof: '#d4532b', tree: '#1f8a43', palm: true },
+    bangkok: { ground: '#49a35a', water: '#4aa3c7', building: '#f6e27a', roof: '#e0a106', tree: '#2e8b57', spire: '#f0c84a' },
+    nairobi: { ground: '#c6a15a', building: '#c9843a', roof: '#8a5a2b', tree: '#6b8f3a', peak: '#b7a48a', acacia: true },
+    lyon: { ground: '#6eae48', water: '#6aaed6', building: '#f3e2c4', roof: '#b94a3a', tree: '#4c8c3a' },
+    denver: { ground: '#5f8f55', building: '#d9dee6', roof: '#8ea0b5', tree: '#1e5c38', peak: '#f7fbff', pine: true },
+    zurich: { ground: '#4f8f5a', water: '#5aa7d6', building: '#f7f4ef', roof: '#8d3d32', tree: '#2f7d46', peak: '#f4f8ff', pine: true },
+    singapore: { ground: '#218a62', water: '#2f86c5', building: '#d7e6f5', roof: '#2f6f9f', tree: '#1d7a55', glass: true },
+    dubai: { ground: '#e2c27a', building: '#f3e6c4', roof: '#d4a017', tree: '#8aaa55', peak: '#f0d7a2', glass: true },
+    garage: { ground: '#2c3540', building: '#4b5563', roof: '#f6c445', tree: '#1f2937' }
+  }[route.theme] || { ground: route.grass || '#58b957', building: '#d7e2ea', roof: '#8aa0b0', tree: '#2f7d46' };
+  ctx.fillStyle = look.ground;
+  ctx.fillRect(0, horizon, width, height - horizon);
+  if (look.water) {
+    ctx.fillStyle = look.water;
+    ctx.fillRect(0, horizon - 16, width, 26);
+  }
+  if (look.peak) {
+    ctx.fillStyle = look.peak;
+    for (let index = -1; index < 8; index += 1) {
+      const x = index * 160 - (cameraX * 0.15) % 160;
+      ctx.beginPath();
+      ctx.moveTo(x, horizon);
+      ctx.lineTo(x + 70, horizon - 78);
+      ctx.lineTo(x + 140, horizon);
+      ctx.fill();
+    }
+  }
+  for (let index = -1; index < 12; index += 1) {
+    const x = index * 110 - (cameraX * 0.28) % 110;
+    const tall = 28 + ((index * 37) % 58);
+    ctx.fillStyle = look.building;
+    ctx.fillRect(x, horizon - tall, look.glass ? 28 : 46, tall);
+    ctx.fillStyle = look.roof;
+    if (look.spire) {
+      ctx.beginPath();
+      ctx.moveTo(x + 8, horizon - tall);
+      ctx.lineTo(x + 23, horizon - tall - 34);
+      ctx.lineTo(x + 38, horizon - tall);
+      ctx.fill();
+    } else if (look.glass) {
+      ctx.fillRect(x + 6, horizon - tall - 10, 16, 10);
+    } else {
+      ctx.fillRect(x, horizon - tall - 8, 46, 8);
+    }
+  }
+  for (let index = -1; index < 14; index += 1) {
+    const x = index * 96 - (cameraX * 0.55) % 96;
+    const y = horizon + 18;
+    ctx.fillStyle = look.tree;
+    if (look.palm) {
+      ctx.fillRect(x + 8, y, 4, 28);
+      ctx.beginPath();
+      ctx.ellipse(x + 10, y, 16, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (look.acacia) {
+      ctx.fillRect(x + 10, y + 8, 3, 22);
+      ctx.beginPath();
+      ctx.ellipse(x + 12, y + 6, 22, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (look.pine) {
+      ctx.beginPath();
+      ctx.moveTo(x + 10, y - 28);
+      ctx.lineTo(x - 8, y + 16);
+      ctx.lineTo(x + 28, y + 16);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.arc(x + 12, y, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(x + 10, y, 4, 18);
+    }
   }
 }
 
