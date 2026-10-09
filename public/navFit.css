@@ -133,14 +133,13 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-hub .adcapIcon img { width: 28px; height: 28px; object-fit: contain; }
 #screen-race .racerPages { min-height: 0 !important; overflow: hidden !important; }
 #screen-race [data-rr-page="routes"].active {
+  position: relative !important;
   height: 100% !important;
   max-height: 100% !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  overscroll-behavior: contain;
+  overflow: hidden !important;
 }
+#screen-race .hillMap { position: absolute; inset: 0; overflow: hidden; touch-action: none; cursor: grab; }
+#screen-race .hillTrack { position: absolute; left: 0; right: 0; top: 0; }
 #screen-race .hillWorld { margin: 0; border-radius: 0; }
 #screen-race .stageMapNote { margin: 0 0 8px; color: #b7c9d6; font-size: 12px; }
 #screen-race .stageWorld { margin: 0 0 14px; }

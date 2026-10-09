@@ -1244,8 +1244,68 @@ function renderRoutesPanel() {
     }).join('');
     return `<section class="hillWorld" style="background-image:url('${world.art}')"><h4>World ${worldIndex + 1} · ${world.name}</h4><div class="hillBoard"><svg class="hillRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${nodes}</div></section>`;
   }).join('');
-  panel.innerHTML = `<h3 class="racerPageTitle">Stage Map</h3><p class="stageMapNote">Drag the hills. Stage 1 is at the bottom of each climb.</p><div class="hillScroll">${worlds}</div>`;
-  requestAnimationFrame(() => panel.querySelector('.hillNode.current')?.scrollIntoView({ block: 'center' }));
+  panel.innerHTML = `<div class="hillMap" data-hill-map><div class="hillTrack"><h3 class="racerPageTitle">Stage Map</h3><p class="stageMapNote">Drag the hills up and down.</p>${worlds}</div></div>`;
+  bindHillMap(panel);
+}
+
+function bindHillMap(root) {
+  const view = root.querySelector('[data-hill-map]');
+  const track = view?.querySelector('.hillTrack');
+  if (!view || !track) return;
+  let y = 0;
+  let origin = 0;
+  let startY = 0;
+  let lastY = 0;
+  let velocity = 0;
+  let dragging = false;
+  let moved = false;
+  let glide = 0;
+  const limit = () => Math.min(0, view.clientHeight - track.offsetHeight);
+  const place = () => { track.style.transform = `translateY(${y}px)`; };
+  const stop = () => cancelAnimationFrame(glide);
+  requestAnimationFrame(() => {
+    const node = track.querySelector('.hillNode.current');
+    if (!node) return;
+    const viewTop = view.getBoundingClientRect().top;
+    const nodeTop = node.getBoundingClientRect().top;
+    y = Math.min(0, Math.max(limit(), view.clientHeight / 2 - (nodeTop - viewTop) - 27));
+    place();
+  });
+  view.addEventListener('pointerdown', (event) => {
+    dragging = true;
+    moved = false;
+    startY = lastY = event.clientY;
+    origin = y;
+    velocity = 0;
+    stop();
+    view.setPointerCapture?.(event.pointerId);
+  });
+  view.addEventListener('pointermove', (event) => {
+    if (!dragging) return;
+    const delta = event.clientY - startY;
+    if (Math.abs(delta) > 8) moved = true;
+    velocity = event.clientY - lastY;
+    lastY = event.clientY;
+    y = Math.min(0, Math.max(limit(), origin + delta));
+    place();
+  });
+  view.addEventListener('pointerup', () => {
+    dragging = false;
+    const coast = () => {
+      if (Math.abs(velocity) < 0.5) return;
+      y = Math.min(0, Math.max(limit(), y + velocity));
+      velocity *= 0.92;
+      place();
+      glide = requestAnimationFrame(coast);
+    };
+    coast();
+  });
+  view.addEventListener('click', (event) => {
+    if (!moved) return;
+    event.preventDefault();
+    event.stopPropagation();
+    moved = false;
+  }, true);
 }
 
 function routeCard(key, route) {
