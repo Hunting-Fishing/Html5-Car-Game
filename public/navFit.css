@@ -199,9 +199,20 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 .questMenu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; width: min(260px, 72vw); display: grid; gap: 6px; padding: 10px; border-radius: 14px; background: #10283c; color: #fff; border: 1px solid rgba(255,255,255,.16); }
 .questMenu[hidden] { display: none !important; }
 .questMenu b { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: #d6b87a; }
-.brandLogo { background: #fff !important; padding: 4px; }
+.brandLogo {
+  width: 72px !important;
+  height: 64px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
 .brandLogo::before, .brandLogo::after { display: none !important; }
-.brandLogoImg { width: 100%; height: 100%; object-fit: contain; display: block; }
+.brandLogoImg { width: 72px !important; height: 64px !important; object-fit: contain !important; display: block !important; }
+html.rrRaceViewport .brandLogo,
+html.rrRaceViewport .brandLogoImg { width: 56px !important; height: 48px !important; }
 .questJump { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; border: 0; border-radius: 10px; background: #1c4668; color: #fff; text-align: left; padding: 6px 8px; }
 .questJump small { color: #f6c445; font-size: 11px; font-weight: 800; }
 .questQuiet { margin: 0; font-size: 12px; color: #c7d7e2; }

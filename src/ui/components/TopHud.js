@@ -8,7 +8,7 @@ export function renderTopHud() {
     <header class="topBar">
       <div class="topLine">
         <div class="brand">
-          <div class="brandLogo"><img class="brandLogoImg" src="${publicAsset('/assets/brand/365-logo.webp')}" alt="365 Motor Sales"></div>
+          <div class="brandLogo"><img class="brandLogoImg" src="${publicAsset('/assets/brand/365-logo.png')}" alt="365 Motor Sales"></div>
           <div class="brandText"><b>Micro Garage</b><span>Playable auto world - local save</span></div>
         </div>
         <div class="hudActions">
