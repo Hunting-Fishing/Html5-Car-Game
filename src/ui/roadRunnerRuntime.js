@@ -35,16 +35,16 @@ const GARAGE_UNLOCK_LEVEL = 3;
 const MAP_ART = publicAsset('/assets/race/maps/highway-map.jpg');
 const MAP_CAR = publicAsset('/assets/race/cars/starter_compact.png');
 const STAGE_WORLDS = [
-  { id: '1', name: 'Test Track', routeKey: 'track', spot: { x: 28, y: 9 } },
-  { id: '2', name: 'Pit Straight', routeKey: 'track', spot: { x: 56, y: 15 } },
-  { id: '3', name: 'Barangay', routeKey: 'barangay', spot: { x: 40, y: 26 } },
-  { id: '4', name: 'Village Road', routeKey: 'barangay', spot: { x: 58, y: 33 } },
-  { id: '5', name: 'Farm', routeKey: 'farm', spot: { x: 46, y: 44 } },
-  { id: '6', name: 'Barn Bend', routeKey: 'farm', spot: { x: 62, y: 51 } },
-  { id: '7', name: 'Mountain', routeKey: 'mountain', spot: { x: 44, y: 63 } },
-  { id: '8', name: 'Tunnel', routeKey: 'mountain', spot: { x: 64, y: 71 } },
-  { id: '9', name: 'Port', routeKey: 'port', spot: { x: 48, y: 81 } },
-  { id: '10', name: 'Docks', routeKey: 'port', spot: { x: 52, y: 89 } }
+  { id: '1', name: 'Monaco', routeKey: 'track', profile: 'track', seed: 4, skyA: '#7ddcff', skyB: '#e7fbff', grass: '#3f9d4a', road: '#2d3748', difficulty: 0.7, spot: { x: 28, y: 9 } },
+  { id: '2', name: 'Milan', routeKey: 'track', profile: 'track', seed: 18, skyA: '#9fd0ff', skyB: '#f3fbff', grass: '#67a85a', road: '#3c4654', difficulty: 0.78, spot: { x: 56, y: 15 } },
+  { id: '3', name: 'Manila', routeKey: 'barangay', profile: 'barangay', seed: 7, skyA: '#8bdcff', skyB: '#e1fbff', grass: '#5fbf57', road: '#3a4555', difficulty: 0.86, spot: { x: 40, y: 26 } },
+  { id: '4', name: 'Bangkok', routeKey: 'barangay', profile: 'barangay', seed: 23, skyA: '#b7e6ff', skyB: '#fff6d8', grass: '#7fbf4a', road: '#4a4038', difficulty: 0.94, spot: { x: 58, y: 33 } },
+  { id: '5', name: 'Nairobi', routeKey: 'farm', profile: 'farm', seed: 11, skyA: '#c6ecff', skyB: '#fff4c8', grass: '#c4a24a', road: '#6a543c', difficulty: 1.02, spot: { x: 46, y: 44 } },
+  { id: '6', name: 'Lyon', routeKey: 'farm', profile: 'farm', seed: 29, skyA: '#b9e7ff', skyB: '#eef8ff', grass: '#6eae48', road: '#5c4a38', difficulty: 1.1, spot: { x: 62, y: 51 } },
+  { id: '7', name: 'Denver', routeKey: 'mountain', profile: 'mountain', seed: 13, skyA: '#8ecfff', skyB: '#e7f4ff', grass: '#4f8f55', road: '#3d4652', difficulty: 1.2, spot: { x: 44, y: 63 } },
+  { id: '8', name: 'Zurich', routeKey: 'mountain', profile: 'mountain', seed: 31, skyA: '#d5e8ff', skyB: '#f7fbff', grass: '#6f9460', road: '#4c5560', difficulty: 1.28, spot: { x: 64, y: 71 } },
+  { id: '9', name: 'Singapore', routeKey: 'port', profile: 'port', seed: 17, skyA: '#7fd4ff', skyB: '#e5fbff', grass: '#49a985', road: '#36414d', difficulty: 1.36, spot: { x: 48, y: 81 } },
+  { id: '10', name: 'Dubai', routeKey: 'port', profile: 'port', seed: 37, skyA: '#ffe1a8', skyB: '#fff6df', grass: '#d2b56a', road: '#5c5348', difficulty: 1.45, spot: { x: 52, y: 89 } }
 ];
 const GARAGE_SPOT = { x: 80, y: 8 };
 
@@ -57,7 +57,14 @@ function mainStages() {
       step: index + 1,
       routeKey: area.routeKey,
       name: area.name,
-      targetM: Math.round(route.meters * (0.35 + index * 0.06)),
+      profile: area.profile,
+      skyA: area.skyA,
+      skyB: area.skyB,
+      grass: area.grass,
+      roadColor: area.road,
+      seed: area.seed,
+      difficulty: area.difficulty,
+      targetM: Math.round(route.meters * (0.4 + index * 0.05)),
       spot: area.spot
     };
   });
@@ -987,7 +994,15 @@ function resetRun() {
   ensureMissionState(saveData);
   const mapStage = currentStage();
   activeRoute = mapStage.routeKey;
-  const route = { ...ROUTES[activeRoute], label: `${mapStage.id} ${ROUTES[activeRoute].label}` };
+  const route = { ...ROUTES[activeRoute], label: mapStage.secret ? 'Garage' : `${mapStage.step} ${mapStage.name}` };
+  route.label = mapStage.secret ? 'Garage' : `${mapStage.step} ${mapStage.name}`;
+  route.profile = mapStage.profile || route.profile;
+  route.skyA = mapStage.skyA || route.skyA;
+  route.skyB = mapStage.skyB || route.skyB;
+  route.grass = mapStage.grass || route.grass;
+  route.road = mapStage.roadColor || route.road;
+  route.seed = mapStage.seed || route.seed;
+  route.difficulty = mapStage.difficulty || route.difficulty;
   const scale = mapStage.targetM / ROUTES[activeRoute].meters;
   route.length = Math.max(2400, Math.round(route.length * scale));
   route.meters = mapStage.targetM;
@@ -1088,7 +1103,7 @@ function updateHud() {
   const fuelPct = clamp(Math.floor(game.fuel / game.stats.maxFuel * 100), 0, 100);
   const nextFuel = nextFuelMeters();
   setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)}`);
-  setText('[data-rr-route]', game.stageCode || currentStage().id);
+  setText('[data-rr-route]', game.route?.label || game.stageCode || currentStage().id);
   setText('[data-rr-rpm]', `${Math.round(game.telemetry.rpm)}`);
   setEngineSound({ rpm: game.telemetry.rpm, throttle: input.gas, active: Boolean(document.querySelector('#screen-race.active')) });
   const sliding = input.brake && game.telemetry.kmh > 18;
@@ -1271,15 +1286,9 @@ function renderRoutesPanel() {
     const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : stage.id;
     return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${spot.x}%;top:${spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked || stage.secret ? label : ''}</b><span>${starRow}</span></button>`;
   }).join('');
-  const tags = [
-    ['Test Track', 28, 3],
-    ['Barangay', 40, 22],
-    ['Farm', 46, 40],
-    ['Mountain', 44, 58],
-    ['Port', 48, 77]
-  ].map(([name, x, y]) => `<div class="townTag" style="left:${x}%;top:${y}%">${name}</div>`).join('');
+  const tags = STAGE_WORLDS.map((area) => `<div class="townTag" style="left:${area.spot.x}%;top:${area.spot.y}%">${area.name}</div>`).join('');
   panel.innerHTML = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Highway map from the test track to the port"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/><path class="spur" d="${spur}"/></svg>${tags}${nodes}</div>`;
-  setText('[data-rr-route]', currentId);
+  setText('[data-rr-route]', game?.route?.label || currentStage().name || currentId);
 }
 
 function bindHillMap(root) {
@@ -2385,7 +2394,7 @@ window.rrSetTab = (tab) => {
     resetRun();
     draw();
   }
-  setText('[data-rr-route]', game?.stageCode || currentStage().id);
+  setText('[data-rr-route]', game?.route?.label || currentStage().name || currentStage().id);
   if (tab === 'leaderboard') renderLeaderboardPanel();
   else if (tab === 'garage') renderGaragePanel();
   else if (tab === 'vehicles') renderVehiclePanel();
