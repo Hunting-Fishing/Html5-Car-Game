@@ -169,24 +169,24 @@ const PH_CITIES = [
 ];
 
 const PH_REGIONS = [
-  { id: 'ilocos', name: 'Ilocos', d: 'M37,19 L44,19 L44,37 L37,37 Z', cities: ['laoag', 'vigan', 'sanfernando', 'dagupan'] },
-  { id: 'car', name: 'Cordillera', d: 'M42,21 L49,21 L49,33 L42,34 Z', cities: ['baguio', 'bontoc', 'lagawe', 'bangued', 'tabuk'] },
-  { id: 'cagayan', name: 'Cagayan Valley', d: 'M50,7 L55,7 L55,11 L50,11 Z M47,18 L56,18 L55,35 L48,34 Z', cities: ['basco', 'tuguegarao', 'ilagan', 'bayombong', 'cabarroguis'] },
-  { id: 'central', name: 'Central Luzon', d: 'M35,34 L55,34 L50,44 L35,45 Z', cities: ['angeles', 'tarlac', 'cabanatuan', 'malolos', 'balanga', 'olongapo', 'iba', 'baler'] },
-  { id: 'calabarzon', name: 'Calabarzon', d: 'M36,44 L53,44 L54,53 L36,52 Z', cities: ['batangas', 'lucena', 'antipolo', 'tagaytay', 'imus', 'bacoor', 'santarosa', 'calamba'] },
-  { id: 'mimaropa', name: 'Mimaropa', d: 'M14,57 L27,59 L25,82 L12,78 Z M28,48 L36,48 L35,58 L28,56 Z M44,51 L50,51 L50,60 L44,59 Z', cities: ['puerto', 'calapan', 'mamburao', 'boac', 'romblon'] },
-  { id: 'bicol', name: 'Bicol', d: 'M52,46 L70,46 L65,58 L52,56 Z', cities: ['naga', 'legazpi', 'daet', 'virac', 'sorsogon', 'masbate'] },
-  { id: 'westvis', name: 'Western Visayas', d: 'M44,60 L53,60 L52,68 L44,67 Z', cities: ['iloilo', 'kalibo', 'roxas', 'sanjose', 'jordan'] },
-  { id: 'negros', name: 'Negros Island', d: 'M51,66 L58,66 L57,75 L51,74 Z', cities: ['bacolod', 'dumaguete'] },
-  { id: 'centralvis', name: 'Central Visayas', d: 'M56,64 L62,64 L61,72 L56,72 Z M61,68 L66,68 L65,74 L61,73 Z', cities: ['cebu', 'lapulapu', 'mandaue', 'tagbilaran', 'siquijor'] },
-  { id: 'eastvis', name: 'Eastern Visayas', d: 'M65,55 L78,55 L76,72 L65,70 Z', cities: ['tacloban', 'catbalogan', 'ormoc', 'maasin', 'naval', 'borongan', 'catarman'] },
-  { id: 'zambo', name: 'Zamboanga', d: 'M43,75 L56,75 L54,90 L42,88 Z', cities: ['zamboanga', 'dipolog', 'pagadian', 'ipil', 'isabela'] },
-  { id: 'northmin', name: 'Northern Mindanao', d: 'M56,73 L70,73 L69,82 L56,81 Z', cities: ['cdo', 'iligan', 'ozamiz', 'oroquieta', 'malaybalay', 'mambajao'] },
-  { id: 'caraga', name: 'Caraga', d: 'M70,69 L85,69 L83,83 L70,81 Z', cities: ['butuan', 'surigao', 'tandag', 'prosperidad', 'dinagat'] },
-  { id: 'davao', name: 'Davao', d: 'M72,78 L85,79 L84,91 L72,90 Z', cities: ['davao', 'tagum', 'mati', 'digos'] },
-  { id: 'soccsksargen', name: 'Soccsksargen', d: 'M60,83 L73,83 L73,94 L60,93 Z', cities: ['gensan', 'koronadal', 'kidapawan', 'isulan', 'alabel'] },
-  { id: 'barmm', name: 'Bangsamoro', d: 'M58,79 L66,79 L66,86 L58,85 Z M31,90 L48,90 L46,97 L30,96 Z', cities: ['cotabato', 'marawi', 'jolo', 'bongao'] },
-  { id: 'ncr', name: 'Metro Manila', d: 'M38,42 L42.5,42 L42.5,46 L38,46 Z', cities: ['manila'] }
+  { id: 'ilocos', name: 'Ilocos', d: 'M38.2,20.4 L42.4,19.2 L43.8,24.5 L43.2,31 L41.4,36.6 L37.6,36.2 L37.8,28.5 Z', cities: ['laoag', 'vigan', 'sanfernando', 'dagupan'] },
+  { id: 'car', name: 'Cordillera', d: 'M42.6,21.6 L48.6,20.8 L49.4,26.8 L47.6,32.8 L43,33 L42.4,26.5 Z', cities: ['baguio', 'bontoc', 'lagawe', 'bangued', 'tabuk'] },
+  { id: 'cagayan', name: 'Cagayan Valley', d: 'M50.4,7.1 L53.8,6.7 L54.2,10.6 L50.6,10.8 Z M47.8,19.2 L55,18.5 L55.4,28 L52.6,33.8 L47.4,33 L47.2,25.2 Z', cities: ['basco', 'tuguegarao', 'ilagan', 'bayombong', 'cabarroguis'] },
+  { id: 'central', name: 'Central Luzon', d: 'M36.2,35.2 L47.5,33.8 L54.2,35.6 L51.6,42.2 L45.5,44.6 L37.8,44.8 L35.4,40.2 Z', cities: ['angeles', 'tarlac', 'cabanatuan', 'malolos', 'balanga', 'olongapo', 'iba', 'baler'] },
+  { id: 'calabarzon', name: 'Calabarzon', d: 'M37,45 L49.5,44.2 L53.2,49.5 L47.8,53 L39.5,52.4 L36.4,48.2 Z', cities: ['batangas', 'lucena', 'antipolo', 'tagaytay', 'imus', 'bacoor', 'santarosa', 'calamba'] },
+  { id: 'mimaropa', name: 'Mimaropa', d: 'M22.5,56.5 L26.2,58.2 L23.5,70 L17.5,78.5 L14.2,73.5 L16.5,63.5 Z M29.2,49 L35.4,48.4 L35,56.6 L29.6,57 Z M44.8,52 L49.4,51.7 L49.6,58.6 L44.6,58.8 Z', cities: ['puerto', 'calapan', 'mamburao', 'boac', 'romblon'] },
+  { id: 'bicol', name: 'Bicol', d: 'M52,46.6 L61.5,46 L67.8,49.2 L65.6,54.2 L59.5,57.2 L53.5,55 L51.4,50.2 Z', cities: ['naga', 'legazpi', 'daet', 'virac', 'sorsogon', 'masbate'] },
+  { id: 'westvis', name: 'Western Visayas', d: 'M45.2,60.4 L52.4,60 L52.2,66.8 L47.6,67.6 L44.4,65.2 Z', cities: ['iloilo', 'kalibo', 'roxas', 'sanjose', 'jordan'] },
+  { id: 'negros', name: 'Negros Island', d: 'M51.6,66.4 L56.8,66.2 L57.2,73.6 L52.2,74.2 L51.2,70 Z', cities: ['bacolod', 'dumaguete'] },
+  { id: 'centralvis', name: 'Central Visayas', d: 'M57.2,64.4 L61.2,64.2 L61,71.2 L57,71.4 Z M61.4,68.2 L65.4,68 L65.2,73.2 L61.2,73.4 Z', cities: ['cebu', 'lapulapu', 'mandaue', 'tagbilaran', 'siquijor'] },
+  { id: 'eastvis', name: 'Eastern Visayas', d: 'M66.2,55.4 L76.8,55.2 L76.2,63 L72.4,70.6 L66,70.2 L65.4,62 Z', cities: ['tacloban', 'catbalogan', 'ormoc', 'maasin', 'naval', 'borongan', 'catarman'] },
+  { id: 'zambo', name: 'Zamboanga', d: 'M44.2,75.4 L54.8,75 L54.2,83 L48.6,89.2 L43.2,86.5 L43.4,79 Z', cities: ['zamboanga', 'dipolog', 'pagadian', 'ipil', 'isabela'] },
+  { id: 'northmin', name: 'Northern Mindanao', d: 'M56.4,73.4 L68.8,73.2 L69.2,79.5 L62,81.6 L56.2,80.4 Z', cities: ['cdo', 'iligan', 'ozamiz', 'oroquieta', 'malaybalay', 'mambajao'] },
+  { id: 'caraga', name: 'Caraga', d: 'M71.2,69.6 L83.6,69.4 L82.8,78.5 L76.4,81.8 L70.4,80.6 L70.6,74 Z', cities: ['butuan', 'surigao', 'tandag', 'prosperidad', 'dinagat'] },
+  { id: 'davao', name: 'Davao', d: 'M72.4,78.6 L83.8,79.2 L83.4,89.6 L75.6,90.4 L72.2,86.5 Z', cities: ['davao', 'tagum', 'mati', 'digos'] },
+  { id: 'soccsksargen', name: 'Soccsksargen', d: 'M60.4,83.4 L72.2,83.2 L72.4,92.6 L63.6,93.4 L60.2,89 Z', cities: ['gensan', 'koronadal', 'kidapawan', 'isulan', 'alabel'] },
+  { id: 'barmm', name: 'Bangsamoro', d: 'M58.4,79.2 L65.6,79 L65.8,85.2 L58.6,85.4 Z M32.4,90.4 L46.8,89.8 L46.2,96.2 L31.6,96.4 Z', cities: ['cotabato', 'marawi', 'jolo', 'bongao'] },
+  { id: 'ncr', name: 'Metro Manila', d: 'M39.2,42.5 L42.2,42.3 L42.4,45.3 L39,45.5 Z', cities: ['manila'] }
 ];
 
 function mainStages() {
@@ -1594,24 +1594,30 @@ function regionAt(x, y) {
   return best;
 }
 
+function regionLevel(region) {
+  const order = ['Easy', 'Medium', 'Hard', 'Expert'];
+  const levels = region.cities.map((id) => cityById(id)?.difficulty || 'Easy');
+  return levels.sort((a, b) => order.indexOf(a) - order.indexOf(b))[0] || 'Easy';
+}
+
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
-  const index = Math.max(0, PH_REGIONS.findIndex((item) => item.id === selectedRegion));
-  const chips = PH_REGIONS.map((item) => {
-    const look = REGION_LOOK[item.id] || { color: '#1c4668' };
-    return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" style="--chip:${look.color}" onclick="window.rrSelectRegion?.('${item.id}', true)">${item.name}</button>`;
-  }).join('');
+  const areas = PH_REGIONS.map((item) => `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" onclick="window.rrSelectRegion?.('${item.id}', true)"><title>${item.name}</title></path>`).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
     return `<button type="button" class="phPin ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"></button>`;
   }).join('') : '';
+  const legend = PH_REGIONS.map((item, index) => {
+    const level = regionLevel(item);
+    return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" onclick="window.rrSelectRegion?.('${item.id}', true)"><span class="num">${index + 1}</span><b>${item.name}</b>${difficultyMark(level)}<small>${level}</small></button>`;
+  }).join('');
   const cards = region ? `<div class="areaCards"><div class="areaCardGrid">${region.cities.map((id) => {
     const city = cityById(id);
     const state = cityState(city);
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
-  const deck = `<div class="regionDeck"><button type="button" onclick="window.rrStepRegion?.(-1)" aria-label="Previous region">‹</button><div><small>${region ? `${index + 1} / ${PH_REGIONS.length}` : 'Philippines'}</small><b>${region ? region.name : 'Choose a region'}</b></div><button type="button" onclick="window.rrStepRegion?.(1)" aria-label="Next region">›</button></div>`;
-  return `<div class="regionChips">${chips}</div>${deck}<p class="phMapCaption">${region ? 'The map moved to this region. Dots are its cities.' : 'Use the arrows. The map will move to that region.'} ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines">${dots}</div>`)}${cards}`;
+  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${areas}</svg>${dots}</div>`);
+  return `<div class="phStage">${map}<aside class="phLegend" aria-label="Regions">${legend}</aside></div>${cards}`;
 }
 
 function focusMapOnRegion(id) {
