@@ -182,6 +182,16 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .mapZoomTools { position: absolute; right: 8px; bottom: 8px; z-index: 6; display: grid; gap: 6px; }
 #screen-race .mapZoomTools button { width: 40px; height: 36px; border: 0; border-radius: 10px; background: #10283c; color: #fff; font-weight: 800; }
 #screen-race .phCity b, #screen-race .phCity small { display: block; line-height: 1.1; }
+#screen-race .diffStars { display: block; color: #5d7384; font-size: 11px; letter-spacing: 1px; }
+#screen-race .diffStars i { font-style: normal; }
+#screen-race .diffStars i.on { color: #f6c445; }
+#screen-race .phCity .carNeed { color: #9be7ff; font-size: 8px; }
+#screen-race .phCity.locked .carNeed { color: #fca5a5; }
+#screen-race .cityReq { display: grid; gap: 2px; margin-bottom: 8px; padding: 8px; border-radius: 12px; background: #10283c; }
+#screen-race .cityReq b { color: #fff; }
+#screen-race .cityReq small { font-size: 12px; }
+#screen-race .cityReq small.ready { color: #86efac; }
+#screen-race .cityReq small.missing { color: #fca5a5; }
 #screen-race .phCity b { font-size: 11px; }
 #screen-race .phCity small { font-size: 8px; color: #ffe27a; }
 #screen-race .phCity.locked { background: #243140; color: #9eb0bd; }

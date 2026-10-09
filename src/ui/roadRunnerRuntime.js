@@ -1360,7 +1360,20 @@ function ownsVehicle(need) {
 function needLabel(city) {
   if (city.need?.vehicle) return VEHICLES[city.need.vehicle]?.label || 'a special vehicle';
   if (city.need?.class) return `${city.need.class} vehicle`;
-  return 'starter vehicle';
+  return 'Starter Hatchback';
+}
+
+function carsForNeed(city) {
+  if (city.need?.vehicle) return [VEHICLES[city.need.vehicle]?.label || 'Special vehicle'];
+  const cls = city.need?.class;
+  if (!cls) return ['Starter Hatchback'];
+  return Object.values(VEHICLES).filter((item) => item.cls === cls).map((item) => item.label);
+}
+
+function difficultyMark(level) {
+  const count = { Easy: 1, Medium: 2, Hard: 3, Expert: 4 }[level] || 1;
+  const stars = [1, 2, 3, 4].map((n) => `<i class="${n <= count ? 'on' : ''}">★</i>`).join('');
+  return `<span class="diffStars" aria-label="${level}, ${count} of 4">${stars}</span>`;
 }
 
 function cityProgressDone(cityId) {
@@ -1397,8 +1410,8 @@ function renderPhilippinesMap() {
   const pins = PH_CITIES.map((city) => {
     const state = cityState(city);
     const level = String(city.difficulty || 'Easy').toLowerCase();
-    const detail = city.id === 'manila' ? 'Capital' : needLabel(city);
-    return `<button type="button" class="phCity ${state} ${level}" style="left:${city.spot.x}%;top:${city.spot.y}%" title="${state === 'locked' ? cityLockReason(city) : city.province}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.difficulty} · ${detail}</small></button>`;
+    const detail = city.id === 'manila' ? 'Starter Hatchback' : needLabel(city);
+    return `<button type="button" class="phCity ${state} ${level}" style="left:${city.spot.x}%;top:${city.spot.y}%" title="${state === 'locked' ? cityLockReason(city) : carsForNeed(city).join(', ')}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b>${difficultyMark(city.difficulty)}<small class="carNeed">${detail}</small></button>`;
   }).join('');
   return `<p class="phMapCaption">Start in Manila, then branch out. Pinch or use + to look around. ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines">${pins}</div>`)}`;
 }
@@ -1411,7 +1424,8 @@ function renderCityMissions(cityId) {
     const status = stars ? `${stars} star${stars === 1 ? '' : 's'}` : unlocked ? 'Open' : 'Locked';
     return `<button type="button" class="cityMission ${unlocked ? '' : 'locked'}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.landmark}</b><small>${status}</small></button>`;
   }).join('');
-  return `<div class="cityMissions"><button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><h3>${city.name}</h3><p>${city.province} · ${city.difficulty} · ${needLabel(city)}</p><div class="cityMissionList">${rows}</div></div>`;
+  const ready = ownsVehicle(city.need);
+  return `<div class="cityMissions"><button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><h3>${city.name}</h3><div class="cityReq">${difficultyMark(city.difficulty)}<b>${city.difficulty}</b><small class="${ready ? 'ready' : 'missing'}">${ready ? 'Car ready' : 'Car locked'}: ${carsForNeed(city).join(', ')}</small></div><div class="cityMissionList">${rows}</div></div>`;
 }
 
 function renderManilaMap() {
