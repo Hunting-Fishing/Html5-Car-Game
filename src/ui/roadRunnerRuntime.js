@@ -31,6 +31,59 @@ const ROUTES = {
   port: { label: 'Port Export Route', profile: 'port', length: 15000, meters: 5000, reward: 1.35, difficulty: 1.45, skyA: '#93dfff', skyB: '#e4fbff', grass: '#49a985', road: '#36414d', seed: 5, unlock: 2700, bgAsset: 'routePort' }
 };
 
+const STAGE_WORLDS = [
+  { routeKey: 'track', name: 'Test Track' },
+  { routeKey: 'barangay', name: 'Barangay' },
+  { routeKey: 'farm', name: 'Farm' },
+  { routeKey: 'mountain', name: 'Mountain' },
+  { routeKey: 'port', name: 'Port' }
+];
+const STAGES_PER_WORLD = 5;
+
+function allStages() {
+  const stages = [];
+  STAGE_WORLDS.forEach((world, worldIndex) => {
+    const route = ROUTES[world.routeKey];
+    for (let step = 1; step <= STAGES_PER_WORLD; step += 1) {
+      stages.push({
+        id: `${worldIndex + 1}-${step}`,
+        world: worldIndex + 1,
+        step,
+        routeKey: world.routeKey,
+        name: world.name,
+        targetM: Math.round(route.meters * (0.28 + step * 0.12))
+      });
+    }
+  });
+  return stages;
+}
+
+function stageIndex(id) {
+  return allStages().findIndex((stage) => stage.id === id);
+}
+
+function stageById(id) {
+  return allStages().find((stage) => stage.id === id) || allStages()[0];
+}
+
+function normalizeStageProgress(progress) {
+  const stars = progress?.stars && typeof progress.stars === 'object' ? progress.stars : {};
+  const current = allStages().some((stage) => stage.id === progress?.current) ? progress.current : '1-1';
+  return { current, stars };
+}
+
+function stageUnlocked(id) {
+  const index = stageIndex(id);
+  if (index <= 0) return true;
+  const previous = allStages()[index - 1];
+  return Number(saveData.stageProgress?.stars?.[previous.id] || 0) > 0;
+}
+
+function currentStage() {
+  const id = saveData.stageProgress?.current || '1-1';
+  return stageUnlocked(id) ? stageById(id) : stageById('1-1');
+}
+
 const GHOST_MODES = {
   solo: { label: 'Solo', count: 0 },
   ghost2: { label: '1 Rival', count: 1 },
@@ -147,7 +200,7 @@ let images = loadImages();
 let input = { gas: false, brake: false };
 let game = null;
 let lastTime = 0;
-let activeTab = 'drive';
+let activeTab = 'routes';
 let activeVehicleFilter = 'all';
 let leaderboardSearch = '';
 
@@ -200,7 +253,8 @@ function loadSave() {
         partsEarned: parsed.lifetime?.partsEarned || 0,
         runs: parsed.lifetime?.runs || 0
       },
-      missions: parsed.missions || null
+      missions: parsed.missions || null,
+      stageProgress: normalizeStageProgress(parsed.stageProgress)
     };
     ensureMissionState(result);
     migrateLegacyBestTrail(result);
@@ -212,7 +266,7 @@ function loadSave() {
     }
     return result;
   } catch {
-    const fallback = { coins: 0, parts: 0, tools: 0, bestDistance: 0, bestTrail: [], upgrades: defaultUpgrades(), unlockedVehicles: ['hatchback'], selectedVehicle: 'hatchback', completedMissions: [], selectedRivals: [], lifetimeFuel: 0, lifetimeWear: 0, lifetimeRepairs: 0, lifetime: { distance: 0, coinsEarned: 0, partsEarned: 0, runs: 0 }, missions: null };
+    const fallback = { coins: 0, parts: 0, tools: 0, bestDistance: 0, bestTrail: [], upgrades: defaultUpgrades(), unlockedVehicles: ['hatchback'], selectedVehicle: 'hatchback', completedMissions: [], selectedRivals: [], lifetimeFuel: 0, lifetimeWear: 0, lifetimeRepairs: 0, lifetime: { distance: 0, coinsEarned: 0, partsEarned: 0, runs: 0 }, missions: null, stageProgress: normalizeStageProgress() };
     ensureMissionState(fallback);
     return fallback;
   }
@@ -899,7 +953,12 @@ function refreshRaceCommand() {
 
 function resetRun() {
   ensureMissionState(saveData);
-  const route = { ...ROUTES[activeRoute] };
+  const mapStage = currentStage();
+  activeRoute = mapStage.routeKey;
+  const route = { ...ROUTES[activeRoute], label: `${mapStage.id} ${ROUTES[activeRoute].label}` };
+  const scale = mapStage.targetM / ROUTES[activeRoute].meters;
+  route.length = Math.max(2400, Math.round(route.length * scale));
+  route.meters = mapStage.targetM;
   route.terrain = makeTerrainProfile(route);
   const stats = vehicleStats();
   const director = makeDirector(route);
@@ -908,6 +967,7 @@ function resetRun() {
     route,
     routeKey: activeRoute,
     stage,
+    stageCode: mapStage.id,
     stats,
     mission: currentProgressionMission(),
     x: 80,
@@ -958,7 +1018,7 @@ function shellHtml() {
     ['leaderboard', 'Leaderboard', 'search'],
     ['garage', 'Garage', 'tune'],
     ['vehicles', 'Vehicles', 'cars'],
-    ['routes', 'Routes', 'map'],
+    ['routes', 'Map', 'map'],
     ['missions', 'Missions', 'goals']
   ];
   return `<section class="card roadRunnerShell GamePanel" data-component="GamePanel" data-rr-active-tab="${activeTab}">
@@ -966,7 +1026,7 @@ function shellHtml() {
     <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" ${key === 'leaderboard' ? 'data-guide-target="previewGhostRace"' : ''} onclick="window.rrSetTab?.('${key}')"><b>${label}</b></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
-        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${ROUTES[activeRoute].label}</div><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div></div>
+        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${currentStage().id}</div><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div></div>
         <div class="racePedalRow">
           <button class="raceGasPedal raceBrakePedal" type="button" data-rr-control="brake" aria-label="Brake pedal"><span class="raceGasHinge"></span><span class="raceGasPad"><b>BRAKE</b></span></button>
           <button class="raceGasPedal" type="button" data-rr-control="gas" data-guide-target="raceBoost" aria-label="Gas pedal"><span class="raceGasHinge"></span><span class="raceGasPad"><b>GAS</b></span></button>
@@ -1160,8 +1220,18 @@ function vehicleCard(key, item) {
 function renderRoutesPanel() {
   const panel = document.querySelector('[data-road-runner-routes]');
   if (!panel) return;
-  const cards = Object.entries(ROUTES).map(([key, route]) => routeCard(key, route)).join('');
-  panel.innerHTML = `<h3 class="racerPageTitle">Routes</h3><div class="roadRunnerVehicleGrid">${cards}</div>`;
+  const stages = allStages();
+  const currentId = saveData.stageProgress.current;
+  const worlds = STAGE_WORLDS.map((world, worldIndex) => {
+    const nodes = stages.filter((stage) => stage.world === worldIndex + 1).map((stage, index) => {
+      const stars = Number(saveData.stageProgress.stars[stage.id] || 0);
+      const unlocked = stageUnlocked(stage.id);
+      const state = stage.id === currentId ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
+      return `<button type="button" class="stageNode ${index % 2 ? 'right' : 'left'} ${state}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.id}</b><small>${stars ? '★'.repeat(stars) : unlocked ? `${stage.targetM}m` : 'Locked'}</small></button>`;
+    }).join('');
+    return `<section class="stageWorld"><h4>World ${worldIndex + 1} · ${world.name}</h4><div class="stageTrail">${nodes}</div></section>`;
+  }).join('');
+  panel.innerHTML = `<h3 class="racerPageTitle">Stage Map</h3><p class="stageMapNote">Clear a stage to open the next. The trail runs 1-1 to 5-5.</p>${worlds}`;
 }
 
 function routeCard(key, route) {
@@ -1998,6 +2068,11 @@ function finishRun(completed) {
   }
   let newGhostBest = false;
   if (completed) {
+    const id = game.stageCode || currentStage().id;
+    const wearPct = Math.floor(Math.min(100, game.wear / game.stats.wearLimit * 100));
+    const earned = wearPct < 40 ? 3 : wearPct < 75 ? 2 : 1;
+    saveData.stageProgress = normalizeStageProgress(saveData.stageProgress);
+    saveData.stageProgress.stars[id] = Math.max(Number(saveData.stageProgress.stars[id] || 0), earned);
     recordGhostSample(true);
     const ghost = createLocalBestGhost({
       playerName: currentPlayerName(),
@@ -2101,11 +2176,21 @@ function mountRoadRunner(force = false) {
   }
 }
 
+window.selectStage = (id) => {
+  if (!stageUnlocked(id)) return;
+  saveData.stageProgress.current = id;
+  activeRoute = stageById(id).routeKey;
+  saveGameData();
+  activeTab = 'drive';
+  mountRoadRunner(true);
+};
 window.nextHillRace = () => {
-  const keys = Object.keys(ROUTES);
-  const index = keys.indexOf(activeRoute);
-  const next = keys[(index + 1) % keys.length];
-  if (next && routeUnlocked(next)) activeRoute = next;
+  const next = allStages()[stageIndex(saveData.stageProgress.current) + 1];
+  if (next && stageUnlocked(next.id)) {
+    saveData.stageProgress.current = next.id;
+    activeRoute = next.routeKey;
+  }
+  activeTab = 'drive';
   window.restartHillRoute();
 };
 window.restartHillRoute = () => {
