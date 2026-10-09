@@ -31,32 +31,41 @@ const ROUTES = {
   port: { label: 'Port Export Route', profile: 'port', length: 15000, meters: 5000, reward: 1.35, difficulty: 1.45, skyA: '#93dfff', skyB: '#e4fbff', grass: '#49a985', road: '#36414d', seed: 5, unlock: 2700, bgAsset: 'routePort' }
 };
 
-const STAGE_WORLDS = [
-  { routeKey: 'track', name: 'Test Track', art: publicAsset('/assets/race/routes/track.svg') },
-  { routeKey: 'barangay', name: 'Barangay', art: publicAsset('/assets/race/routes/barangay.svg') },
-  { routeKey: 'farm', name: 'Farm', art: publicAsset('/assets/race/routes/farm.svg') },
-  { routeKey: 'mountain', name: 'Mountain', art: publicAsset('/assets/race/routes/mountain.svg') },
-  { routeKey: 'port', name: 'Port', art: publicAsset('/assets/race/routes/port.svg') }
-];
-const STAGES_PER_WORLD = 5;
-const CLIMB_SPOTS = [
-  { x: 62, y: 86 },
-  { x: 28, y: 68 },
-  { x: 74, y: 50 },
-  { x: 32, y: 32 },
-  { x: 66, y: 14 }
-];
+const STAGES_PER_WORLD = 10;
+const GARAGE_UNLOCK_LEVEL = 3;
 const MAP_ART = publicAsset('/assets/race/maps/highway-map.jpg');
 const MAP_CAR = publicAsset('/assets/race/cars/starter_compact.png');
-const TOWN_STOPS = [
-  [{ x: 34, y: 9 }, { x: 50, y: 6 }, { x: 64, y: 10 }, { x: 76, y: 13 }, { x: 52, y: 16 }],
-  [{ x: 24, y: 23 }, { x: 42, y: 26 }, { x: 58, y: 29 }, { x: 74, y: 24 }, { x: 48, y: 34 }],
-  [{ x: 22, y: 41 }, { x: 44, y: 44 }, { x: 58, y: 48 }, { x: 76, y: 45 }, { x: 48, y: 54 }],
-  [{ x: 32, y: 61 }, { x: 46, y: 66 }, { x: 58, y: 70 }, { x: 72, y: 67 }, { x: 48, y: 76 }],
-  [{ x: 30, y: 82 }, { x: 46, y: 80 }, { x: 56, y: 86 }, { x: 70, y: 84 }, { x: 46, y: 91 }]
-];
 
-function allStages() {
+function ringStops(cx, cy, rx, ry, count) {
+  return Array.from({ length: count }, (_, index) => {
+    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / count;
+    return { x: Math.round((cx + Math.cos(angle) * rx) * 10) / 10, y: Math.round((cy + Math.sin(angle) * ry) * 10) / 10 };
+  });
+}
+
+function gridStops(box) {
+  const cols = 5;
+  const rows = 2;
+  return Array.from({ length: 10 }, (_, index) => {
+    const col = index % cols;
+    const row = Math.floor(index / cols);
+    return {
+      x: Math.round((box.x + (box.w * col) / (cols - 1)) * 10) / 10,
+      y: Math.round((box.y + (box.h * row) / Math.max(1, rows - 1)) * 10) / 10
+    };
+  });
+}
+
+const STAGE_WORLDS = [
+  { routeKey: 'track', name: 'Test Track', label: { x: 28, y: 2 }, stops: ringStops(28, 9, 12, 4.2, 10) },
+  { routeKey: 'barangay', name: 'Barangay', label: { x: 50, y: 17 }, stops: gridStops({ x: 10, y: 20, w: 78, h: 13 }) },
+  { routeKey: 'farm', name: 'Farm', label: { x: 50, y: 36 }, stops: gridStops({ x: 10, y: 39, w: 78, h: 12 }) },
+  { routeKey: 'mountain', name: 'Mountain', label: { x: 50, y: 55 }, stops: gridStops({ x: 12, y: 58, w: 74, h: 15 }) },
+  { routeKey: 'port', name: 'Port', label: { x: 50, y: 77 }, stops: gridStops({ x: 24, y: 81, w: 52, h: 7 }) }
+];
+const GARAGE_SPOT = { x: 80, y: 8 };
+
+function mainStages() {
   const stages = [];
   STAGE_WORLDS.forEach((world, worldIndex) => {
     const route = ROUTES[world.routeKey];
@@ -67,11 +76,29 @@ function allStages() {
         step,
         routeKey: world.routeKey,
         name: world.name,
-        targetM: Math.round(route.meters * (0.28 + step * 0.12))
+        targetM: Math.round(route.meters * (0.25 + step * 0.07)),
+        spot: world.stops[step - 1]
       });
     }
   });
   return stages;
+}
+
+function secretStages() {
+  return [{
+    id: 'garage',
+    world: 0,
+    step: 1,
+    routeKey: 'track',
+    name: 'Secret Garage',
+    secret: true,
+    targetM: 1400,
+    spot: GARAGE_SPOT
+  }];
+}
+
+function allStages() {
+  return [...mainStages(), ...secretStages()];
 }
 
 function stageIndex(id) {
@@ -88,11 +115,21 @@ function normalizeStageProgress(progress) {
   return { current, stars };
 }
 
+function carTunedEnough() {
+  const levels = saveData.upgrades || {};
+  return ['engine', 'tires', 'suspension', 'transmission'].every((key) => Number(levels[key] || 1) >= GARAGE_UNLOCK_LEVEL);
+}
+
+function garageReady() {
+  return mainStages().every((stage) => Number(saveData.stageProgress?.stars?.[stage.id] || 0) >= 3) && carTunedEnough();
+}
+
 function stageUnlocked(id) {
-  const index = stageIndex(id);
+  if (id === 'garage') return garageReady();
+  const stages = mainStages();
+  const index = stages.findIndex((stage) => stage.id === id);
   if (index <= 0) return true;
-  const previous = allStages()[index - 1];
-  return Number(saveData.stageProgress?.stars?.[previous.id] || 0) > 0;
+  return Number(saveData.stageProgress?.stars?.[stages[index - 1].id] || 0) > 0;
 }
 
 function currentStage() {
@@ -269,7 +306,8 @@ function loadSave() {
         runs: parsed.lifetime?.runs || 0
       },
       missions: parsed.missions || null,
-      stageProgress: normalizeStageProgress(parsed.stageProgress)
+      stageProgress: normalizeStageProgress(parsed.stageProgress),
+      upgradedPart: Boolean(parsed.upgradedPart)
     };
     ensureMissionState(result);
     migrateLegacyBestTrail(result);
@@ -1241,21 +1279,21 @@ function renderRoutesPanel() {
   const stages = allStages();
   const progress = saveData.stageProgress || { current: '1-1', stars: {} };
   const currentId = progress.current || '1-1';
-  const road = 'M 62 1 C 50 8, 58 14, 48 20 C 36 26, 64 32, 50 38 C 62 46, 40 52, 48 60 C 40 68, 66 72, 50 80 C 46 86, 54 90, 50 97';
+  const road = 'M 28 9 C 46 16, 40 24, 50 30 C 62 38, 36 44, 50 52 C 40 62, 64 70, 50 84';
+  const spur = 'M 56 8 L 80 8';
   const nodes = stages.map((stage) => {
-    const spot = TOWN_STOPS[stage.world - 1][stage.step - 1];
+    const spot = stage.spot;
     const stars = Number(progress.stars?.[stage.id] || 0);
     const unlocked = stageUnlocked(stage.id);
     const state = stage.id === currentId ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
     const starRow = [1, 2, 3].map((n) => `<i class="${n <= stars ? 'on' : ''}">★</i>`).join('');
     const car = stage.id === currentId ? `<img class="hillCar" src="${MAP_CAR}" alt="">` : '';
-    return `<button type="button" class="hillNode ${state}" style="left:${spot.x}%;top:${spot.y}%" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked ? stage.step : ''}</b><span>${starRow}</span></button>`;
+    const label = stage.secret ? 'Garage' : stage.step;
+    const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : stage.id;
+    return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${spot.x}%;top:${spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked || stage.secret ? label : ''}</b><span>${starRow}</span></button>`;
   }).join('');
-  const tags = STAGE_WORLDS.map((world, index) => {
-    const spot = TOWN_STOPS[index][2];
-    return `<div class="townTag" style="left:${spot.x}%;top:${spot.y}%">${world.name}</div>`;
-  }).join('');
-  panel.innerHTML = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Highway map from the test track to the port"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${tags}${nodes}</div>`;
+  const tags = STAGE_WORLDS.map((world) => `<div class="townTag" style="left:${world.label.x}%;top:${world.label.y}%">${world.name}</div>`).join('');
+  panel.innerHTML = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Highway map from the test track to the port"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/><path class="spur" d="${spur}"/></svg>${tags}${nodes}</div>`;
   setText('[data-rr-route]', currentId);
 }
 
@@ -1380,6 +1418,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
   panel.innerHTML = `<div style="display:grid;gap:6px;color:#fff">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">${starHtml}</div>
     <div style="text-align:center;font-size:15px;font-weight:800;line-height:1.2">${title} · ${stars}/3</div>
+    ${game.foundPart ? '<div style="text-align:center;color:#ffe27a;font-size:12px;font-weight:800">Found Upgraded Part</div>' : ''}
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
       <div style="background:#1c4668;border-radius:10px;padding:6px;text-align:center"><b style="font-size:15px">+${formatSmall(game.coins)}</b><div style="font-size:10px">Coins</div></div>
       <div style="background:#1c4668;border-radius:10px;padding:6px;text-align:center"><b style="font-size:15px">+${formatSmall(bonus)}</b><div style="font-size:10px">Bonus</div></div>
@@ -2159,6 +2198,11 @@ function finishRun(completed) {
     saveData.stageProgress = normalizeStageProgress(saveData.stageProgress);
     saveData.stageProgress.stars[id] = Math.max(Number(saveData.stageProgress.stars[id] || 0), earned);
     game.clearedStage = id;
+    if (id === 'garage' && !saveData.upgradedPart) {
+      saveData.upgradedPart = true;
+      saveData.parts += 8;
+      game.foundPart = true;
+    }
     recordGhostSample(true);
     const ghost = createLocalBestGhost({
       playerName: currentPlayerName(),
@@ -2273,8 +2317,8 @@ window.selectStage = (id) => {
 window.nextHillRace = () => {
   const beaten = game?.clearedStage || game?.stageCode || saveData.stageProgress?.current || '1-1';
   const won = Boolean(game?.clearedStage) || Boolean(game?.finishedRoute) || game?.finishReason === 'complete';
-  const index = stageIndex(beaten);
-  const next = index >= 0 ? allStages()[index + 1] : null;
+  const index = mainStages().findIndex((stage) => stage.id === beaten);
+  const next = index >= 0 ? mainStages()[index + 1] : null;
   hidePostRunPanel();
   if (won && next) {
     saveData.stageProgress = normalizeStageProgress(saveData.stageProgress);
