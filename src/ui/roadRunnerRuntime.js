@@ -57,21 +57,21 @@ const STAGE_WORLDS = [
 const GARAGE_SPOT = { x: 16, y: 44 };
 const PH_MAP = publicAsset('/assets/race/maps/philippines-map.png');
 const PH_CITIES = [
-  { id: 'laoag', name: 'Laoag', province: 'Ilocos Norte', spot: { x: 39, y: 22 }, missions: ['Sinking Bell Tower', 'Museo Ilocos Norte', 'Paoay Church'] },
-  { id: 'baguio', name: 'Baguio', province: 'Benguet', spot: { x: 43, y: 32 }, missions: ['Session Road', 'Burnham Park', 'Mines View'] },
-  { id: 'tuguegarao', name: 'Tuguegarao', province: 'Cagayan', spot: { x: 52, y: 22 }, missions: ['Callao Cave', 'Buntun Bridge', 'St. Peter Cathedral'] },
-  { id: 'manila', name: 'Manila', province: 'Metro Manila', spot: { x: 40, y: 44 }, local: true },
-  { id: 'batangas', name: 'Batangas', province: 'Batangas', spot: { x: 40, y: 49 }, missions: ['Taal Volcano', 'Basilica', 'Batangas Port'] },
-  { id: 'legazpi', name: 'Legazpi', province: 'Albay', spot: { x: 63, y: 52 }, missions: ['Mayon', 'Cagsawa', 'Embarcadero'] },
-  { id: 'puerto', name: 'Puerto Princesa', province: 'Palawan', spot: { x: 20, y: 66 }, missions: ['Underground River', 'Baywalk', 'Honda Bay'] },
-  { id: 'iloilo', name: 'Iloilo', province: 'Iloilo', spot: { x: 50, y: 64 }, missions: ['Molo Church', 'Calle Real', 'Iloilo River'] },
-  { id: 'bacolod', name: 'Bacolod', province: 'Negros Occidental', spot: { x: 54, y: 69 }, missions: ['Lacson Street', 'The Ruins', 'Capitol Park'] },
-  { id: 'cebu', name: 'Cebu', province: 'Cebu', spot: { x: 58, y: 67 }, missions: ["Magellan's Cross", 'Santo Niño', 'Colon Street'] },
-  { id: 'tacloban', name: 'Tacloban', province: 'Leyte', spot: { x: 70, y: 64 }, missions: ['San Juanico Bridge', 'MacArthur Landing', 'Sto. Niño Church'] },
-  { id: 'zamboanga', name: 'Zamboanga', province: 'Zamboanga', spot: { x: 46, y: 80 }, missions: ['Fort Pilar', 'Paseo del Mar', 'Yakan Village'] },
-  { id: 'cdo', name: 'Cagayan de Oro', province: 'Misamis Oriental', spot: { x: 64, y: 76 }, missions: ['Whitewater', 'St. Augustine', 'Mapawa'] },
-  { id: 'davao', name: 'Davao', province: 'Davao del Sur', spot: { x: 76, y: 84 }, missions: ['Philippine Eagle Center', "People's Park", 'Mount Apo'] },
-  { id: 'gensan', name: 'General Santos', province: 'South Cotabato', spot: { x: 68, y: 90 }, missions: ['Tuna Market', 'Sarangani Bay', 'Oval Plaza'] }
+  { id: 'manila', name: 'Manila', province: 'Metro Manila', spot: { x: 40, y: 44 }, local: true, difficulty: 'Easy' },
+  { id: 'batangas', name: 'Batangas', province: 'Batangas', spot: { x: 40, y: 49 }, difficulty: 'Easy', after: 'manila', need: { class: 'starter' }, missions: ['Taal Volcano', 'Basilica', 'Batangas Port'] },
+  { id: 'baguio', name: 'Baguio', province: 'Benguet', spot: { x: 43, y: 32 }, difficulty: 'Medium', after: 'manila', need: { class: 'offroad' }, missions: ['Session Road', 'Burnham Park', 'Mines View'] },
+  { id: 'laoag', name: 'Laoag', province: 'Ilocos Norte', spot: { x: 39, y: 22 }, difficulty: 'Medium', after: 'baguio', need: { class: 'utility' }, missions: ['Sinking Bell Tower', 'Museo Ilocos Norte', 'Paoay Church'] },
+  { id: 'tuguegarao', name: 'Tuguegarao', province: 'Cagayan', spot: { x: 52, y: 22 }, difficulty: 'Medium', after: 'baguio', need: { class: 'utility' }, missions: ['Callao Cave', 'Buntun Bridge', 'St. Peter Cathedral'] },
+  { id: 'legazpi', name: 'Legazpi', province: 'Albay', spot: { x: 63, y: 52 }, difficulty: 'Medium', after: 'batangas', need: { class: 'offroad' }, missions: ['Mayon', 'Cagsawa', 'Embarcadero'] },
+  { id: 'cebu', name: 'Cebu', province: 'Cebu', spot: { x: 58, y: 67 }, difficulty: 'Hard', after: 'batangas', need: { class: 'race' }, missions: ["Magellan's Cross", 'Santo Niño', 'Colon Street'] },
+  { id: 'iloilo', name: 'Iloilo', province: 'Iloilo', spot: { x: 50, y: 64 }, difficulty: 'Hard', after: 'cebu', need: { class: 'utility' }, missions: ['Molo Church', 'Calle Real', 'Iloilo River'] },
+  { id: 'bacolod', name: 'Bacolod', province: 'Negros Occidental', spot: { x: 54, y: 69 }, difficulty: 'Hard', after: 'cebu', need: { class: 'starter' }, missions: ['Lacson Street', 'The Ruins', 'Capitol Park'] },
+  { id: 'tacloban', name: 'Tacloban', province: 'Leyte', spot: { x: 70, y: 64 }, difficulty: 'Hard', after: 'cebu', need: { class: 'endurance' }, missions: ['San Juanico Bridge', 'MacArthur Landing', 'Sto. Niño Church'] },
+  { id: 'puerto', name: 'Puerto Princesa', province: 'Palawan', spot: { x: 20, y: 66 }, difficulty: 'Expert', after: 'legazpi', need: { vehicle: 'desertRunner' }, missions: ['Underground River', 'Baywalk', 'Honda Bay'] },
+  { id: 'zamboanga', name: 'Zamboanga', province: 'Zamboanga', spot: { x: 46, y: 80 }, difficulty: 'Expert', after: 'iloilo', need: { vehicle: 'exportVan' }, missions: ['Fort Pilar', 'Paseo del Mar', 'Yakan Village'] },
+  { id: 'cdo', name: 'Cagayan de Oro', province: 'Misamis Oriental', spot: { x: 64, y: 76 }, difficulty: 'Hard', after: 'tacloban', need: { class: 'offroad' }, missions: ['Whitewater', 'St. Augustine', 'Mapawa'] },
+  { id: 'davao', name: 'Davao', province: 'Davao del Sur', spot: { x: 76, y: 84 }, difficulty: 'Expert', after: 'cdo', need: { vehicle: 'mountainCourier' }, missions: ['Philippine Eagle Center', "People's Park", 'Mount Apo'] },
+  { id: 'gensan', name: 'General Santos', province: 'South Cotabato', spot: { x: 68, y: 90 }, difficulty: 'Expert', after: 'davao', need: { vehicle: 'superCoupe' }, missions: ['Tuna Market', 'Sarangani Bay', 'Oval Plaza'] }
 ];
 
 function mainStages() {
@@ -175,17 +175,14 @@ function garageReady() {
 
 function stageUnlocked(id) {
   if (id === 'garage') return garageReady();
-  const stages = mainStages();
-  const index = stages.findIndex((stage) => stage.id === id);
-  if (index <= 0) return true;
-  const stage = stages[index];
-  if (stage.cityId === 'manila') {
-    const manila = stages.filter((item) => item.cityId === 'manila');
-    const localIndex = manila.findIndex((item) => item.id === id);
-    if (localIndex <= 0) return true;
-    return Number(saveData.stageProgress?.stars?.[manila[localIndex - 1].id] || 0) > 0;
-  }
-  return Number(saveData.stageProgress?.stars?.[stages[index - 1].id] || 0) > 0;
+  const stage = mainStages().find((item) => item.id === id);
+  if (!stage) return false;
+  const city = cityById(stage.cityId);
+  if (!cityOpen(city)) return false;
+  const list = stagesForCity(stage.cityId);
+  const localIndex = list.findIndex((item) => item.id === id);
+  if (localIndex <= 0) return true;
+  return Number(saveData.stageProgress?.stars?.[list[localIndex - 1].id] || 0) > 0;
 }
 
 function currentStage() {
@@ -1341,6 +1338,8 @@ function vehicleCard(key, item) {
 
 let mapLayer = 'countries';
 let selectedCityId = 'manila';
+let mapNotice = '';
+const mapView = { scale: 1, x: 0, y: 0 };
 
 function stagesForCity(cityId) {
   return mainStages().filter((stage) => stage.cityId === cityId);
@@ -1350,22 +1349,58 @@ function cityById(cityId) {
   return PH_CITIES.find((city) => city.id === cityId) || PH_CITIES[0];
 }
 
+function ownsVehicle(need) {
+  const owned = saveData.unlockedVehicles || [];
+  if (!need) return true;
+  if (need.vehicle) return owned.includes(need.vehicle);
+  if (need.class) return owned.some((key) => VEHICLES[key]?.cls === need.class);
+  return true;
+}
+
+function needLabel(city) {
+  if (city.need?.vehicle) return VEHICLES[city.need.vehicle]?.label || 'a special vehicle';
+  if (city.need?.class) return `${city.need.class} vehicle`;
+  return 'starter vehicle';
+}
+
+function cityProgressDone(cityId) {
+  return stagesForCity(cityId).some((stage) => Number(saveData.stageProgress?.stars?.[stage.id] || 0) > 0);
+}
+
+function cityOpen(city) {
+  if (!city || city.id === 'manila') return true;
+  const parentReady = !city.after || cityProgressDone(city.after);
+  return parentReady && ownsVehicle(city.need);
+}
+
+function cityLockReason(city) {
+  const reasons = [];
+  if (city.after && !cityProgressDone(city.after)) reasons.push(`Finish a race in ${cityById(city.after).name}`);
+  if (!ownsVehicle(city.need)) reasons.push(city.need?.vehicle ? `Unlock ${needLabel(city)}` : `Unlock a ${needLabel(city)}`);
+  return reasons.join('. ');
+}
+
 function cityState(city) {
   const list = stagesForCity(city.id);
   const stars = list.map((stage) => Number(saveData.stageProgress?.stars?.[stage.id] || 0));
   if (list.length && stars.every((count) => count > 0)) return 'cleared';
   if (list.some((stage) => stage.id === saveData.stageProgress?.current)) return 'current';
-  if (list[0] && stageUnlocked(list[0].id)) return 'open';
+  if (cityOpen(city)) return 'open';
   return 'locked';
+}
+
+function mapZoomHtml(inner) {
+  return `<div class="mapZoom" data-map-zoom><div class="mapZoomTools"><button type="button" onclick="window.rrMapZoom?.(1)" aria-label="Zoom in">+</button><button type="button" onclick="window.rrMapZoom?.(-1)" aria-label="Zoom out">−</button><button type="button" onclick="window.rrMapZoom?.(0)" aria-label="Reset zoom">1:1</button></div><div class="mapZoomStage">${inner}</div></div>`;
 }
 
 function renderPhilippinesMap() {
   const pins = PH_CITIES.map((city) => {
     const state = cityState(city);
-    const count = stagesForCity(city.id).length;
-    return `<button type="button" class="phCity ${state}" style="left:${city.spot.x}%;top:${city.spot.y}%" ${state === 'locked' ? 'disabled' : ''} onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${count} missions</small></button>`;
+    const level = String(city.difficulty || 'Easy').toLowerCase();
+    const detail = city.id === 'manila' ? 'Capital' : needLabel(city);
+    return `<button type="button" class="phCity ${state} ${level}" style="left:${city.spot.x}%;top:${city.spot.y}%" title="${state === 'locked' ? cityLockReason(city) : city.province}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.difficulty} · ${detail}</small></button>`;
   }).join('');
-  return `<p class="phMapCaption">The Philippines. Open a city to run its missions. Manila opens the metro map.</p><div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines">${pins}</div>`;
+  return `<p class="phMapCaption">Start in Manila, then branch out. Pinch or use + to look around. ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines">${pins}</div>`)}`;
 }
 
 function renderCityMissions(cityId) {
@@ -1376,7 +1411,7 @@ function renderCityMissions(cityId) {
     const status = stars ? `${stars} star${stars === 1 ? '' : 's'}` : unlocked ? 'Open' : 'Locked';
     return `<button type="button" class="cityMission ${unlocked ? '' : 'locked'}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.landmark}</b><small>${status}</small></button>`;
   }).join('');
-  return `<div class="cityMissions"><button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><h3>${city.name}</h3><p>${city.province}</p><div class="cityMissionList">${rows}</div></div>`;
+  return `<div class="cityMissions"><button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><h3>${city.name}</h3><p>${city.province} · ${city.difficulty} · ${needLabel(city)}</p><div class="cityMissionList">${rows}</div></div>`;
 }
 
 function renderManilaMap() {
@@ -1393,7 +1428,7 @@ function renderManilaMap() {
     const title = stage.secret && !unlocked ? 'Need 3 stars on every stage and engine, tires, suspension, and transmission at level 3' : `${stage.name} · ${stage.landmark || ''}`;
     return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${stage.spot.x}%;top:${stage.spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${label}</b><span>${starRow}</span></button>`;
   }).join('');
-  return `<button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Metro Manila and the cities around it"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${nodes}</div>`;
+  return `<button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><p class="phMapCaption">Manila is Easy. Zoom in to read the cities around it.</p>${mapZoomHtml(`<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Metro Manila and the cities around it"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/></svg>${nodes}</div>`)}`;
 }
 
 function philippinesCleared() {
@@ -1426,6 +1461,7 @@ function renderRoutesPanel() {
   if (mapLayer === 'manila') body = renderManilaMap();
   if (mapLayer === 'city') body = renderCityMissions(selectedCityId);
   panel.innerHTML = `${switcher}${body}`;
+  bindMapZoom(panel);
   setText('[data-rr-route]', game?.route?.label || currentStage().name || currentStage().id);
 }
 
@@ -1436,10 +1472,105 @@ window.rrMapLayer = (layer) => {
 
 window.enterPhCity = (cityId) => {
   const city = cityById(cityId);
-  if (cityState(city) === 'locked') return;
+  if (cityState(city) === 'locked') {
+    mapNotice = `${city.name} is locked. ${cityLockReason(city)}.`;
+    renderRoutesPanel();
+    return;
+  }
+  mapNotice = '';
   selectedCityId = city.id;
   mapLayer = city.local ? 'manila' : 'city';
   renderRoutesPanel();
+};
+
+function applyMapView(stage) {
+  if (!stage) return;
+  stage.style.transform = `translate(${mapView.x}px, ${mapView.y}px) scale(${mapView.scale})`;
+}
+
+function bindMapZoom(root) {
+  const view = root.querySelector('[data-map-zoom]');
+  const stage = view?.querySelector('.mapZoomStage');
+  if (!view || !stage) return;
+  const pointers = new Map();
+  let lastX = 0;
+  let lastY = 0;
+  let pinch = 0;
+  let moved = false;
+  const clampView = () => {
+    mapView.scale = Math.min(3, Math.max(1, mapView.scale));
+    if (mapView.scale === 1) {
+      mapView.x = 0;
+      mapView.y = 0;
+      return;
+    }
+    const maxX = (mapView.scale - 1) * view.clientWidth;
+    const maxY = (mapView.scale - 1) * view.clientHeight;
+    mapView.x = Math.min(40, Math.max(-maxX - 40, mapView.x));
+    mapView.y = Math.min(40, Math.max(-maxY - 40, mapView.y));
+  };
+  const paint = () => {
+    clampView();
+    applyMapView(stage);
+  };
+  paint();
+  view.addEventListener('wheel', (event) => {
+    event.preventDefault();
+    mapView.scale += event.deltaY < 0 ? 0.15 : -0.15;
+    paint();
+  }, { passive: false });
+  view.addEventListener('pointerdown', (event) => {
+    if (event.target.closest('.mapZoomTools')) return;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    lastX = event.clientX;
+    lastY = event.clientY;
+    moved = false;
+    view.setPointerCapture?.(event.pointerId);
+  });
+  view.addEventListener('pointermove', (event) => {
+    if (!pointers.has(event.pointerId)) return;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const points = [...pointers.values()];
+    if (points.length >= 2) {
+      const dist = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+      if (pinch && Math.abs(dist - pinch) > 2) moved = true;
+      if (pinch) mapView.scale *= dist / pinch;
+      pinch = dist;
+    } else if (mapView.scale > 1) {
+      const dx = event.clientX - lastX;
+      const dy = event.clientY - lastY;
+      if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+      mapView.x += dx;
+      mapView.y += dy;
+    }
+    lastX = event.clientX;
+    lastY = event.clientY;
+    paint();
+  });
+  const release = (event) => {
+    pointers.delete(event.pointerId);
+    if (pointers.size < 2) pinch = 0;
+  };
+  view.addEventListener('pointerup', release);
+  view.addEventListener('pointercancel', release);
+  view.addEventListener('click', (event) => {
+    if (!moved) return;
+    event.preventDefault();
+    event.stopPropagation();
+    moved = false;
+  }, true);
+}
+
+window.rrMapZoom = (dir) => {
+  const stage = document.querySelector('[data-map-zoom] .mapZoomStage');
+  if (!stage) return;
+  mapView.scale = dir === 0 ? 1 : mapView.scale + dir * 0.25;
+  if (mapView.scale <= 1) {
+    mapView.scale = 1;
+    mapView.x = 0;
+    mapView.y = 0;
+  }
+  applyMapView(stage);
 };
 
 window.openCountryMap = (id) => {
@@ -2566,18 +2697,23 @@ window.selectStage = (id) => {
   mountRoadRunner(true);
 };
 window.nextHillRace = () => {
-  const beaten = game?.clearedStage || game?.stageCode || saveData.stageProgress?.current || '1-1';
+  const beaten = game?.clearedStage || game?.stageCode || saveData.stageProgress?.current || '1';
   const won = Boolean(game?.clearedStage) || Boolean(game?.finishedRoute) || game?.finishReason === 'complete';
-  const index = mainStages().findIndex((stage) => stage.id === beaten);
-  const next = index >= 0 ? mainStages()[index + 1] : null;
+  const stages = mainStages();
+  const current = stages.find((stage) => stage.id === beaten);
+  const sameCity = current ? stages.filter((stage) => stage.cityId === current.cityId) : [];
+  const localIndex = sameCity.findIndex((stage) => stage.id === beaten);
+  const next = localIndex >= 0 ? sameCity[localIndex + 1] : null;
   hidePostRunPanel();
-  if (won && next) {
+  if (won && current) {
     saveData.stageProgress = normalizeStageProgress(saveData.stageProgress);
     saveData.stageProgress.stars[beaten] = Math.max(Number(saveData.stageProgress.stars[beaten] || 0), 1);
-    saveData.stageProgress.current = next.id;
-    activeRoute = next.routeKey;
+    if (next) {
+      saveData.stageProgress.current = next.id;
+      activeRoute = next.routeKey;
+      publishRaceStage(next.id);
+    }
     saveGameData();
-    publishRaceStage(next.id);
   }
   activeTab = 'drive';
   mountRoadRunner(true);

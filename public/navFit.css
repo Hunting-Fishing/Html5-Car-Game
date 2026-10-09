@@ -171,7 +171,16 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .worldCountry b, #screen-race .worldCountry small { display: block; }
 #screen-race .worldCountry small { color: #d7eef8; font-size: 10px; }
 #screen-race .phMapCaption, #screen-race .cityMissions p { margin: 0 0 8px; color: #d7eef8; font-size: 12px; }
-#screen-race .phCity { position: absolute; z-index: 3; transform: translate(-50%, -50%); min-width: 72px; border: 0; border-radius: 999px; padding: 4px 8px; background: #10283c; color: #fff; text-align: center; }
+#screen-race .phCity.easy { box-shadow: inset 0 0 0 2px #86efac; }
+#screen-race .phCity.medium { box-shadow: inset 0 0 0 2px #f6c445; }
+#screen-race .phCity.hard { box-shadow: inset 0 0 0 2px #fb923c; }
+#screen-race .phCity.expert { box-shadow: inset 0 0 0 2px #f87171; }
+#screen-race .phCity { max-width: 118px; }
+#screen-race .mapZoom { position: relative; height: min(70vh, 640px); overflow: hidden; border-radius: 16px; touch-action: none; background: #d7eef8; }
+#screen-race .mapZoomStage { transform-origin: 0 0; width: 100%; }
+#screen-race .mapZoom .highwayMap { min-height: 640px; }
+#screen-race .mapZoomTools { position: absolute; right: 8px; bottom: 8px; z-index: 6; display: grid; gap: 6px; }
+#screen-race .mapZoomTools button { width: 40px; height: 36px; border: 0; border-radius: 10px; background: #10283c; color: #fff; font-weight: 800; }
 #screen-race .phCity b, #screen-race .phCity small { display: block; line-height: 1.1; }
 #screen-race .phCity b { font-size: 11px; }
 #screen-race .phCity small { font-size: 8px; color: #ffe27a; }
