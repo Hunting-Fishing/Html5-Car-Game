@@ -158,6 +158,18 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .highwayMap .hillNode.secret.cleared { background: #2f8f55; }
 #screen-race .highwayMap .townTag { position: absolute; z-index: 3; display: grid; justify-items: center; line-height: 1.05; transform: translate(-50%, -48px); padding: 2px 6px; border-radius: 10px; background: rgba(8,24,38,.88); color: #fff; font-size: 10px; font-weight: 800; pointer-events: none; }
 #screen-race .highwayMap .townTag small { display: block; color: #ffe27a; font-size: 8px; font-weight: 700; }
+#screen-race .mapSwitch { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+#screen-race .mapSwitch button { min-height: 36px; border: 0; border-radius: 12px; background: #1c4668; color: #fff; font-weight: 800; }
+#screen-race .mapSwitch button.active { background: #2f8f55; }
+#screen-race .worldLadder { display: grid; gap: 12px; }
+#screen-race .worldLadderNote { margin: 0; color: #d7eef8; font-size: 12px; }
+#screen-race .worldContinent { display: grid; gap: 6px; }
+#screen-race .worldContinent h3 { margin: 0; color: #f6c445; font-size: 13px; }
+#screen-race .worldCountryGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+#screen-race .worldCountry { min-height: 52px; border: 0; border-radius: 12px; padding: 8px; background: #1c4668; color: #fff; text-align: left; }
+#screen-race .worldCountry.open { background: #2f8f55; }
+#screen-race .worldCountry b, #screen-race .worldCountry small { display: block; }
+#screen-race .worldCountry small { color: #d7eef8; font-size: 10px; }
 #screen-race .stageMapNote { margin: 0 0 8px; color: #b7c9d6; font-size: 12px; }
 #screen-race .stageWorld { margin: 0 0 14px; }
 #screen-race .stageWorld h4 { margin: 0 0 8px; color: #f6c445; font-size: 13px; }

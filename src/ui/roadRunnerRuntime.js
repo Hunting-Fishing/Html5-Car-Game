@@ -19,6 +19,7 @@ import {
   upsertLocalBestGhost
 } from '../game/roadRunner/ghostModel.js';
 import { RACER_VEHICLE_ASSETS } from '../data/racerVehicleAssetMap.js';
+import { COUNTRIES, COUNTRY_CONTINENTS } from '../data/countries.js';
 
 const SAVE_KEY = '365_canvas_road_runner_v4';
 const COMPANION_SAVE_KEY = 'autoMergeGarageV10LocalOnly';
@@ -1290,6 +1291,28 @@ function vehicleCard(key, item) {
   return `<div class="roadRunnerVehicleCard ${selected ? 'selected' : ''}"><div class="vehicleThumb">${img ? `<img class="racerVehicleSprite" src="${img}" alt="${item.label}" loading="lazy" draggable="false">` : ''}</div><h4>${item.label}</h4><p>${item.description}</p><div class="vehicleStats">SPD ${item.speed.toFixed(2)} • FUEL ${item.fuel.toFixed(2)} • DUR ${item.durability.toFixed(2)}</div><button class="btn ${selected ? 'gold' : unlocked || canUnlock ? 'primary' : 'ghost'}" ${selected || (!unlocked && !canUnlock) ? 'disabled' : ''} onclick="${action}">${selected ? 'Selected' : unlocked ? 'Select' : canUnlock ? `Unlock ${formatSmall(item.unlock.coins)}C / ${item.unlock.parts}P` : `Locked ${formatSmall(item.unlock.coins)}C / ${item.unlock.parts}P`}</button></div>`;
 }
 
+let mapLayer = 'countries';
+
+function philippinesCleared() {
+  return mainStages().every((stage) => Number(saveData.stageProgress?.stars?.[stage.id] || 0) > 0);
+}
+
+function renderCountryLadder() {
+  const cleared = philippinesCleared();
+  const nextId = COUNTRIES[1]?.id;
+  const groups = COUNTRY_CONTINENTS.map((continent) => {
+    const list = COUNTRIES.filter((country) => country.continent === continent);
+    const cards = list.map((country) => {
+      const open = country.id === 'PH';
+      const next = !open && cleared && country.id === nextId;
+      const status = open ? 'Open' : next ? 'Next map' : 'Locked';
+      return `<button type="button" class="worldCountry ${open ? 'open' : ''}" onclick="window.openCountryMap?.('${country.id}')"><b>${country.name}</b><small>${country.region} · ${status}</small></button>`;
+    }).join('');
+    return `<section class="worldContinent"><h3>${continent}</h3><div class="worldCountryGrid">${cards}</div></section>`;
+  }).join('');
+  return `<div class="worldLadder"><p class="worldLadderNote" data-world-note>${COUNTRIES.length} countries. The Philippines is map 1. Each later country is the next map.</p>${groups}</div>`;
+}
+
 function renderRoutesPanel() {
   const panel = document.querySelector('[data-road-runner-routes]');
   if (!panel) return;
@@ -1310,9 +1333,28 @@ function renderRoutesPanel() {
     return `<button type="button" class="hillNode ${stage.secret ? 'secret' : ''} ${state}" style="left:${spot.x}%;top:${spot.y}%" title="${title}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')">${car}<b>${unlocked || stage.secret ? label : ''}</b><span>${starRow}</span></button>`;
   }).join('');
   const tags = STAGE_WORLDS.map((area) => `<div class="townTag" style="left:${area.spot.x}%;top:${area.spot.y}%"><b>${area.name}</b><small>${area.landmark}</small></div>`).join('');
-  panel.innerHTML = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Metro Manila map with the real cities"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/><path class="spur" d="${spur}"/></svg>${tags}${nodes}</div>`;
+  const switcher = `<div class="mapSwitch"><button type="button" class="${mapLayer === 'countries' ? 'active' : ''}" onclick="window.rrMapLayer?.('countries')">Countries</button><button type="button" class="${mapLayer === 'cities' ? 'active' : ''}" onclick="window.rrMapLayer?.('cities')">Philippines</button></div>`;
+  const cities = `<div class="highwayMap"><img class="highwayArt" src="${MAP_ART}" alt="Metro Manila map with the real cities"><svg class="highwayRoad" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="edge" d="${road}"/><path d="${road}"/><path class="spur" d="${spur}"/></svg>${tags}${nodes}</div>`;
+  panel.innerHTML = `${switcher}${mapLayer === 'cities' ? cities : renderCountryLadder()}`;
   setText('[data-rr-route]', game?.route?.label || currentStage().name || currentId);
 }
+
+window.rrMapLayer = (layer) => {
+  mapLayer = layer === 'cities' ? 'cities' : 'countries';
+  renderRoutesPanel();
+};
+
+window.openCountryMap = (id) => {
+  const country = COUNTRIES.find((item) => item.id === id);
+  const note = document.querySelector('[data-world-note]');
+  if (!country) return;
+  if (country.id === 'PH') {
+    mapLayer = 'cities';
+    renderRoutesPanel();
+    return;
+  }
+  if (note) note.textContent = `${country.name} is a later map. Finish the Philippines, then the maps open in this order.`;
+};
 
 function bindHillMap(root) {
   const view = root.querySelector('[data-hill-map]');
