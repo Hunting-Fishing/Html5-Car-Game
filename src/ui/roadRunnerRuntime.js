@@ -51,7 +51,18 @@ const STAGE_WORLDS = [
   { id: '14', name: 'Taguig', landmark: 'BGC', routeKey: 'port', profile: 'port', theme: 'singapore', seed: 37, skyA: '#cfe8ff', skyB: '#f7fbff', grass: '#3d9a78', road: '#3d4652', difficulty: 1.46, spot: { x: 60, y: 74 } },
   { id: '15', name: 'Parañaque', landmark: 'Aseana', routeKey: 'port', profile: 'port', theme: 'dubai', seed: 39, skyA: '#ffe1a8', skyB: '#fff6df', grass: '#d2b56a', road: '#5c5348', difficulty: 1.52, spot: { x: 42, y: 80 } },
   { id: '16', name: 'Las Piñas', landmark: 'Bamboo Organ', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 41, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.58, spot: { x: 32, y: 88 } },
-  { id: '17', name: 'Muntinlupa', landmark: 'Alabang', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 43, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.64, spot: { x: 48, y: 93 } }
+  { id: '17', name: 'Muntinlupa', landmark: 'Alabang', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 43, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.64, spot: { x: 48, y: 93 } },
+  { id: '18', name: 'Meycauayan', landmark: 'St. Francis', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 45, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.7, spot: { x: 22, y: 15 } },
+  { id: '19', name: 'Antipolo', landmark: 'Cathedral', routeKey: 'mountain', profile: 'mountain', theme: 'denver', seed: 47, skyA: '#8ecfff', skyB: '#e7f4ff', grass: '#4f8f55', road: '#3d4652', difficulty: 1.76, spot: { x: 90, y: 36 } },
+  { id: '20', name: 'Cainta', landmark: 'Our Lady of Light', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 49, skyA: '#b9e7ff', skyB: '#eef8ff', grass: '#6eae48', road: '#5c4a38', difficulty: 1.82, spot: { x: 86, y: 50 } },
+  { id: '21', name: 'Taytay', landmark: 'St. John', routeKey: 'barangay', profile: 'barangay', theme: 'bangkok', seed: 51, skyA: '#ffe7a8', skyB: '#fff6d8', grass: '#c4a24a', road: '#6a543c', difficulty: 1.88, spot: { x: 86, y: 62 } },
+  { id: '22', name: 'Bacoor', landmark: 'St. Michael', routeKey: 'barangay', profile: 'barangay', theme: 'manila', seed: 53, skyA: '#8fd4ff', skyB: '#e7fbff', grass: '#5fbf57', road: '#3a4555', difficulty: 1.94, spot: { x: 18, y: 84 } },
+  { id: '23', name: 'Imus', landmark: 'The Pillar', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 55, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 2.0, spot: { x: 14, y: 94 } },
+  { id: '24', name: 'San Pedro', landmark: 'San Pedro Apostol', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 57, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 2.06, spot: { x: 58, y: 96 } },
+  { id: '25', name: 'Santa Rosa', landmark: 'Enchanted Kingdom', routeKey: 'track', profile: 'track', theme: 'monaco', seed: 59, skyA: '#7ddcff', skyB: '#e7fbff', grass: '#3f9d4a', road: '#2d3748', difficulty: 2.12, spot: { x: 72, y: 96 } },
+  { id: '26', name: 'Binondo', landmark: 'Chinatown', routeKey: 'barangay', profile: 'barangay', theme: 'bangkok', seed: 61, skyA: '#ffe7a8', skyB: '#fff6d8', grass: '#c4a24a', road: '#6a543c', difficulty: 2.18, spot: { x: 24, y: 43 } },
+  { id: '27', name: 'Diliman', landmark: 'UP Campus', routeKey: 'track', profile: 'track', theme: 'milan', seed: 63, skyA: '#9fd0ff', skyB: '#f3fbff', grass: '#67a85a', road: '#3c4654', difficulty: 2.24, spot: { x: 66, y: 26 } },
+  { id: '28', name: 'NAIA', landmark: 'Airport', routeKey: 'port', profile: 'port', theme: 'dubai', seed: 65, skyA: '#ffe1a8', skyB: '#fff6df', grass: '#d2b56a', road: '#5c5348', difficulty: 2.3, spot: { x: 30, y: 73 } }
 ];
 const GARAGE_SPOT = { x: 16, y: 44 };
 
@@ -1286,7 +1297,7 @@ function renderRoutesPanel() {
   const progress = saveData.stageProgress || { current: '1-1', stars: {} };
   const currentId = progress.current || '1-1';
   const road = 'M 58 12 L 32 23 L 28 33 L 15 32 L 56 34 L 82 40 L 28 48 L 54 49 L 50 56 L 70 58 L 46 63 L 34 67 L 64 66 L 60 74 L 42 80 L 32 88 L 48 93';
-  const spur = 'M 30 48 L 16 44';
+  const spur = 'M 30 48 L 16 44 M 32 23 L 22 15 M 82 40 L 90 36 M 82 40 L 86 50 L 86 62 M 32 88 L 18 84 L 14 94 M 48 93 L 58 96 L 72 96 M 28 48 L 24 43 M 56 34 L 66 26 M 34 67 L 30 73';
   const nodes = stages.map((stage) => {
     const spot = stage.spot;
     const stars = Number(progress.stars?.[stage.id] || 0);
