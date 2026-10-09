@@ -124,6 +124,13 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   background-image: none !important;
   box-shadow: none !important;
 }
+#screen-hub .homeGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#screen-hub .homeTile { min-height: 96px; border: 0; border-radius: 16px; background: #1c4668; color: #fff; display: grid; justify-items: start; align-content: center; gap: 2px; padding: 10px; text-align: left; }
+#screen-hub .homeTile img { width: 28px; height: 28px; object-fit: contain; }
+#screen-hub .homeTile b { font-size: 15px; }
+#screen-hub .homeTile small { color: #d5e6f0; font-size: 11px; }
+#screen-hub .homeLink { display: block; text-align: center; color: #d6b87a; font-size: 13px; text-decoration: none; padding: 6px; }
+#screen-hub .adcapIcon img { width: 28px; height: 28px; object-fit: contain; }
 #screen-race [data-rr-page="routes"] { overflow: auto; }
 #screen-race .stageMapNote { margin: 0 0 8px; color: #b7c9d6; font-size: 12px; }
 #screen-race .stageWorld { margin: 0 0 14px; }
