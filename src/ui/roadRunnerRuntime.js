@@ -1596,29 +1596,52 @@ function regionAt(x, y) {
 
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
+  const index = Math.max(0, PH_REGIONS.findIndex((item) => item.id === selectedRegion));
   const chips = PH_REGIONS.map((item) => {
     const look = REGION_LOOK[item.id] || { color: '#1c4668' };
-    return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" style="background:${item.id === selectedRegion ? '#f6c445' : look.color}" onclick="window.rrSelectRegion?.('${item.id}')">${item.name}</button>`;
+    return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" style="--chip:${look.color}" onclick="window.rrSelectRegion?.('${item.id}', true)">${item.name}</button>`;
   }).join('');
-  const areas = PH_REGIONS.map((item) => `<path class="phRegion" d="${item.d}" onclick="window.rrSelectRegion?.('${item.id}')"><title>${item.name}</title></path>`).join('');
-  const outline = region ? `<path class="phSelect" d="${region.d}"></path>` : '';
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
-    return `<button type="button" class="phPin ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" onclick="window.enterPhCity?.('${city.id}')"><i></i><b>${city.name}</b></button>`;
+    return `<button type="button" class="phPin ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"></button>`;
   }).join('') : '';
-  const cards = region ? `<div class="areaCards"><h3>${region.name}</h3><div class="areaCardGrid">${region.cities.map((id) => {
+  const cards = region ? `<div class="areaCards"><div class="areaCardGrid">${region.cities.map((id) => {
     const city = cityById(id);
     const state = cityState(city);
-    return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b>${difficultyMark(city.difficulty)}<small>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</small></button>`;
+    return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
-  const caption = region ? `${region.name}. Dots mark its cities. Cards are under the map.` : 'Pick a region. The map stays clear, then its cities appear as dots.';
-  return `<div class="regionChips">${chips}</div><p class="phMapCaption">${caption} ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${areas}${outline}</svg>${dots}</div>`)}${cards}`;
+  const deck = `<div class="regionDeck"><button type="button" onclick="window.rrStepRegion?.(-1)" aria-label="Previous region">‹</button><div><small>${region ? `${index + 1} / ${PH_REGIONS.length}` : 'Philippines'}</small><b>${region ? region.name : 'Choose a region'}</b></div><button type="button" onclick="window.rrStepRegion?.(1)" aria-label="Next region">›</button></div>`;
+  return `<div class="regionChips">${chips}</div>${deck}<p class="phMapCaption">${region ? 'The map moved to this region. Dots are its cities.' : 'Use the arrows. The map will move to that region.'} ${mapNotice}</p>${mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines">${dots}</div>`)}${cards}`;
+}
+
+function focusMapOnRegion(id) {
+  const look = REGION_LOOK[id];
+  if (!look) return;
+  requestAnimationFrame(() => {
+    const view = document.querySelector('[data-map-zoom]');
+    const map = view?.querySelector('.phCountryMap');
+    const stage = view?.querySelector('.mapZoomStage');
+    if (!view || !map || !stage) return;
+    const scale = 2.35;
+    mapView.scale = scale;
+    mapView.x = view.clientWidth / 2 - (look.x / 100) * map.offsetWidth * scale;
+    mapView.y = view.clientHeight / 2 - (look.y / 100) * map.offsetHeight * scale;
+    applyMapView(stage);
+  });
 }
 
 window.rrSelectRegion = (id, keep) => {
   selectedRegion = !keep && selectedRegion === id ? '' : id;
   mapNotice = '';
   renderRoutesPanel();
+  if (selectedRegion) focusMapOnRegion(selectedRegion);
+};
+
+window.rrStepRegion = (dir) => {
+  const index = PH_REGIONS.findIndex((item) => item.id === selectedRegion);
+  const start = index < 0 ? (dir > 0 ? -1 : 0) : index;
+  const next = PH_REGIONS[(start + dir + PH_REGIONS.length) % PH_REGIONS.length];
+  window.rrSelectRegion(next.id, true);
 };
 
 function renderCityMissions(cityId) {
@@ -1725,10 +1748,10 @@ function bindMapZoom(root) {
       mapView.y = 0;
       return;
     }
-    const maxX = (mapView.scale - 1) * view.clientWidth;
-    const maxY = (mapView.scale - 1) * view.clientHeight;
-    mapView.x = Math.min(40, Math.max(-maxX - 40, mapView.x));
-    mapView.y = Math.min(40, Math.max(-maxY - 40, mapView.y));
+    const boundsX = Math.max(0, stage.offsetWidth * mapView.scale - view.clientWidth);
+    const boundsY = Math.max(0, stage.offsetHeight * mapView.scale - view.clientHeight);
+    mapView.x = Math.min(0, Math.max(-boundsX, mapView.x));
+    mapView.y = Math.min(0, Math.max(-boundsY, mapView.y));
   };
   const paint = () => {
     clampView();
