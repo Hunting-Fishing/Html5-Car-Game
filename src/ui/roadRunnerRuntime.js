@@ -1545,7 +1545,7 @@ const REGION_LOOK = {
   davao: { color: '#b91c1c', x: 78, y: 85 },
   soccsksargen: { color: '#a16207', x: 66, y: 88 },
   barmm: { color: '#db2777', x: 39, y: 93 },
-  ncr: { color: '#facc15', x: 40, y: 44 }
+  ncr: { color: '#eab308', ink: '#10283c', x: 33, y: 45 }
 };
 
 function renderPhilippinesMap() {
@@ -1556,7 +1556,7 @@ function renderPhilippinesMap() {
   }).join('');
   const areas = PH_REGIONS.map((item) => {
     const look = REGION_LOOK[item.id] || { color: '#38bdf8', x: 50, y: 50 };
-    return `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" fill="${look.color}" onclick="window.rrSelectRegion?.('${item.id}')"><title>${item.name}</title></path><g class="phRegionBadge" transform="translate(${look.x} ${look.y})"><rect x="${-item.name.length * 0.95}" y="-2.3" width="${item.name.length * 1.9}" height="3.1" rx="0.6"></rect><text y="0.2">${item.name}</text></g>`;
+    return `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" fill="${look.color}" stroke="${look.color}" onclick="window.rrSelectRegion?.('${item.id}')"><title>${item.name}</title></path><g class="phRegionBadge" transform="translate(${look.x} ${look.y})"><rect x="${-item.name.length * 1.15}" y="-2.6" width="${item.name.length * 2.3}" height="3.6" rx="0.8" fill="${look.color}"></rect><text y="0.35" fill="${look.ink || '#fff'}">${item.name}</text></g>`;
   }).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
