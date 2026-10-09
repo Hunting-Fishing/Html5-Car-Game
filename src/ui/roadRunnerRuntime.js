@@ -1306,7 +1306,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
       <div><b>${wearPct}%</b><div>Wear</div></div>
       <div><b>${formatSmall(saveData.bestDistance)}m</b><div>Best</div></div>
     </div>
-    <div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Retry</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Continue</button><button type="button" class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>
+    <div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Retry</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Map</button><button type="button" class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>
   </div>`;
   panel.hidden = false;
 }
@@ -2185,13 +2185,18 @@ window.selectStage = (id) => {
   mountRoadRunner(true);
 };
 window.nextHillRace = () => {
-  const next = allStages()[stageIndex(saveData.stageProgress.current) + 1];
-  if (next && stageUnlocked(next.id)) {
+  const beaten = game?.stageCode || saveData.stageProgress?.current || '1-1';
+  const won = Boolean(game?.finishedRoute) || game?.finishReason === 'complete';
+  const next = allStages()[stageIndex(beaten) + 1];
+  if (won && next) {
+    saveData.stageProgress = normalizeStageProgress(saveData.stageProgress);
     saveData.stageProgress.current = next.id;
     activeRoute = next.routeKey;
+    saveGameData();
   }
-  activeTab = 'drive';
-  window.restartHillRoute();
+  hidePostRunPanel();
+  window.rrSetTab?.('routes');
+  requestAnimationFrame(() => document.querySelector('.stageNode.current')?.scrollIntoView({ block: 'center' }));
 };
 window.restartHillRoute = () => {
   input.gas = false;
