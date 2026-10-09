@@ -162,15 +162,15 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   position: absolute !important;
   left: 8px !important;
   right: 8px !important;
-  top: 46px !important;
-  bottom: auto !important;
+  top: auto !important;
+  bottom: 18px !important;
   height: auto !important;
-  max-height: calc(100% - 54px) !important;
+  max-height: 62% !important;
   display: block !important;
   overflow: auto !important;
   background: #10283c !important;
   border-radius: 16px !important;
-  padding: 8px !important;
+  padding: 10px !important;
   z-index: 90 !important;
 }
 #screen-race .roadRunnerEndPanel.rrPostRunPanel:not([hidden]) > div {
@@ -178,3 +178,4 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   gap: 8px !important;
   grid-template-rows: none !important;
 }
+#screen-race:has([data-rr-end-panel]:not([hidden])) .racePedalRow { display: none !important; }
