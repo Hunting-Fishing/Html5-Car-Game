@@ -1638,7 +1638,7 @@ function renderPhilippinesMap() {
   const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" draggable="false" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${dots}</div>`);
   const sheet = !areaOpen && citySheet ? citySheetHtml(cityById(citySheet)) : '';
   const area = areaOpen && region ? renderAreaPopup(region) : '';
-  return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button>${popup}${map}${sheet}${area}</div>${cards}`;
+  return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button><span class="mapBuild" style="position:absolute;top:8px;left:92px;z-index:9;border-radius:10px;padding:7px 8px;background:#f6c445;color:#2a1d0b;font-size:11px;font-weight:800">Updated · tap a region</span>${popup}${map}${sheet}${area}</div>${cards}`;
 }
 
 window.rrToggleLegend = () => {
@@ -1729,7 +1729,7 @@ function renderAreaPopup(region) {
   const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Back</button><div><b>${region.name}</b><small>${region.cities.length} ${region.cities.length === 1 ? 'city' : 'cities'} · ${level}</small></div></div>`;
   const body = region.id === 'ncr' ? renderManilaBoard() : renderRegionBoard(region);
   const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
-  return `<div class="areaPop" role="dialog" aria-label="${region.name}">${head}<div class="areaFit">${body}</div>${sheet}</div>`;
+  return `<div class="areaPop" role="dialog" aria-label="${region.name}" style="position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#0c2233;color:#fff">${head}<div class="areaFit">${body}</div>${sheet}</div>`;
 }
 
 function renderRegionBoard(region) {
