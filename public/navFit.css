@@ -199,7 +199,9 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .citySheetHead small { color: #d7eef8; }
 #screen-race .citySheetHead button, #screen-race .citySheet .mapBack { border: 0; border-radius: 10px; padding: 6px 8px; background: #1c4668; color: #fff; font-weight: 800; }
 #screen-race .areaPop { position: absolute; inset: 0; z-index: 12; display: flex; flex-direction: column; border-radius: 16px; background: #0c2233; overflow: hidden; }
-#screen-race .areaHead { display: flex; align-items: center; gap: 8px; padding: 8px; color: #fff; }
+#screen-race .areaHead { display: flex; align-items: center; gap: 8px; padding: 8px; background: #10283c; color: #fff; }
+#screen-race .areaFit { background: #8ecae6; }
+#screen-race .areaVector { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 #screen-race .areaHead button { border: 0; border-radius: 10px; padding: 7px 10px; background: #1c4668; color: #fff; font-weight: 800; }
 #screen-race .areaHead b { display: block; font-size: 16px; line-height: 1.1; }
 #screen-race .areaHead small { color: #d7eef8; font-size: 11px; }
