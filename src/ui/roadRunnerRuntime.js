@@ -1752,7 +1752,7 @@ function renderAreaPopup(region) {
   const board = renderRegionBoard(shown);
   const legend = areaLegendOpen ? `<div class="legendPop areaLegendPop" role="dialog" aria-label="Legend"><div class="legendPopHead"><b>Legend</b><button type="button" onclick="window.rrToggleAreaLegend?.()">Close</button></div><ul class="areaLegendList">${board.legend}</ul></div>` : '';
   const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
-  return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#083044;color:#10283c">${head}<div class="areaFit"><button type="button" class="legendBtn ${areaLegendOpen ? 'on' : ''}" onclick="window.rrToggleAreaLegend?.()">Legend</button>${legend}${board.map}</div>${sheet}</div>`;
+  return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;top:8px;bottom:8px;left:50%;transform:translateX(-50%);width:min(440px,calc(100% - 16px));z-index:80;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:#083044;color:#10283c">${head}<div class="areaFit"><button type="button" class="legendBtn ${areaLegendOpen ? 'on' : ''}" onclick="window.rrToggleAreaLegend?.()">Legend</button>${legend}${board.map}</div>${sheet}</div>`;
 }
 
 const AREA_FILLS = ['#f0b429', '#7bc142', '#f28b30', '#e35d5d', '#5aa6e0', '#c6d64a', '#d98ad0', '#efc14a'];
@@ -1861,8 +1861,8 @@ function renderRegionBoard(regions) {
           bestDist = dist;
         }
       });
-      return [best.province, { name: best.province, fill: shape.fill }];
-    }).values())].map((item) => `<li><i style="background:${item.fill}"></i><b>${item.name}</b></li>`).join('');
+      return [best.province || best.name, { name: best.province || best.name, fill: shape.fill }];
+    })).values()].map((item) => `<li><i style="background:${item.fill}"></i><b>${item.name}</b></li>`).join('');
   const map = `<div class="areaBoard" style="--ratio:${spanX / spanY}"><svg class="areaVector" viewBox="${minX} ${minY} ${spanX} ${spanY}" preserveAspectRatio="none"><image href="${photo}" xlink:href="${photo}" x="${minX}" y="${minY}" width="${spanX}" height="${spanY}" preserveAspectRatio="none"></image>${paths}${leaders}</svg>${pins}</div>`;
   return { map, legend: legendItems };
 }
@@ -1968,7 +1968,7 @@ function citySheetHtml(city) {
   }).join('');
   const manila = city.local ? `<button type="button" class="mapBack" onclick="window.rrMapLayer?.('manila')">Open Manila map</button>` : '';
   const note = locked ? cityLockReason(city) : `Car ready: ${needLabel(city)}`;
-  return `<div class="citySheet" role="dialog" aria-label="${city.name}"><div class="citySheetHead"><div><b>${city.name}</b><small>${city.province}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq">${difficultyMark(city.difficulty)}<b>${city.difficulty}</b><small class="${locked ? 'missing' : 'ready'}">${note}</small></div>${manila}<div class="cityMissionList">${rows}</div></div>`;
+  return `<div class="citySheet" role="dialog" aria-label="${city.name}"><div class="citySheetHead"><div><b>${city.name}</b><small>${city.province}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq"><b>${difficultyMark(city.difficulty)} ${city.difficulty}</b><small class="${locked ? 'missing' : 'ready'}">${note}</small></div>${manila}<div class="cityMissionList">${rows}</div></div>`;
 }
 
 window.rrCloseCity = () => {

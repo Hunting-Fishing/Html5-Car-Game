@@ -198,7 +198,7 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .citySheetHead b { display: block; font-size: 16px; }
 #screen-race .citySheetHead small { color: #d7eef8; }
 #screen-race .citySheetHead button, #screen-race .citySheet .mapBack { border: 0; border-radius: 10px; padding: 6px 8px; background: #1c4668; color: #fff; font-weight: 800; }
-#screen-race .areaPop { position: absolute; inset: 0; z-index: 12; display: flex; flex-direction: column; border-radius: 16px; background: #0c2233; overflow: hidden; }
+#screen-race .areaPop { position: fixed; top: 8px; right: auto; bottom: 8px; left: 50%; transform: translateX(-50%); width: min(440px, calc(100% - 16px)); z-index: 80; display: flex; flex-direction: column; border-radius: 16px; background: #083044; overflow: hidden; }
 #screen-race .areaHead { display: flex; align-items: center; gap: 8px; padding: 8px; background: #10283c; color: #fff; }
 #screen-race .areaHead div { flex: 1; min-width: 0; text-align: center; }
 #screen-race .areaStep { min-width: 36px; font-size: 22px; line-height: 1; }
@@ -221,7 +221,13 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .areaNode.current { background: #f6c445; color: #2a1d0b; }
 #screen-race .areaNode.cleared { background: #2f8f55; }
 #screen-race .areaNode.locked { background: #243140; color: #9eb0bd; }
-#screen-race .areaPop .citySheet { z-index: 14; }
+#screen-race .areaPop .citySheet { left: 8px; right: 8px; bottom: 8px; z-index: 14; max-height: 34%; padding: 8px; }
+#screen-race .areaPop .citySheetHead { margin-bottom: 4px; }
+#screen-race .areaPop .citySheetHead b { font-size: 14px; }
+#screen-race .areaPop .cityReq { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; padding: 4px 8px; }
+#screen-race .areaPop .cityReq small { min-width: 0; }
+#screen-race .areaPop .cityMissionList { gap: 4px; }
+#screen-race .areaPop .cityMission { min-height: 0; padding: 5px 8px; border-radius: 8px; }
 #screen-race .mapZoom:active { cursor: grabbing; }
 #screen-race .areaCards { margin-top: 8px; }
 #screen-race .areaCard em { color: #d7eef8; font-size: 10px; font-style: normal; }
