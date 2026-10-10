@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Locked merge slot">
+  <rect x="7" y="7" width="114" height="114" rx="22" fill="#202b35" stroke="#6b7280" stroke-width="5"/>
+  <rect x="18" y="18" width="92" height="92" rx="17" fill="#0b1219" stroke="#9ca3af" stroke-opacity=".24" stroke-width="3"/>
+  <path d="M43 62h42v30H43z" fill="#9ca3af" opacity=".5"/>
+  <path d="M51 62V50c0-9 6-15 13-15s13 6 13 15v12" fill="none" stroke="#cbd5e1" stroke-opacity=".55" stroke-width="8" stroke-linecap="round"/>
+</svg>

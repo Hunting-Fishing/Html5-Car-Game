@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 104 54" role="img" aria-label="Generic broken down car">
+  <ellipse cx="52" cy="48" rx="42" ry="5" fill="#020617" opacity=".35"/>
+  <path d="M13 34c2-10 10-17 21-19h24c10 2 18 9 22 19l6 2c3 1 5 4 4 7H5c-1-3 1-6 4-7z" fill="#ef4444" stroke="#0f172a" stroke-width="2"/>
+  <path d="M34 18h23c7 2 12 7 15 14H23c2-6 5-11 11-14z" fill="#fee2e2" opacity=".82" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="25" cy="43" r="7" fill="#0f172a"/><circle cx="25" cy="43" r="3" fill="#cbd5e1"/>
+  <circle cx="71" cy="43" r="7" fill="#0f172a"/><circle cx="71" cy="43" r="3" fill="#cbd5e1"/>
+  <path d="M82 14c5-8 11-4 8 2 7-1 8 6 1 7" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" opacity=".85"/>
+  <path d="M50 8l5 7 8-2-5 7 5 7-8-2-5 7-1-8-8-2 8-4z" fill="#ffd166" stroke="#0f172a" stroke-width="1.5"/>
+</svg>

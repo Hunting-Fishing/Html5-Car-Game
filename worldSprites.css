@@ -1,0 +1,61 @@
+.trafficCar {
+  width: 78px !important;
+  height: 54px !important;
+  display: grid !important;
+  place-items: center !important;
+  transform-origin: center center !important;
+  will-change: transform !important;
+  z-index: 4 !important;
+}
+
+.trafficCar img {
+  display: block !important;
+  width: 78px !important;
+  height: auto !important;
+  pointer-events: none !important;
+  image-rendering: auto !important;
+}
+
+.worldLocationVehicle {
+  display: block !important;
+  width: 72px !important;
+  height: auto !important;
+  filter: drop-shadow(0 7px 8px rgba(0, 0, 0, .5)) !important;
+  pointer-events: none !important;
+}
+
+.horizontalA {
+  left: -24% !important;
+}
+
+.horizontalB {
+  right: -24% !important;
+}
+
+.horizontalC {
+  left: -24% !important;
+}
+
+.roadLoopA {
+  left: -22% !important;
+  top: 36% !important;
+  animation-name: driveDiagonalLoop !important;
+}
+
+@keyframes driveDiagonalLoop {
+  0% { transform: translate(-40px, 0) rotate(0deg) scale(.92); }
+  30% { transform: translate(190px, 86px) rotate(18deg) scale(.96); }
+  62% { transform: translate(420px, 20px) rotate(-10deg) scale(.96); }
+  100% { transform: translate(620px, 155px) rotate(16deg) scale(.92); }
+}
+
+@media (max-width: 380px) {
+  .trafficCar,
+  .trafficCar img {
+    width: 64px !important;
+  }
+
+  .worldLocationVehicle {
+    width: 60px !important;
+  }
+}

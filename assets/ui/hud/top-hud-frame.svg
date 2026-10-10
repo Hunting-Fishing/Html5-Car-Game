@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 116" role="img" aria-label="Top HUD frame">
+  <defs>
+    <linearGradient id="hud" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2d9bd0"/>
+      <stop offset=".5" stop-color="#0d4e7d"/>
+      <stop offset="1" stop-color="#041725"/>
+    </linearGradient>
+  </defs>
+  <rect width="520" height="116" fill="url(#hud)"/>
+  <path d="M8 108h504" stroke="#03111c" stroke-width="7"/>
+  <path d="M18 8h484" stroke="#fff" stroke-opacity=".18" stroke-width="6" stroke-linecap="round"/>
+  <path d="M0 0h520v12H0z" fill="#7fe8ff" opacity=".18"/>
+</svg>
