@@ -1714,7 +1714,7 @@ function renderPhilippinesMap() {
   }).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
-    return `<button type="button" class="phPin ${cityState(city)}" data-city="${city.id}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"><i></i><b>${city.name}</b></button>`;
+    return `<button type="button" class="phPin ${cityState(city)}" data-city="${city.id}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"><i></i></button>`;
   }).join('') : '';
   const legend = AREA_ORDER.map((id) => {
     const item = PH_REGIONS.find((region) => region.id === id);

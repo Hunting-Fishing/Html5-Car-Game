@@ -644,6 +644,8 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
   transform: none !important;
   background: #7ec8ef !important;
 }
+#screen-race .phCountryMap .phPin b,
+#screen-race .phCountryMap .metroChip { display: none !important; }
 #screen-race .phCountryMap .highwayArt {
   position: static !important;
   inset: auto !important;
