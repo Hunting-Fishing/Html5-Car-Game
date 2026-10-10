@@ -1464,6 +1464,7 @@ let citySheet = '';
 let areaOpen = false;
 let selectedRegion = '';
 let legendOpen = false;
+let areaLegendOpen = false;
 const mapView = { scale: 1, x: 0, y: 0 };
 
 function stagesForCity(cityId) {
@@ -1649,6 +1650,11 @@ window.rrToggleLegend = () => {
   renderRoutesPanel();
 };
 
+window.rrToggleAreaLegend = () => {
+  areaLegendOpen = !areaLegendOpen;
+  renderRoutesPanel();
+};
+
 window.rrOpenMetro = () => {
   selectedRegion = 'ncr';
   areaOpen = true;
@@ -1697,6 +1703,7 @@ window.rrSelectRegion = (id, keep) => {
 
 window.rrCloseArea = () => {
   areaOpen = false;
+  areaLegendOpen = false;
   citySheet = '';
   mapView.scale = 1;
   mapView.x = 0;
@@ -1743,8 +1750,9 @@ function renderAreaPopup(region) {
   const count = shown.reduce((sum, item) => sum + item.cities.length, 0);
   const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Map</button><button type="button" class="areaStep" onclick="window.rrStepRegion?.(-1)" aria-label="Previous area">‹</button><div><b>${title}</b><small>${count} cities${metro ? ' · Manila, Central Luzon, Calabarzon' : ` · ${level}`}</small></div><button type="button" class="areaStep" onclick="window.rrStepRegion?.(1)" aria-label="Next area">›</button></div>`;
   const board = renderRegionBoard(shown);
+  const legend = areaLegendOpen ? `<div class="legendPop areaLegendPop" role="dialog" aria-label="Legend"><div class="legendPopHead"><b>Legend</b><button type="button" onclick="window.rrToggleAreaLegend?.()">Close</button></div><ul class="areaLegendList">${board.legend}</ul></div>` : '';
   const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
-  return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#083044;color:#10283c">${head}<div class="areaFit">${board.map}${board.legend}</div>${sheet}</div>`;
+  return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#083044;color:#10283c">${head}<div class="areaFit"><button type="button" class="legendBtn ${areaLegendOpen ? 'on' : ''}" onclick="window.rrToggleAreaLegend?.()">Legend</button>${legend}${board.map}</div>${sheet}</div>`;
 }
 
 const AREA_FILLS = ['#f0b429', '#7bc142', '#f28b30', '#e35d5d', '#5aa6e0', '#c6d64a', '#d98ad0', '#efc14a'];
@@ -1840,7 +1848,7 @@ function renderRegionBoard(regions) {
   }).join('');
   const pins = placed.map((pin) => `<button type="button" class="phPin ${cityState(pin.city)}" style="left:${pin.x}%;top:${pin.y}%" onclick="window.enterPhCity?.('${pin.city.id}')"><i></i><b>${pin.city.name}</b></button>`).join('');
   const legendItems = list.length > 1
-    ? list.map((item) => `<li><i style="background:${metroFill[item.id] || '#f0b429'}"></i><b>${item.name}</b></li>`)
+    ? list.map((item) => `<li><i style="background:${metroFill[item.id] || '#f0b429'}"></i><b>${item.name}</b></li>`).join('')
     : [...new Map(lands.map((shape) => {
       let best = list[0].cities[0];
       let bestDist = Infinity;
@@ -1854,10 +1862,9 @@ function renderRegionBoard(regions) {
         }
       });
       return [best.province, { name: best.province, fill: shape.fill }];
-    }).values())].map((item) => `<li><i style="background:${item.fill}"></i><b>${item.name}</b></li>`);
-  const legend = `<aside class="areaLegend"><b>Legend</b><ul>${legendItems.join('')}</ul></aside>`;
+    }).values())].map((item) => `<li><i style="background:${item.fill}"></i><b>${item.name}</b></li>`).join('');
   const map = `<div class="areaBoard" style="--ratio:${spanX / spanY}"><svg class="areaVector" viewBox="${minX} ${minY} ${spanX} ${spanY}" preserveAspectRatio="none"><image href="${photo}" xlink:href="${photo}" x="${minX}" y="${minY}" width="${spanX}" height="${spanY}" preserveAspectRatio="none"></image>${paths}${leaders}</svg>${pins}</div>`;
-  return { map, legend };
+  return { map, legend: legendItems };
 }
 
 function renderManilaBoard() {

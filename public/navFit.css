@@ -203,11 +203,11 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .areaHead div { flex: 1; min-width: 0; text-align: center; }
 #screen-race .areaStep { min-width: 36px; font-size: 22px; line-height: 1; }
 #screen-race .areaFit { position: relative; background: #083044; }
-#screen-race .areaLegend { position: absolute; left: 8px; bottom: 8px; z-index: 5; max-width: 48%; max-height: 46%; overflow: auto; margin: 0; padding: 8px; border-radius: 12px; background: rgba(8,24,38,.9); color: #fff; }
-#screen-race .areaLegend b { font-size: 12px; }
-#screen-race .areaLegend ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; }
-#screen-race .areaLegend li { display: flex; align-items: center; gap: 6px; font-size: 11px; }
-#screen-race .areaLegend i { width: 12px; height: 12px; flex: none; border: 1px solid #fff; border-radius: 3px; }
+#screen-race .areaFit .legendBtn { z-index: 6; }
+#screen-race .areaLegendPop { z-index: 7; color: #fff; }
+#screen-race .areaLegendList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; overflow: auto; }
+#screen-race .areaLegendList li { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 12px; }
+#screen-race .areaLegendList i { width: 12px; height: 12px; flex: none; border: 1px solid #fff; border-radius: 3px; }
 #screen-race .metroChip { position: absolute; z-index: 6; transform: translate(-50%, -50%); border: 2px solid #fff; border-radius: 999px; padding: 5px 9px; background: #f6c445; color: #2a1d0b; font-size: 11px; font-weight: 800; box-shadow: 0 2px 0 rgba(0,0,0,.28); }
 #screen-race .areaVector { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 #screen-race .areaHead button { border: 0; border-radius: 10px; padding: 7px 10px; background: #1c4668; color: #fff; font-weight: 800; }
