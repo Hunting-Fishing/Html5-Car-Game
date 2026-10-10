@@ -1460,6 +1460,7 @@ function vehicleCard(key, item) {
 let mapLayer = 'countries';
 let selectedCityId = 'manila';
 let mapNotice = '';
+let citySheet = '';
 let selectedRegion = '';
 let legendOpen = false;
 const mapView = { scale: 1, x: 0, y: 0 };
@@ -1610,11 +1611,18 @@ function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
   const lands = PH_LAND.map((shape) => {
     const on = shape.region === selectedRegion;
-    return `<path class="phLand ${on ? 'on' : ''}" stroke-width="${on ? '0.32' : '0.16'}" d="${shape.d}" onclick="window.rrPickRegion?.('${shape.region}')"></path>`;
+    return `<path class="phLand ${on ? 'on' : ''}" data-region="${shape.region}" stroke-width="${on ? '0.32' : '0.16'}" d="${shape.d}"></path>`;
+  }).join('');
+  const names = PH_REGIONS.map((item) => {
+    const places = item.cities.map((id) => cityById(id)).filter(Boolean);
+    if (!places.length) return '';
+    const x = places.reduce((sum, city) => sum + city.spot.x, 0) / places.length;
+    const y = places.reduce((sum, city) => sum + city.spot.y, 0) / places.length;
+    return `<span class="phRegionName${item.id === selectedRegion ? ' on' : ''}" style="left:${x.toFixed(2)}%;top:${y.toFixed(2)}%">${item.name}</span>`;
   }).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
-    return `<button type="button" class="phPin ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"></button>`;
+    return `<button type="button" class="phPin ${cityState(city)}" data-city="${city.id}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}"><i></i><b>${city.name}</b></button>`;
   }).join('') : '';
   const legend = PH_REGIONS.map((item, index) => {
     const level = regionLevel(item);
@@ -1626,8 +1634,9 @@ function renderPhilippinesMap() {
     const state = cityState(city);
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
-  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${dots}</div>`);
-  return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button>${popup}${map}</div>${cards}`;
+  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${dots}</div>`);
+  const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
+  return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button>${popup}${map}${sheet}</div>${cards}`;
 }
 
 window.rrToggleLegend = () => {
@@ -1663,6 +1672,10 @@ function focusMapOnRegion(id) {
 
 window.rrSelectRegion = (id, keep) => {
   selectedRegion = !keep && selectedRegion === id ? '' : id;
+  if (citySheet) {
+    const region = PH_REGIONS.find((item) => item.cities.includes(citySheet));
+    if (!region || region.id !== selectedRegion) citySheet = '';
+  }
   mapNotice = '';
   renderRoutesPanel();
   if (selectedRegion) focusMapOnRegion(selectedRegion);
@@ -1745,18 +1758,45 @@ window.rrMapLayer = (layer) => {
   renderRoutesPanel();
 };
 
-window.enterPhCity = (cityId) => {
-  const city = cityById(cityId);
-  if (cityState(city) === 'locked') {
-    mapNotice = `${city.name} is locked. ${cityLockReason(city)}.`;
-    renderRoutesPanel();
-    return;
-  }
-  mapNotice = '';
-  selectedCityId = city.id;
-  mapLayer = city.local ? 'manila' : 'city';
+function citySheetHtml(city) {
+  if (!city) return '';
+  const locked = cityState(city) === 'locked';
+  const rows = stagesForCity(city.id).map((stage) => {
+    const stars = Number(saveData.stageProgress?.stars?.[stage.id] || 0);
+    const unlocked = !locked && stageUnlocked(stage.id);
+    const status = stars ? `${stars}★` : unlocked ? 'Open' : 'Locked';
+    return `<button type="button" class="cityMission ${unlocked ? '' : 'locked'}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.landmark || stage.name}</b><small>${status}</small></button>`;
+  }).join('');
+  const manila = city.local ? `<button type="button" class="mapBack" onclick="window.rrMapLayer?.('manila')">Open Manila map</button>` : '';
+  const note = locked ? cityLockReason(city) : `Car ready: ${needLabel(city)}`;
+  return `<div class="citySheet" role="dialog" aria-label="${city.name}"><div class="citySheetHead"><div><b>${city.name}</b><small>${city.province}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq">${difficultyMark(city.difficulty)}<b>${city.difficulty}</b><small class="${locked ? 'missing' : 'ready'}">${note}</small></div>${manila}<div class="cityMissionList">${rows}</div></div>`;
+}
+
+window.rrCloseCity = () => {
+  citySheet = '';
   renderRoutesPanel();
 };
+
+window.enterPhCity = (cityId) => {
+  const city = cityById(cityId);
+  const region = PH_REGIONS.find((item) => item.cities.includes(city.id));
+  const changed = Boolean(region && selectedRegion !== region.id);
+  if (region) selectedRegion = region.id;
+  citySheet = city.id;
+  mapLayer = 'cities';
+  mapNotice = '';
+  renderRoutesPanel();
+  if (changed) focusMapOnRegion(region.id);
+};
+
+function clampMapView(view, stage) {
+  mapView.scale = Math.min(3, Math.max(1, mapView.scale));
+  if (!view || !stage) return;
+  const boundsX = Math.max(0, stage.offsetWidth * mapView.scale - view.clientWidth);
+  const boundsY = Math.max(0, stage.offsetHeight * mapView.scale - view.clientHeight);
+  mapView.x = Math.min(0, Math.max(-boundsX, mapView.x));
+  mapView.y = Math.min(0, Math.max(-boundsY, mapView.y));
+}
 
 function applyMapView(stage) {
   if (!stage) return;
@@ -1772,20 +1812,10 @@ function bindMapZoom(root) {
   let lastY = 0;
   let pinch = 0;
   let moved = false;
-  const clampView = () => {
-    mapView.scale = Math.min(3, Math.max(1, mapView.scale));
-    if (mapView.scale === 1) {
-      mapView.x = 0;
-      mapView.y = 0;
-      return;
-    }
-    const boundsX = Math.max(0, stage.offsetWidth * mapView.scale - view.clientWidth);
-    const boundsY = Math.max(0, stage.offsetHeight * mapView.scale - view.clientHeight);
-    mapView.x = Math.min(0, Math.max(-boundsX, mapView.x));
-    mapView.y = Math.min(0, Math.max(-boundsY, mapView.y));
-  };
+  let startTarget = null;
+  let handled = false;
   const paint = () => {
-    clampView();
+    clampMapView(view, stage);
     applyMapView(stage);
   };
   paint();
@@ -1795,9 +1825,10 @@ function bindMapZoom(root) {
     paint();
   }, { passive: false });
   view.addEventListener('pointerdown', (event) => {
-    if (event.target.closest('.mapZoomTools, .areaCards, button, .phLand, .legendPop')) return;
+    if (event.target.closest('.mapZoomTools, .legendPop, .citySheet')) return;
     moved = false;
-    if (event.target.closest('.phRegion')) return;
+    handled = false;
+    startTarget = event.target;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     lastX = event.clientX;
     lastY = event.clientY;
@@ -1812,49 +1843,71 @@ function bindMapZoom(root) {
       if (pinch && Math.abs(dist - pinch) > 2) moved = true;
       if (pinch) mapView.scale *= dist / pinch;
       pinch = dist;
-    } else if (mapView.scale > 1) {
+    } else {
       const dx = event.clientX - lastX;
       const dy = event.clientY - lastY;
-      if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
-      mapView.x += dx;
-      mapView.y += dy;
+      if (Math.abs(dx) + Math.abs(dy) > 5) moved = true;
+      if (moved) {
+        mapView.x += dx;
+        mapView.y += dy;
+      }
     }
     lastX = event.clientX;
     lastY = event.clientY;
-    paint();
+    if (moved) paint();
   });
   const release = (event) => {
     pointers.delete(event.pointerId);
     if (pointers.size < 2) pinch = 0;
   };
   view.addEventListener('pointerup', (event) => {
-    const tap = !moved && !event.target.closest('.mapZoomTools, .areaCards, button, .phRegion');
+    const tap = !moved;
+    const target = startTarget;
     release(event);
-    const map = tap ? view.querySelector('.phCountryMap') : null;
+    startTarget = null;
+    if (!tap || !target) return;
+    const pin = target.closest?.('.phPin');
+    if (pin?.dataset.city) {
+      handled = true;
+      window.enterPhCity(pin.dataset.city);
+      return;
+    }
+    const land = target.closest?.('.phLand');
+    if (land?.dataset.region) {
+      handled = true;
+      window.rrPickRegion(land.dataset.region);
+      return;
+    }
+    const map = view.querySelector('.phCountryMap');
     if (!map) return;
     const rect = map.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     const id = regionAt(((event.clientX - rect.left) / rect.width) * 100, ((event.clientY - rect.top) / rect.height) * 100);
-    if (id) window.rrSelectRegion(id, true);
+    if (id) {
+      handled = true;
+      window.rrSelectRegion(id, true);
+    }
   });
   view.addEventListener('pointercancel', release);
   view.addEventListener('click', (event) => {
-    if (!moved) return;
+    if (!moved && !handled) return;
     event.preventDefault();
     event.stopPropagation();
     moved = false;
+    handled = false;
   }, true);
 }
 
 window.rrMapZoom = (dir) => {
   const stage = document.querySelector('[data-map-zoom] .mapZoomStage');
   if (!stage) return;
-  mapView.scale = dir === 0 ? 1 : mapView.scale + dir * 0.25;
-  if (mapView.scale <= 1) {
-    mapView.scale = 1;
+  mapView.scale = dir === 0 ? 1 : Math.min(3, Math.max(1, mapView.scale + dir * 0.25));
+  if (dir === 0) {
     mapView.x = 0;
     mapView.y = 0;
   }
+  const view = stage.closest('[data-map-zoom]');
+  clampMapView(view, stage);
   applyMapView(stage);
 };
 
