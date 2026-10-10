@@ -2209,32 +2209,14 @@ function bindMapZoom(root) {
   let startTarget = null;
   let handled = false;
   const paint = () => {
-    if (!view.clientWidth || !view.clientHeight) return;
-    const map = stage.querySelector('.phCountryMap');
-    if (map) {
-      const ratio = 920 / 1529;
-      let width = view.clientWidth;
-      let height = width / ratio;
-      if (height > view.clientHeight) {
-        height = view.clientHeight;
-        width = height * ratio;
-      }
-      map.style.position = 'absolute';
-      map.style.top = '0';
-      map.style.left = '0';
-      map.style.transform = 'none';
-      map.style.width = `${Math.max(1, Math.floor(width))}px`;
-      map.style.height = `${Math.max(1, Math.floor(height))}px`;
-      stage.style.width = `${Math.max(1, Math.floor(width))}px`;
-      stage.style.height = `${Math.max(1, Math.floor(height))}px`;
+    if (mapView.scale === 1) {
+      stage.style.transform = 'none';
+      return;
     }
-    view.classList.toggle('zoomed', mapView.scale >= 1.35);
     clampMapView(view, stage);
     applyMapView(stage);
   };
   paint();
-  requestAnimationFrame(paint);
-  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(paint).observe(view);
   view.addEventListener('wheel', (event) => {
     event.preventDefault();
     mapView.scale += event.deltaY < 0 ? 0.15 : -0.15;

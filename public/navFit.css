@@ -600,3 +600,57 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 #screen-profile .menuSettingsStrip,
 #screen-profile .menuObjectiveCompact,
 #screen-profile .menuActionDock { position: relative; z-index: 1; }
+#screen-race .roadRunnerShell[data-rr-active-tab="routes"] .racerPages {
+  height: auto !important;
+  max-height: 100% !important;
+  overflow: auto !important;
+}
+#screen-race [data-rr-page="routes"].active,
+#screen-race [data-road-runner-routes],
+#screen-race .phMapWrap,
+#screen-race .mapZoom,
+#screen-race .mapZoomStage {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  flex: none !important;
+}
+#screen-race .mapZoom {
+  width: 100% !important;
+  background: #7ec8ef !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+#screen-race .mapZoom .phCountryMap {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  display: block !important;
+  width: min(100%, calc((100dvh - 300px) * 920 / 1529)) !important;
+  height: auto !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  margin: 8px auto !important;
+  aspect-ratio: auto !important;
+  transform: none !important;
+  background: #7ec8ef !important;
+}
+#screen-race .phCountryMap .highwayArt {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
