@@ -177,10 +177,17 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   min-height: 0 !important;
   overflow: hidden !important;
 }
+#screen-race [data-road-runner-routes] {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 #screen-race .mapSwitch { position: relative; z-index: 3; flex: none; }
 #screen-race .phMapWrap { position: relative !important; inset: auto !important; flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden; }
 #screen-race .mapZoom { position: absolute !important; inset: 0 !important; width: auto !important; height: auto !important; min-height: 0 !important; background: #7ec8ef !important; }
-#screen-race .mapZoomStage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+#screen-race .mapZoomStage { position: absolute; inset: 0; transform-origin: 0 0; }
 #screen-race .mapZoom .phCountryMap {
   position: absolute !important;
   top: 0 !important;
