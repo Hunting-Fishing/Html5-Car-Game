@@ -329,6 +329,35 @@ function currentStage() {
   return stageById(saveData.stageProgress?.current || '1');
 }
 
+function nextStop() {
+  const stages = mainStages();
+  const stars = saveData.stageProgress?.stars || {};
+  const current = stages.find((stage) => stage.id === saveData.stageProgress?.current);
+  if (current && stageUnlocked(current.id) && !Number(stars[current.id] || 0)) return current;
+  return stages.find((stage) => stageUnlocked(stage.id) && !Number(stars[stage.id] || 0)) || current || stages[0];
+}
+
+function nextStopSpot() {
+  const stage = nextStop();
+  if (!stage) return null;
+  if (stage.cityId === 'manila') {
+    const place = METRO_PLACES.find((item) => item.id === stage.id);
+    if (place) {
+      const [px, py] = lonLatToPixel(place.lon, place.lat);
+      return { stage, x: px / 9.2, y: py / 15.29 };
+    }
+  }
+  const city = cityById(stage.cityId);
+  return { stage, x: city.spot.x, y: city.spot.y };
+}
+
+function nextCarHtml(x, y) {
+  const stage = nextStop();
+  const car = selectedVehicle();
+  const src = ASSET_PATHS[car.asset] || MAP_CAR;
+  return `<button type="button" class="nextCar" style="left:${x}%;top:${y}%" onclick="window.rrJumpNext?.()" aria-label="Next stop ${stage?.name || ''}"><i></i><img draggable="false" alt="" src="${src}"><b>Next</b></button>`;
+}
+
 const GHOST_MODES = {
   solo: { label: 'Solo', count: 0 },
   ghost2: { label: '1 Rival', count: 1 },
@@ -1694,7 +1723,9 @@ function renderPhilippinesMap() {
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
   const metro = `<button type="button" class="metroChip" style="left:42.6%;top:40.1%" onclick="window.rrOpenMetro?.()">1 Manila</button>`;
-  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" draggable="false" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${metro}${dots}</div>`);
+  const next = nextStopSpot();
+  const marker = next ? nextCarHtml(next.x, next.y) : '';
+  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" draggable="false" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${metro}${dots}${marker}</div>`);
   const sheet = !areaOpen && citySheet ? citySheetHtml(cityById(citySheet)) : '';
   const area = areaOpen && region ? renderAreaPopup(region) : '';
   return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button>${popup}${map}${sheet}${area}</div>${cards}`;
@@ -1925,8 +1956,11 @@ function renderRegionBoard(regions) {
     const state = pin.metro ? '' : cityState(pin.city);
     return `<button type="button" class="phPin ${state}" style="left:${pin.x}%;top:${pin.y}%" onclick="${action}"><i></i><b>${pin.name}</b></button>`;
   }).join('');
+  const goal = nextStop();
+  const here = placed.find((pin) => (pin.metro ? pin.id === goal?.id : pin.id === goal?.cityId));
+  const marker = here ? nextCarHtml(here.x, here.y) : '';
   const legendItems = areaStatusLegend(list);
-  const map = `<div class="areaBoard" style="--ratio:${spanX / spanY}"><svg class="areaVector" viewBox="${minX} ${minY} ${spanX} ${spanY}" preserveAspectRatio="none"><image href="${photo}" xlink:href="${photo}" x="${minX}" y="${minY}" width="${spanX}" height="${spanY}" preserveAspectRatio="none"></image>${paths}${leaders}</svg>${pins}</div>`;
+  const map = `<div class="areaBoard" style="--ratio:${spanX / spanY}"><svg class="areaVector" viewBox="${minX} ${minY} ${spanX} ${spanY}" preserveAspectRatio="none"><image href="${photo}" xlink:href="${photo}" x="${minX}" y="${minY}" width="${spanX}" height="${spanY}" preserveAspectRatio="none"></image>${paths}${leaders}</svg>${pins}${marker}</div>`;
   return { map, legend: legendItems };
 }
 
@@ -2103,6 +2137,20 @@ function metroStageSheet(id) {
   return `<div class="citySheet" role="dialog" aria-label="${stage.name}"><div class="citySheetHead"><div><b>${stage.name}</b><small>${stage.landmark}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq"><b>${face.level}</b><span class="${unlocked ? 'ready' : 'missing'}">${note}</span></div>${race}</div>`;
 }
 
+window.rrJumpNext = () => {
+  const stage = nextStop();
+  if (!stage) return;
+  if (stage.cityId === 'manila') {
+    selectedRegion = 'ncr';
+    areaOpen = true;
+    citySheet = `metro:${stage.id}`;
+    mapLayer = 'cities';
+    renderRoutesPanel();
+    return;
+  }
+  window.enterPhCity(stage.cityId);
+};
+
 window.rrOpenMetroStage = (id) => {
   citySheet = `metro:${id}`;
   renderRoutesPanel();
@@ -2161,7 +2209,7 @@ function bindMapZoom(root) {
     paint();
   }, { passive: false });
   view.addEventListener('pointerdown', (event) => {
-    if (event.target.closest('.phPin')) {
+    if (event.target.closest('.phPin, .nextCar')) {
       moved = false;
       handled = false;
       return;
