@@ -154,33 +154,33 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-hub .homeLink { display: block; text-align: center; color: #d6b87a; font-size: 13px; text-decoration: none; padding: 6px; }
 #screen-hub .adcapIcon img { width: 28px; height: 28px; object-fit: contain; }
 #screen-race .racerPages { min-height: 0 !important; overflow: hidden !important; }
-#screen-race .roadRunnerShell[data-rr-active-tab="routes"] {
+#screen-race .roadRunnerShell {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
   height: 100% !important;
   min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
+  background: #0c3146 !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
-#screen-race .roadRunnerShell[data-rr-active-tab="routes"] .racerPages {
-  display: flex !important;
-  flex-direction: column !important;
-  flex: 1 1 0 !important;
-  height: auto !important;
+#screen-race .roadRunnerShell[data-rr-active-tab="routes"] .racerPages,
+#screen-race .racerPages {
+  display: block !important;
   min-height: 0 !important;
+  height: 100% !important;
   overflow: hidden !important;
-  touch-action: none;
 }
-#screen-race .roadRunnerShell[data-rr-active-tab="routes"] [data-rr-page="drive"] { display: none !important; }
 #screen-race [data-rr-page="routes"].active {
   position: relative !important;
   display: flex !important;
   flex-direction: column !important;
-  flex: 1 1 0 !important;
+  height: 100% !important;
   min-height: 0 !important;
-  height: auto !important;
   overflow: hidden !important;
 }
 #screen-race .mapSwitch { position: relative; z-index: 3; flex: none; }
-#screen-race .phMapWrap { position: relative !important; inset: auto !important; flex: 1 1 0 !important; min-height: 0 !important; height: auto !important; overflow: hidden; }
+#screen-race .phMapWrap { position: relative !important; inset: auto !important; flex: 1 1 auto !important; min-height: 0 !important; height: auto !important; overflow: hidden; }
 #screen-race .mapZoom { position: absolute !important; inset: 0 !important; width: auto !important; height: auto !important; min-height: 0 !important; background: #7ec8ef !important; }
 #screen-race .mapZoomStage { position: absolute; left: 0; top: 0; width: auto; height: auto; transform-origin: 0 0; }
 #screen-race .mapZoom .phCountryMap { position: relative !important; transform: none !important; margin: 0 !important; background: #7ec8ef; }
