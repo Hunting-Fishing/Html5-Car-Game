@@ -1608,7 +1608,7 @@ function renderPhilippinesMap() {
   PH_REGIONS.forEach((item) => item.cities.forEach((id) => { regionOf[id] = item.id; }));
   const lands = Object.entries(PH_LAND).map(([id, d]) => {
     const on = regionOf[id] === selectedRegion;
-    return `<path class="phLand ${on ? 'on' : ''}" d="${d}" onclick="window.rrPickRegion?.('${regionOf[id]}')"></path>`;
+    return `<path class="phLand ${on ? 'on' : ''}" stroke-width="${on ? '0.38' : '0.22'}" d="${d}" onclick="window.rrPickRegion?.('${regionOf[id]}')"></path>`;
   }).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
