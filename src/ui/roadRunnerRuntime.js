@@ -75,7 +75,7 @@ const MANILA_FACE = {
   '16': { level: 'Medium', car: 'Starter Hatchback' },
   '17': { level: 'Hard', car: 'Endurance vehicle', need: { class: 'endurance' } }
 };
-const PH_MAP = publicAsset('/assets/race/maps/philippines-map.png');
+const PH_MAP = publicAsset('/assets/race/maps/philippines-gis.png?v=2');
 const PH_CITIES = [
   { id: 'manila', name: 'Manila', province: 'Metro Manila', spot: { x: 42.64, y: 39.46 }, local: true, difficulty: 'Easy' },
   { id: 'batangas', name: 'Batangas', province: 'Batangas', spot: { x: 43.35, y: 44.46 }, difficulty: 'Easy', after: 'manila', need: { class: 'starter' }, missions: ['Taal Volcano', 'Basilica', 'Batangas Port'] },
@@ -1579,21 +1579,25 @@ function pointInRing(x, y, ring) {
   return inside;
 }
 
-function regionAt(x, y) {
-  const hit = [...PH_REGIONS].reverse().find((region) => regionRings(region.d).some((ring) => pointInRing(x, y, ring)));
-  if (hit) return hit.id;
-  let best = '';
-  let bestDist = 12;
-  PH_REGIONS.forEach((region) => {
-    const look = REGION_LOOK[region.id];
-    if (!look) return;
-    const dist = Math.hypot(look.x - x, look.y - y);
-    if (dist < bestDist) {
-      best = region.id;
-      bestDist = dist;
-    }
+function landRings(d) {
+  const rings = [];
+  String(d).split(/[MZ]/).forEach((part) => {
+    const points = part.trim().replace(/^L\s*/, '').split(/\s*L\s*/).filter(Boolean).map((pair) => {
+      const [x, y] = pair.split(',').map(Number);
+      return { x, y };
+    }).filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+    if (points.length > 2) rings.push(points);
   });
-  return best;
+  return rings;
+}
+
+function regionAt(x, y) {
+  for (let index = PH_LAND.length - 1; index >= 0; index -= 1) {
+    const shape = PH_LAND[index];
+    const inside = landRings(shape.d).reduce((hits, ring) => hits + (pointInRing(x, y, ring) ? 1 : 0), 0);
+    if (inside % 2 === 1) return shape.region;
+  }
+  return '';
 }
 
 function regionLevel(region) {
@@ -1637,8 +1641,13 @@ window.rrPickRegion = (id) => {
 };
 
 function focusMapOnRegion(id) {
-  const look = REGION_LOOK[id];
-  if (!look) return;
+  const region = PH_REGIONS.find((item) => item.id === id);
+  const cities = region?.cities.map((cityId) => cityById(cityId)).filter(Boolean) || [];
+  if (!cities.length) return;
+  const look = {
+    x: cities.reduce((sum, city) => sum + city.spot.x, 0) / cities.length,
+    y: cities.reduce((sum, city) => sum + city.spot.y, 0) / cities.length
+  };
   requestAnimationFrame(() => {
     const view = document.querySelector('[data-map-zoom]');
     const map = view?.querySelector('.phCountryMap');
