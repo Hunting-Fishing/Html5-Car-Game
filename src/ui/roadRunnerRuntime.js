@@ -56,6 +56,25 @@ const STAGE_WORLDS = [
   { id: '17', name: 'Muntinlupa', landmark: 'Alabang', routeKey: 'barangay', profile: 'barangay', theme: 'lyon', seed: 43, skyA: '#c6ecff', skyB: '#eef8e8', grass: '#6eae48', road: '#5c4a38', difficulty: 1.64, spot: { x: 48, y: 93 } }
 ];
 const GARAGE_SPOT = { x: 16, y: 44 };
+const METRO_PLACES = [
+  { id: '1', lon: 120.97, lat: 14.65 },
+  { id: '2', lon: 120.98, lat: 14.70 },
+  { id: '3', lon: 120.96, lat: 14.66 },
+  { id: '4', lon: 120.94, lat: 14.67 },
+  { id: '5', lon: 121.04, lat: 14.68 },
+  { id: '6', lon: 121.10, lat: 14.65 },
+  { id: '7', lon: 120.98, lat: 14.59 },
+  { id: '8', lon: 121.03, lat: 14.60 },
+  { id: '9', lon: 121.03, lat: 14.58 },
+  { id: '10', lon: 121.08, lat: 14.58 },
+  { id: '11', lon: 121.02, lat: 14.55 },
+  { id: '12', lon: 121.00, lat: 14.54 },
+  { id: '13', lon: 121.07, lat: 14.54 },
+  { id: '14', lon: 121.05, lat: 14.52 },
+  { id: '15', lon: 121.02, lat: 14.48 },
+  { id: '16', lon: 120.98, lat: 14.45 },
+  { id: '17', lon: 121.04, lat: 14.38 }
+];
 const MANILA_FACE = {
   '1': { level: 'Easy', car: 'Starter Hatchback' },
   '2': { level: 'Easy', car: 'Starter Hatchback' },
@@ -1769,13 +1788,14 @@ function renderAreaPopup(region) {
   const level = regionLevel(region);
   const gate = areaGate(region);
   const title = region.name;
-  const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Map</button><button type="button" class="areaStep" onclick="window.rrStepRegion?.(-1)" aria-label="Previous area">‹</button><div><b>Area ${number} · ${title}</b><small>${region.cities.length} ${region.cities.length === 1 ? 'city' : 'cities'} · ${level}</small></div><button type="button" class="areaStep" onclick="window.rrStepRegion?.(1)" aria-label="Next area">›</button></div>`;
+  const count = region.id === 'ncr' ? METRO_PLACES.length : region.cities.length;
+  const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Map</button><button type="button" class="areaStep" onclick="window.rrStepRegion?.(-1)" aria-label="Previous area">‹</button><div><b>Area ${number} · ${title}</b><small>${count} ${count === 1 ? 'city' : 'cities'} · ${level}</small></div><button type="button" class="areaStep" onclick="window.rrStepRegion?.(1)" aria-label="Next area">›</button></div>`;
   const board = renderRegionBoard(region);
   const legend = areaLegendOpen ? `<div class="legendPop areaLegendPop" role="dialog" aria-label="Legend"><div class="legendPopHead"><b>Legend</b><button type="button" onclick="window.rrToggleAreaLegend?.()">Close</button></div><ul class="areaLegendList">${board.legend}</ul></div>` : '';
   const lock = gate.open
     ? `<div class="areaLock"><b>Area ${number}</b><span>${level}</span><em class="ready">Unlocked</em></div>`
     : `<div class="areaLock"><b>Area ${number}</b><span>${level}</span><em class="missing">Locked</em><button type="button" onclick="window.rrSelectRegion?.('${gate.need.id}', true)">Finish Area ${number - 1} · ${gate.need.name}</button></div>`;
-  const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
+  const sheet = citySheet?.startsWith('metro:') ? metroStageSheet(citySheet.slice(6)) : citySheet ? citySheetHtml(cityById(citySheet)) : '';
   return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;top:8px;bottom:8px;left:50%;transform:translateX(-50%);width:min(440px,calc(100% - 16px));z-index:80;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:#083044;color:#10283c">${head}<div class="areaFit"><div class="areaTools"><button type="button" class="legendBtn ${areaLegendOpen ? 'on' : ''}" onclick="window.rrToggleAreaLegend?.()">Legend</button>${lock}</div>${legend}${board.map}</div>${sheet}</div>`;
 }
 
@@ -1789,6 +1809,12 @@ function pixelToLonLat(px, py) {
   const cos = Math.cos(12.8 * Math.PI / 180);
   const scale = 920 / ((126.95 - 116.55) * cos);
   return [116.55 + px / (cos * scale), 21.25 - py / scale];
+}
+
+function lonLatToPixel(lon, lat) {
+  const cos = Math.cos(12.8 * Math.PI / 180);
+  const scale = 920 / ((126.95 - 116.55) * cos);
+  return [(lon - 116.55) * cos * scale, (21.25 - lat) * scale];
 }
 
 function satelliteUrl(minX, minY, maxX, maxY) {
@@ -1847,30 +1873,44 @@ function renderRegionBoard(regions) {
   const spanY = maxY - minY;
   const photo = satelliteUrl(minX, minY, maxX, maxY);
   const paths = lands.map((shape) => `<path fill="${shape.fill}" fill-opacity="0.34" stroke="#fff" stroke-width="2.4" vector-effect="non-scaling-stroke" fill-rule="evenodd" d="${shape.d}"></path>`).join('');
+  const metro = list.length === 1 && list[0].id === 'ncr';
+  const sources = metro
+    ? METRO_PLACES.map((place) => {
+      const stage = STAGE_WORLDS.find((item) => item.id === place.id);
+      const [px, py] = lonLatToPixel(place.lon, place.lat);
+      return { id: place.id, name: stage?.name || 'Manila', px, py, metro: true };
+    })
+    : list.flatMap((item) => item.cities).map((id) => {
+      const city = cityById(id);
+      const [px, py] = mapPoint(city.spot.x, city.spot.y);
+      return { id: city.id, name: city.name, px, py, city, metro: false };
+    });
   const placed = [];
-  list.flatMap((item) => item.cities).forEach((id) => {
-    const city = cityById(id);
-    const [px, py] = mapPoint(city.spot.x, city.spot.y);
-    const origin = { x: ((px - minX) / spanX) * 100, y: ((py - minY) / spanY) * 100 };
+  const gap = sources.length > 8 ? 5.5 : 8;
+  sources.forEach((source) => {
+    const origin = { x: ((source.px - minX) / spanX) * 100, y: ((source.py - minY) / spanY) * 100 };
     let x = origin.x;
     let y = origin.y;
-    for (let step = 0; step < 14; step += 1) {
-      const clash = placed.some((other) => Math.hypot(other.x - x, other.y - y) < 8);
+    for (let step = 0; step < 16; step += 1) {
+      const clash = placed.some((other) => Math.hypot(other.x - x, other.y - y) < gap);
       if (!clash) break;
-      const angle = step * 0.9;
-      const dist = 8 + step * 1.4;
+      const angle = step * 0.85;
+      const dist = gap + step;
       x = Math.max(4, Math.min(96, origin.x + Math.cos(angle) * dist));
       y = Math.max(4, Math.min(96, origin.y + Math.sin(angle) * dist));
     }
-    placed.push({ city, x, y, origin });
+    placed.push({ ...source, x, y, origin });
   });
   const leaders = placed.filter((pin) => Math.hypot(pin.x - pin.origin.x, pin.y - pin.origin.y) > 2).map((pin) => {
-    const [px, py] = mapPoint(pin.city.spot.x, pin.city.spot.y);
     const x2 = minX + (pin.x / 100) * spanX;
     const y2 = minY + (pin.y / 100) * spanY;
-    return `<line x1="${px}" y1="${py}" x2="${x2}" y2="${y2}" stroke="#ffe27a" stroke-width="1.4" vector-effect="non-scaling-stroke"></line>`;
+    return `<line x1="${pin.px}" y1="${pin.py}" x2="${x2}" y2="${y2}" stroke="#ffe27a" stroke-width="1.4" vector-effect="non-scaling-stroke"></line>`;
   }).join('');
-  const pins = placed.map((pin) => `<button type="button" class="phPin ${cityState(pin.city)}" style="left:${pin.x}%;top:${pin.y}%" onclick="window.enterPhCity?.('${pin.city.id}')"><i></i><b>${pin.city.name}</b></button>`).join('');
+  const pins = placed.map((pin) => {
+    const action = pin.metro ? `window.rrOpenMetroStage?.('${pin.id}')` : `window.enterPhCity?.('${pin.id}')`;
+    const state = pin.metro ? '' : cityState(pin.city);
+    return `<button type="button" class="phPin ${state}" style="left:${pin.x}%;top:${pin.y}%" onclick="${action}"><i></i><b>${pin.name}</b></button>`;
+  }).join('');
   const legendItems = list.length > 1
     ? list.map((item) => `<li><i style="background:${metroFill[item.id] || '#f0b429'}"></i><b>${item.name}</b></li>`).join('')
     : [...new Map(lands.map((shape) => {
@@ -1999,12 +2039,31 @@ window.rrCloseCity = () => {
   renderRoutesPanel();
 };
 
+function metroStageSheet(id) {
+  const stage = stageById(id);
+  if (!stage || stage.cityId !== 'manila') return '';
+  const face = MANILA_FACE[id] || { level: 'Easy', car: 'Starter Hatchback' };
+  const stars = Number(saveData.stageProgress?.stars?.[id] || 0);
+  const unlocked = stageUnlocked(id);
+  const list = stagesForCity('manila');
+  const index = list.findIndex((item) => item.id === id);
+  const previous = index > 0 ? list[index - 1] : null;
+  const note = unlocked ? `${face.car} ready` : face.need && !ownsVehicle(face.need) ? `Needs ${face.car}` : previous ? `Finish ${previous.name} first` : 'Locked';
+  const race = unlocked ? `<button type="button" class="cityMission" onclick="window.selectStage?.('${id}')"><b>Race ${stage.landmark}</b><small>${stars ? `${stars}★` : 'Open'}</small></button>` : `<button type="button" class="cityMission locked" disabled><b>${stage.landmark}</b><small>Locked</small></button>`;
+  return `<div class="citySheet" role="dialog" aria-label="${stage.name}"><div class="citySheetHead"><div><b>${stage.name}</b><small>${stage.landmark}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq"><b>${face.level}</b><small class="${unlocked ? 'ready' : 'missing'}">${note}</small></div>${race}</div>`;
+}
+
+window.rrOpenMetroStage = (id) => {
+  citySheet = `metro:${id}`;
+  renderRoutesPanel();
+};
+
 window.enterPhCity = (cityId) => {
   const city = cityById(cityId);
   const region = PH_REGIONS.find((item) => item.cities.includes(city.id));
   if (region) selectedRegion = region.id;
   areaOpen = true;
-  citySheet = city.local ? '' : city.id;
+  citySheet = city.id;
   mapLayer = 'cities';
   mapNotice = '';
   mapView.scale = 1;
