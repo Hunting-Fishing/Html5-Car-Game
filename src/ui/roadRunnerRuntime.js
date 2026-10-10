@@ -1741,16 +1741,37 @@ function renderAreaPopup(region) {
   const level = regionLevel(region);
   const title = metro ? 'Greater Manila' : region.name;
   const count = shown.reduce((sum, item) => sum + item.cities.length, 0);
-  const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Back</button><div><b>${title}</b><small>${count} cities${metro ? ' · Manila, Central Luzon, Calabarzon' : ` · ${level}`}</small></div></div>`;
-  const body = renderRegionBoard(shown);
+  const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Map</button><button type="button" class="areaStep" onclick="window.rrStepRegion?.(-1)" aria-label="Previous area">‹</button><div><b>${title}</b><small>${count} cities${metro ? ' · Manila, Central Luzon, Calabarzon' : ` · ${level}`}</small></div><button type="button" class="areaStep" onclick="window.rrStepRegion?.(1)" aria-label="Next area">›</button></div>`;
+  const board = renderRegionBoard(shown);
   const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
-  return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#8ecae6;color:#10283c">${head}<div class="areaFit">${body}</div>${sheet}</div>`;
+  return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#083044;color:#10283c">${head}<div class="areaFit">${board.map}${board.legend}</div>${sheet}</div>`;
 }
 
 const AREA_FILLS = ['#f0b429', '#7bc142', '#f28b30', '#e35d5d', '#5aa6e0', '#c6d64a', '#d98ad0', '#efc14a'];
 
 function mapPoint(x, y) {
   return [x * 9.2, y * 15.29];
+}
+
+function pixelToLonLat(px, py) {
+  const cos = Math.cos(12.8 * Math.PI / 180);
+  const scale = 920 / ((126.95 - 116.55) * cos);
+  return [116.55 + px / (cos * scale), 21.25 - py / scale];
+}
+
+function satelliteUrl(minX, minY, maxX, maxY) {
+  const [lonA, latA] = pixelToLonLat(minX, minY);
+  const [lonB, latB] = pixelToLonLat(maxX, maxY);
+  const minLon = Math.min(lonA, lonB);
+  const maxLon = Math.max(lonA, lonB);
+  const minLat = Math.min(latA, latB);
+  const maxLat = Math.max(latA, latB);
+  const spanX = Math.max(1, maxX - minX);
+  const spanY = Math.max(1, maxY - minY);
+  const longSide = Math.max(spanX, spanY);
+  const width = Math.max(64, Math.round(960 * spanX / longSide));
+  const height = Math.max(64, Math.round(960 * spanY / longSide));
+  return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${minLon},${minLat},${maxLon},${maxLat}&bboxSR=4326&size=${width},${height}&format=jpg&f=image`;
 }
 
 function vectorPath(d) {
@@ -1771,17 +1792,19 @@ function renderRegionBoard(regions) {
   let maxY = -Infinity;
   const lands = shapes.map((shape, index) => {
     const d = vectorPath(shape.d);
-    d.replace(/(-?\d*\.?\d+),(-?\d*\.?\d+)/g, (_, x, y) => {
-      minX = Math.min(minX, Number(x));
-      minY = Math.min(minY, Number(y));
-      maxX = Math.max(maxX, Number(x));
-      maxY = Math.max(maxY, Number(y));
-      return _;
+    const points = [...d.matchAll(/(-?\d*\.?\d+),(-?\d*\.?\d+)/g)].map((match) => [Number(match[1]), Number(match[2])]);
+    points.forEach(([x, y]) => {
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
     });
     const fill = list.length > 1 ? (metroFill[shape.region] || AREA_FILLS[index % AREA_FILLS.length]) : AREA_FILLS[index % AREA_FILLS.length];
-    return `<path fill="${fill}" stroke="#fff" stroke-width="2.4" vector-effect="non-scaling-stroke" fill-rule="evenodd" d="${d}"></path>`;
-  }).join('');
-  if (!Number.isFinite(minX)) return '';
+    const cx = points.reduce((sum, point) => sum + point[0], 0) / (points.length || 1);
+    const cy = points.reduce((sum, point) => sum + point[1], 0) / (points.length || 1);
+    return { d, fill, cx, cy, region: shape.region };
+  });
+  if (!Number.isFinite(minX)) return { map: '', legend: '' };
   const padX = Math.max(8, (maxX - minX) * 0.14);
   const padY = Math.max(8, (maxY - minY) * 0.14);
   minX -= padX;
@@ -1790,6 +1813,8 @@ function renderRegionBoard(regions) {
   maxY += padY;
   const spanX = maxX - minX;
   const spanY = maxY - minY;
+  const photo = satelliteUrl(minX, minY, maxX, maxY);
+  const paths = lands.map((shape) => `<path fill="${shape.fill}" fill-opacity="0.34" stroke="#fff" stroke-width="2.4" vector-effect="non-scaling-stroke" fill-rule="evenodd" d="${shape.d}"></path>`).join('');
   const placed = [];
   list.flatMap((item) => item.cities).forEach((id) => {
     const city = cityById(id);
@@ -1811,10 +1836,28 @@ function renderRegionBoard(regions) {
     const [px, py] = mapPoint(pin.city.spot.x, pin.city.spot.y);
     const x2 = minX + (pin.x / 100) * spanX;
     const y2 = minY + (pin.y / 100) * spanY;
-    return `<line x1="${px}" y1="${py}" x2="${x2}" y2="${y2}" stroke="#10283c" stroke-width="1.2" vector-effect="non-scaling-stroke"></line>`;
+    return `<line x1="${px}" y1="${py}" x2="${x2}" y2="${y2}" stroke="#ffe27a" stroke-width="1.4" vector-effect="non-scaling-stroke"></line>`;
   }).join('');
   const pins = placed.map((pin) => `<button type="button" class="phPin ${cityState(pin.city)}" style="left:${pin.x}%;top:${pin.y}%" onclick="window.enterPhCity?.('${pin.city.id}')"><i></i><b>${pin.city.name}</b></button>`).join('');
-  return `<div class="areaBoard" style="--ratio:${spanX / spanY}"><svg class="areaVector" viewBox="${minX} ${minY} ${spanX} ${spanY}" preserveAspectRatio="none">${lands}${leaders}</svg>${pins}</div>`;
+  const legendItems = list.length > 1
+    ? list.map((item) => `<li><i style="background:${metroFill[item.id] || '#f0b429'}"></i><b>${item.name}</b></li>`)
+    : [...new Map(lands.map((shape) => {
+      let best = list[0].cities[0];
+      let bestDist = Infinity;
+      list[0].cities.forEach((id) => {
+        const city = cityById(id);
+        const [px, py] = mapPoint(city.spot.x, city.spot.y);
+        const dist = Math.hypot(px - shape.cx, py - shape.cy);
+        if (dist < bestDist) {
+          best = city;
+          bestDist = dist;
+        }
+      });
+      return [best.province, { name: best.province, fill: shape.fill }];
+    }).values())].map((item) => `<li><i style="background:${item.fill}"></i><b>${item.name}</b></li>`);
+  const legend = `<aside class="areaLegend"><b>Legend</b><ul>${legendItems.join('')}</ul></aside>`;
+  const map = `<div class="areaBoard" style="--ratio:${spanX / spanY}"><svg class="areaVector" viewBox="${minX} ${minY} ${spanX} ${spanY}" preserveAspectRatio="none"><image href="${photo}" xlink:href="${photo}" x="${minX}" y="${minY}" width="${spanX}" height="${spanY}" preserveAspectRatio="none"></image>${paths}${leaders}</svg>${pins}</div>`;
+  return { map, legend };
 }
 
 function renderManilaBoard() {
