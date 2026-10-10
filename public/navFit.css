@@ -294,7 +294,11 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .cityMissionList { display: grid; gap: 8px; }
 #screen-race .cityMission { display: flex; justify-content: space-between; gap: 8px; min-height: 48px; border: 0; border-radius: 12px; padding: 8px 10px; background: #1c4668; color: #fff; text-align: left; }
 #screen-race .cityMission.locked { background: #243140; color: #9eb0bd; }
-#screen-race .cityMission small { color: #ffe27a; }
+#screen-race .cityMission.raceGo { align-items: center; }
+#screen-race .raceStart { position: relative; display: flex; align-items: center; gap: 4px; flex: none; width: 96px; height: 28px; padding: 0 6px 0 4px; border-radius: 8px; overflow: hidden; background: repeating-linear-gradient(90deg, #2c3644 0 8px, #3a4555 8px 16px); }
+#screen-race .raceStart i { position: absolute; left: 34px; top: 0; bottom: 0; width: 3px; background: repeating-linear-gradient(#fff 0 3px, transparent 3px 6px); }
+#screen-race .raceStart img { position: relative; width: 34px; height: 20px; object-fit: contain; filter: drop-shadow(0 1px 1px rgba(0,0,0,.6)); }
+#screen-race .raceStart b { position: relative; color: #f6c445; font-size: 11px; letter-spacing: .06em; }
 #screen-race .stageMapNote { margin: 0 0 8px; color: #b7c9d6; font-size: 12px; }
 #screen-race .stageWorld { margin: 0 0 14px; }
 #screen-race .stageWorld h4 { margin: 0 0 8px; color: #f6c445; font-size: 13px; }

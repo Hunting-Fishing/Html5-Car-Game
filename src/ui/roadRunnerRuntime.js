@@ -351,6 +351,11 @@ function nextStopSpot() {
   return { stage, x: city.spot.x, y: city.spot.y };
 }
 
+function raceStartBadge(stars) {
+  const src = ASSET_PATHS[selectedVehicle().asset] || MAP_CAR;
+  return `<span class="raceStart"><i></i><img draggable="false" alt="" src="${src}"><b>${stars ? `${stars}★` : 'RACE'}</b></span>`;
+}
+
 function nextCarHtml(x, y) {
   const stage = nextStop();
   const car = selectedVehicle();
@@ -2017,8 +2022,8 @@ function renderCityMissions(cityId) {
   const rows = stagesForCity(city.id).map((stage) => {
     const stars = Number(saveData.stageProgress?.stars?.[stage.id] || 0);
     const unlocked = stageUnlocked(stage.id);
-    const status = stars ? `${stars} star${stars === 1 ? '' : 's'}` : unlocked ? 'Open' : 'Locked';
-    return `<button type="button" class="cityMission ${unlocked ? '' : 'locked'}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.landmark}</b><small>${status}</small></button>`;
+    const mark = unlocked ? raceStartBadge(stars) : '<small>Locked</small>';
+    return `<button type="button" class="cityMission ${unlocked ? 'raceGo' : 'locked'}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.landmark}</b>${mark}</button>`;
   }).join('');
   const ready = ownsVehicle(city.need);
   return `<div class="cityMissions"><button type="button" class="mapBack" onclick="window.rrMapLayer?.('cities')">Back to the Philippines</button><h3>${city.name}</h3><div class="cityReq">${difficultyMark(city.difficulty)}<b>${city.difficulty}</b><small class="${ready ? 'ready' : 'missing'}">${ready ? 'Car ready' : 'Car locked'}: ${carsForNeed(city).join(', ')}</small></div><div class="cityMissionList">${rows}</div></div>`;
@@ -2088,8 +2093,8 @@ function citySheetHtml(city) {
   const rows = stagesForCity(city.id).map((stage) => {
     const stars = Number(saveData.stageProgress?.stars?.[stage.id] || 0);
     const unlocked = !locked && stageUnlocked(stage.id);
-    const status = stars ? `${stars}★` : unlocked ? 'Open' : 'Locked';
-    return `<button type="button" class="cityMission ${unlocked ? '' : 'locked'}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.landmark || stage.name}</b><small>${status}</small></button>`;
+    const status = unlocked ? raceStartBadge(stars) : '<small>Locked</small>';
+    return `<button type="button" class="cityMission ${unlocked ? 'raceGo' : 'locked'}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.landmark || stage.name}</b>${status}</button>`;
   }).join('');
   const manila = city.local ? `<button type="button" class="mapBack" onclick="window.rrMapLayer?.('manila')">Open Manila map</button>` : '';
   const note = locked ? cityNeeds(city) || 'Locked' : `Car ready: ${needLabel(city)}`;
@@ -2133,7 +2138,9 @@ function metroStageSheet(id) {
   const stars = Number(saveData.stageProgress?.stars?.[id] || 0);
   const unlocked = stageUnlocked(id);
   const note = unlocked ? `${face.car} ready` : metroNeeds(id) || 'Locked';
-  const race = unlocked ? `<button type="button" class="cityMission" onclick="window.selectStage?.('${id}')"><b>Race ${stage.landmark}</b><small>${stars ? `${stars}★` : 'Open'}</small></button>` : `<button type="button" class="cityMission locked" disabled><b>${stage.landmark}</b><small>Locked</small></button>`;
+  const race = unlocked
+    ? `<button type="button" class="cityMission raceGo" onclick="window.selectStage?.('${id}')"><b>${stage.landmark}</b>${raceStartBadge(stars)}</button>`
+    : `<button type="button" class="cityMission locked" disabled><b>${stage.landmark}</b><small>Locked</small></button>`;
   return `<div class="citySheet" role="dialog" aria-label="${stage.name}"><div class="citySheetHead"><div><b>${stage.name}</b><small>${stage.landmark}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq"><b>${face.level}</b><span class="${unlocked ? 'ready' : 'missing'}">${note}</span></div>${race}</div>`;
 }
 
