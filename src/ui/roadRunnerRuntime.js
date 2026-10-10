@@ -1609,15 +1609,35 @@ function regionLevel(region) {
   return levels.sort((a, b) => order.indexOf(a) - order.indexOf(b))[0] || 'Easy';
 }
 
-const METRO_IDS = ['central', 'ncr', 'calabarzon'];
+const AREA_ORDER = ['ncr', 'calabarzon', 'central', 'mimaropa', 'bicol', 'ilocos', 'car', 'cagayan', 'westvis', 'negros', 'centralvis', 'eastvis', 'zambo', 'northmin', 'barmm', 'soccsksargen', 'davao', 'caraga'];
+
+function areaNumber(id) {
+  const index = AREA_ORDER.indexOf(id);
+  return index < 0 ? 0 : index + 1;
+}
+
+function areaByNumber(number) {
+  return PH_REGIONS.find((item) => item.id === AREA_ORDER[number - 1]);
+}
+
+function areaHasClear(region) {
+  return Boolean(region && region.cities.some((id) => cityProgressDone(id)));
+}
+
+function areaGate(region) {
+  const number = areaNumber(region.id);
+  if (number <= 1) return { open: true, need: null };
+  const need = areaByNumber(number - 1);
+  return { open: areaHasClear(need), need };
+}
 
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
   const lands = PH_LAND.map((shape) => {
-    const on = METRO_IDS.includes(selectedRegion) ? METRO_IDS.includes(shape.region) : shape.region === selectedRegion;
+    const on = shape.region === selectedRegion;
     return `<path class="phLand ${on ? 'on' : ''}" data-region="${shape.region}" stroke-width="${on ? '0.32' : '0.16'}" d="${shape.d}"></path>`;
   }).join('');
-  const names = PH_REGIONS.filter((item) => !METRO_IDS.includes(item.id)).map((item) => {
+  const names = PH_REGIONS.filter((item) => item.id !== 'ncr').map((item) => {
     const places = item.cities.map((id) => cityById(id)).filter(Boolean);
     if (!places.length) return '';
     const x = places.reduce((sum, city) => sum + city.spot.x, 0) / places.length;
@@ -1628,9 +1648,11 @@ function renderPhilippinesMap() {
     const city = cityById(id);
     return `<button type="button" class="phPin ${cityState(city)}" data-city="${city.id}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"><i></i><b>${city.name}</b></button>`;
   }).join('') : '';
-  const legend = PH_REGIONS.map((item, index) => {
+  const legend = AREA_ORDER.map((id) => {
+    const item = PH_REGIONS.find((region) => region.id === id);
     const level = regionLevel(item);
-    return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" onclick="window.rrPickRegion?.('${item.id}')"><span class="num">${index + 1}</span><b>${item.name}</b>${difficultyMark(level)}<small>${level}</small></button>`;
+    const gate = areaGate(item);
+    return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" onclick="window.rrPickRegion?.('${item.id}')"><span class="num">${areaNumber(id)}</span><b>${item.name}</b>${difficultyMark(level)}<small>${gate.open ? level : 'Locked'}</small></button>`;
   }).join('');
   const popup = legendOpen ? `<div class="legendPop" role="dialog" aria-label="Regions"><div class="legendPopHead"><b>Regions</b><button type="button" onclick="window.rrToggleLegend?.()">Close</button></div><div class="phLegend">${legend}</div></div>` : '';
   const cards = region ? `<div class="areaCards"><div class="areaCardGrid">${region.cities.map((id) => {
@@ -1638,7 +1660,7 @@ function renderPhilippinesMap() {
     const state = cityState(city);
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
-  const metro = `<button type="button" class="metroChip" style="left:42.6%;top:40.1%" onclick="window.rrOpenMetro?.()">Manila area</button>`;
+  const metro = `<button type="button" class="metroChip" style="left:42.6%;top:40.1%" onclick="window.rrOpenMetro?.()">1 Manila</button>`;
   const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" draggable="false" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${metro}${dots}</div>`);
   const sheet = !areaOpen && citySheet ? citySheetHtml(cityById(citySheet)) : '';
   const area = areaOpen && region ? renderAreaPopup(region) : '';
@@ -1743,16 +1765,18 @@ function regionFrame(id) {
 }
 
 function renderAreaPopup(region) {
-  const metro = METRO_IDS.includes(region.id);
-  const shown = metro ? PH_REGIONS.filter((item) => METRO_IDS.includes(item.id)) : [region];
+  const number = areaNumber(region.id);
   const level = regionLevel(region);
-  const title = metro ? 'Greater Manila' : region.name;
-  const count = shown.reduce((sum, item) => sum + item.cities.length, 0);
-  const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Map</button><button type="button" class="areaStep" onclick="window.rrStepRegion?.(-1)" aria-label="Previous area">‹</button><div><b>${title}</b><small>${count} cities${metro ? ' · Manila, Central Luzon, Calabarzon' : ` · ${level}`}</small></div><button type="button" class="areaStep" onclick="window.rrStepRegion?.(1)" aria-label="Next area">›</button></div>`;
-  const board = renderRegionBoard(shown);
+  const gate = areaGate(region);
+  const title = region.name;
+  const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Map</button><button type="button" class="areaStep" onclick="window.rrStepRegion?.(-1)" aria-label="Previous area">‹</button><div><b>Area ${number} · ${title}</b><small>${region.cities.length} ${region.cities.length === 1 ? 'city' : 'cities'} · ${level}</small></div><button type="button" class="areaStep" onclick="window.rrStepRegion?.(1)" aria-label="Next area">›</button></div>`;
+  const board = renderRegionBoard(region);
   const legend = areaLegendOpen ? `<div class="legendPop areaLegendPop" role="dialog" aria-label="Legend"><div class="legendPopHead"><b>Legend</b><button type="button" onclick="window.rrToggleAreaLegend?.()">Close</button></div><ul class="areaLegendList">${board.legend}</ul></div>` : '';
+  const lock = gate.open
+    ? `<div class="areaLock"><b>Area ${number}</b><span>${level}</span><em class="ready">Unlocked</em></div>`
+    : `<div class="areaLock"><b>Area ${number}</b><span>${level}</span><em class="missing">Locked</em><button type="button" onclick="window.rrSelectRegion?.('${gate.need.id}', true)">Finish Area ${number - 1} · ${gate.need.name}</button></div>`;
   const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
-  return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;top:8px;bottom:8px;left:50%;transform:translateX(-50%);width:min(440px,calc(100% - 16px));z-index:80;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:#083044;color:#10283c">${head}<div class="areaFit"><button type="button" class="legendBtn ${areaLegendOpen ? 'on' : ''}" onclick="window.rrToggleAreaLegend?.()">Legend</button>${legend}${board.map}</div>${sheet}</div>`;
+  return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;top:8px;bottom:8px;left:50%;transform:translateX(-50%);width:min(440px,calc(100% - 16px));z-index:80;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:#083044;color:#10283c">${head}<div class="areaFit"><div class="areaTools"><button type="button" class="legendBtn ${areaLegendOpen ? 'on' : ''}" onclick="window.rrToggleAreaLegend?.()">Legend</button>${lock}</div>${legend}${board.map}</div>${sheet}</div>`;
 }
 
 const AREA_FILLS = ['#f0b429', '#7bc142', '#f28b30', '#e35d5d', '#5aa6e0', '#c6d64a', '#d98ad0', '#efc14a'];
@@ -1881,10 +1905,9 @@ function renderManilaBoard() {
 }
 
 window.rrStepRegion = (dir) => {
-  const index = PH_REGIONS.findIndex((item) => item.id === selectedRegion);
-  const start = index < 0 ? (dir > 0 ? -1 : 0) : index;
-  const next = PH_REGIONS[(start + dir + PH_REGIONS.length) % PH_REGIONS.length];
-  window.rrSelectRegion(next.id, true);
+  const index = Math.max(0, AREA_ORDER.indexOf(selectedRegion));
+  const next = AREA_ORDER[(index + dir + AREA_ORDER.length) % AREA_ORDER.length];
+  window.rrSelectRegion(next, true);
 };
 
 function renderCityMissions(cityId) {
