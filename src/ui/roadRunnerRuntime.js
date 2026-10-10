@@ -1604,11 +1604,9 @@ function regionLevel(region) {
 
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
-  const regionOf = {};
-  PH_REGIONS.forEach((item) => item.cities.forEach((id) => { regionOf[id] = item.id; }));
-  const lands = Object.entries(PH_LAND).map(([id, d]) => {
-    const on = regionOf[id] === selectedRegion;
-    return `<path class="phLand ${on ? 'on' : ''}" stroke-width="${on ? '0.38' : '0.22'}" d="${d}" onclick="window.rrPickRegion?.('${regionOf[id]}')"></path>`;
+  const lands = PH_LAND.map((shape) => {
+    const on = shape.region === selectedRegion;
+    return `<path class="phLand ${on ? 'on' : ''}" stroke-width="${on ? '0.32' : '0.16'}" d="${shape.d}" onclick="window.rrPickRegion?.('${shape.region}')"></path>`;
   }).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);

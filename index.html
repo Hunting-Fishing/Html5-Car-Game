@@ -32,7 +32,7 @@
     <div id="app"></div>
     <script>
       (function () {
-        var key = 'mg-map-clear-6';
+        var key = 'mg-map-clear-7';
         if (localStorage.getItem(key) === '1' || !('serviceWorker' in navigator)) return;
         navigator.serviceWorker.getRegistrations().then(function (regs) {
           return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
