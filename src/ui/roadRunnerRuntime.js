@@ -1,4 +1,5 @@
 import { publicAsset } from '../data/assetUrl.js';
+import { PH_LAND } from '../data/phLand.js';
 import { setEngineSound, stopEngineSound, setTireScreech, stopTireScreech } from './sfx.js';
 import {
   DAMAGE_SPEED_KMH,
@@ -1460,6 +1461,7 @@ let mapLayer = 'countries';
 let selectedCityId = 'manila';
 let mapNotice = '';
 let selectedRegion = '';
+let legendOpen = false;
 const mapView = { scale: 1, x: 0, y: 0 };
 
 function stagesForCity(cityId) {
@@ -1602,23 +1604,39 @@ function regionLevel(region) {
 
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
-  const areas = PH_REGIONS.map((item) => `<path class="phRegion ${item.id === selectedRegion ? 'on' : ''}" d="${item.d}" onclick="window.rrSelectRegion?.('${item.id}', true)"><title>${item.name}</title></path>`).join('');
+  const regionOf = {};
+  PH_REGIONS.forEach((item) => item.cities.forEach((id) => { regionOf[id] = item.id; }));
+  const lands = Object.entries(PH_LAND).map(([id, d]) => {
+    const on = regionOf[id] === selectedRegion;
+    return `<path class="phLand ${on ? 'on' : ''}" d="${d}" onclick="window.rrPickRegion?.('${regionOf[id]}')"></path>`;
+  }).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
     return `<button type="button" class="phPin ${cityState(city)}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"></button>`;
   }).join('') : '';
   const legend = PH_REGIONS.map((item, index) => {
     const level = regionLevel(item);
-    return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" onclick="window.rrSelectRegion?.('${item.id}', true)"><span class="num">${index + 1}</span><b>${item.name}</b>${difficultyMark(level)}<small>${level}</small></button>`;
+    return `<button type="button" class="${item.id === selectedRegion ? 'on' : ''}" onclick="window.rrPickRegion?.('${item.id}')"><span class="num">${index + 1}</span><b>${item.name}</b>${difficultyMark(level)}<small>${level}</small></button>`;
   }).join('');
+  const popup = legendOpen ? `<div class="legendPop" role="dialog" aria-label="Regions"><div class="legendPopHead"><b>Regions</b><button type="button" onclick="window.rrToggleLegend?.()">Close</button></div><div class="phLegend">${legend}</div></div>` : '';
   const cards = region ? `<div class="areaCards"><div class="areaCardGrid">${region.cities.map((id) => {
     const city = cityById(id);
     const state = cityState(city);
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
-  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${areas}</svg>${dots}</div>`);
-  return `<div class="phStage">${map}<aside class="phLegend" aria-label="Regions">${legend}</aside></div>${cards}`;
+  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${dots}</div>`);
+  return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button>${popup}${map}</div>${cards}`;
 }
+
+window.rrToggleLegend = () => {
+  legendOpen = !legendOpen;
+  renderRoutesPanel();
+};
+
+window.rrPickRegion = (id) => {
+  legendOpen = false;
+  window.rrSelectRegion(id, true);
+};
 
 function focusMapOnRegion(id) {
   const look = REGION_LOOK[id];
@@ -1628,7 +1646,7 @@ function focusMapOnRegion(id) {
     const map = view?.querySelector('.phCountryMap');
     const stage = view?.querySelector('.mapZoomStage');
     if (!view || !map || !stage) return;
-    const scale = 2.35;
+    const scale = 1.65;
     mapView.scale = scale;
     mapView.x = view.clientWidth / 2 - (look.x / 100) * map.offsetWidth * scale;
     mapView.y = view.clientHeight / 2 - (look.y / 100) * map.offsetHeight * scale;
@@ -1770,7 +1788,7 @@ function bindMapZoom(root) {
     paint();
   }, { passive: false });
   view.addEventListener('pointerdown', (event) => {
-    if (event.target.closest('.mapZoomTools, .areaCards, button')) return;
+    if (event.target.closest('.mapZoomTools, .areaCards, button, .phLand, .legendPop')) return;
     moved = false;
     if (event.target.closest('.phRegion')) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });

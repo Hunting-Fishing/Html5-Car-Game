@@ -170,16 +170,21 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .worldCountry.open { background: #2f8f55; }
 #screen-race .worldCountry b, #screen-race .worldCountry small { display: block; }
 #screen-race .worldCountry small { color: #d7eef8; font-size: 10px; }
-#screen-race .phStage { display: grid; grid-template-columns: minmax(0, 1fr) 128px; gap: 6px; align-items: start; }
-#screen-race .phLegend { height: min(70vh, 640px); overflow: auto; display: flex; flex-direction: column; gap: 3px; }
+#screen-race .phMapWrap { position: relative; }
+#screen-race .legendBtn { position: absolute; top: 8px; left: 8px; z-index: 8; border: 0; border-radius: 10px; padding: 7px 10px; background: rgba(16, 40, 60, .88); color: #fff; font-size: 12px; font-weight: 800; outline: none; }
+#screen-race .legendBtn.on { background: #f6c445; color: #2a1d0b; }
+#screen-race .legendPop { position: absolute; top: 46px; left: 8px; z-index: 8; width: min(230px, 72%); max-height: calc(100% - 58px); display: flex; flex-direction: column; padding: 8px; border-radius: 14px; background: rgba(8, 24, 38, .94); }
+#screen-race .legendPopHead { display: flex; justify-content: space-between; align-items: center; color: #fff; margin-bottom: 6px; }
+#screen-race .legendPopHead button { border: 0; border-radius: 8px; padding: 4px 8px; background: #1c4668; color: #fff; font-weight: 800; }
+#screen-race .phLegend { overflow: auto; display: flex; flex-direction: column; gap: 3px; }
 #screen-race .phLegend button { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 0 5px; align-items: center; border: 0; border-radius: 8px; padding: 4px; background: transparent; color: #e8f4ff; text-align: left; outline: none; box-shadow: none; }
 #screen-race .phLegend button.on { background: rgba(255, 226, 122, .16); }
 #screen-race .phLegend .num { font-weight: 800; color: #ffe27a; font-size: 11px; }
 #screen-race .phLegend b { font-size: 11px; line-height: 1.1; }
 #screen-race .phLegend small, #screen-race .phLegend .diffStars { grid-column: 2; font-size: 9px; color: #9be7ff; }
 #screen-race .phRegions { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
-#screen-race .phRegion { display: block; fill: none; stroke: rgba(255, 255, 255, .72); stroke-width: 1.25px; stroke-linejoin: round; vector-effect: non-scaling-stroke; pointer-events: auto; outline: none; }
-#screen-race .phRegion.on { stroke: #ffe27a; stroke-width: 2px; }
+#screen-race .phLand { fill: none; stroke: rgba(255, 255, 255, .85); stroke-width: 1.15px; stroke-linejoin: round; vector-effect: non-scaling-stroke; pointer-events: auto; }
+#screen-race .phLand.on { stroke: #ffe27a; stroke-width: 2px; }
 #screen-race .phPin { position: absolute; z-index: 4; width: 12px; height: 12px; margin: -6px 0 0 -6px; border: 2px solid #fff; border-radius: 50%; background: #10283c; padding: 0; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,.45); }
 #screen-race .phPin.open, #screen-race .phPin.cleared { background: #2f8f55; }
 #screen-race .phPin.current { background: #f6c445; }
