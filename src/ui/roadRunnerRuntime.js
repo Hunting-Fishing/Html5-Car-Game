@@ -1307,7 +1307,7 @@ function resetRun() {
 function shellHtml() {
   const tabs = [
     ['drive', 'Drive', 'run'],
-    ['leaderboard', 'Leaderboard', 'search'],
+    ['leaderboard', 'Ranks', 'search'],
     ['garage', 'Garage', 'tune'],
     ['vehicles', 'Vehicles', 'cars'],
     ['routes', 'Map', 'map'],
