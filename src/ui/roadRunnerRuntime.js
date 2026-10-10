@@ -2226,6 +2226,7 @@ function bindMapZoom(root) {
       map.style.height = `${Math.floor(height)}px`;
       stage.style.width = `${Math.floor(width)}px`;
       stage.style.height = `${Math.floor(height)}px`;
+      view.classList.toggle('zoomed', mapView.scale >= 1.35);
     }
     clampMapView(view, stage);
     applyMapView(stage);
