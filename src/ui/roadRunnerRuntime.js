@@ -2184,10 +2184,12 @@ function clampMapView(view, stage) {
   const map = stage.querySelector('.phCountryMap, .highwayMap') || stage;
   const width = map.offsetWidth || stage.offsetWidth;
   const height = map.offsetHeight || stage.offsetHeight;
-  const boundsX = Math.max(0, width * mapView.scale - view.clientWidth);
-  const boundsY = Math.max(0, height * mapView.scale - view.clientHeight);
-  mapView.x = Math.min(0, Math.max(-boundsX, mapView.x));
-  mapView.y = Math.min(0, Math.max(-boundsY, mapView.y));
+  const scaledW = width * mapView.scale;
+  const scaledH = height * mapView.scale;
+  if (scaledW <= view.clientWidth) mapView.x = (view.clientWidth - scaledW) / 2;
+  else mapView.x = Math.min(0, Math.max(view.clientWidth - scaledW, mapView.x));
+  if (scaledH <= view.clientHeight) mapView.y = (view.clientHeight - scaledH) / 2;
+  else mapView.y = Math.min(0, Math.max(view.clientHeight - scaledH, mapView.y));
 }
 
 function applyMapView(stage) {
@@ -2207,6 +2209,24 @@ function bindMapZoom(root) {
   let startTarget = null;
   let handled = false;
   const paint = () => {
+    const map = stage.querySelector('.phCountryMap');
+    if (map && view.clientWidth && view.clientHeight) {
+      const ratio = 920 / 1529;
+      let width = view.clientWidth;
+      let height = width / ratio;
+      if (height > view.clientHeight) {
+        height = view.clientHeight;
+        width = height * ratio;
+      }
+      map.style.position = 'relative';
+      map.style.top = 'auto';
+      map.style.left = 'auto';
+      map.style.transform = 'none';
+      map.style.width = `${Math.floor(width)}px`;
+      map.style.height = `${Math.floor(height)}px`;
+      stage.style.width = `${Math.floor(width)}px`;
+      stage.style.height = `${Math.floor(height)}px`;
+    }
     clampMapView(view, stage);
     applyMapView(stage);
   };
