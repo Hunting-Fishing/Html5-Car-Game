@@ -1622,7 +1622,7 @@ function renderPhilippinesMap() {
   }).join('');
   const dots = region ? region.cities.map((id) => {
     const city = cityById(id);
-    return `<button type="button" class="phPin ${cityState(city)}" data-city="${city.id}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}"><i></i><b>${city.name}</b></button>`;
+    return `<button type="button" class="phPin ${cityState(city)}" data-city="${city.id}" style="left:${city.spot.x}%;top:${city.spot.y}%" aria-label="${city.name}" onclick="window.enterPhCity?.('${city.id}')"><i></i><b>${city.name}</b></button>`;
   }).join('') : '';
   const legend = PH_REGIONS.map((item, index) => {
     const level = regionLevel(item);
@@ -1634,7 +1634,7 @@ function renderPhilippinesMap() {
     const state = cityState(city);
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
-  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${dots}</div>`);
+  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" draggable="false" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${dots}</div>`);
   const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
   return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button>${popup}${map}${sheet}</div>${cards}`;
 }
@@ -1790,10 +1790,13 @@ window.enterPhCity = (cityId) => {
 };
 
 function clampMapView(view, stage) {
-  mapView.scale = Math.min(3, Math.max(1, mapView.scale));
+  mapView.scale = Math.min(2.6, Math.max(1, mapView.scale));
   if (!view || !stage) return;
-  const boundsX = Math.max(0, stage.offsetWidth * mapView.scale - view.clientWidth);
-  const boundsY = Math.max(0, stage.offsetHeight * mapView.scale - view.clientHeight);
+  const map = stage.querySelector('.phCountryMap, .highwayMap') || stage;
+  const width = map.offsetWidth || stage.offsetWidth;
+  const height = map.offsetHeight || stage.offsetHeight;
+  const boundsX = Math.max(0, width * mapView.scale - view.clientWidth);
+  const boundsY = Math.max(0, height * mapView.scale - view.clientHeight);
   mapView.x = Math.min(0, Math.max(-boundsX, mapView.x));
   mapView.y = Math.min(0, Math.max(-boundsY, mapView.y));
 }
@@ -1825,7 +1828,13 @@ function bindMapZoom(root) {
     paint();
   }, { passive: false });
   view.addEventListener('pointerdown', (event) => {
+    if (event.target.closest('.phPin')) {
+      moved = false;
+      handled = false;
+      return;
+    }
     if (event.target.closest('.mapZoomTools, .legendPop, .citySheet')) return;
+    event.preventDefault();
     moved = false;
     handled = false;
     startTarget = event.target;
@@ -1836,6 +1845,7 @@ function bindMapZoom(root) {
   });
   view.addEventListener('pointermove', (event) => {
     if (!pointers.has(event.pointerId)) return;
+    event.preventDefault();
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     const points = [...pointers.values()];
     if (points.length >= 2) {
@@ -1855,7 +1865,7 @@ function bindMapZoom(root) {
     lastX = event.clientX;
     lastY = event.clientY;
     if (moved) paint();
-  });
+  }, { passive: false });
   const release = (event) => {
     pointers.delete(event.pointerId);
     if (pointers.size < 2) pinch = 0;
