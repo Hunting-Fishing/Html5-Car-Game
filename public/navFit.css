@@ -267,6 +267,10 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .stageNode.left { justify-self: start; }
 #screen-race .stageNode.right { justify-self: end; }
 #screen-race .stageNode b { font-size: 14px; }
+#screen-race .mapZoom .phCountryMap { min-height: 0; height: auto; }
+#screen-race .phCountryMap .highwayArt { width: 100%; height: auto; min-height: 0; object-fit: fill; }
+#screen-race .phCountryMap .phRegions { inset: 0; }
+#screen-race .phLand { stroke-linejoin: miter; }
 #screen-race .stageNode small { font-size: 10px; }
 #screen-race .stageNode.current { background: #f6c445; color: #2a1d0b; }
 #screen-race .stageNode.cleared { background: #2f8f55; color: #fff; }
