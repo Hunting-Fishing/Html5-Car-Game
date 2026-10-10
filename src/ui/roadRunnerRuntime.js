@@ -1348,9 +1348,10 @@ function updateHud() {
   setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)}`);
   setText('[data-rr-route]', game.route?.label || game.stageCode || currentStage().id);
   setText('[data-rr-rpm]', `${Math.round(game.telemetry.rpm)}`);
-  setEngineSound({ rpm: game.telemetry.rpm, throttle: input.gas, active: Boolean(document.querySelector('#screen-race.active')) });
+  const racing = Boolean(document.querySelector('#screen-race.active')) && !game.finished;
+  setEngineSound({ rpm: game.telemetry.rpm, throttle: input.gas, active: racing });
   const sliding = input.brake && game.telemetry.kmh > 18;
-  setTireScreech({ active: Boolean(document.querySelector('#screen-race.active')), intensity: sliding ? Math.min(1, game.telemetry.kmh / 80) : 0 });
+  setTireScreech({ active: racing, intensity: sliding ? Math.min(1, game.telemetry.kmh / 80) : 0 });
   const needle = document.querySelector('[data-rr-needle]');
   if (needle) {
     const idle = game.telemetry.idleRpm || 800;
@@ -2405,59 +2406,53 @@ function upgradeCard(key, item) {
 function showPostRunPanel(completed, reason, bonus, missionRewards) {
   const panel = document.querySelector('[data-rr-end-panel]');
   if (!panel || !game) return;
-  const pct = Math.min(100, Math.floor(game.distancePx / game.route.length * 100));
+  input.gas = false;
+  input.brake = false;
+  stopEngineSound();
+  stopTireScreech();
   const wearPct = Math.floor(Math.min(100, game.wear / game.stats.wearLimit * 100));
   const stars = completed && wearPct < 40 ? 3 : completed || wearPct < 75 ? 2 : 1;
   const title = completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
-  const subtitle = completed ? `${game.route.label} finished` : `${game.route.label} - ${pct}% complete`;
-  const starHtml = [1, 2, 3].map((n) => `<div style="text-align:center"><b style="display:block;color:${n <= stars ? '#ffe27a' : '#6d8496'};font-size:22px;line-height:1">${n <= stars ? '★' : '☆'}</b><small style="color:${n <= stars ? '#ffe27a' : '#9eb4c4'};font-size:10px">Level ${n}</small></div>`).join('');
-  const rewardTile = ({ type, amount, label, detail = '' }) => {
-    const icon = { coins: ASSET_PATHS.coin, parts: ASSET_PATHS.parts, tools: ASSET_PATHS.tools }[type] || ASSET_PATHS.coin;
-    return `<div class="rrPostRunReward" data-rr-reward="${type}">
-      <img class="rrPostRunRewardIcon" src="${icon}" alt="">
-      <div class="rrPostRunRewardCopy"><b>+${formatSmall(amount)}</b><span>${label}</span>${detail ? `<small>${detail}</small>` : ''}</div>
-    </div>`;
-  };
-  const missionBuckets = missionRewards.reduce((buckets, reward) => {
-    const key = reward.kind || 'Mission';
-    if (!buckets[key]) buckets[key] = { kind: key, coins: 0, parts: 0 };
-    buckets[key].coins += reward.rewardCoins || 0;
-    buckets[key].parts += reward.rewardParts || 0;
-    return buckets;
-  }, {});
-  const missionHtml = Object.values(missionBuckets).map((reward) => {
-    const primaryType = reward.coins > 0 ? 'coins' : 'parts';
-    const primaryAmount = reward.coins > 0 ? reward.coins : reward.parts;
-    const kindLabel = { Progression: 'Prog', Daily: 'Day', Weekly: 'Week' }[reward.kind] || reward.kind;
-    const detailText = reward.coins > 0 && reward.parts > 0 ? `+${formatSmall(reward.parts)}P` : '';
-    return primaryAmount > 0 ? rewardTile({ type: primaryType, amount: primaryAmount, label: `${kindLabel} Bonus`, detail: detailText }) : '';
-  }).join('');
-  const rewardHtml = [
-    rewardTile({ type: 'coins', amount: game.coins, label: 'Run Coins' }),
-    rewardTile({ type: 'coins', amount: bonus, label: 'Bonus' }),
-    rewardTile({ type: 'parts', amount: game.parts, label: 'Parts' }),
-    game.tools > 0 ? rewardTile({ type: 'tools', amount: game.tools, label: 'Tools' }) : '',
-    missionHtml
-  ].join('');
-  panel.innerHTML = `<div style="display:grid;gap:6px;color:#fff">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">${starHtml}</div>
-    <div style="text-align:center;font-size:15px;font-weight:800;line-height:1.2">${title} · ${stars}/3</div>
-    ${game.foundPart ? '<div style="text-align:center;color:#ffe27a;font-size:12px;font-weight:800">Found Upgraded Part</div>' : ''}
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-      <div style="background:#1c4668;border-radius:10px;padding:6px;text-align:center"><b style="font-size:15px">+${formatSmall(game.coins)}</b><div style="font-size:10px">Coins</div></div>
-      <div style="background:#1c4668;border-radius:10px;padding:6px;text-align:center"><b style="font-size:15px">+${formatSmall(bonus)}</b><div style="font-size:10px">Bonus</div></div>
-      <div style="background:#3a2a68;border-radius:10px;padding:6px;text-align:center"><b style="font-size:15px">+${formatSmall(game.parts)}</b><div style="font-size:10px">Parts</div></div>
+  const car = selectedVehicle();
+  const src = ASSET_PATHS[car.asset] || MAP_CAR;
+  const starHtml = [1, 2, 3].map((n) => `<div><b>${n <= stars ? '★' : '☆'}</b><small>Level ${n}</small></div>`).join('');
+  panel.innerHTML = `<div class="podium">
+    <div class="podiumHead">
+      <div class="podiumStars">${starHtml}</div>
+      <div class="podiumTitle">${title} · ${stars}/3</div>
+      ${game.foundPart ? '<div class="podiumPart">Found Upgraded Part</div>' : ''}
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;font-size:10px;text-align:center">
-      <div><b>${Math.floor(game.distanceM)}m</b><div>Distance</div></div>
-      <div><b>${Math.round(game.maxKmh)}</b><div>km/h</div></div>
-      <div><b>${wearPct}%</b><div>Wear</div></div>
-      <div><b>${formatSmall(saveData.bestDistance)}m</b><div>Best</div></div>
+    <div class="podiumRewards">
+      <div><b>+${formatSmall(game.coins)}</b><span>Coins</span></div>
+      <div><b>+${formatSmall(bonus)}</b><span>Bonus</span></div>
+      <div class="parts"><b>+${formatSmall(game.parts)}</b><span>Parts</span></div>
     </div>
-    <div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Retry</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Next</button><button type="button" class="gold" onclick="window.rrSetTab?.('garage')">Upgrades</button></div>
+    <div class="podiumBay">
+      <button type="button" class="podiumGo ranks" onclick="window.rrEndMatch?.('leaderboard')">Ranks</button>
+      <button type="button" class="podiumGo map" onclick="window.rrEndMatch?.('routes')">Map</button>
+      <div class="podiumCar"><img draggable="false" alt="" src="${src}"><b>${car.label}</b></div>
+      <button type="button" class="podiumGo cars" onclick="window.rrEndMatch?.('vehicles')">Vehicles</button>
+      <button type="button" class="podiumGo garage" onclick="window.rrEndMatch?.('garage')">Garage</button>
+    </div>
+    <div class="podiumStats">
+      <div><b>${Math.floor(game.distanceM)}m</b><span>Distance</span></div>
+      <div><b>${Math.round(game.maxKmh)}</b><span>km/h</span></div>
+      <div><b>${wearPct}%</b><span>Wear</span></div>
+      <div><b>${formatSmall(saveData.bestDistance)}m</b><span>Best</span></div>
+    </div>
+    <div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Retry</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Next</button></div>
   </div>`;
   panel.hidden = false;
 }
+
+window.rrEndMatch = (tab) => {
+  input.gas = false;
+  input.brake = false;
+  stopEngineSound();
+  stopTireScreech();
+  hidePostRunPanel();
+  if (tab) window.rrSetTab(tab);
+};
 
 function hidePostRunPanel() {
   const panel = document.querySelector('[data-rr-end-panel]');

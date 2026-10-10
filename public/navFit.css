@@ -57,8 +57,30 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .rrPostRunGrid, #screen-race .rrPostRunDetails { flex: 1 1 auto; min-height: 0; }
 #screen-race .rrPostRunActions { display: grid !important; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
 #screen-race .rrPostRunActions button { min-height: 44px !important; font-size: 12px !important; color: #102033 !important; background: #d7e4ef !important; border-radius: 12px !important; opacity: 1 !important; }
-#screen-race:has([data-rr-end-panel]:not([hidden])) .racePedalRow,
-#screen-race:has([data-rr-end-panel]:not([hidden])) .racerInnerNav { pointer-events: none; opacity: .35; }
+#screen-race:has([data-rr-end-panel]:not([hidden])) .racerInnerNav { pointer-events: none; opacity: .28; filter: grayscale(1); }
+#screen-race .podium { display: grid; gap: 8px; color: #fff; }
+#screen-race .podiumHead, #screen-race .podiumStats { text-align: center; }
+#screen-race .podiumStars { display: flex; justify-content: center; gap: 16px; }
+#screen-race .podiumStars b { display: block; color: #ffe27a; font-size: 22px; line-height: 1; }
+#screen-race .podiumStars small { color: #d7eef8; font-size: 10px; }
+#screen-race .podiumTitle { font-size: 16px; font-weight: 800; }
+#screen-race .podiumPart { color: #ffe27a; font-size: 12px; font-weight: 800; }
+#screen-race .podiumRewards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+#screen-race .podiumRewards div { background: #1c4668; border-radius: 10px; padding: 6px; text-align: center; }
+#screen-race .podiumRewards .parts { background: #3a2a68; }
+#screen-race .podiumRewards b { display: block; font-size: 15px; }
+#screen-race .podiumRewards span, #screen-race .podiumStats span { color: #d7eef8; font-size: 10px; }
+#screen-race .podiumBay { display: grid; grid-template-columns: 78px minmax(0, 1fr) 78px; grid-template-rows: 36px minmax(86px, 1fr) 36px; gap: 6px; align-items: stretch; }
+#screen-race .podiumCar { grid-column: 2; grid-row: 2; display: grid; align-content: center; justify-items: center; gap: 2px; border-radius: 16px; background: radial-gradient(circle at 50% 78%, rgba(246,196,69,.35), transparent 58%), linear-gradient(180deg, #1c4668, #0c2233); border: 1px solid rgba(246,196,69,.4); }
+#screen-race .podiumCar img { width: 112px; height: 62px; object-fit: contain; filter: drop-shadow(0 6px 4px rgba(0,0,0,.45)); }
+#screen-race .podiumCar b { color: #ffe27a; font-size: 11px; }
+#screen-race .podiumGo { border: 0; border-radius: 10px; background: #1c4668; color: #fff; font-size: 11px; font-weight: 800; }
+#screen-race .podiumGo.ranks { grid-column: 2; grid-row: 1; }
+#screen-race .podiumGo.map { grid-column: 1; grid-row: 2; }
+#screen-race .podiumGo.cars { grid-column: 3; grid-row: 2; }
+#screen-race .podiumGo.garage { grid-column: 2; grid-row: 3; }
+#screen-race .podiumStats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+#screen-race .podiumStats b { display: block; color: #fff; }
 #screen-race .rrPostRunGrid { grid-template-columns: 1fr 1fr !important; }
 #screen-race .rrPostRunHeading { display: grid !important; gap: 2px; position: static !important; }
 #screen-race .rrPostRunTitle,
