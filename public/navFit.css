@@ -211,9 +211,14 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-race .areaLock em.ready { color: #86efac; }
 #screen-race .areaLock em.missing { color: #fca5a5; }
 #screen-race .areaLock button { border: 0; padding: 0; background: none; color: #f6c445; font-size: 11px; font-weight: 800; text-align: left; text-decoration: underline; }
-#screen-race .areaLegendPop { top: 72px; z-index: 7; color: #fff; }
-#screen-race .areaLegendList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; overflow: auto; }
-#screen-race .areaLegendList li { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 12px; }
+#screen-race .areaLegendPop { top: 72px; z-index: 7; color: #fff; max-height: calc(100% - 86px); }
+#screen-race .areaLegendList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; overflow: auto; min-height: 0; }
+#screen-race .areaLegendList li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; color: #fff; font-size: 12px; }
+#screen-race .legendHead { position: sticky; top: 0; background: #10283c; color: #f6c445; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+#screen-race .areaLegendList em.ready { color: #86efac; font-style: normal; }
+#screen-race .areaLegendList em.missing { color: #fca5a5; font-style: normal; }
+#screen-race .needLink { border: 0; padding: 0; background: none; color: #f6c445; font-size: 11px; font-weight: 800; text-align: left; text-decoration: underline; }
+#screen-race .cityReq span { display: flex; flex-wrap: wrap; gap: 4px 8px; }
 #screen-race .areaLegendList i { width: 12px; height: 12px; flex: none; border: 1px solid #fff; border-radius: 3px; }
 #screen-race .metroChip { position: absolute; z-index: 6; transform: translate(-50%, -50%); border: 2px solid #fff; border-radius: 999px; padding: 5px 9px; background: #f6c445; color: #2a1d0b; font-size: 11px; font-weight: 800; box-shadow: 0 2px 0 rgba(0,0,0,.28); }
 #screen-race .areaVector { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }

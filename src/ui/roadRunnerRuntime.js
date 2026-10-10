@@ -1508,6 +1508,20 @@ function needLabel(city) {
   return 'Starter Hatchback';
 }
 
+function cheapestForNeed(need) {
+  if (!need) return null;
+  if (need.vehicle) return VEHICLES[need.vehicle] || null;
+  return Object.values(VEHICLES).filter((item) => item.cls === need.class).sort((a, b) => a.unlock.coins - b.unlock.coins)[0] || null;
+}
+
+function vehicleNeedLink(need, label) {
+  if (!need || ownsVehicle(need)) return '';
+  const car = cheapestForNeed(need);
+  const filter = need.class || car?.cls || 'all';
+  const cost = car ? `${car.unlock.coins} coins` : '';
+  return `<button type="button" class="needLink" onclick="window.rrGoVehicle?.('${filter}')">Get ${label}${cost ? ` · ${cost}` : ''}</button>`;
+}
+
 function carsForNeed(city) {
   if (city.need?.vehicle) return [VEHICLES[city.need.vehicle]?.label || 'Special vehicle'];
   const cls = city.need?.class;
@@ -1791,7 +1805,7 @@ function renderAreaPopup(region) {
   const count = region.id === 'ncr' ? METRO_PLACES.length : region.cities.length;
   const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Map</button><button type="button" class="areaStep" onclick="window.rrStepRegion?.(-1)" aria-label="Previous area">‹</button><div><b>Area ${number} · ${title}</b><small>${count} ${count === 1 ? 'city' : 'cities'} · ${level}</small></div><button type="button" class="areaStep" onclick="window.rrStepRegion?.(1)" aria-label="Next area">›</button></div>`;
   const board = renderRegionBoard(region);
-  const legend = areaLegendOpen ? `<div class="legendPop areaLegendPop" role="dialog" aria-label="Legend"><div class="legendPopHead"><b>Legend</b><button type="button" onclick="window.rrToggleAreaLegend?.()">Close</button></div><ul class="areaLegendList">${board.legend}</ul></div>` : '';
+  const legend = areaLegendOpen ? `<div class="legendPop areaLegendPop" role="dialog" aria-label="Legend"><div class="legendPopHead"><b>Legend</b><button type="button" onclick="window.rrToggleAreaLegend?.()">Close</button></div><ul class="areaLegendList"><li class="legendHead">Cities here</li>${board.legend}<li class="legendHead">All areas</li>${countryStatusLegend()}</ul></div>` : '';
   const lock = gate.open
     ? `<div class="areaLock"><b>Area ${number}</b><span>${level}</span><em class="ready">Unlocked</em></div>`
     : `<div class="areaLock"><b>Area ${number}</b><span>${level}</span><em class="missing">Locked</em><button type="button" onclick="window.rrSelectRegion?.('${gate.need.id}', true)">Finish Area ${number - 1} · ${gate.need.name}</button></div>`;
@@ -1911,24 +1925,38 @@ function renderRegionBoard(regions) {
     const state = pin.metro ? '' : cityState(pin.city);
     return `<button type="button" class="phPin ${state}" style="left:${pin.x}%;top:${pin.y}%" onclick="${action}"><i></i><b>${pin.name}</b></button>`;
   }).join('');
-  const legendItems = list.length > 1
-    ? list.map((item) => `<li><i style="background:${metroFill[item.id] || '#f0b429'}"></i><b>${item.name}</b></li>`).join('')
-    : [...new Map(lands.map((shape) => {
-      let best = list[0].cities[0];
-      let bestDist = Infinity;
-      list[0].cities.forEach((id) => {
-        const city = cityById(id);
-        const [px, py] = mapPoint(city.spot.x, city.spot.y);
-        const dist = Math.hypot(px - shape.cx, py - shape.cy);
-        if (dist < bestDist) {
-          best = city;
-          bestDist = dist;
-        }
-      });
-      return [best.province || best.name, { name: best.province || best.name, fill: shape.fill }];
-    })).values()].map((item) => `<li><i style="background:${item.fill}"></i><b>${item.name}</b></li>`).join('');
+  const legendItems = areaStatusLegend(list);
   const map = `<div class="areaBoard" style="--ratio:${spanX / spanY}"><svg class="areaVector" viewBox="${minX} ${minY} ${spanX} ${spanY}" preserveAspectRatio="none"><image href="${photo}" xlink:href="${photo}" x="${minX}" y="${minY}" width="${spanX}" height="${spanY}" preserveAspectRatio="none"></image>${paths}${leaders}</svg>${pins}</div>`;
   return { map, legend: legendItems };
+}
+
+function areaStatusLegend(list) {
+  if (list.length === 1 && list[0].id === 'ncr') {
+    return STAGE_WORLDS.map((world) => {
+      const face = MANILA_FACE[world.id] || { level: 'Easy' };
+      const stars = Number(saveData.stageProgress?.stars?.[world.id] || 0);
+      const open = stageUnlocked(world.id);
+      const status = stars ? `${stars}★ cleared` : open ? 'Open' : 'Locked';
+      return `<li><button type="button" class="needLink" onclick="window.rrOpenMetroStage?.('${world.id}')"><b>${world.name}</b></button><em class="${open ? 'ready' : 'missing'}">${face.level} · ${status}</em>${open ? '' : metroNeeds(world.id)}</li>`;
+    }).join('');
+  }
+  return list.flatMap((region) => region.cities.map((id) => {
+    const city = cityById(id);
+    const state = cityState(city);
+    const open = state !== 'locked';
+    const status = state === 'cleared' ? 'Cleared' : state === 'current' ? 'Current' : open ? 'Open' : 'Locked';
+    return `<li><button type="button" class="needLink" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b></button><em class="${open ? 'ready' : 'missing'}">${city.difficulty} · ${status}</em>${open ? '' : cityNeeds(city)}</li>`;
+  })).join('');
+}
+
+function countryStatusLegend() {
+  return AREA_ORDER.map((id) => {
+    const region = PH_REGIONS.find((item) => item.id === id);
+    const gate = areaGate(region);
+    const number = areaNumber(id);
+    const need = gate.open ? '' : `<button type="button" class="needLink" onclick="window.rrSelectRegion?.('${gate.need.id}', true)">Finish Area ${number - 1} · ${gate.need.name}</button>`;
+    return `<li><button type="button" class="needLink" onclick="window.rrSelectRegion?.('${id}', true)"><b>${number}. ${region.name}</b></button><em class="${gate.open ? 'ready' : 'missing'}">${regionLevel(region)} · ${gate.open ? 'Open' : 'Locked'}</em>${need}</li>`;
+  }).join('');
 }
 
 function renderManilaBoard() {
@@ -2030,8 +2058,8 @@ function citySheetHtml(city) {
     return `<button type="button" class="cityMission ${unlocked ? '' : 'locked'}" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${stage.landmark || stage.name}</b><small>${status}</small></button>`;
   }).join('');
   const manila = city.local ? `<button type="button" class="mapBack" onclick="window.rrMapLayer?.('manila')">Open Manila map</button>` : '';
-  const note = locked ? cityLockReason(city) : `Car ready: ${needLabel(city)}`;
-  return `<div class="citySheet" role="dialog" aria-label="${city.name}"><div class="citySheetHead"><div><b>${city.name}</b><small>${city.province}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq"><b>${difficultyMark(city.difficulty)} ${city.difficulty}</b><small class="${locked ? 'missing' : 'ready'}">${note}</small></div>${manila}<div class="cityMissionList">${rows}</div></div>`;
+  const note = locked ? cityNeeds(city) || 'Locked' : `Car ready: ${needLabel(city)}`;
+  return `<div class="citySheet" role="dialog" aria-label="${city.name}"><div class="citySheetHead"><div><b>${city.name}</b><small>${city.province}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq"><b>${difficultyMark(city.difficulty)} ${city.difficulty}</b><span class="${locked ? 'missing' : 'ready'}">${note}</span></div>${manila}<div class="cityMissionList">${rows}</div></div>`;
 }
 
 window.rrCloseCity = () => {
@@ -2039,18 +2067,40 @@ window.rrCloseCity = () => {
   renderRoutesPanel();
 };
 
+function metroNeeds(id) {
+  const stage = stageById(id);
+  const face = MANILA_FACE[id] || {};
+  const links = [];
+  const vehicle = vehicleNeedLink(face.need, face.car || 'vehicle');
+  if (vehicle) links.push(vehicle);
+  const list = stagesForCity('manila');
+  const index = list.findIndex((item) => item.id === id);
+  const previous = index > 0 ? list[index - 1] : null;
+  if (previous && !Number(saveData.stageProgress?.stars?.[previous.id] || 0)) {
+    links.push(`<button type="button" class="needLink" onclick="window.rrOpenMetroStage?.('${previous.id}')">Finish ${previous.name}</button>`);
+  }
+  return links.join('');
+}
+
+function cityNeeds(city) {
+  const links = [];
+  if (city.after && !cityProgressDone(city.after)) {
+    const previous = cityById(city.after);
+    links.push(`<button type="button" class="needLink" onclick="window.enterPhCity?.('${previous.id}')">Finish ${previous.name}</button>`);
+  }
+  const vehicle = vehicleNeedLink(city.need, needLabel(city));
+  if (vehicle) links.push(vehicle);
+  return links.join('');
+}
 function metroStageSheet(id) {
   const stage = stageById(id);
   if (!stage || stage.cityId !== 'manila') return '';
   const face = MANILA_FACE[id] || { level: 'Easy', car: 'Starter Hatchback' };
   const stars = Number(saveData.stageProgress?.stars?.[id] || 0);
   const unlocked = stageUnlocked(id);
-  const list = stagesForCity('manila');
-  const index = list.findIndex((item) => item.id === id);
-  const previous = index > 0 ? list[index - 1] : null;
-  const note = unlocked ? `${face.car} ready` : face.need && !ownsVehicle(face.need) ? `Needs ${face.car}` : previous ? `Finish ${previous.name} first` : 'Locked';
+  const note = unlocked ? `${face.car} ready` : metroNeeds(id) || 'Locked';
   const race = unlocked ? `<button type="button" class="cityMission" onclick="window.selectStage?.('${id}')"><b>Race ${stage.landmark}</b><small>${stars ? `${stars}★` : 'Open'}</small></button>` : `<button type="button" class="cityMission locked" disabled><b>${stage.landmark}</b><small>Locked</small></button>`;
-  return `<div class="citySheet" role="dialog" aria-label="${stage.name}"><div class="citySheetHead"><div><b>${stage.name}</b><small>${stage.landmark}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq"><b>${face.level}</b><small class="${unlocked ? 'ready' : 'missing'}">${note}</small></div>${race}</div>`;
+  return `<div class="citySheet" role="dialog" aria-label="${stage.name}"><div class="citySheetHead"><div><b>${stage.name}</b><small>${stage.landmark}</small></div><button type="button" onclick="window.rrCloseCity?.()">Close</button></div><div class="cityReq"><b>${face.level}</b><span class="${unlocked ? 'ready' : 'missing'}">${note}</span></div>${race}</div>`;
 }
 
 window.rrOpenMetroStage = (id) => {
@@ -3408,6 +3458,10 @@ window.buyRoadRunnerUpgrade = (key) => {
   refreshPanels();
   updateHud();
   draw();
+};
+window.rrGoVehicle = (filter) => {
+  if (VEHICLE_FILTERS.includes(filter)) activeVehicleFilter = filter;
+  window.rrSetTab('vehicles');
 };
 window.rrSetTab = (tab) => {
   if (!['drive', 'leaderboard', 'garage', 'vehicles', 'routes', 'missions'].includes(tab)) return;
