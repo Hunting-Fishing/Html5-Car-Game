@@ -1461,6 +1461,7 @@ let mapLayer = 'countries';
 let selectedCityId = 'manila';
 let mapNotice = '';
 let citySheet = '';
+let areaOpen = false;
 let selectedRegion = '';
 let legendOpen = false;
 const mapView = { scale: 1, x: 0, y: 0 };
@@ -1635,8 +1636,9 @@ function renderPhilippinesMap() {
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
   const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" draggable="false" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${dots}</div>`);
-  const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
-  return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button>${popup}${map}${sheet}</div>${cards}`;
+  const sheet = !areaOpen && citySheet ? citySheetHtml(cityById(citySheet)) : '';
+  const area = areaOpen && region ? renderAreaPopup(region) : '';
+  return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button>${popup}${map}${sheet}${area}</div>${cards}`;
 }
 
 window.rrToggleLegend = () => {
@@ -1671,15 +1673,89 @@ function focusMapOnRegion(id) {
 }
 
 window.rrSelectRegion = (id, keep) => {
-  selectedRegion = !keep && selectedRegion === id ? '' : id;
-  if (citySheet) {
-    const region = PH_REGIONS.find((item) => item.cities.includes(citySheet));
-    if (!region || region.id !== selectedRegion) citySheet = '';
-  }
+  const next = !keep && selectedRegion === id && areaOpen ? '' : id;
+  selectedRegion = next;
+  areaOpen = Boolean(next);
+  if (!next) citySheet = '';
+  mapView.scale = 1;
+  mapView.x = 0;
+  mapView.y = 0;
   mapNotice = '';
   renderRoutesPanel();
-  if (selectedRegion) focusMapOnRegion(selectedRegion);
 };
+
+window.rrCloseArea = () => {
+  areaOpen = false;
+  citySheet = '';
+  mapView.scale = 1;
+  mapView.x = 0;
+  mapView.y = 0;
+  renderRoutesPanel();
+};
+
+function regionFrame(id) {
+  let minX = 100;
+  let minY = 100;
+  let maxX = 0;
+  let maxY = 0;
+  PH_LAND.filter((shape) => shape.region === id).forEach((shape) => {
+    landRings(shape.d).forEach((ring) => ring.forEach((point) => {
+      minX = Math.min(minX, point.x);
+      minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x);
+      maxY = Math.max(maxY, point.y);
+    }));
+  });
+  const region = PH_REGIONS.find((item) => item.id === id);
+  (region?.cities || []).forEach((cityId) => {
+    const city = cityById(cityId);
+    minX = Math.min(minX, city.spot.x);
+    minY = Math.min(minY, city.spot.y);
+    maxX = Math.max(maxX, city.spot.x);
+    maxY = Math.max(maxY, city.spot.y);
+  });
+  if (!(maxX > minX && maxY > minY)) return { minX: 0, minY: 0, spanX: 100, spanY: 100 };
+  const padX = Math.max(1.4, (maxX - minX) * 0.22);
+  const padY = Math.max(1.4, (maxY - minY) * 0.22);
+  minX = Math.max(0, minX - padX);
+  minY = Math.max(0, minY - padY);
+  maxX = Math.min(100, maxX + padX);
+  maxY = Math.min(100, maxY + padY);
+  return { minX, minY, spanX: maxX - minX, spanY: maxY - minY };
+}
+
+function renderAreaPopup(region) {
+  const level = regionLevel(region);
+  const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Back</button><div><b>${region.name}</b><small>${region.cities.length} ${region.cities.length === 1 ? 'city' : 'cities'} · ${level}</small></div></div>`;
+  const body = region.id === 'ncr' ? renderManilaBoard() : renderRegionBoard(region);
+  const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
+  return `<div class="areaPop" role="dialog" aria-label="${region.name}">${head}<div class="areaFit">${body}</div>${sheet}</div>`;
+}
+
+function renderRegionBoard(region) {
+  const frame = regionFrame(region.id);
+  const crop = `width:${(100 / frame.spanX) * 100}%;height:${(100 / frame.spanY) * 100}%;left:${(-frame.minX / frame.spanX) * 100}%;top:${(-frame.minY / frame.spanY) * 100}%`;
+  const pins = region.cities.map((id) => {
+    const city = cityById(id);
+    const x = ((city.spot.x - frame.minX) / frame.spanX) * 100;
+    const y = ((city.spot.y - frame.minY) / frame.spanY) * 100;
+    return `<button type="button" class="phPin ${cityState(city)}" style="left:${x}%;top:${y}%" onclick="window.enterPhCity?.('${city.id}')"><i></i><b>${city.name}</b></button>`;
+  }).join('');
+  return `<div class="areaBoard" style="--ratio:${(frame.spanX * 920) / (frame.spanY * 1529)}"><img class="areaCrop" draggable="false" alt="" src="${PH_MAP}" style="${crop}">${pins}</div>`;
+}
+
+function renderManilaBoard() {
+  const stages = [...stagesForCity('manila'), ...secretStages()];
+  const progress = saveData.stageProgress || { current: '1', stars: {} };
+  const nodes = stages.map((stage) => {
+    const stars = Number(progress.stars?.[stage.id] || 0);
+    const unlocked = stageUnlocked(stage.id);
+    const state = stage.id === progress.current ? 'current' : stars ? 'cleared' : unlocked ? 'open' : 'locked';
+    const label = stage.secret ? 'Garage' : stage.name;
+    return `<button type="button" class="areaNode ${state}" style="left:${stage.spot.x}%;top:${stage.spot.y}%" ${unlocked ? '' : 'disabled'} onclick="window.selectStage?.('${stage.id}')"><b>${label}</b></button>`;
+  }).join('');
+  return `<div class="areaBoard manilaBoard" style="--ratio:${960 / 1729}"><img draggable="false" alt="Metro Manila" src="${MAP_ART}">${nodes}</div>`;
+}
 
 window.rrStepRegion = (dir) => {
   const index = PH_REGIONS.findIndex((item) => item.id === selectedRegion);
@@ -1780,13 +1856,15 @@ window.rrCloseCity = () => {
 window.enterPhCity = (cityId) => {
   const city = cityById(cityId);
   const region = PH_REGIONS.find((item) => item.cities.includes(city.id));
-  const changed = Boolean(region && selectedRegion !== region.id);
   if (region) selectedRegion = region.id;
-  citySheet = city.id;
+  areaOpen = true;
+  citySheet = city.local ? '' : city.id;
   mapLayer = 'cities';
   mapNotice = '';
+  mapView.scale = 1;
+  mapView.x = 0;
+  mapView.y = 0;
   renderRoutesPanel();
-  if (changed) focusMapOnRegion(region.id);
 };
 
 function clampMapView(view, stage) {
