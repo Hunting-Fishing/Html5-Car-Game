@@ -1608,13 +1608,15 @@ function regionLevel(region) {
   return levels.sort((a, b) => order.indexOf(a) - order.indexOf(b))[0] || 'Easy';
 }
 
+const METRO_IDS = ['central', 'ncr', 'calabarzon'];
+
 function renderPhilippinesMap() {
   const region = PH_REGIONS.find((item) => item.id === selectedRegion);
   const lands = PH_LAND.map((shape) => {
-    const on = shape.region === selectedRegion;
+    const on = METRO_IDS.includes(selectedRegion) ? METRO_IDS.includes(shape.region) : shape.region === selectedRegion;
     return `<path class="phLand ${on ? 'on' : ''}" data-region="${shape.region}" stroke-width="${on ? '0.32' : '0.16'}" d="${shape.d}"></path>`;
   }).join('');
-  const names = PH_REGIONS.map((item) => {
+  const names = PH_REGIONS.filter((item) => !METRO_IDS.includes(item.id)).map((item) => {
     const places = item.cities.map((id) => cityById(id)).filter(Boolean);
     if (!places.length) return '';
     const x = places.reduce((sum, city) => sum + city.spot.x, 0) / places.length;
@@ -1635,7 +1637,8 @@ function renderPhilippinesMap() {
     const state = cityState(city);
     return `<button type="button" class="areaCard ${state}" onclick="window.enterPhCity?.('${city.id}')"><b>${city.name}</b><small>${city.province}</small>${difficultyMark(city.difficulty)}<em>${state === 'locked' ? cityLockReason(city) : needLabel(city)}</em></button>`;
   }).join('')}</div></div>` : '';
-  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" draggable="false" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${dots}</div>`);
+  const metro = `<button type="button" class="metroChip" style="left:42.6%;top:40.1%" onclick="window.rrOpenMetro?.()">Manila area</button>`;
+  const map = mapZoomHtml(`<div class="highwayMap phCountryMap"><img class="highwayArt" draggable="false" src="${PH_MAP}" alt="Map of the Philippines"><svg class="phRegions" viewBox="0 0 100 100" preserveAspectRatio="none">${lands}</svg>${names}${metro}${dots}</div>`);
   const sheet = !areaOpen && citySheet ? citySheetHtml(cityById(citySheet)) : '';
   const area = areaOpen && region ? renderAreaPopup(region) : '';
   return `<div class="phMapWrap"><button type="button" class="legendBtn ${legendOpen ? 'on' : ''}" onclick="window.rrToggleLegend?.()">Regions</button>${popup}${map}${sheet}${area}</div>${cards}`;
@@ -1643,6 +1646,14 @@ function renderPhilippinesMap() {
 
 window.rrToggleLegend = () => {
   legendOpen = !legendOpen;
+  renderRoutesPanel();
+};
+
+window.rrOpenMetro = () => {
+  selectedRegion = 'ncr';
+  areaOpen = true;
+  citySheet = '';
+  mapNotice = '';
   renderRoutesPanel();
 };
 
@@ -1725,11 +1736,15 @@ function regionFrame(id) {
 }
 
 function renderAreaPopup(region) {
+  const metro = METRO_IDS.includes(region.id);
+  const shown = metro ? PH_REGIONS.filter((item) => METRO_IDS.includes(item.id)) : [region];
   const level = regionLevel(region);
-  const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Back</button><div><b>${region.name}</b><small>${region.cities.length} ${region.cities.length === 1 ? 'city' : 'cities'} · ${level}</small></div></div>`;
-  const body = renderRegionBoard(region);
+  const title = metro ? 'Greater Manila' : region.name;
+  const count = shown.reduce((sum, item) => sum + item.cities.length, 0);
+  const head = `<div class="areaHead"><button type="button" onclick="window.rrCloseArea?.()">Back</button><div><b>${title}</b><small>${count} cities${metro ? ' · Manila, Central Luzon, Calabarzon' : ` · ${level}`}</small></div></div>`;
+  const body = renderRegionBoard(shown);
   const sheet = citySheet ? citySheetHtml(cityById(citySheet)) : '';
-  return `<div class="areaPop" role="dialog" aria-label="${region.name}" style="position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#8ecae6;color:#10283c">${head}<div class="areaFit">${body}</div>${sheet}</div>`;
+  return `<div class="areaPop" role="dialog" aria-label="${title}" style="position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;background:#8ecae6;color:#10283c">${head}<div class="areaFit">${body}</div>${sheet}</div>`;
 }
 
 const AREA_FILLS = ['#f0b429', '#7bc142', '#f28b30', '#e35d5d', '#5aa6e0', '#c6d64a', '#d98ad0', '#efc14a'];
@@ -1745,8 +1760,11 @@ function vectorPath(d) {
   });
 }
 
-function renderRegionBoard(region) {
-  const shapes = PH_LAND.filter((shape) => shape.region === region.id);
+function renderRegionBoard(regions) {
+  const list = Array.isArray(regions) ? regions : [regions];
+  const ids = new Set(list.map((item) => item.id));
+  const metroFill = { central: '#e25b5b', ncr: '#f0b429', calabarzon: '#6fbe4a' };
+  const shapes = PH_LAND.filter((shape) => ids.has(shape.region));
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -1760,25 +1778,43 @@ function renderRegionBoard(region) {
       maxY = Math.max(maxY, Number(y));
       return _;
     });
-    return `<path fill="${AREA_FILLS[index % AREA_FILLS.length]}" stroke="#fff" stroke-width="2.4" vector-effect="non-scaling-stroke" fill-rule="evenodd" d="${d}"></path>`;
+    const fill = list.length > 1 ? (metroFill[shape.region] || AREA_FILLS[index % AREA_FILLS.length]) : AREA_FILLS[index % AREA_FILLS.length];
+    return `<path fill="${fill}" stroke="#fff" stroke-width="2.4" vector-effect="non-scaling-stroke" fill-rule="evenodd" d="${d}"></path>`;
   }).join('');
   if (!Number.isFinite(minX)) return '';
-  const padX = Math.max(8, (maxX - minX) * 0.12);
-  const padY = Math.max(8, (maxY - minY) * 0.12);
+  const padX = Math.max(8, (maxX - minX) * 0.14);
+  const padY = Math.max(8, (maxY - minY) * 0.14);
   minX -= padX;
   minY -= padY;
   maxX += padX;
   maxY += padY;
   const spanX = maxX - minX;
   const spanY = maxY - minY;
-  const pins = region.cities.map((id) => {
+  const placed = [];
+  list.flatMap((item) => item.cities).forEach((id) => {
     const city = cityById(id);
     const [px, py] = mapPoint(city.spot.x, city.spot.y);
-    const x = ((px - minX) / spanX) * 100;
-    const y = ((py - minY) / spanY) * 100;
-    return `<button type="button" class="phPin ${cityState(city)}" style="left:${x}%;top:${y}%" onclick="window.enterPhCity?.('${city.id}')"><i></i><b>${city.name}</b></button>`;
+    const origin = { x: ((px - minX) / spanX) * 100, y: ((py - minY) / spanY) * 100 };
+    let x = origin.x;
+    let y = origin.y;
+    for (let step = 0; step < 14; step += 1) {
+      const clash = placed.some((other) => Math.hypot(other.x - x, other.y - y) < 8);
+      if (!clash) break;
+      const angle = step * 0.9;
+      const dist = 8 + step * 1.4;
+      x = Math.max(4, Math.min(96, origin.x + Math.cos(angle) * dist));
+      y = Math.max(4, Math.min(96, origin.y + Math.sin(angle) * dist));
+    }
+    placed.push({ city, x, y, origin });
+  });
+  const leaders = placed.filter((pin) => Math.hypot(pin.x - pin.origin.x, pin.y - pin.origin.y) > 2).map((pin) => {
+    const [px, py] = mapPoint(pin.city.spot.x, pin.city.spot.y);
+    const x2 = minX + (pin.x / 100) * spanX;
+    const y2 = minY + (pin.y / 100) * spanY;
+    return `<line x1="${px}" y1="${py}" x2="${x2}" y2="${y2}" stroke="#10283c" stroke-width="1.2" vector-effect="non-scaling-stroke"></line>`;
   }).join('');
-  return `<div class="areaBoard" style="--ratio:${spanX / spanY}"><svg class="areaVector" viewBox="${minX} ${minY} ${spanX} ${spanY}" preserveAspectRatio="none">${lands}</svg>${pins}</div>`;
+  const pins = placed.map((pin) => `<button type="button" class="phPin ${cityState(pin.city)}" style="left:${pin.x}%;top:${pin.y}%" onclick="window.enterPhCity?.('${pin.city.id}')"><i></i><b>${pin.city.name}</b></button>`).join('');
+  return `<div class="areaBoard" style="--ratio:${spanX / spanY}"><svg class="areaVector" viewBox="${minX} ${minY} ${spanX} ${spanY}" preserveAspectRatio="none">${lands}${leaders}</svg>${pins}</div>`;
 }
 
 function renderManilaBoard() {
