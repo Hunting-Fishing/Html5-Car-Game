@@ -21,6 +21,20 @@ function renderChainLabel(key, chain) {
   return `<span class="chainLabel">${renderChainIcon(key, chain.label, 'chainLabelIcon')}<span>${chain.label}</span></span>`;
 }
 
+function renderCongrats(delivery) {
+  if (!delivery) return '';
+  const rewardLines = Object.entries(delivery.rewards || {}).map(([k, v]) => `${k}: +${v}`).join('<br>');
+  return `<div class="congratsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:100;">
+    <div style="background:#fff;padding:24px;border-radius:16px;text-align:center;max-width:280px;">
+      <div style="font-size:2em;">⭐</div>
+      <h3 style="margin:8px 0;">Congrats!</h3>
+      <p style="margin:4px 0;">${delivery.title}</p>
+      <p style="font-size:0.9em;">${rewardLines}<br>Energy: +${delivery.energy}</p>
+      <button class="btn small primary" data-action="clearLastDelivery" style="margin-top:12px;">Collect</button>
+    </div>
+  </div>`;
+}
+
 export function renderMergeScreen(state) {
   normalizeMergeState(state);
   const active = activeBoardCount(state);
@@ -37,8 +51,10 @@ export function renderMergeScreen(state) {
   const capCost = 150 + upgrades * 80;
   const hint = getTutorialHint(state);
   const freeReady = Date.now() - (state.merge.lastFreeEnergy || 0) >= 5 * 60 * 1000;
+  const delivery = state.merge.lastDelivery;
 
   return `
+    ${renderCongrats(delivery)}
     <section class="card gamePanel RewardPanel mergeUnifiedPanel mergePlayArea" data-component="RewardPanel">
       <div class="gamePanelField">
         <div class="mergeUnifiedHeader">
