@@ -56,6 +56,7 @@ function reconcile(base, saved) {
     reputation: Number.isFinite(saved.reputation) ? saved.reputation : (base.reputation || 0),
     characters: { ...(base.characters || {}), ...(saved.characters || {}) },
     assignments: { ...(base.assignments || {}), ...(saved.assignments || {}) },
+    payroll: { ...(base.payroll || { elapsed: 0 }), ...(saved.payroll || {}) },
     tips: { ...base.tips, ...(saved.tips || {}) }
   };
 }

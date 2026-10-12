@@ -4,7 +4,7 @@ import { CHARACTERS, characterById } from '../../data/characterRoster.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { costToText, canAfford } from '../../systems/economySystem.js';
 import { characterView } from '../../systems/characterSystem.js';
-import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked, quoteLineUpgrade } from '../../systems/idleLineSystem.js';
+import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
   { id: 'streetRoute', avatar: 'driver', name: 'Route Driver', role: 'Manager', phone: '365-010', place: 'Bay 1 sidewalk', desk: 'Street Route' },
@@ -220,23 +220,30 @@ function renderDock(state, view, managerId) {
   const makeManager = isLead
     ? ''
     : `<button class="btn small primary" data-action="assignManager" data-staff="${view.id}">Make manager</button>`;
+  const grade = view.promotions ? view.promoTitle : '';
+  const card = view.cardActive
+    ? `${view.cardLabel}: ${costToText({ [view.cardKey]: view.pay[view.cardKey] })} each payday`
+    : `${view.cardLabel} starts after a promotion`;
+  const upgrade = `<button class="btn small primary" data-action="upgradeCrew" data-staff="${view.id}" ${canAfford(state, view.upgradeCost) ? '' : 'disabled'}>Upgrade ${costToText(view.upgradeCost)}</button>`;
+  const promote = `<button class="btn small primary" data-action="promoteCrew" data-staff="${view.id}" ${view.promoCost && canAfford(state, view.promoCost) ? '' : 'disabled'}>${view.promoCost ? `Promote ${costToText(view.promoCost)}` : 'Partner'}</button>`;
   let jobButton = '';
   if (job && !job.hired) {
-    jobButton = `<button class="btn small primary" data-action="buyManager" data-line="${line.key}" ${job.canHire ? '' : 'disabled'}>${job.ready ? `Hire ${costToText(job.cost)}` : `Lv ${line.manager.unlockLevel}`}</button>`;
+    jobButton = `<button class="btn small ghost" data-action="buyManager" data-line="${line.key}" ${job.canHire ? '' : 'disabled'}>${job.ready ? `Hire line ${costToText(job.cost)}` : `Line Lv ${line.manager.unlockLevel}`}</button>`;
   } else if (job && armed) {
     jobButton = `<button class="btn small ghost" data-action="fireManagerCancel">Cancel</button><button class="btn small red" data-action="fireManager" data-line="${line.key}">Confirm</button>`;
   } else if (job) {
-    const quote = quoteLineUpgrade(state, line, 1);
-    jobButton = `<button class="btn small primary" data-action="upgradeLine" data-line="${line.key}" data-qty="1" ${quote?.affordable ? '' : 'disabled'}>Upgrade</button><button class="btn small ghost" data-action="fireManagerArm" data-line="${line.key}">Release</button>`;
+    jobButton = `<button class="btn small ghost" data-action="fireManagerArm" data-line="${line.key}">Release line</button>`;
   }
   return `<div class="staffPop">
     <button type="button" class="staffPopBack" data-action="closeStaffSheet" aria-label="Close"></button>
     <div class="staffPopCard">
       <button type="button" class="staffPopX" data-action="closeStaffSheet" aria-label="Close">×</button>
       ${renderAvatar(view, 'assignDockFace')}
-      <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${isLead ? ' · Manager' : ''}</span></div>
+      <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${view.promotions ? ` · ${grade}` : ''}${isLead ? ' · Manager' : ''}</span></div>
       ${renderBars(view)}
-      <div class="assignDockActions">${makeManager}${jobButton}</div>
+      ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
+      <div class="staffPay"><span>Salary</span><b>${costToText({ coins: view.pay.coins })}</b><small>${card}</small></div>
+      <div class="assignDockActions">${makeManager}${upgrade}${promote}${jobButton}</div>
     </div>
   </div>`;
 }

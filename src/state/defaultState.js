@@ -134,6 +134,7 @@ export function defaultState() {
     reputation: 0,
     characters: {},
     assignments: { sales: '', service: '', parts: '', drive: '' },
+    payroll: { elapsed: 0 },
     npcTrade: {},
     tips: {
       welcome: false,

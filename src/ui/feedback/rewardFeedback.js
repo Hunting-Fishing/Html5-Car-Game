@@ -212,6 +212,24 @@ function rewardFeedbackMeta(action, result, before, after) {
     };
   }
 
+  if (action === 'upgradeCrew') {
+    return {
+      title: 'Stat Up',
+      tone: 'good',
+      icon: UI_ICONS.tools,
+      floats: [{ text: 'STAT UP', tone: 'good', icon: UI_ICONS.tools, x: 50, y: 52 }]
+    };
+  }
+
+  if (action === 'promoteCrew') {
+    return {
+      title: 'Promotion',
+      tone: 'gold',
+      icon: UI_ICONS.coin,
+      floats: [{ text: 'PROMOTED', tone: 'gold', icon: UI_ICONS.coin, x: 50, y: 52 }]
+    };
+  }
+
   if (action === 'collectLine') {
     return {
       title: 'Collected',

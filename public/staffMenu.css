@@ -198,6 +198,11 @@
 #screen-staff .staffPopCard .assignDockFace { width: 96px; height: 96px; }
 #screen-staff .staffPopCard .statBars,
 #screen-staff .staffPopCard .assignDockActions { grid-column: 1 / -1; }
+#screen-staff .staffDelta { grid-column: 1 / -1; color: #7dffb2; font-size: 12px; font-style: normal; font-weight: 800; }
+#screen-staff .staffPay { grid-column: 1 / -1; display: grid; gap: 2px; padding: 6px 8px; border-radius: 10px; background: #082033; }
+#screen-staff .staffPay span { color: #9fd8ff; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .staffPay b { color: #fff; font-size: 13px; }
+#screen-staff .staffPay small { color: #d5e7f2; font-size: 11px; }
 #screen-staff .assignDockFace { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; object-position: center 15%; }
 #screen-staff .staffPopCard b { display: block; font-size: 16px; padding-right: 24px; }
 #screen-staff .staffPopCard span,

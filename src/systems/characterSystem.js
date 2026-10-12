@@ -1,8 +1,25 @@
 import { CHARACTERS, SKILL_LABELS, characterById } from '../data/characterRoster.js';
-import { canAfford, spendCost } from './economySystem.js';
+import { canAfford, spendCost, costToText } from './economySystem.js';
 
 const STAT_MAX = 100;
-const ENERGY_COST = 10;
+const PROMO_TITLES = ['', 'Associate', 'Senior', 'Principal', 'Director', 'Partner'];
+const PAY_EVERY = 90;
+const CARDS = {
+  fuel: ['fuelCans', 'Fuel card'],
+  parts: ['parts', 'Parts card'],
+  repair: ['tools', 'Tool card'],
+  sales: ['rep', 'Rep card'],
+  race: ['tune', 'Tune card'],
+  grip: ['tune', 'Tune card'],
+  route: ['scrap', 'Route card'],
+  tow: ['scrap', 'Tow card']
+};
+const DESKS = [
+  { id: 'sales', roles: ['Sales'] },
+  { id: 'service', roles: ['Mechanic', 'Tuner', 'Pit Crew'] },
+  { id: 'parts', roles: ['Courier', 'Fuel Hand'] },
+  { id: 'drive', roles: ['Driver', 'Tow Hand'] }
+];
 
 export function rankFor(level) {
   if (level >= 35) return 'Chief';
@@ -38,7 +55,31 @@ function rowFor(state, character) {
     });
     row.boostReady = true;
   }
+  if (typeof row.promotions !== 'number') row.promotions = 0;
+  if (typeof row.lastChange !== 'string') row.lastChange = '';
   return row;
+}
+
+function benefitFor(character) {
+  return CARDS[character.skills[0]?.key] || ['scrap', 'Supply card'];
+}
+
+function raiseSkill(character, row, gain) {
+  const skills = character.skills.map((skill) => ({
+    key: skill.key,
+    label: SKILL_LABELS[skill.key] || skill.key,
+    value: skillValue(skill, row.boosts?.[skill.key]),
+    start: skill.start
+  }));
+  const open = skills.filter((skill) => skill.value < STAT_MAX).sort((a, b) => a.value - b.value);
+  if (!open.length) return null;
+  const target = open[0];
+  const add = Math.min(gain, Math.round((STAT_MAX - target.value) * 100) / 100);
+  if (add <= 0) return null;
+  row.boosts[target.key] = Math.round(((row.boosts[target.key] || 0) + add) * 100) / 100;
+  const next = skillValue(character.skills.find((skill) => skill.key === target.key), row.boosts[target.key]);
+  row.lastChange = `${target.label} ${target.value.toFixed(2)}% → ${next.toFixed(2)}%`;
+  return row.lastChange;
 }
 
 export function characterView(state, character) {
@@ -49,6 +90,10 @@ export function characterView(state, character) {
     label: SKILL_LABELS[skill.key] || skill.key,
     value: skillValue(skill, row.boosts?.[skill.key])
   }));
+  const promotions = row.promotions || 0;
+  const [cardKey, cardLabel] = benefitFor(character);
+  const pay = { coins: 5 + level * 2 + promotions * 6 };
+  if (promotions > 0) pay[cardKey] = 1;
   return {
     ...character,
     level,
@@ -56,10 +101,19 @@ export function characterView(state, character) {
     uses: row.uses || 0,
     nextXp: level * 25,
     rank: rankFor(level),
+    promotions,
+    promoTitle: PROMO_TITLES[Math.min(promotions, PROMO_TITLES.length - 1)] || '',
     energy: Math.max(0, Math.min(character.energy, row.energy)),
     energyMax: character.energy,
     skills,
-    trainCost: { coins: 40 + level * 20 }
+    lastChange: row.lastChange || '',
+    pay,
+    cardKey,
+    cardLabel,
+    cardActive: promotions > 0,
+    upgradeCost: { coins: 30 + level * 15 },
+    promoCost: promotions >= 5 ? null : { coins: 100 + (promotions + 1) * 90 },
+    trainCost: { coins: 30 + level * 15 }
   };
 }
 
@@ -88,25 +142,71 @@ export function useCharacter(state, id, amount = 8) {
   };
 }
 
-export function trainCharacter(state, id) {
+export function upgradeCharacter(state, id) {
   const character = characterById(id);
   if (!character) return { ok: false, message: 'Unknown crew.' };
   const view = characterView(state, character);
   const row = rowFor(state, character);
-  if (view.energy < ENERGY_COST) {
-    row.energy = Math.min(character.energy, view.energy + 25);
-    return { ok: true, message: `${character.name} rested. Energy ${Math.round(row.energy)}/${character.energy}.` };
-  }
-  const open = view.skills.filter((skill) => skill.value < STAT_MAX);
-  if (!open.length) return { ok: false, message: `${character.name} is at 100% on every stat.` };
-  if (!canAfford(state, view.trainCost)) return { ok: false, message: 'Not enough coins to train.' };
-  const target = open.slice().sort((a, b) => a.value - b.value)[0];
-  const skill = character.skills.find((item) => item.key === target.key);
-  const gain = Math.min(character.step, Math.round((STAT_MAX - target.value) * 100) / 100);
-  spendCost(state, view.trainCost);
-  row.boosts[target.key] = Math.round(((row.boosts[target.key] || 0) + gain) * 100) / 100;
-  row.energy = Math.max(0, view.energy - ENERGY_COST);
+  if (!canAfford(state, view.upgradeCost)) return { ok: false, message: 'Not enough coins to upgrade.' };
+  const change = raiseSkill(character, row, character.step);
+  if (!change) return { ok: false, message: `${character.name} is already at 100% on every stat.` };
+  spendCost(state, view.upgradeCost);
   row.level += 1;
-  const next = skillValue(skill, row.boosts[target.key]);
-  return { ok: true, message: `${character.name} ${target.label} +${gain.toFixed(2)}% to ${next.toFixed(2)}%.` };
+  return { ok: true, message: `${character.name} upgraded. ${change}.` };
+}
+
+export function trainCharacter(state, id) {
+  return upgradeCharacter(state, id);
+}
+
+export function promoteCharacter(state, id) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const view = characterView(state, character);
+  const row = rowFor(state, character);
+  if (!view.promoCost) return { ok: false, message: `${character.name} is already a Partner.` };
+  if (!canAfford(state, view.promoCost)) return { ok: false, message: 'Not enough coins to promote.' };
+  const change = raiseSkill(character, row, Math.max(0.5, Math.min(1, character.step)));
+  if (!change) return { ok: false, message: `${character.name} is already at 100% on every stat.` };
+  spendCost(state, view.promoCost);
+  row.promotions += 1;
+  const title = PROMO_TITLES[row.promotions] || 'Partner';
+  const next = characterView(state, character);
+  const cardNote = row.promotions === 1 ? ` ${next.cardLabel} now costs 1 each payday.` : '';
+  return { ok: true, message: `${character.name} promoted to ${title}. Bonus ${change}. Pay is now ${next.pay.coins} coins.${cardNote}` };
+}
+
+function employedIds(state) {
+  const ids = [];
+  for (const desk of DESKS) {
+    const roster = CHARACTERS.filter((character) => desk.roles.includes(character.role));
+    const saved = state.assignments?.[desk.id];
+    const id = saved && roster.some((character) => character.id === saved) ? saved : roster[0]?.id;
+    if (id) ids.push(id);
+  }
+  return [...new Set(ids)];
+}
+
+export function tickPayroll(state, dt) {
+  if (!state.payroll) state.payroll = { elapsed: 0 };
+  state.payroll.elapsed += dt;
+  if (state.payroll.elapsed < PAY_EVERY) return '';
+  state.payroll.elapsed = 0;
+  const spent = {};
+  let people = 0;
+  for (const id of employedIds(state)) {
+    const character = characterById(id);
+    if (!character) continue;
+    const view = characterView(state, character);
+    const bill = {};
+    for (const [key, amount] of Object.entries(view.pay)) {
+      if ((state.currencies[key] || 0) >= amount) bill[key] = amount;
+    }
+    if (!bill.coins) continue;
+    spendCost(state, bill);
+    people += 1;
+    for (const [key, amount] of Object.entries(bill)) spent[key] = (spent[key] || 0) + amount;
+  }
+  if (!people) return '';
+  return `Payday for ${people} managers. -${costToText(spent)}.`;
 }

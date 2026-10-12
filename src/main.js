@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=68';
+import './ui/roadRunnerRuntime.js?v=69';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -38,7 +38,7 @@ import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
 import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, fireLineManager, toggleLineAutoCollect, getLineState } from './systems/idleLineSystem.js';
 import { characterForLine } from './data/characterRoster.js';
-import { trainCharacter, useCharacter } from './systems/characterSystem.js';
+import { trainCharacter, useCharacter, upgradeCharacter, promoteCharacter, tickPayroll } from './systems/characterSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
 const WEBSITE_URL = 'https://www.365motorsales.com';
@@ -123,6 +123,8 @@ function gameLoop(now) {
   const feedbackBefore = feedbackSnapshot(state);
   tickRace(state, dt);
   tickIdleLines(state, dt);
+  const payday = tickPayroll(state, dt);
+  if (payday) toast(payday);
   tickSupplier(state, dt);
   applyDerivedObjectives(state);
   emitPassiveRewardFeedback({ state, before: feedbackBefore, addLog });
@@ -421,6 +423,8 @@ function handleClick(event) {
     const crew = characterForLine(target.dataset.line);
     if (result?.ok && crew) useCharacter(state, crew.id, 20);
   }
+  if (action === 'upgradeCrew') result = upgradeCharacter(state, target.dataset.staff);
+  if (action === 'promoteCrew') result = promoteCharacter(state, target.dataset.staff);
   if (action === 'trainCharacter') result = trainCharacter(state, target.dataset.staff);
   if (action === 'fireManager') {
     result = fireLineManager(state, target.dataset.line);
