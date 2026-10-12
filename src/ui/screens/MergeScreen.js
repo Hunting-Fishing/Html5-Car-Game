@@ -30,6 +30,8 @@ export function renderMergeScreen(state) {
   const drawerTab = ['recipes', 'chains', 'tips'].includes(state.merge.activeTab) ? state.merge.activeTab : 'recipes';
   const selectedChain = selectedMergeChainKey(state);
   const shelfGuideTarget = guideNeedsPair && !pairSet.size ? ' data-guide-target="placeAll"' : '';
+  const energy = Math.floor(state.merge.energy || 0);
+  const maxEnergy = state.merge.maxEnergy || 50;
 
   return `
     <section class="card gamePanel RewardPanel mergeUnifiedPanel mergePlayArea" data-component="RewardPanel">
@@ -38,11 +40,11 @@ export function renderMergeScreen(state) {
           <span class="gameIconBadge">${renderDataIcon('parts', 'Parts icon', 'gameIconBadgeImg')}</span>
           <div class="mergeUnifiedTitle">
             <h2>Parts</h2>
-            <p>Merge pairs.</p>
+            <p>Merge pairs. Tap generators.</p>
           </div>
           <div class="mergeBayDock" aria-label="Merge Bay supplier slots">
             <div class="mergeBayDockMeta">
-              <b>${Math.ceil(state.merge.supplierTimer)}s</b>
+              <b>⚡ ${energy}/${maxEnergy}</b>
               <span>${active}/${limit}</span>
             </div>
             <div class="miniShelf"${shelfGuideTarget}>
@@ -50,6 +52,8 @@ export function renderMergeScreen(state) {
             </div>
           </div>
         </div>
+
+        ${renderCustomers(state)}
 
         <div class="mergeBoardActions">
           <button class="btn small primary" data-action="placeAll" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="placeAll"' : ''}>Place All</button>
@@ -90,6 +94,18 @@ export function renderMergeScreen(state) {
   `;
 }
 
+function renderCustomers(state) {
+  const customers = state.merge.customers || [];
+  if (!customers.length) return '';
+  return `<div class="mergeCustomers" style="display:flex;gap:8px;margin:8px 0;overflow-x:auto;">
+    ${customers.map(c => `<div class="customerCard" style="background:#f0f4ff;padding:8px;border-radius:8px;min-width:140px;">
+      <b>${c.title}</b><br>
+      <small>${c.hint || ''}</small><br>
+      <button class="btn small" data-action="deliverCustomer" data-customer="${c.id}">Deliver</button>
+    </div>`).join('')}
+  </div>`;
+}
+
 function selectedMergeChainKey(state) {
   const keys = Object.keys(CHAINS);
   const saved = state.merge.selectedChain;
@@ -125,7 +141,9 @@ function renderBoardCell(state, item, index, pairSet = new Set()) {
   if (!item) return `<button class="cell" data-action="cell" data-index="${index}" aria-label="Empty slot"></button>`;
   const selected = state.merge.selectedIndex === index ? 'selected' : '';
   const guideTarget = !state.objectives?.firstMerge && pairSet.has(index) ? 'data-guide-target="mergePair"' : '';
-  return `<button class="cell ${selected}" data-action="cell" data-index="${index}" ${guideTarget}>${renderItem(item)}</button>`;
+  const isGen = item.type === 'generator';
+  const action = isGen ? 'tapGenerator' : 'cell';
+  return `<button class="cell ${selected} ${isGen ? 'generator' : ''}" data-action="${action}" data-index="${index}" ${guideTarget}>${renderItem(item)}</button>`;
 }
 
 function renderItem(item) {
@@ -134,8 +152,9 @@ function renderItem(item) {
   const asset = mergeAssetForName(name);
   const icon = asset
     ? `<img class="mergeItemArt" src="${asset}" alt="${name}" draggable="false">`
-    : renderChainIcon(item.chain, chain.label, 'mergeItemArt chainFallbackArt');
-  return `<div><span class="lvl">L${item.level}</span><div class="itemIcon">${icon}</div><div class="itemName">${name}</div><span class="chainTag">${chain.short}</span></div>`;
+    : renderChainIcon(item.chain, chain?.label || name, 'mergeItemArt chainFallbackArt');
+  const tag = item.type === 'generator' ? 'GEN' : (chain?.short || '');
+  return `<div><span class="lvl">L${item.level}</span><div class="itemIcon">${icon}</div><div class="itemName">${name}</div><span class="chainTag">${tag}</span></div>`;
 }
 
 function renderMergeChainPreview(key, chain, unlocked) {
@@ -250,7 +269,7 @@ function renderMergeTips(state, active, limit) {
       </div>
       <div class="mergeTipCard">
         <b>Fast Rule</b>
-        <span>Tap two matching levels or use Auto Merge.</span>
+        <span>Tap generators for products. Merge pairs or Auto Merge.</span>
       </div>
     </div>
   `;
