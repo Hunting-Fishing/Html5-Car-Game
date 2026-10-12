@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=45';
+import './ui/roadRunnerRuntime.js?v=46';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -28,7 +28,7 @@ import { renderGarageScreen } from './ui/screens/GarageScreen.js';
 import { renderProfileScreen, setMenuTab, armMenuReset, disarmMenuReset, isMenuResetArmed } from './ui/screens/ProfileScreen.js';
 import { renderCreatorScreen } from './ui/screens/CreatorScreen.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
-import { fmt, addCurrency, addXp } from './systems/economySystem.js';
+import { fmt, addCurrency, addXp, canAfford, spendCost } from './systems/economySystem.js';
 import { applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { claimDaily } from './systems/objectiveSystem.js';
 import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState } from './systems/mergeSystem.js';
@@ -432,6 +432,20 @@ window.addEventListener('npc-relationship', (event) => {
       toast(`${name || 'Someone'} trusts you. +${coins} coins.`);
     }
   }
+  queueSave();
+});
+
+window.addEventListener('npc-trade', (event) => {
+  const { id, pay, gain, stock, note } = event.detail || {};
+  if (!id || !stock) return;
+  if (pay && !canAfford(state, pay)) {
+    toast('Not enough for that trade.');
+    return;
+  }
+  if (pay) spendCost(state, pay);
+  Object.entries(gain || {}).forEach(([key, amount]) => addCurrency(state, key, amount));
+  state.npcTrade = { ...(state.npcTrade || {}), [id]: stock };
+  if (note) toast(note);
   queueSave();
 });
 

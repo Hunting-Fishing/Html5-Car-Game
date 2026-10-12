@@ -75,6 +75,7 @@ function residentTree({ problem, ask, personal, favor, cold }) {
       text: problem,
       choices: [
         { id: 'help', label: 'What do you need?', next: 'ask' },
+        { id: 'trade', label: 'Want to trade?', next: 'trade' },
         { id: 'personal', label: 'How are you holding up?', next: 'personal' },
         { id: 'later', label: 'Not now', next: 'brush' }
       ]
@@ -138,6 +139,10 @@ function residentTree({ problem, ask, personal, favor, cold }) {
         { id: 'back', label: 'Sorry. Go on.', next: 'greet' },
         { id: 'close', label: 'Later', screen: 'close' }
       ]
+    },
+    trade: {
+      text: 'Here is what I am carrying, and what I will take off your hands.',
+      choices: [{ id: 'back', label: 'Back', next: 'greet' }]
     }
   };
 }
@@ -189,6 +194,8 @@ const NPC_DIALOGUE = {
 
 const npcStep = {};
 const relationshipCache = {};
+const tradeCache = {};
+const purseCache = {};
 const spentBond = new Set();
 let lastBondNote = '';
 
@@ -1019,6 +1026,7 @@ function managerDialogue(staff) {
       text: running,
       choices: [
         { id: 'job', label: 'What do you do?', next: 'job' },
+        { id: 'trade', label: 'Want to trade?', next: 'trade' },
         { id: 'pay', label: 'How does the pay work?', next: 'pay' },
         { id: 'later', label: 'Later', next: 'brush' }
       ]
@@ -1072,6 +1080,10 @@ function managerDialogue(staff) {
         { id: 'back', label: 'Sorry. Go on.', next: 'greet' },
         { id: 'close', label: 'Later', screen: 'close' }
       ]
+    },
+    trade: {
+      text: 'I can spare a little from the route, or buy what you are hauling.',
+      choices: [{ id: 'back', label: 'Back', next: 'greet' }]
     }
   };
 }
@@ -1103,8 +1115,123 @@ function renderNpcTalk(person) {
   const score = relationshipScore(id);
   const rank = relationshipRank(score);
   const replies = (node.choices || []).map((choice) => `<button type="button" class="btn small" onclick="window.replyToNpc?.('${id}','${choice.id}')">${escapeHtml(choice.label)}</button>`).join('');
-  return `<div class="npcTalk"><div class="npcBond"><b>${rank}</b><span><i style="width:${score}%"></i></span><small>${score}</small></div><p>${escapeHtml(spokenText(node, score))}</p>${lastBondNote ? `<em>${escapeHtml(lastBondNote)}</em>` : ''}<div class="npcReplies">${replies}</div></div>`;
+  const market = (npcStep[id] || 'greet') === 'trade' ? renderNpcMarket(person) : '';
+  return `<div class="npcTalk"><div class="npcBond"><b>${rank}</b><span><i style="width:${score}%"></i></span><small>${score}</small></div><p>${escapeHtml(spokenText(node, score))}</p>${market}${lastBondNote ? `<em>${escapeHtml(lastBondNote)}</em>` : ''}<div class="npcReplies">${replies}</div></div>`;
 }
+
+const NPC_MARKET = {
+  residentBlue: { sell: [{ key: 'parts', name: 'Tire patch', price: 22, stock: 4 }], buy: [{ key: 'scrap', name: 'Scrap rubber', price: 8, stock: 6 }] },
+  residentGreen: { sell: [{ key: 'parts', name: 'Boxed parts', price: 16, stock: 6 }], buy: [{ key: 'tools', name: 'Spare tools', price: 14, stock: 4 }] },
+  residentOrange: { sell: [{ key: 'tools', name: 'Shop tools', price: 24, stock: 3 }], buy: [{ key: 'parts', name: 'Loose parts', price: 9, stock: 5 }] },
+  residentPurple: { sell: [{ key: 'rep', name: 'Buyer lead', price: 30, stock: 3 }], buy: [{ key: 'scrap', name: 'Lot scrap', price: 7, stock: 5 }] },
+  mechanic: { sell: [{ key: 'tools', name: 'Toolkit', price: 20, stock: 4 }], buy: [{ key: 'parts', name: 'Job parts', price: 10, stock: 5 }] },
+  driver: { sell: [{ key: 'scrap', name: 'Tow scrap', price: 12, stock: 5 }], buy: [{ key: 'fuelCans', name: 'Fuel can', price: 18, stock: 3 }] },
+  streetRoute: { sell: [{ key: 'coins', name: 'Route tip', price: 0, stock: 0 }], buy: [{ key: 'parts', name: 'Route parts', price: 11, stock: 5 }] },
+  partsDelivery: { sell: [{ key: 'parts', name: 'Delivery parts', price: 14, stock: 5 }], buy: [{ key: 'tools', name: 'Courier tools', price: 12, stock: 4 }] },
+  mobileMechanic: { sell: [{ key: 'tools', name: 'Service tools', price: 18, stock: 4 }], buy: [{ key: 'parts', name: 'Service parts', price: 9, stock: 5 }] },
+  fuelRun: { sell: [{ key: 'fuelCans', name: 'Fuel can', price: 26, stock: 3 }], buy: [{ key: 'scrap', name: 'Pump scrap', price: 6, stock: 5 }] },
+  towingJob: { sell: [{ key: 'scrap', name: 'Yard scrap', price: 11, stock: 6 }], buy: [{ key: 'fuelCans', name: 'Tow fuel', price: 16, stock: 3 }] },
+  dealerShowcase: { sell: [{ key: 'rep', name: 'Showroom lead', price: 28, stock: 3 }], buy: [{ key: 'parts', name: 'Detail parts', price: 10, stock: 4 }] }
+};
+
+function tradeRate(score) {
+  if (score >= 70) return 0.25;
+  if (score >= 40) return 0.15;
+  if (score >= 20) return 0.05;
+  return 0;
+}
+
+function tradeBook(id) {
+  return NPC_MARKET[id] || { sell: [], buy: [] };
+}
+
+function freshTrade(id) {
+  const book = tradeBook(id);
+  const slots = {};
+  book.sell.forEach((item) => { if (item.stock > 0) slots[`sell:${item.key}`] = item.stock; });
+  book.buy.forEach((item) => { slots[`buy:${item.key}`] = item.stock; });
+  return { at: Date.now(), slots };
+}
+
+function tradeState(id) {
+  const now = Date.now();
+  const save = readSupplyState();
+  const stored = tradeCache[id] || save.npcTrade?.[id];
+  if (!stored?.at || now - stored.at > 15 * 60 * 1000) {
+    tradeCache[id] = freshTrade(id);
+    return tradeCache[id];
+  }
+  tradeCache[id] = { at: stored.at, slots: { ...stored.slots } };
+  return tradeCache[id];
+}
+
+function playerPurse() {
+  if (!purseCache.ready) {
+    const save = readSupplyState();
+    Object.assign(purseCache, save.currencies || {}, { ready: true });
+  }
+  return purseCache;
+}
+
+function tradePrice(price, score, selling) {
+  const rate = tradeRate(score);
+  const next = selling ? price * (1 - rate) : price * (1 + rate);
+  return Math.max(1, Math.round(next));
+}
+
+function renderNpcMarket(person) {
+  const id = person.lineKey || person.key;
+  const book = tradeBook(id);
+  const stock = tradeState(id);
+  const score = relationshipScore(id);
+  const row = (item, side) => {
+    const left = stock.slots?.[`${side}:${item.key}`] ?? 0;
+    const price = tradePrice(item.price, score, side === 'sell');
+    const verb = side === 'sell' ? 'Buy' : 'Sell';
+    return `<button type="button" class="npcTradeRow" onclick="window.tradeWithNpc?.('${id}','${side}','${item.key}')" ${left > 0 ? '' : 'disabled'}><b>${verb} ${escapeHtml(item.name)}</b><span>${price} coins · ${left} left</span></button>`;
+  };
+  const selling = book.sell.filter((item) => item.stock > 0).map((item) => row(item, 'sell')).join('');
+  const buying = book.buy.map((item) => row(item, 'buy')).join('');
+  return `<div class="npcMarket">${selling}${buying}</div>`;
+}
+
+window.tradeWithNpc = (id, side, key) => {
+  const book = tradeBook(id);
+  const item = (side === 'sell' ? book.sell : book.buy).find((entry) => entry.key === key);
+  const person = npcById(id);
+  if (!item || !person) return;
+  const stock = tradeState(id);
+  const slot = `${side}:${key}`;
+  const left = stock.slots?.[slot] ?? 0;
+  if (left < 1) {
+    lastBondNote = 'Nothing left';
+  } else {
+    const price = tradePrice(item.price, relationshipScore(id), side === 'sell');
+    const purse = playerPurse();
+    const pay = side === 'sell' ? { coins: price } : { [key]: item.qty || 1 };
+    const gain = side === 'sell' ? { [key]: item.qty || 1 } : { coins: price };
+    const short = Object.entries(pay).some(([resource, amount]) => (purse[resource] || 0) < amount);
+    if (short) {
+      lastBondNote = 'Not enough for that';
+    } else {
+      Object.entries(pay).forEach(([resource, amount]) => { purse[resource] = (purse[resource] || 0) - amount; });
+      Object.entries(gain).forEach(([resource, amount]) => { purse[resource] = (purse[resource] || 0) + amount; });
+      stock.slots[slot] = left - 1;
+      tradeCache[id] = stock;
+      const spentKey = `trade:${id}:${slot}`;
+      if (!spentBond.has(spentKey)) {
+        spentBond.add(spentKey);
+        shiftRelationship(id, person.name, 2);
+      }
+      lastBondNote = side === 'sell' ? `Bought ${item.name}` : `Sold ${item.name}`;
+      window.dispatchEvent(new CustomEvent('npc-trade', {
+        detail: { id, pay, gain, stock, note: lastBondNote }
+      }));
+    }
+  }
+  if (selectedSupplyKey) refreshSupplyManagerSheet();
+  else if (selectedResidentKey) refreshOpenResidentSheet();
+};
 
 function relationshipScore(id) {
   if (typeof relationshipCache[id] === 'number') return relationshipCache[id];
@@ -1205,6 +1332,7 @@ function renderSupplyManagerSheet(staff) {
 function openSupplyManager(staff) {
   if (mode !== 'normal' || !staff) return;
   if (selectedSupplyKey !== staff.lineKey) lastBondNote = '';
+  purseCache.ready = false;
   const placedSheet = document.querySelector('[data-placed-sheet]');
   if (placedSheet) placedSheet.hidden = true;
   selectedSupplyKey = staff.lineKey;
@@ -1879,6 +2007,7 @@ function renderResidentSheet(resident) {
 function openResidentSheet(resident) {
   if (mode !== 'normal') return;
   if (selectedResidentKey !== resident.key) lastBondNote = '';
+  purseCache.ready = false;
   const placedSheet = document.querySelector('[data-placed-sheet]');
   if (placedSheet) placedSheet.hidden = true;
   if (selectedResidentKey !== resident.key) selectedResidentMenu = 'mood';

@@ -811,6 +811,10 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .npcBond i { display: block; height: 100%; background: #35e58a; }
 .npcReplies { display: grid; gap: 6px; }
 .npcReplies .btn { min-height: 36px; text-align: left; }
+.npcMarket { display: grid; gap: 6px; }
+.npcTradeRow { display: flex; justify-content: space-between; gap: 8px; min-height: 36px; padding: 6px 8px; border: 0; border-radius: 10px; background: #1c4668; color: #fff; text-align: left; }
+.npcTradeRow span { color: #f6c445; font-size: 11px; font-weight: 800; }
+.npcTradeRow:disabled { opacity: .45; }
 #screen-lines .adcapBuyBar {
   position: sticky;
   top: 0;

@@ -52,6 +52,7 @@ function reconcile(base, saved) {
     objectives: { ...base.objectives, ...(saved.objectives || {}) },
     relationships: { ...(base.relationships || {}), ...(saved.relationships || {}) },
     relationshipGifts: { ...(base.relationshipGifts || {}), ...(saved.relationshipGifts || {}) },
+    npcTrade: { ...(base.npcTrade || {}), ...(saved.npcTrade || {}) },
     tips: { ...base.tips, ...(saved.tips || {}) }
   };
 }
