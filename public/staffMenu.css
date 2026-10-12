@@ -35,34 +35,38 @@
 #screen-staff .assignLead b { display: block; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
 #screen-staff .assignLead small { display: block; color: #d5e7f2; font-size: 12px; line-height: 1.3; }
 #screen-staff .assignLead small.assignBonus { color: #7dffb2; font-weight: 800; }
-#screen-staff .assignStats {
-  grid-column: 1 / -1;
+#screen-staff .statBars { display: grid; gap: 3px; width: 100%; margin-top: 4px; }
+#screen-staff .statBar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  grid-template-columns: 48px minmax(0, 1fr) 42px;
   gap: 4px;
+  align-items: center;
+  color: #d5e7f2;
+  font-size: 10px;
+  font-weight: 700;
 }
-#screen-staff .assignEnergy {
-  position: relative;
-  grid-column: 1 / -1;
-  height: 16px;
+#screen-staff .statBar i {
+  display: block;
+  height: 8px;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 99px;
   background: #071722;
 }
-#screen-staff .assignEnergy span {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, #1f8f4e, #7dffb2);
-}
-#screen-staff .assignEnergy small {
-  position: absolute;
-  inset: 0;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 16px;
-  text-align: center;
-}
+#screen-staff .statBar b { display: block; height: 100%; border-radius: 99px; background: #3ddc84; }
+#screen-staff .statBar em { color: #fff; font-style: normal; font-size: 9px; text-align: right; }
+#screen-staff .statBar.energy b { background: linear-gradient(90deg, #1f8f4e, #7dffb2); }
+#screen-staff .statBar.race b { background: #ff5a6a; }
+#screen-staff .statBar.grip b { background: #f6c445; }
+#screen-staff .statBar.fuel b { background: #4aa3ff; }
+#screen-staff .statBar.repair b { background: #c59bff; }
+#screen-staff .statBar.parts b { background: #e0a325; }
+#screen-staff .statBar.route b { background: #3ddc84; }
+#screen-staff .statBar.tow b { background: #ff8a3d; }
+#screen-staff .statBar.sales b { background: #d56bff; }
+#screen-staff .statBars.compact .statBar { grid-template-columns: 34px minmax(0, 1fr); font-size: 8px; }
+#screen-staff .statBars.compact .statBar i { height: 5px; }
+#screen-staff .assignLead > span { min-width: 0; }
+#screen-staff .assignDock .statBars { grid-column: 1 / -1; }
 #screen-staff .assignStats span {
   padding: 4px 2px;
   border-radius: 8px;
