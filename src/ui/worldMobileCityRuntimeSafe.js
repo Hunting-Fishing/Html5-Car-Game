@@ -36,19 +36,28 @@ const BUILDING_CATALOG = [
 ];
 
 const FIXED_BUILDINGS = [
-  { x: 60, y: 90, w: 2, h: 2, type: 'dealerShowroom', label: 'Dealer Row', action: 'lines' },
-  { x: 465, y: 84, w: 3, h: 2, type: 'partsWarehouse', label: '365 Garage', action: 'garage' },
-  { x: 70, y: 395, w: 2, h: 2, type: 'streetKiosk', label: 'Parts Hub', action: 'merge' },
-  { x: 710, y: 395, w: 2, h: 2, type: 'privateShop', label: 'Repair Shops', action: 'lines' },
-  { x: 70, y: 740, w: 3, h: 2, type: 'salvageBlock', label: 'Salvage Yard', action: 'garage' },
-  { x: 710, y: 740, w: 2, h: 2, type: 'towDispatch', label: 'Tow Dispatch', action: 'lines' },
-  { x: 70, y: 1070, w: 3, h: 2, type: 'dealerShowroom', label: 'Showcase', action: 'lines' },
-  { x: 700, y: 1070, w: 3, h: 2, type: 'testTrack', label: 'Test Track', action: 'race' }
+  { x: 60, y: 90, w: 2, h: 2, type: 'dealerShowroom', label: 'Dealer Showcase', action: 'lines', lineKey: 'dealerShowcase' },
+  { x: 465, y: 84, w: 3, h: 2, type: 'partsWarehouse', label: '365 Garage', action: 'garage', lineKey: 'streetRoute' },
+  { x: 70, y: 395, w: 2, h: 2, type: 'streetKiosk', label: 'Parts Delivery', action: 'lines', lineKey: 'partsDelivery' },
+  { x: 710, y: 395, w: 2, h: 2, type: 'privateShop', label: 'Mobile Mechanic', action: 'lines', lineKey: 'mobileMechanic' },
+  { x: 70, y: 740, w: 3, h: 2, type: 'salvageBlock', label: 'Towing Yard', action: 'lines', lineKey: 'towingJob' },
+  { x: 710, y: 740, w: 2, h: 2, type: 'towDispatch', label: 'Tow Dispatch', action: 'lines', lineKey: 'towingJob' },
+  { x: 70, y: 1070, w: 3, h: 2, type: 'dealerShowroom', label: 'Sales Lot', action: 'lines', lineKey: 'dealerShowcase' },
+  { x: 700, y: 1070, w: 3, h: 2, type: 'testTrack', label: 'Fuel Run', action: 'lines', lineKey: 'fuelRun' }
 ];
 
 const CITY_BUILDINGS = [
   ...FIXED_BUILDINGS,
-  { x: 410, y: 710, w: 3, h: 2, type: 'tireRepair', label: 'Breakdown Center', action: null }
+  { x: 410, y: 710, w: 3, h: 2, type: 'tireRepair', label: 'Fuel Stop', action: 'lines', lineKey: 'fuelRun' }
+];
+
+const SUPPLY_MANAGERS = [
+  { key: 'driver', lineKey: 'streetRoute', name: 'Route Driver', business: 'Street Route', shirt: 0xf6c445 },
+  { key: 'residentGreen', lineKey: 'partsDelivery', name: 'Parts Courier', business: 'Parts Delivery', shirt: 0x16a34a },
+  { key: 'mechanic', lineKey: 'mobileMechanic', name: 'Mobile Tech', business: 'Mobile Mechanic', shirt: 0x38bdf8 },
+  { key: 'residentBlue', lineKey: 'fuelRun', name: 'Fuel Runner', business: 'Fuel Run', shirt: 0xf59e0b },
+  { key: 'residentOrange', lineKey: 'towingJob', name: 'Tow Operator', business: 'Towing Job', shirt: 0xf97316 },
+  { key: 'residentPurple', lineKey: 'dealerShowcase', name: 'Sales Rep', business: 'Dealer Showcase', shirt: 0x7c3aed }
 ];
 
 const RESIDENT_WANTS = [
@@ -74,6 +83,7 @@ let mountedHost = null;
 let world = null;
 let traffic = [];
 let walkers = [];
+let selectedSupplyKey = null;
 let placedBuildings = [];
 let fixedBuildingStates = {};
 let fixedLayer = null;
@@ -856,6 +866,89 @@ function addTraffic(path, options) {
   traffic.push({ sprite: vehicle, path, speed: options.speed || 80, d: Math.random() * 600, wheelSpeed: (options.speed || 80) / 10 });
 }
 
+function readSupplyState() {
+  try {
+    return JSON.parse(localStorage.getItem('autoMergeGarageV10LocalOnly') || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function supplyStatus(lineKey) {
+  const save = readSupplyState();
+  return {
+    level: Number(save.idleLines?.lines?.[lineKey]?.level || 0),
+    hired: Boolean(save.idleLines?.managers?.[lineKey])
+  };
+}
+
+function supplyManagerByLine(lineKey) {
+  return SUPPLY_MANAGERS.find((staff) => staff.lineKey === lineKey) || null;
+}
+
+function addSupplyWalker(path, staff) {
+  const p = new PIXI.Container();
+  p.addChild(roundRect(-8, -11, 16, 22, 7, staff.shirt, { width: 2, color: 0x1e293b }));
+  p.addChild(roundRect(-7, -27, 14, 14, 7, 0xfed7aa, { width: 2, color: 0x1e293b }));
+  const art = assetSprite(personAssetForKey(staff.key), 0, -30, 36, 48, 1);
+  if (art) p.addChild(art);
+  const tag = textLabel(staff.name, 0, -62, 11, 0x1b1408);
+  const backing = roundRect(-34, -72, 68, 16, 8, 0xf6c445);
+  p.addChild(backing);
+  p.addChild(tag);
+  p.scale.set(0.82);
+  makeClickable(p, () => openSupplyManager(staff));
+  world.addChild(p);
+  walkers.push({ sprite: p, path, d: Math.random() * 800, speed: 38, staff });
+}
+
+function renderSupplyManagerSheet(staff) {
+  const status = supplyStatus(staff.lineKey);
+  return `
+    <div class="residentWindow">
+      <div class="residentWindowHeader">
+        <div>
+          <span class="residentKicker">Supply Manager</span>
+          <b>${escapeHtml(staff.name)}</b>
+        </div>
+      </div>
+      <div class="residentMoodCard">
+        <div>
+          <b>${escapeHtml(staff.business)}</b>
+          <span>${status.hired ? 'On the job. This supply collects itself.' : `Not hired yet. The supply is level ${status.level}.`}</span>
+        </div>
+      </div>
+      <div class="mobilePlacedActions residentFooterActions">
+        <button class="btn gold" onclick="window.openSupplyFromWorld?.()">Open Supplies</button>
+        <button class="btn ghost" onclick="window.closeMobileResidentSheetSafe?.()">Close</button>
+      </div>
+    </div>
+  `;
+}
+
+function openSupplyManager(staff) {
+  if (mode !== 'normal' || !staff) return;
+  const placedSheet = document.querySelector('[data-placed-sheet]');
+  if (placedSheet) placedSheet.hidden = true;
+  selectedSupplyKey = staff.lineKey;
+  selectedResidentKey = null;
+  selectedBuildingTarget = null;
+  selectedPlacedId = null;
+  document.querySelector('.mobileCityHud')?.classList.add('resident-open');
+  document.querySelector('.mobileCityHud')?.classList.remove('building-open');
+  const sheet = document.querySelector('[data-resident-sheet]');
+  if (sheet) {
+    sheet.innerHTML = renderSupplyManagerSheet(staff);
+    sheet.hidden = false;
+  }
+}
+
+function refreshSupplyManagerSheet() {
+  const staff = supplyManagerByLine(selectedSupplyKey);
+  if (!staff) return;
+  openSupplyManager(staff);
+}
+
 function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb) {
   const p = new PIXI.Container();
   p.addChild(roundRect(-8, -11, 16, 22, 7, shirt, { width: 2, color: 0x1e293b }));
@@ -1233,7 +1326,7 @@ function renderBuildingSheet(target) {
       <button class="btn primary" onclick="window.upgradeSelectedMobileBuildingSafe?.()" ${req.met ? '' : 'disabled'}>${upgradeLabel}</button>
       <button class="btn gold" onclick="window.restockSelectedMobileBuildingSafe?.()">Restock</button>
       <button class="btn" onclick="window.repairSelectedMobileBuildingSafe?.()" ${health >= 100 ? 'disabled' : ''}>Repair</button>
-      ${isPlaced ? '<button class="btn ghost" onclick="window.moveSelectedMobileBuildingSafe?.()">Move</button>' : ''}
+      ${isPlaced ? '<button class="btn ghost" onclick="window.moveSelectedMobileBuildingSafe?.()">Move</button>' : '<button class="btn gold" onclick="window.openSupplyFromWorld?.()">Open Supplies</button>'}
       <button class="btn ghost" onclick="window.closeMobileBuildingSheetSafe?.()">Close</button>
     </div>
   `;
@@ -1248,6 +1341,7 @@ function openBuildingSheet(target, refresh = false) {
   selectedBuildingTarget = target;
   selectedPlacedId = target.kind === 'placed' ? target.id : null;
   selectedResidentKey = null;
+  selectedSupplyKey = null;
   selectedResidentMenu = 'mood';
   const hud = document.querySelector('.mobileCityHud');
   hud?.classList.remove('resident-open');
@@ -1513,6 +1607,7 @@ function openResidentSheet(resident) {
   hud?.classList.remove('building-open', 'build-mode');
   hud?.classList.add('resident-open');
   selectedBuildingTarget = null;
+  selectedSupplyKey = null;
   selectedPlacedId = null;
   selectedResidentKey = resident.key;
   const sheet = document.querySelector('[data-resident-sheet]');
@@ -1702,8 +1797,13 @@ window.closeMobileResidentSheetSafe = () => {
   const sheet = document.querySelector('[data-resident-sheet]');
   if (sheet) sheet.hidden = true;
   selectedResidentKey = null;
+  selectedSupplyKey = null;
   selectedResidentMenu = 'mood';
   document.querySelector('.mobileCityHud')?.classList.remove('resident-open');
+};
+
+window.openSupplyFromWorld = () => {
+  document.querySelector('.pixiWorldProxy[data-proxy="lines"]')?.click();
 };
 
 window.collectSelectedMobileBuildingSafe = () => {
@@ -1858,6 +1958,10 @@ function buildWorld() {
   addWalker(avenueLoop(0, 'north'), RESIDENT_WANTS[0], 0x2563eb);
   addWalker(avenueLoop(1, 'south'), RESIDENT_WANTS[2], 0xf97316);
   addWalker(avenueLoop(3, 'north'), RESIDENT_WANTS[4], 0x38bdf8);
+  SUPPLY_MANAGERS.forEach((staff, index) => {
+    const path = index < 3 ? blockLoop(index, index % 2) : avenueLoop(index % ROADS.horizontal.length, index % 2 ? 'south' : 'north');
+    addSupplyWalker(path, staff);
+  });
 
   placementLayer = new PIXI.Container();
   placementLayer.zIndex = 4000;
@@ -1953,6 +2057,7 @@ async function mount(host) {
         rebuildPlacements();
         rebuildIncidents();
         if (selectedBuildingTarget) openBuildingSheet(selectedBuildingTarget, true);
+        else if (selectedSupplyKey) refreshSupplyManagerSheet();
         else refreshOpenResidentSheet();
         updateHud();
       }
