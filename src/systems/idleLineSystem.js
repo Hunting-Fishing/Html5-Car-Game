@@ -230,5 +230,10 @@ function collectLineReward(state, line, automatic) {
   const current = getLineState(state, line.key);
   current.collected += 1;
   state.idleLines.lifetimeCollections += 1;
+  // Small energy grant for merge generators
+  if (state.merge && typeof state.merge.energy === 'number') {
+    const energyGain = automatic ? 0.5 : 1.5;
+    state.merge.energy = Math.min(state.merge.maxEnergy || 50, state.merge.energy + energyGain);
+  }
   return { amount, label: line.outputLabel };
 }
