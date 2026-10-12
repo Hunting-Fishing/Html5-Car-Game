@@ -62,7 +62,7 @@ export const CHARACTERS = Array.from({ length: 100 }, (_, index) => {
     role: role.role,
     crew: role.crew,
     avatar: role.avatar,
-    sprite: publicAsset(`assets/World/people/crew/crew-${String(index + 1).padStart(3, '0')}.png`),
+    sprite: publicAsset(`assets/World/people/crew/crew-${String(index + 1).padStart(3, '0')}.png?v=65`),
     lineKey: LINES[index] || '',
     startLevel,
     energy: 40 + ((index * 13) % 61),
