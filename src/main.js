@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=49';
+import './ui/roadRunnerRuntime.js?v=50';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -23,7 +23,7 @@ import { renderHubScreen } from './ui/screens/HubScreen.js';
 import { renderWorldScreen } from './ui/screens/WorldScreen.js';
 import { renderRaceScreen } from './ui/screens/RaceScreen.js';
 import { renderLinesScreen, updateLineBars, updateReadyBadge } from './ui/screens/LinesScreen.js';
-import { renderStaffScreen, setSelectedStaff } from './ui/screens/StaffScreen.js';
+import { renderStaffScreen, setSelectedStaff, setStaffTab, armStaffFire, clearStaffFire } from './ui/screens/StaffScreen.js';
 import { renderMergeScreen } from './ui/screens/MergeScreen.js';
 import { renderGarageScreen } from './ui/screens/GarageScreen.js';
 import { renderProfileScreen, setMenuTab, armMenuReset, disarmMenuReset, isMenuResetArmed } from './ui/screens/ProfileScreen.js';
@@ -36,7 +36,7 @@ import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sell
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
 import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
-import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, toggleLineAutoCollect, getLineState } from './systems/idleLineSystem.js';
+import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, fireLineManager, toggleLineAutoCollect, getLineState } from './systems/idleLineSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
 const WEBSITE_URL = 'https://www.365motorsales.com';
@@ -269,6 +269,26 @@ function handleClick(event) {
     return;
   }
 
+  if (action === 'staffTab') {
+    setStaffTab(target.dataset.tab);
+    state.activeScreen = 'staff';
+    render();
+    return;
+  }
+
+  if (action === 'fireManagerArm') {
+    armStaffFire(target.dataset.line);
+    state.activeScreen = 'staff';
+    render();
+    return;
+  }
+
+  if (action === 'fireManagerCancel') {
+    clearStaffFire();
+    render();
+    return;
+  }
+
   if (action === 'menuSound') {
     const next = !soundEnabled();
     setSoundEnabled(next);
@@ -340,8 +360,12 @@ function handleClick(event) {
   if (action === 'raceMode') result = changeRaceMode(state, target.dataset.mode);
   if (action === 'fixProblem') result = fixProblem(state, Number(target.dataset.fix));
   if (action === 'collectLine') result = collectIdleLine(state, target.dataset.line);
-  if (action === 'upgradeLine') result = buyLineUpgrade(state, target.dataset.line, state.idleLines?.buyQty || 1);
+  if (action === 'upgradeLine') result = buyLineUpgrade(state, target.dataset.line, target.dataset.qty || state.idleLines?.buyQty || 1);
   if (action === 'buyManager') result = buyLineManager(state, target.dataset.line);
+  if (action === 'fireManager') {
+    result = fireLineManager(state, target.dataset.line);
+    clearStaffFire();
+  }
   if (action === 'toggleLineAuto') result = toggleLineAutoCollect(state, target.dataset.line);
   if (action === 'worldLocation') result = handleWorldLocation(target.dataset.location);
   if (action === 'worldTow') result = completeTowEvent();
