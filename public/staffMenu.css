@@ -38,8 +38,30 @@
 #screen-staff .assignStats {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
   gap: 4px;
+}
+#screen-staff .assignEnergy {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 16px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #071722;
+}
+#screen-staff .assignEnergy span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #1f8f4e, #7dffb2);
+}
+#screen-staff .assignEnergy small {
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
 }
 #screen-staff .assignStats span {
   padding: 4px 2px;
