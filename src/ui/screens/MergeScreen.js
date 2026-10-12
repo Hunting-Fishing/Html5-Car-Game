@@ -38,7 +38,7 @@ function renderCongrats(delivery) {
 function selectedItemInfo(state) {
   const idx = state.merge.selectedIndex;
   const item = idx != null ? state.merge.board[idx] : null;
-  if (!item) return '';
+  if (!item || item.type === 'cobweb') return '';
   const name = itemDisplayName(item);
   const next = item.level < (CHAINS[item.chain]?.items.length || 1)
     ? `Merge to become ${itemDisplayName({ ...item, level: item.level + 1 })}`
@@ -62,7 +62,6 @@ export function renderMergeScreen(state) {
   const energy = Math.floor(state.merge.energy || 0);
   const maxEnergy = state.merge.maxEnergy || 50;
   const upgrades = state.merge.energyUpgrades || 0;
-  const capCost = 150 + upgrades * 80;
   const hint = getTutorialHint(state);
   const freeReady = Date.now() - (state.merge.lastFreeEnergy || 0) >= 5 * 60 * 1000;
   const delivery = state.merge.lastDelivery;
@@ -149,10 +148,10 @@ function firstMatchingPairIndexes(state) {
   const board = state.merge.board || [];
   for (let i = 0; i < board.length; i += 1) {
     const source = board[i];
-    if (!source) continue;
+    if (!source || source.type === 'cobweb') continue;
     for (let j = i + 1; j < board.length; j += 1) {
       const target = board[j];
-      if (target && source.chain === target.chain && source.level === target.level) return [i, j];
+      if (target && target.type !== 'cobweb' && source.chain === target.chain && source.level === target.level) return [i, j];
     }
   }
   return [];
@@ -160,6 +159,9 @@ function firstMatchingPairIndexes(state) {
 
 function renderBoardCell(state, item, index, pairSet = new Set()) {
   if (!item) return `<button class="cell" data-action="cell" data-index="${index}" aria-label="Empty slot"></button>`;
+  if (item.type === 'cobweb') {
+    return `<button class="cell cobweb" data-action="clearCobweb" data-index="${index}" aria-label="Clear cobweb"><span class="cobwebIcon">🕸</span></button>`;
+  }
   const selected = state.merge.selectedIndex === index ? 'selected' : '';
   const guideTarget = !state.objectives?.firstMerge && pairSet.has(index) ? 'data-guide-target="mergePair"' : '';
   const isGen = item.type === 'generator';
@@ -200,5 +202,5 @@ function renderMergeChainCompact(state, key, chain, selectedChain) {
 }
 
 function renderMergeTips(state, active, limit) {
-  return `<div class="mergeTips">Board ${active}/${limit} · Tap generators to spawn · Deliver to earn energy and boost idle lines</div>`;
+  return `<div class="mergeTips">Board ${active}/${limit} · Tap generators · Clear cobwebs (1 energy) · Deliver for rewards</div>`;
 }
