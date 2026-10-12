@@ -1,5 +1,5 @@
 import { CHAINS, GENERATORS, CUSTOMER_TEMPLATES } from '../data/gameData.js';
-import { addCurrency, addXp } from './economySystem.js';
+import { addCurrency, addXp, canAfford, spendCost } from './economySystem.js';
 
 function uid() {
   return Math.random().toString(36).slice(2, 9);
@@ -216,12 +216,21 @@ export function deliverCustomer(state, customerId, boardIndex) {
   state.merge.customers.splice(custIdx, 1);
   Object.entries(customer.reward || {}).forEach(([key, amount]) => addCurrency(state, key, amount));
   addXp(state, 12);
-  // Energy and reputation feedback
   const energyBack = 3 + Math.floor(customer.level || 1);
   state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + energyBack);
   state.reputation = (state.reputation || 0) + 1;
   state.objectives.firstDelivery = true;
   return { ok: true, message: `Delivered ${customer.title}. +${energyBack} energy, +1 rep.` };
+}
+
+export function buyEnergyPack(state) {
+  normalizeMergeState(state);
+  const cost = { coins: 80 };
+  if (!canAfford(state, cost)) return { ok: false, message: 'Need 80 coins for an energy pack.' };
+  spendCost(state, cost);
+  const gain = 15;
+  state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + gain);
+  return { ok: true, message: `Energy pack: +${gain} energy.` };
 }
 
 export function itemDisplayName(item) {
