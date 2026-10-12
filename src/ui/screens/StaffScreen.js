@@ -157,22 +157,38 @@ function rarityFor(level) {
   return 'common';
 }
 
-function bonusFor(view) {
-  return (view.drive + view.grip + view.fuel + view.repair) * (1 + view.level * 0.08) * 4.5;
+function bonusStep(view) {
+  const base = view.base || {};
+  const total = (base.drive || 0) + (base.grip || 0) + (base.fuel || 0) + (base.repair || 0);
+  return total >= 36 ? 0.5 : 0.25;
 }
 
-function rateFor(view) {
-  return view.level * 0.04 * (1 + view.drive / 20);
+function bonusFor(view) {
+  const value = bonusStep(view) * Math.max(1, view.level);
+  return Math.min(7, Math.round(value * 100) / 100);
 }
 
 function formatPct(value) {
-  if (value >= 1000) return `${Math.round(value).toLocaleString('en-US')}%`;
-  if (value >= 100) return `${Math.round(value)}%`;
-  return `${value.toFixed(1)}%`;
+  return `${value.toFixed(2)}%`;
 }
 
-function formatRate(value) {
-  return `+${value.toFixed(2)}/s`;
+function skill(view, key) {
+  const base = Number(view.base?.[key] || 4);
+  const growth = Number(view.growth?.[key] || 1);
+  const value = base + Math.max(0, view.level - 1) * growth * 0.25;
+  return Math.max(1, Math.min(20, Math.round(value)));
+}
+
+function renderStats(view) {
+  const bonus = bonusFor(view);
+  const next = bonus >= 7 ? 'Max' : `+${bonusStep(view).toFixed(2)}%`;
+  const cells = [
+    ['Drive', skill(view, 'drive')],
+    ['Grip', skill(view, 'grip')],
+    ['Fuel', skill(view, 'fuel')],
+    ['Repair', skill(view, 'repair')]
+  ];
+  return `<div class="assignStats">${cells.map(([label, value]) => `<span><b>${value}</b><small>${label}</small></span>`).join('')}<span><b>${formatPct(bonus)}</b><small>Bonus</small></span><span><b>${next}</b><small>Next</small></span></div>`;
 }
 
 function deskOf(id) {
@@ -203,7 +219,7 @@ function renderAssignCard(view, managerId) {
     ${renderAvatar(view, 'assignFace')}
     <span class="assignName">${first}</span>
     ${badge}
-    <span class="assignFoot"><b>Lv ${view.level}</b>${renderStars(view.level)}<em>${formatPct(bonusFor(view))}</em></span>
+    <span class="assignFoot"><b>Lv ${view.level}</b>${renderStars(view.level)}<em>+${formatPct(bonusFor(view))}</em></span>
   </button>`;
 }
 
@@ -228,7 +244,8 @@ function renderDock(state, view, managerId) {
   }
   return `<div class="assignDock">
     ${renderAvatar(view, 'assignDockFace')}
-    <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${isLead ? ' · Manager' : ''}</span><small>${formatPct(bonusFor(view))} · Drv ${view.drive} Grip ${view.grip}</small></div>
+    <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${isLead ? ' · Manager' : ''}</span></div>
+    ${renderStats(view)}
     <div class="assignDockActions">${change}${train}${jobButton}</div>
   </div>`;
 }
@@ -239,14 +256,13 @@ function renderDesk(state, desk) {
   const lead = roster.find((item) => item.id === managerId) || roster[0];
   if (!lead) return '';
   const open = pickingManager && staffDesk === desk.id;
-  const teamPct = roster.reduce((sum, item) => sum + bonusFor(item), 0);
   const grid = open
     ? `<div class="assignGrid">${roster.map((item) => renderAssignCard(item, managerId)).join('')}</div>`
     : '';
   return `<section class="assignDesk ${desk.id} ${open ? 'picking' : ''}">
     <button type="button" class="assignLead ${lead.id === selectedStaff ? 'selected' : ''}" data-action="selectStaff" data-staff="${lead.id}" data-desk="${desk.id}">
       ${renderAvatar(lead, 'assignDockFace')}
-      <span><b>${desk.label}</b><small>${lead.name} · Lv ${lead.level} · ${formatPct(bonusFor(lead))}</small><small>Desk ${formatPct(teamPct)}</small></span>
+      <span><b>${desk.label}</b><small>${lead.name} · Lv ${lead.level} ${lead.rank}</small><small>Drive ${skill(lead, 'drive')} · Grip ${skill(lead, 'grip')} · Fuel ${skill(lead, 'fuel')} · Repair ${skill(lead, 'repair')}</small><small class="assignBonus">Bonus +${formatPct(bonusFor(lead))}</small></span>
     </button>
     <button type="button" class="assignChange" data-action="${open ? 'cancelChangeManager' : 'beginChangeManager'}" data-desk="${desk.id}">${open ? 'Cancel' : 'Change'}</button>
     ${grid}

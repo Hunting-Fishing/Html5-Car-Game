@@ -25,16 +25,16 @@
     <link rel="stylesheet" href="./linesAssetRuntime.css" />
     <link rel="stylesheet" href="./worldAssetRuntime.css" />
     <link rel="stylesheet" href="./buildAssetRuntime.css" />
-    <link rel="stylesheet" href="./navFit.css?v=60" />
-    <link rel="stylesheet" href="./staffTabs.css?v=60" />
-    <link rel="stylesheet" href="./staffMenu.css?v=60" />
+    <link rel="stylesheet" href="./navFit.css?v=61" />
+    <link rel="stylesheet" href="./staffTabs.css?v=61" />
+    <link rel="stylesheet" href="./staffMenu.css?v=61" />
     <title>365 Micro Garage Companion</title>
   </head>
   <body>
     <div id="app"></div>
     <script>
       (function () {
-        var key = 'mg-map-clear-60';
+        var key = 'mg-map-clear-61';
         if (localStorage.getItem(key) === '1' || !('serviceWorker' in navigator)) return;
         navigator.serviceWorker.getRegistrations().then(function (regs) {
           return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
@@ -50,6 +50,6 @@
         });
       })();
     </script>
-    <script type="module" src="./src/main.js?v=60"></script>
+    <script type="module" src="./src/main.js?v=61"></script>
   </body>
 </html>
