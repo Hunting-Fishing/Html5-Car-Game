@@ -59,6 +59,7 @@ export function renderMergeScreen(state) {
           <button class="btn small primary" data-action="placeAll" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="placeAll"' : ''}>Place All</button>
           <button class="btn small" data-action="autoMerge" ${guideNeedsPair && pairSet.size ? 'data-guide-target="mergePair"' : ''}>Auto Merge</button>
           <button class="btn small red" data-action="sellSelected">Sell</button>
+          <button class="btn small gold" data-action="buyEnergyPack">Energy Pack (80 coins)</button>
         </div>
 
         <div class="mergeBoardArea">
@@ -269,7 +270,7 @@ function renderMergeTips(state, active, limit) {
       </div>
       <div class="mergeTipCard">
         <b>Fast Rule</b>
-        <span>Tap generators for products. Merge pairs or Auto Merge. Deliver to customers.</span>
+        <span>Tap generators for products. Merge pairs or Auto Merge. Deliver to customers. Buy energy packs with coins.</span>
       </div>
     </div>
   `;
