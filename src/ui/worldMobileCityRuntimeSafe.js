@@ -996,7 +996,7 @@ function updateHud() {
   if (syncTotal) syncTotal.textContent = `+${totalSyncedWorldInventory()} world`;
   if (syncLines) {
     const sync = getBuildSync();
-    syncLines.textContent = `${sync?.unlockedLineCount || 0}/${sync?.totalLineCount || 0} linked lines`;
+    syncLines.textContent = `${sync?.unlockedLineCount || 0}/${sync?.totalLineCount || 0} linked supplies`;
   }
   document.querySelectorAll('[data-building-key]').forEach((button) => {
     const key = button.getAttribute('data-building-key');

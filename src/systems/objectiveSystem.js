@@ -28,7 +28,7 @@ export function getObjectiveList(state) {
     {
       key: 'idleLineUpgrade',
       title: 'Upgrade Street Route',
-      body: 'Open Business Lines and upgrade the starter Street Route.',
+      body: 'Open Supplies and upgrade the starter Street Route.',
       screen: 'lines',
       done: state.objectives.idleLineUpgrade
     },

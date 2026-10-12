@@ -38,7 +38,7 @@ export function renderWorldScreen() {
           actions: [
             { label: 'Dispatch Tow', action: 'worldTow', icon: 'tools', className: 'primary' },
             { label: 'Manage Shop', screen: 'garage', icon: 'garage' },
-            { label: 'Upgrade Businesses', screen: 'lines', icon: 'parts', className: 'gold' },
+            { label: 'Supplies', screen: 'lines', icon: 'parts', className: 'gold' },
             { label: 'Run Route', screen: 'race', icon: 'race', className: 'ghost' }
           ]
         })}

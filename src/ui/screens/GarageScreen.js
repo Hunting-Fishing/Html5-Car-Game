@@ -46,14 +46,14 @@ export function renderGarageScreen(state) {
 
   return ScreenFrame({
     title: 'Garage',
-    subtitle: 'Build rooms, feed World inventory, and unlock Lines.',
+    subtitle: 'Build rooms, feed World inventory, and unlock Supplies.',
     badge: `${buildPct}% online`,
     className: 'garagePlayArea',
     body: `
       <section class="garageHero">
         <div><b>${buildPct}%</b><span>Shop online</span></div>
-        <div><b>${buildComm.unlockedLineCount}/${buildComm.totalLineCount}</b><span>Lines open</span></div>
-        <button class="btn gold" data-action="screen" data-screen="lines">Open Lines</button>
+        <div><b>${buildComm.unlockedLineCount}/${buildComm.totalLineCount}</b><span>Supplies open</span></div>
+        <button class="btn gold" data-action="screen" data-screen="lines">Open Supplies</button>
       </section>
       <div class="garageCardGrid">
         ${AUTO_SHOP_ROOMS.map((room) => renderGarageCard(state, room)).join('')}
@@ -80,7 +80,7 @@ function renderBuildSummaryStrip(buildComm, buildPct) {
         icon: BUILD_GUI_ASSETS.levelBadge
       },
       {
-        label: 'Lines',
+        label: 'Supplies',
         value: buildComm.unlockedLineCount,
         max: buildComm.totalLineCount,
         displayValue: `${buildComm.unlockedLineCount}/${buildComm.totalLineCount}`,
@@ -127,7 +127,7 @@ function renderGarageCard(state, room) {
       </div>
       <button class="adcapManager" data-action="screen" data-screen="lines">
         <b>${data.manager ? 'On' : 'Go'}</b>
-        <small>Line</small>
+        <small>Supply</small>
       </button>
     </article>
   `;
@@ -139,7 +139,7 @@ function renderShopFloorPrimary(state, selectedRoom) {
       <div class="compactSectionHead">
         <div>
           <h3>365 Auto Shop Floor</h3>
-          <p>Tap a room to inspect its line, World sync, and build requirement.</p>
+          <p>Tap a room to inspect its supply, World sync, and build requirement.</p>
         </div>
         <span class="pill">Room Map</span>
       </div>
@@ -222,7 +222,7 @@ function renderRoomDetailDrawer(state, room) {
       </div>
       ${segmentedMeter({ value: data.progress, max: 100, label: `${room.name} room progress`, className: 'roomProgress' })}
       <div class="roomDetailStats">
-        <div><b>${data.line ? `Lv ${data.level}` : '-'}</b><span>Line Level</span></div>
+        <div><b>${data.line ? `Lv ${data.level}` : '-'}</b><span>Supply</span></div>
         <div><b>${data.line ? `${fmt(data.income)}` : '0'}</b><span>${data.line ? data.line.outputLabel : 'Output'}</span></div>
         <div><b>${data.manager ? 'Auto' : 'Manual'}</b><span>Collect</span></div>
       </div>
@@ -230,7 +230,7 @@ function renderRoomDetailDrawer(state, room) {
       <div class="lineBuildBridge">${renderBuildLineChips(data.system)}</div>
       <div class="roomActions">
         ${buildAction}
-        <button class="btn small" data-action="screen" data-screen="lines"><img class="roomButtonAsset buildAssetImage" src="${BUILD_GUI_ASSETS.linesButton}" alt="" loading="eager"><span>Lines</span></button>
+        <button class="btn small" data-action="screen" data-screen="lines"><img class="roomButtonAsset buildAssetImage" src="${BUILD_GUI_ASSETS.linesButton}" alt="" loading="eager"><span>Supplies</span></button>
         <button class="btn small" data-action="screen" data-screen="world"><img class="roomButtonAsset buildAssetImage" src="${BUILD_GUI_ASSETS.worldButton}" alt="" loading="eager"><span>World</span></button>
       </div>
     </article>
@@ -301,7 +301,7 @@ function renderBuildingCompact(state, building, selected) {
         <div class="garageSystemActions">
           ${renderBuildingPrimaryAction(state, building)}
           <button class="btn small" data-action="screen" data-screen="world"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.worldSync}" alt="" loading="eager"><span>World</span></button>
-          <button class="btn small gold" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Lines</span></button>
+          <button class="btn small gold" data-action="screen" data-screen="lines"><img class="buildButtonAsset buildAssetImage" src="${BUILD_ICON_ASSETS.lineSync}" alt="" loading="eager"><span>Supplies</span></button>
         </div>
         <div class="buildCommMeta garageSystemMeta">
           <div class="roomSyncRow">${renderBuildWorldChips(system?.worldInventory)}</div>

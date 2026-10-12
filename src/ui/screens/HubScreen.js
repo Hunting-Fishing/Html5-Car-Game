@@ -6,7 +6,7 @@ function recommendedActionForObjective(objective) {
   const key = objective?.key || '';
   if (['firstMerge'].includes(key)) return { label: 'Open Parts', screen: 'merge', detail: 'Merge a pair' };
   if (['buildStorage', 'unlockPerformance', 'unlockTrack'].includes(key)) return { label: 'Open Garage', screen: 'garage', detail: 'Build the next room' };
-  if (['idleLineUpgrade'].includes(key)) return { label: 'Open Lines', screen: 'lines', detail: 'Upgrade a line' };
+  if (['idleLineUpgrade'].includes(key)) return { label: 'Open Supplies', screen: 'lines', detail: 'Upgrade a supply' };
   return { label: 'Open Race', screen: 'race', detail: nextTitle(objective) };
 }
 
@@ -41,7 +41,7 @@ export function renderHubScreen(state) {
       </section>
       <div class="homeGrid">
         ${tile('race', UI_ICONS.race, 'Race', 'Stage map')}
-        ${tile('lines', UI_ICONS.garage, 'Lines', 'Run the shop')}
+        ${tile('lines', UI_ICONS.garage, 'Supplies', 'Stock the shop')}
         ${tile('merge', UI_ICONS.parts, 'Parts', 'Merge pairs')}
         ${tile('garage', UI_ICONS.garage, 'Garage', 'Build rooms')}
       </div>

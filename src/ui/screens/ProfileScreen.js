@@ -79,7 +79,7 @@ function driverPane(state, garageValue, objectives, nextObjective, doneCount) {
       ${compactStat(fmt(garageValue), 'Garage Value', 'good')}
       ${compactStat(fmt(state.race.lifetimeMeters), 'Meters')}
       ${compactStat(String(state.merge.totalMerges), 'Merges')}
-      ${compactStat(fmt(state.idleLines.lifetimeCollections), 'Line Collects')}
+      ${compactStat(fmt(state.idleLines.lifetimeCollections), 'Supplies')}
     </div>
     <button class="menuObjectiveRow" type="button" data-action="screen" data-screen="${nextObjective?.screen || 'hub'}" ${nextObjective?.raceTab ? `data-rr-tab="${nextObjective.raceTab}"` : ''}>
       <span class="checkIcon">${renderObjectiveStatusIcon(!nextObjective)}</span>
@@ -93,7 +93,7 @@ function goPane() {
   const spots = [
     ['race', 'drive', 'Race'],
     ['world', '', 'World'],
-    ['lines', '', 'Lines'],
+    ['lines', '', 'Supplies'],
     ['merge', '', 'Merge'],
     ['garage', '', 'Build'],
     ['hub', '', 'Home']

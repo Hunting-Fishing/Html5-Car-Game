@@ -29,7 +29,7 @@ export function renderLinesScreen(state) {
   const featured = selectFeaturedLine(lines);
 
   return ScreenFrame({
-    title: 'Businesses',
+    title: 'Supplies',
     subtitle: 'Buy levels, wait for the bar, collect. Hire a manager to auto-collect.',
     badge: `${buildComm.unlockedLineCount}/${buildComm.totalLineCount}`,
     className: 'linesCompactFrame',
@@ -46,8 +46,8 @@ function renderBuildLineBridge(snapshot) {
   return `
     <section class="buildLineBridgeCard compactBuildLinks">
       <div class="compactSectionHead">
-        <div><h3>Build Links</h3><p>Garage systems publish to Lines and World inventory.</p></div>
-        <span class="pill buildSyncBadge">${snapshot.unlockedLineCount}/${snapshot.totalLineCount} lines</span>
+        <div><h3>Build Links</h3><p>Garage systems publish to Supplies and World inventory.</p></div>
+        <span class="pill buildSyncBadge">${snapshot.unlockedLineCount}/${snapshot.totalLineCount} supplies</span>
       </div>
       <div class="buildLineBridgeGrid">
         ${systems.map((system) => {
@@ -56,7 +56,7 @@ function renderBuildLineBridge(snapshot) {
           return `
             <div class="buildLineChip">
               <b><img class="buildAssetIcon buildAssetImage" src="${icon}" alt="" loading="eager"> ${system.title}</b>
-              <span>${system.built ? lineText : 'Build this system to activate the linked line.'}</span>
+              <span>${system.built ? lineText : 'Build this system to activate the linked supply.'}</span>
             </div>
           `;
         }).join('')}
@@ -122,7 +122,7 @@ function renderLinesStatusStrip(state, lines) {
   const totals = getTotalIdlePerMinute(state);
   const totalText = Object.entries(totals).length
     ? Object.entries(totals).map(([resource, value]) => `${fmt(value)}/${resource}`).join(' + ')
-    : 'Upgrade a line to begin output';
+    : 'Upgrade a supply to begin output';
   const readyCount = lines.filter((item) => item.collectReady).length;
   const autoCount = lines.filter((item) => item.managerOwned && item.autoEnabled).length;
   const unlockedCount = lines.filter((item) => item.unlocked).length;
@@ -143,7 +143,7 @@ function renderLineFilterChips(lines) {
   const locked = lines.filter((item) => !item.unlocked).length;
 
   return `
-    <div class="lineFilterChips" aria-label="Line filters">
+    <div class="lineFilterChips" aria-label="Supply filters">
       <span class="chip active">All ${lines.length}</span>
       <span class="chip">Ready ${ready}</span>
       <span class="chip">Upgradeable ${upgradeable}</span>

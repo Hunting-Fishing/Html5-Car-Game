@@ -103,7 +103,7 @@
         <div class="grid2">
           <button class="btn primary" data-action="worldTow">Dispatch Tow</button>
           <button class="btn" data-action="screen" data-screen="garage">Manage Shop</button>
-          <button class="btn" data-action="screen" data-screen="lines">Upgrade Businesses</button>
+          <button class="btn" data-action="screen" data-screen="lines">Supplies</button>
           <button class="btn ghost" data-action="screen" data-screen="merge">Parts / Merge</button>
         </div>
       </section>

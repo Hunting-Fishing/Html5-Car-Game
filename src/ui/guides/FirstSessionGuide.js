@@ -35,7 +35,7 @@ const GUIDE_STEPS = [
     number: 4,
     screen: 'lines',
     title: 'Upgrade Route',
-    label: 'Lines',
+    label: 'Supplies',
     icon: UI_ICONS.garage,
     targetSelectors: ['[data-guide-target="upgradeStreetRoute"]', '[data-action="screen"][data-screen="lines"]', '[data-nav-tab="garage"]']
   },
