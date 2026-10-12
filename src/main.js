@@ -32,7 +32,7 @@ import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, addCurrency, addXp, canAfford, spendCost } from './systems/economySystem.js';
 import { applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { claimDaily } from './systems/objectiveSystem.js';
-import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState, tapGenerator, deliverCustomer } from './systems/mergeSystem.js';
+import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState, tapGenerator, deliverCustomer, buyEnergyPack } from './systems/mergeSystem.js';
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
 import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
@@ -404,6 +404,7 @@ function handleClick(event) {
     });
     result = deliverCustomer(state, custId, matchIdx >= 0 ? matchIdx : 0);
   }
+  if (action === 'buyEnergyPack') result = buyEnergyPack(state);
   if (action === 'upgrade') result = buyUpgrade(state, target.dataset.key);
   if (action === 'building') result = buyBuilding(state, target.dataset.key);
   if (action === 'claimDaily') result = claimDaily(state, target.dataset.key);
