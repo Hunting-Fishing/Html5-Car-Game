@@ -133,6 +133,7 @@ export function defaultState() {
     relationshipGifts: {},
     reputation: 0,
     characters: {},
+    assignments: { sales: '', service: '', parts: '', drive: '' },
     npcTrade: {},
     tips: {
       welcome: false,

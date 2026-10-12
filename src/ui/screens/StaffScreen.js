@@ -29,6 +29,7 @@ const EMPLOYEES = [
 let selectedStaff = 'crew-001';
 let staffDesk = 'sales';
 let fireArmed = '';
+let pickingManager = false;
 
 const DESKS = [
   { id: 'sales', label: 'Sales Floor', short: 'Sales', roles: ['Sales'] },
@@ -48,7 +49,51 @@ export function setStaffTab(tab) {
   if (DESKS.some((desk) => desk.id === tab)) {
     staffDesk = tab;
     fireArmed = '';
+    pickingManager = false;
   }
+}
+
+export function isPickingManager() {
+  return pickingManager;
+}
+
+export function beginManagerChange() {
+  pickingManager = true;
+}
+
+export function cancelManagerChange() {
+  pickingManager = false;
+}
+
+function managerIdFor(state, desk, roster) {
+  const saved = state.assignments?.[desk.id];
+  if (saved && roster.some((item) => item.id === saved)) return saved;
+  return roster[0]?.id || '';
+}
+
+export function assignDeskManager(state, characterId) {
+  const desk = deskOf(staffDesk);
+  const roster = viewsForDesk(state, desk);
+  if (!roster.some((item) => item.id === characterId)) return { ok: false, message: 'Pick someone on this desk.' };
+  if (!state.assignments) state.assignments = {};
+  state.assignments[desk.id] = characterId;
+  selectedStaff = characterId;
+  pickingManager = false;
+  const character = characterById(characterId);
+  return { ok: true, message: `${character?.name || 'Crew'} now manages ${desk.label}.` };
+}
+
+export function changeDeskManager(state) {
+  const desk = deskOf(staffDesk);
+  const roster = viewsForDesk(state, desk);
+  if (!roster.length) return { ok: false, message: 'Nobody is on this desk.' };
+  const current = managerIdFor(state, desk, roster);
+  if (selectedStaff && selectedStaff !== current && roster.some((item) => item.id === selectedStaff)) {
+    return assignDeskManager(state, selectedStaff);
+  }
+  const index = Math.max(0, roster.findIndex((item) => item.id === current));
+  const next = roster[(index + 1) % roster.length];
+  return assignDeskManager(state, next.id);
 }
 
 export function armStaffFire(id) {
@@ -142,22 +187,29 @@ function renderStars(level) {
   return `<span class="assignStars" aria-label="${filled} of 5 stars">${'★'.repeat(filled)}${'☆'.repeat(5 - filled)}</span>`;
 }
 
-function renderAssignCard(view) {
+function renderAssignCard(view, managerId) {
   const selected = view.id === selectedStaff ? 'selected' : '';
+  const lead = view.id === managerId ? 'manager' : '';
   const first = view.name.split(' ')[0];
-  return `<button type="button" class="assignCard ${rarityFor(view.level)} ${selected}" data-action="selectStaff" data-staff="${view.id}">
+  const badge = lead ? '<span class="assignRole">MGR</span>' : '';
+  return `<button type="button" class="assignCard ${rarityFor(view.level)} ${selected} ${lead}" data-action="selectStaff" data-staff="${view.id}">
     ${renderAvatar(view, 'assignFace')}
     <span class="assignName">${first}</span>
+    ${badge}
     <span class="assignFoot"><b>Lv ${view.level}</b>${renderStars(view.level)}<em>${formatPct(bonusFor(view))}</em></span>
   </button>`;
 }
 
-function renderDock(state, view) {
+function renderDock(state, view, managerId) {
   if (!view) return '';
   const line = view.lineKey ? IDLE_LINES.find((item) => item.key === view.lineKey) : null;
   const job = line ? managerStats(state, { id: line.key }) : null;
   const armed = job && fireArmed === line.key;
+  const isLead = view.id === managerId;
   const train = `<button class="btn small gold" data-action="trainCharacter" data-staff="${view.id}" ${canAfford(state, view.trainCost) ? '' : 'disabled'}>Train ${costToText(view.trainCost)}</button>`;
+  const change = pickingManager
+    ? `<button class="btn small ghost" data-action="cancelChangeManager">Cancel</button>`
+    : `<button class="btn small primary" data-action="changeManager">${isLead ? 'Change' : 'Make manager'}</button>`;
   let jobButton = '';
   if (job && !job.hired) {
     jobButton = `<button class="btn small primary" data-action="buyManager" data-line="${line.key}" ${job.canHire ? '' : 'disabled'}>${job.ready ? `Hire ${costToText(job.cost)}` : `Lv ${line.manager.unlockLevel}`}</button>`;
@@ -169,8 +221,8 @@ function renderDock(state, view) {
   }
   return `<div class="assignDock">
     ${renderAvatar(view, 'assignDockFace')}
-    <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}</span><small>${formatPct(bonusFor(view))} · Drv ${view.drive} Grip ${view.grip}</small></div>
-    <div class="assignDockActions">${train}${jobButton}</div>
+    <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${isLead ? ' · Manager' : ''}</span><small>${formatPct(bonusFor(view))} · Drv ${view.drive} Grip ${view.grip}</small></div>
+    <div class="assignDockActions">${change}${train}${jobButton}</div>
   </div>`;
 }
 
@@ -178,27 +230,31 @@ export function renderStaffScreen(state) {
   const desk = deskOf(staffDesk);
   const roster = viewsForDesk(state, desk);
   const view = roster.find((item) => item.id === selectedStaff) || roster[0] || null;
-  if (view) selectedStaff = view.id;
+  if (view && !pickingManager) selectedStaff = view.id;
+  const managerId = managerIdFor(state, desk, roster);
+  const lead = roster.find((item) => item.id === managerId);
   const teamPct = roster.reduce((sum, item) => sum + bonusFor(item), 0);
   const teamRate = roster.reduce((sum, item) => sum + rateFor(item), 0);
+  const hint = pickingManager ? 'Tap a card to change the manager.' : (lead ? `Manager: ${lead.name}` : '');
   return ScreenFrame({
     title: 'Assignments',
-    subtitle: 'Each desk is a manager type. Train them and the bonus climbs.',
+    subtitle: hint || 'Each desk is a manager type. Train them and the bonus climbs.',
     badge: `${roster.length}`,
     className: 'staffFrame',
     body: `
       <nav class="staffTabs" role="tablist">
         ${DESKS.map((item) => `<button type="button" class="${desk.id === item.id ? 'active' : ''}" data-action="staffTab" data-tab="${item.id}">${item.short}</button>`).join('')}
       </nav>
-      <section class="assignBoard ${desk.id}">
+      <section class="assignBoard ${desk.id} ${pickingManager ? 'picking' : ''}">
         <header class="assignHead">
           <b>${desk.label}</b>
+          <button type="button" class="assignChange" data-action="${pickingManager ? 'cancelChangeManager' : 'beginChangeManager'}">${pickingManager ? 'Cancel' : 'Change'}</button>
           <span class="assignPct">${formatPct(teamPct)}</span>
           <span class="assignRate">${formatRate(teamRate)}</span>
         </header>
-        <div class="assignGrid">${roster.map((item) => renderAssignCard(item)).join('')}</div>
+        <div class="assignGrid">${roster.map((item) => renderAssignCard(item, managerId)).join('')}</div>
       </section>
-      ${renderDock(state, view)}
+      ${renderDock(state, view, managerId)}
     `
   });
 }

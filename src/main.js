@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=58';
+import './ui/roadRunnerRuntime.js?v=59';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -23,7 +23,7 @@ import { renderHubScreen } from './ui/screens/HubScreen.js';
 import { renderWorldScreen } from './ui/screens/WorldScreen.js';
 import { renderRaceScreen } from './ui/screens/RaceScreen.js';
 import { renderLinesScreen, updateLineBars, updateReadyBadge } from './ui/screens/LinesScreen.js';
-import { renderStaffScreen, setSelectedStaff, setStaffTab, setCrewFilter, armStaffFire, clearStaffFire } from './ui/screens/StaffScreen.js';
+import { renderStaffScreen, setSelectedStaff, setStaffTab, setCrewFilter, armStaffFire, clearStaffFire, isPickingManager, beginManagerChange, cancelManagerChange, assignDeskManager, changeDeskManager } from './ui/screens/StaffScreen.js';
 import { renderMergeScreen } from './ui/screens/MergeScreen.js';
 import { renderGarageScreen } from './ui/screens/GarageScreen.js';
 import { renderProfileScreen, setMenuTab, armMenuReset, disarmMenuReset, isMenuResetArmed } from './ui/screens/ProfileScreen.js';
@@ -265,9 +265,42 @@ function handleClick(event) {
   }
 
   if (action === 'selectStaff' || action === 'openStaff') {
-    setSelectedStaff(target.dataset.staff || target.dataset.line);
+    const id = target.dataset.staff || target.dataset.line;
+    if (action === 'selectStaff' && isPickingManager() && id) {
+      const assigned = assignDeskManager(state, id);
+      setSelectedStaff(id);
+      state.activeScreen = 'staff';
+      if (assigned.message) toast(assigned.message);
+      render();
+      queueSave();
+      return;
+    }
+    setSelectedStaff(id);
     state.activeScreen = 'staff';
     render();
+    return;
+  }
+
+  if (action === 'beginChangeManager') {
+    beginManagerChange();
+    state.activeScreen = 'staff';
+    render();
+    return;
+  }
+
+  if (action === 'cancelChangeManager') {
+    cancelManagerChange();
+    state.activeScreen = 'staff';
+    render();
+    return;
+  }
+
+  if (action === 'changeManager') {
+    const changed = changeDeskManager(state);
+    state.activeScreen = 'staff';
+    if (changed.message) toast(changed.message);
+    render();
+    queueSave();
     return;
   }
 
