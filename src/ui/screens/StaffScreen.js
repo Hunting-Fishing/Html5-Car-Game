@@ -30,6 +30,7 @@ let selectedStaff = 'crew-001';
 let staffDesk = 'sales';
 let fireArmed = '';
 let pickingManager = false;
+let personOpen = false;
 
 const DESKS = [
   { id: 'sales', label: 'Sales Floor', short: 'Sales', roles: ['Sales'] },
@@ -41,6 +42,12 @@ const DESKS = [
 export function setSelectedStaff(id) {
   const known = [...MANAGERS, ...EMPLOYEES].some((person) => person.id === id) || Boolean(characterById(id));
   if (known) selectedStaff = id;
+  personOpen = Boolean(characterById(id));
+}
+
+export function closeStaffSheet() {
+  personOpen = false;
+  fireArmed = '';
 }
 
 export function setCrewFilter() {}
@@ -86,6 +93,7 @@ export function assignDeskManager(state, characterId) {
   state.assignments[desk.id] = characterId;
   selectedStaff = characterId;
   pickingManager = false;
+  personOpen = false;
   const character = characterById(characterId);
   return { ok: true, message: `${character?.name || 'Crew'} now manages ${desk.label}.` };
 }
@@ -209,9 +217,9 @@ function renderDock(state, view, managerId) {
   const job = line ? managerStats(state, { id: line.key }) : null;
   const armed = job && fireArmed === line.key;
   const isLead = view.id === managerId;
-  const change = pickingManager
-    ? `<button class="btn small ghost" data-action="cancelChangeManager">Cancel</button>`
-    : `<button class="btn small primary" data-action="changeManager">${isLead ? 'Change' : 'Make manager'}</button>`;
+  const makeManager = isLead
+    ? ''
+    : `<button class="btn small primary" data-action="assignManager" data-staff="${view.id}">Make manager</button>`;
   let jobButton = '';
   if (job && !job.hired) {
     jobButton = `<button class="btn small primary" data-action="buyManager" data-line="${line.key}" ${job.canHire ? '' : 'disabled'}>${job.ready ? `Hire ${costToText(job.cost)}` : `Lv ${line.manager.unlockLevel}`}</button>`;
@@ -221,11 +229,15 @@ function renderDock(state, view, managerId) {
     const quote = quoteLineUpgrade(state, line, 1);
     jobButton = `<button class="btn small primary" data-action="upgradeLine" data-line="${line.key}" data-qty="1" ${quote?.affordable ? '' : 'disabled'}>Upgrade</button><button class="btn small ghost" data-action="fireManagerArm" data-line="${line.key}">Release</button>`;
   }
-  return `<div class="assignDock">
-    ${renderAvatar(view, 'assignDockFace')}
-    <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${isLead ? ' · Manager' : ''}</span></div>
-    ${renderBars(view)}
-    <div class="assignDockActions">${change}${jobButton}</div>
+  return `<div class="staffPop">
+    <button type="button" class="staffPopBack" data-action="closeStaffSheet" aria-label="Close"></button>
+    <div class="staffPopCard">
+      <button type="button" class="staffPopX" data-action="closeStaffSheet" aria-label="Close">×</button>
+      ${renderAvatar(view, 'assignDockFace')}
+      <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${isLead ? ' · Manager' : ''}</span></div>
+      ${renderBars(view)}
+      <div class="assignDockActions">${makeManager}${jobButton}</div>
+    </div>
   </div>`;
 }
 
@@ -263,7 +275,7 @@ export function renderStaffScreen(state) {
     className: 'staffFrame',
     body: `
       <div class="assignList">${DESKS.map((desk) => renderDesk(state, desk)).join('')}</div>
-      ${renderDock(state, view, managerId)}
+      ${personOpen ? renderDock(state, view, managerId) : ''}
     `
   });
 }
