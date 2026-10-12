@@ -32,6 +32,11 @@ export function normalizeMergeState(state) {
   if (typeof state.merge.maxEnergy !== 'number') state.merge.maxEnergy = 50;
   if (typeof state.merge.energyRegen !== 'number') state.merge.energyRegen = 0.08;
   if (!Array.isArray(state.merge.customers)) state.merge.customers = [];
+  // Seed starter generators only if board is completely empty (new or migrated empty save)
+  if (state.merge.board.every(cell => !cell) && state.merge.totalMerges === 0) {
+    state.merge.board[0] = makeItem('original', 1, 'generator');
+    state.merge.board[1] = makeItem('tools', 1, 'generator');
+  }
 }
 
 export function activeBoardCount(state) {
@@ -51,8 +56,7 @@ export function makeItem(chain, level = 1, type = 'product') {
 export function randomStarterItem(state) {
   const keys = unlockedChainKeys(state);
   const chain = keys[Math.floor(Math.random() * keys.length)];
-  // Occasionally drop a generator shard instead of a product
-  if (Math.random() < 0.15) {
+  if (Math.random() < 0.12) {
     return makeItem(chain, 1, 'generator');
   }
   return makeItem(chain, 1, 'product');
@@ -60,19 +64,24 @@ export function randomStarterItem(state) {
 
 export function tickSupplier(state, dt) {
   normalizeMergeState(state);
-  // Energy regen
   if (state.merge.energy < state.merge.maxEnergy) {
     state.merge.energy = Math.min(state.merge.maxEnergy, state.merge.energy + state.merge.energyRegen * dt);
   }
-  if (state.merge.supplierSlots.every(Boolean)) return;
-  state.merge.supplierTimer -= dt;
-  if (state.merge.supplierTimer <= 0) {
-    const empty = state.merge.supplierSlots.findIndex((slot) => !slot);
-    if (empty >= 0) state.merge.supplierSlots[empty] = randomStarterItem(state);
-    state.merge.supplierTimer = state.merge.supplierDuration;
+  if (state.merge.supplierSlots.every(Boolean)) {
+    // still process customers
+  } else {
+    state.merge.supplierTimer -= dt;
+    if (state.merge.supplierTimer <= 0) {
+      const empty = state.merge.supplierSlots.findIndex((slot) => !slot);
+      if (empty >= 0) state.merge.supplierSlots[empty] = randomStarterItem(state);
+      state.merge.supplierTimer = state.merge.supplierDuration;
+    }
   }
-  // Keep 1-2 customers active
-  if (state.merge.customers.length < 2 && Math.random() < 0.02) {
+  // Expire old customers
+  const now = Date.now();
+  state.merge.customers = state.merge.customers.filter(c => !c.expires || c.expires > now);
+  // Spawn if room
+  if (state.merge.customers.length < 2 && Math.random() < 0.015) {
     spawnCustomer(state);
   }
 }
@@ -183,6 +192,7 @@ export function tapGenerator(state, index) {
   state.merge.energy -= cost;
   const product = makeItem(item.chain, 1, 'product');
   state.merge.board[empty] = product;
+  state.objectives.firstGeneratorTap = true;
   return { ok: true, message: `Produced ${itemDisplayName(product)}.` };
 }
 
@@ -194,7 +204,7 @@ export function spawnCustomer(state) {
   state.merge.customers.push({
     id: uid(),
     ...template,
-    expires: Date.now() + 120000
+    expires: Date.now() + 180000
   });
 }
 
@@ -211,6 +221,7 @@ export function deliverCustomer(state, customerId, boardIndex) {
   state.merge.customers.splice(custIdx, 1);
   Object.entries(customer.reward || {}).forEach(([key, amount]) => addCurrency(state, key, amount));
   addXp(state, 12);
+  state.objectives.firstDelivery = true;
   return { ok: true, message: `Delivered ${customer.title}.` };
 }
 
