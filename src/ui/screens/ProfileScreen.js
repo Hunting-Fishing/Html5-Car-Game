@@ -150,6 +150,7 @@ export function renderProfileScreen(state) {
       <div class="gameMenu">
         <nav class="gameMenuTabs" role="tablist">
           ${MENU_TABS.map((tab) => `<button type="button" role="tab" class="${menuTab === tab.id ? 'active' : ''}" data-action="menuTab" data-tab="${tab.id}" aria-selected="${menuTab === tab.id}">${renderFlatDataIcon(tab.icon, tab.label, 'menuTabIcon')}<span>${tab.label}</span>${tab.id === 'today' && readyOrders ? `<i>${readyOrders}</i>` : ''}</button>`).join('')}
+          <button type="button" data-action="screen" data-screen="staff">${renderFlatDataIcon('profile', 'Staff', 'menuTabIcon')}<span>Staff</span></button>
         </nav>
         <div class="gameMenuPane">${panes[menuTab] || panes.today}</div>
       </div>

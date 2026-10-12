@@ -1,0 +1,4 @@
+.bottomNav { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+.bottomNav .tab span { font-size: 10px !important; }
+#screen-profile .gameMenuTabs { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+#screen-profile .gameMenuTabs button { font-size: 10px; min-height: 48px; }

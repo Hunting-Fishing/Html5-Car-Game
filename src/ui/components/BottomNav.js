@@ -5,7 +5,8 @@ export const PRIMARY_NAV = [
   { id: 'home', screen: 'hub', label: 'Home', icon: UI_NAV_ICONS.home, fallbackIcon: '\u{1F3E0}', activeScreens: ['hub', 'world'] },
   { id: 'race', screen: 'race', label: 'Race', icon: UI_NAV_ICONS.race, fallbackIcon: '\u{1F697}', activeScreens: ['race'] },
   { id: 'parts', screen: 'merge', label: 'Parts', icon: UI_NAV_ICONS.parts, fallbackIcon: '\u{1F527}', activeScreens: ['merge'] },
-  { id: 'garage', screen: 'garage', label: 'Garage', icon: UI_NAV_ICONS.garage, fallbackIcon: '\u{1F3D7}\uFE0F', activeScreens: ['garage', 'lines', 'staff'] },
+  { id: 'garage', screen: 'garage', label: 'Garage', icon: UI_NAV_ICONS.garage, fallbackIcon: '\u{1F3D7}\uFE0F', activeScreens: ['garage', 'lines'] },
+  { id: 'staff', screen: 'staff', label: 'Staff', icon: UI_NAV_ICONS.rep, fallbackIcon: '\u{1F465}', activeScreens: ['staff'] },
   { id: 'menu', screen: 'profile', label: 'Menu', icon: UI_NAV_ICONS.menu, fallbackIcon: '\u{1F4CB}', activeScreens: ['profile'] }
 ];
 
