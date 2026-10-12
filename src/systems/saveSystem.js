@@ -54,6 +54,7 @@ function reconcile(base, saved) {
     relationshipGifts: { ...(base.relationshipGifts || {}), ...(saved.relationshipGifts || {}) },
     npcTrade: { ...(base.npcTrade || {}), ...(saved.npcTrade || {}) },
     reputation: Number.isFinite(saved.reputation) ? saved.reputation : (base.reputation || 0),
+    characters: { ...(base.characters || {}), ...(saved.characters || {}) },
     tips: { ...base.tips, ...(saved.tips || {}) }
   };
 }

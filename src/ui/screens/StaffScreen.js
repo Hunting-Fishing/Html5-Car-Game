@@ -1,7 +1,9 @@
 import { IDLE_LINES } from '../../data/gameData.js';
 import { personAssetForKey } from '../../data/worldAssetMap.js';
+import { CHARACTERS, characterById } from '../../data/characterRoster.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { costToText, canAfford } from '../../systems/economySystem.js';
+import { characterViews } from '../../systems/characterSystem.js';
 import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked, quoteLineUpgrade } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
@@ -24,9 +26,12 @@ const EMPLOYEES = [
   { id: 'driver', avatar: 'driver', name: 'Sol', role: 'Employee', job: 'Tow', phone: '365-106', place: 'Dispatch curb', desk: 'Tow Desk' }
 ];
 
-let selectedStaff = 'streetRoute';
+let selectedStaff = 'crew-001';
 let staffTab = 'list';
 let fireArmed = '';
+let crewFilter = 'All';
+
+const CREW_FILTERS = ['All', 'Drive', 'Shop', 'Crew'];
 
 const STAFF_TABS = [
   { id: 'list', label: 'List' },
@@ -36,8 +41,12 @@ const STAFF_TABS = [
 ];
 
 export function setSelectedStaff(id) {
-  const known = [...MANAGERS, ...EMPLOYEES].some((person) => person.id === id);
+  const known = [...MANAGERS, ...EMPLOYEES].some((person) => person.id === id) || Boolean(characterById(id));
   if (known) selectedStaff = id;
+}
+
+export function setCrewFilter(crew) {
+  crewFilter = CREW_FILTERS.includes(crew) ? crew : 'All';
 }
 
 export function setStaffTab(tab) {
@@ -90,7 +99,12 @@ function renderAvatar(person, className = 'staffAvatar') {
 }
 
 function renderContacts(person) {
-  return `<span class="staffContact">${person.phone}</span><small>${person.place}</small><small>${person.desk}</small>`;
+  return `<span class="staffContact">${person.phone}</span><small>${person.place}</small>`;
+}
+
+function renderCharacterCard(view) {
+  const selected = view.id === selectedStaff;
+  return `<button type="button" class="staffCard ${selected ? 'selected' : ''}" data-action="selectStaff" data-staff="${view.id}">${renderAvatar(view)}<span class="staffWho"><b>${view.name}</b><span class="staffPlace">${view.role} · ${view.rank}</span></span><span class="staffPhone">Lv ${view.level}<small>Drv ${view.drive}</small></span></button>`;
 }
 
 function renderCard(person, state) {
@@ -188,15 +202,20 @@ function renderDetail(state, person) {
 export function renderStaffScreen(state) {
   const hired = MANAGERS.filter((person) => managerStats(state, person).hired);
   const open = MANAGERS.filter((person) => !managerStats(state, person).hired);
-  const roster = staffTab === 'list' ? [...MANAGERS, ...EMPLOYEES] : staffTab === 'hire' ? open : hired;
-  const person = roster.find((item) => item.id === selectedStaff) || roster[0] || null;
+  const roster = staffTab === 'list' ? characterViews(state, crewFilter) : staffTab === 'hire' ? open : hired;
+  const person = staffTab === 'list'
+    ? roster.find((item) => item.id === selectedStaff) || roster[0] || null
+    : roster.find((item) => item.id === selectedStaff) || roster[0] || null;
   const empty = staffTab === 'hire'
     ? 'Every manager is already hired.'
     : 'Nobody is hired yet. Start on the Hire tab.';
+  const crewPick = person && staffTab === 'list'
+    ? `<div class="staffPick"><b>${person.name}</b><span>Lv ${person.level} ${person.rank} · Drive ${person.drive} · Grip ${person.grip} · Fuel ${person.fuel} · Repair ${person.repair}</span><button class="btn small gold" data-action="trainCharacter" data-staff="${person.id}" ${canAfford(state, person.trainCost) ? '' : 'disabled'}>Train ${costToText(person.trainCost)}</button></div>`
+    : '';
   return ScreenFrame({
-    title: 'Staff',
-    subtitle: 'Phone, place, and desk.',
-    badge: reputationTitle(Number(state.reputation || 0)),
+    title: 'Crew',
+    subtitle: '100 drivers and techs. They rank up as you use them.',
+    badge: `${CHARACTERS.length}`,
     className: 'staffFrame',
     body: `
       <div class="staffJump">
@@ -206,9 +225,10 @@ export function renderStaffScreen(state) {
       <nav class="staffTabs" role="tablist">
         ${STAFF_TABS.map((tab) => `<button type="button" class="${staffTab === tab.id ? 'active' : ''}" data-action="staffTab" data-tab="${tab.id}">${tab.label}</button>`).join('')}
       </nav>
-      ${staffTab === 'list' && person ? `<div class="staffPick"><b>${person.name}</b><span>${person.phone} · ${person.place}</span><button class="btn small gold" data-action="screen" data-screen="world">Meet</button></div>` : ''}
+      ${staffTab === 'list' ? `<div class="crewFilters">${CREW_FILTERS.map((crew) => `<button type="button" class="${crewFilter === crew ? 'active' : ''}" data-action="crewFilter" data-crew="${crew}">${crew}</button>`).join('')}</div>` : ''}
+      ${crewPick}
       ${staffTab === 'list' ? '' : person ? renderDetail(state, person) : `<p class="staffEmpty">${empty}</p>`}
-      <div class="staffRoster">${roster.map((item) => renderCard(item, state)).join('')}</div>
+      <div class="staffRoster">${staffTab === 'list' ? roster.map((item) => renderCharacterCard(item)).join('') : roster.map((item) => renderCard(item, state)).join('')}</div>
     `
   });
 }

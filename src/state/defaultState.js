@@ -132,6 +132,7 @@ export function defaultState() {
     relationships: {},
     relationshipGifts: {},
     reputation: 0,
+    characters: {},
     npcTrade: {},
     tips: {
       welcome: false,

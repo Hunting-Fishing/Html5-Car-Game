@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=54';
+import './ui/roadRunnerRuntime.js?v=55';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -23,7 +23,7 @@ import { renderHubScreen } from './ui/screens/HubScreen.js';
 import { renderWorldScreen } from './ui/screens/WorldScreen.js';
 import { renderRaceScreen } from './ui/screens/RaceScreen.js';
 import { renderLinesScreen, updateLineBars, updateReadyBadge } from './ui/screens/LinesScreen.js';
-import { renderStaffScreen, setSelectedStaff, setStaffTab, armStaffFire, clearStaffFire } from './ui/screens/StaffScreen.js';
+import { renderStaffScreen, setSelectedStaff, setStaffTab, setCrewFilter, armStaffFire, clearStaffFire } from './ui/screens/StaffScreen.js';
 import { renderMergeScreen } from './ui/screens/MergeScreen.js';
 import { renderGarageScreen } from './ui/screens/GarageScreen.js';
 import { renderProfileScreen, setMenuTab, armMenuReset, disarmMenuReset, isMenuResetArmed } from './ui/screens/ProfileScreen.js';
@@ -37,6 +37,8 @@ import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './s
 import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
 import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, fireLineManager, toggleLineAutoCollect, getLineState } from './systems/idleLineSystem.js';
+import { characterForLine } from './data/characterRoster.js';
+import { trainCharacter, useCharacter } from './systems/characterSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
 const WEBSITE_URL = 'https://www.365motorsales.com';
@@ -276,6 +278,13 @@ function handleClick(event) {
     return;
   }
 
+  if (action === 'crewFilter') {
+    setCrewFilter(target.dataset.crew);
+    state.activeScreen = 'staff';
+    render();
+    return;
+  }
+
   if (action === 'fireManagerArm') {
     armStaffFire(target.dataset.line);
     state.activeScreen = 'staff';
@@ -359,9 +368,21 @@ function handleClick(event) {
   }
   if (action === 'raceMode') result = changeRaceMode(state, target.dataset.mode);
   if (action === 'fixProblem') result = fixProblem(state, Number(target.dataset.fix));
-  if (action === 'collectLine') result = collectIdleLine(state, target.dataset.line);
+  if (action === 'collectLine') {
+    result = collectIdleLine(state, target.dataset.line);
+    const crew = characterForLine(target.dataset.line);
+    if (result?.ok && crew) {
+      const grown = useCharacter(state, crew.id, 6);
+      if (grown.message) toast(grown.message);
+    }
+  }
   if (action === 'upgradeLine') result = buyLineUpgrade(state, target.dataset.line, target.dataset.qty || state.idleLines?.buyQty || 1);
-  if (action === 'buyManager') result = buyLineManager(state, target.dataset.line);
+  if (action === 'buyManager') {
+    result = buyLineManager(state, target.dataset.line);
+    const crew = characterForLine(target.dataset.line);
+    if (result?.ok && crew) useCharacter(state, crew.id, 20);
+  }
+  if (action === 'trainCharacter') result = trainCharacter(state, target.dataset.staff);
   if (action === 'fireManager') {
     result = fireLineManager(state, target.dataset.line);
     clearStaffFire();
