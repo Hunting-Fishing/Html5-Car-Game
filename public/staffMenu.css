@@ -22,7 +22,7 @@
 #screen-staff .assignDesk .assignGrid { grid-column: 1 / -1; }
 #screen-staff .assignLead {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-columns: 72px minmax(0, 1fr);
   gap: 8px;
   align-items: center;
   min-width: 0;
@@ -108,7 +108,7 @@
 #screen-staff .assignCard {
   position: relative;
   display: grid !important;
-  grid-template-rows: 72px auto;
+  grid-template-rows: 132px auto;
   min-width: 0;
   padding: 0 !important;
   overflow: hidden;
@@ -123,9 +123,10 @@
 #screen-staff .assignCard.selected { box-shadow: 0 0 0 2px #fff; }
 #screen-staff .assignFace {
   width: 100%;
-  height: 72px;
+  height: 132px;
   object-fit: cover;
-  object-position: center 18%;
+  object-position: center 12%;
+  background: #24143f;
 }
 #screen-staff .assignName {
   position: absolute;
@@ -154,7 +155,7 @@
   position: sticky;
   bottom: 0;
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-columns: 72px minmax(0, 1fr);
   gap: 6px 8px;
   align-items: center;
   margin-top: 8px;
@@ -164,7 +165,7 @@
   background: #0c2233;
   color: #fff;
 }
-#screen-staff .assignDockFace { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; }
+#screen-staff .assignDockFace { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; object-position: center 15%; }
 #screen-staff .assignDock b { display: block; font-size: 14px; }
 #screen-staff .assignDock span,
 #screen-staff .assignDock small { display: block; color: #d5e7f2; font-size: 11px; line-height: 1.3; }
