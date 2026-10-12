@@ -1,11 +1,4 @@
-import { makeItem } from '../systems/mergeSystem.js';
-
 export function defaultState() {
-  const board = Array.from({ length: 16 }, () => null);
-  // Place starter generators so the loop is playable immediately
-  board[0] = makeItem('original', 1, 'generator');
-  board[1] = makeItem('tools', 1, 'generator');
-
   return {
     version: 11,
     activeScreen: 'hub',
@@ -111,7 +104,7 @@ export function defaultState() {
       supplierTimer: 2,
       supplierDuration: 4.5,
       supplierSlots: [null, null, null],
-      board,
+      board: Array.from({ length: 16 }, () => null),
       selectedIndex: null,
       totalMerges: 0,
       highestItemLevel: 1,
