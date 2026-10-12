@@ -2,7 +2,7 @@ import { IDLE_LINES } from '../../data/gameData.js';
 import { personAssetForKey } from '../../data/worldAssetMap.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { costToText, canAfford } from '../../systems/economySystem.js';
-import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked } from '../../systems/idleLineSystem.js';
+import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked, quoteLineUpgrade } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
   { id: 'streetRoute', avatar: 'driver', name: 'Route Driver', role: 'Manager' },
@@ -25,10 +25,32 @@ const EMPLOYEES = [
 ];
 
 let selectedStaff = 'streetRoute';
+let staffTab = 'hire';
+let fireArmed = '';
+
+const STAFF_TABS = [
+  { id: 'hire', label: 'Hire' },
+  { id: 'upgrade', label: 'Upgrade' },
+  { id: 'fire', label: 'Fire' }
+];
 
 export function setSelectedStaff(id) {
   const known = [...MANAGERS, ...EMPLOYEES].some((person) => person.id === id);
   if (known) selectedStaff = id;
+}
+
+export function setStaffTab(tab) {
+  staffTab = STAFF_TABS.some((item) => item.id === tab) ? tab : 'hire';
+  if (staffTab !== 'fire') fireArmed = '';
+}
+
+export function armStaffFire(id) {
+  fireArmed = id || '';
+  staffTab = 'fire';
+}
+
+export function clearStaffFire() {
+  fireArmed = '';
 }
 
 function trustRank(score) {
@@ -73,66 +95,4 @@ function renderCard(person, state) {
   const trust = manager ? stats.trust : Number(state.relationships?.[person.id] || 0);
   const status = manager ? (stats.hired ? (stats.auto ? 'Auto' : 'Paused') : stats.ready ? 'Ready' : 'Locked') : trustRank(trust);
   return `<button type="button" class="staffCard ${selected ? 'selected' : ''} ${manager && stats.hired ? 'hired' : ''}" data-action="selectStaff" data-staff="${person.id}">${renderAvatar(person)}<b>${person.name.split(' ')[0]}</b><small>${status}</small></button>`;
-}
-
-function renderDetail(state, person) {
-  const city = Number(state.reputation || 0);
-  if (person.role === 'Employee') {
-    const trust = Number(state.relationships?.[person.id] || 0);
-    return `
-      <article class="staffDetail">
-        ${renderAvatar(person, 'staffPortrait')}
-        <div>
-          <b>${person.name}</b>
-          <span>${person.role} · ${person.job}</span>
-          <div class="staffStats">
-            <div><strong>${trust}</strong><small>Trust</small></div>
-            <div><strong>${trustRank(trust)}</strong><small>Rank</small></div>
-            <div><strong>${reputationTitle(city)}</strong><small>City</small></div>
-          </div>
-        </div>
-        <button class="btn gold" data-action="screen" data-screen="world">Meet in World</button>
-      </article>
-    `;
-  }
-  const stats = managerStats(state, person);
-  const hire = stats.hired
-    ? `<button class="btn ${stats.auto ? 'red' : 'primary'}" data-action="toggleLineAuto" data-line="${person.id}">${stats.auto ? 'Pause Auto' : 'Turn Auto On'}</button>`
-    : `<button class="btn gold" data-action="buyManager" data-line="${person.id}" ${stats.canHire ? '' : 'disabled'}>${stats.ready ? `Hire ${costToText(stats.cost)}` : `Unlocks at Lv ${stats.line?.manager.unlockLevel || 10}`}</button>`;
-  return `
-    <article class="staffDetail">
-      ${renderAvatar(person, 'staffPortrait')}
-      <div>
-        <b>${person.name}</b>
-        <span>Manager · ${stats.line?.name || 'Supply'}</span>
-        <div class="staffStats">
-          <div><strong>Lv ${stats.level}</strong><small>Supply</small></div>
-          <div><strong>${stats.hired ? 'Hired' : 'Open'}</strong><small>Job</small></div>
-          <div><strong>${stats.trust}</strong><small>${trustRank(stats.trust)}</small></div>
-        </div>
-      </div>
-      <div class="staffActions">${hire}<button class="btn ghost" data-action="screen" data-screen="world">World</button><button class="btn ghost" data-action="screen" data-screen="lines">Supplies</button></div>
-    </article>
-  `;
-}
-
-export function renderStaffScreen(state) {
-  const person = personById(selectedStaff);
-  return ScreenFrame({
-    title: 'Staff',
-    subtitle: 'Pick a manager or employee.',
-    badge: reputationTitle(Number(state.reputation || 0)),
-    className: 'staffFrame',
-    body: `
-      <div class="staffJump">
-        <button class="btn gold" data-action="screen" data-screen="world">World</button>
-        <button class="btn ghost" data-action="screen" data-screen="lines">Supplies</button>
-      </div>
-      ${renderDetail(state, person)}
-      <h3 class="staffHeading">Managers</h3>
-      <div class="staffRoster">${MANAGERS.map((item) => renderCard(item, state)).join('')}</div>
-      <h3 class="staffHeading">Employees</h3>
-      <div class="staffRoster">${EMPLOYEES.map((item) => renderCard(item, state)).join('')}</div>
-    `
-  });
 }
