@@ -1,4 +1,4 @@
-import { CHAINS } from '../data/gameData.js';
+import { CHAINS, GENERATORS, CUSTOMER_TEMPLATES } from '../data/gameData.js';
 import { addCurrency, addXp } from './economySystem.js';
 
 function uid() {
@@ -28,30 +28,52 @@ export function normalizeMergeState(state) {
   const shelfSize = shelfCapacity(state);
   while (state.merge.supplierSlots.length < shelfSize) state.merge.supplierSlots.push(null);
   if (state.merge.supplierSlots.length > shelfSize) state.merge.supplierSlots = state.merge.supplierSlots.slice(0, shelfSize);
+  if (typeof state.merge.energy !== 'number') state.merge.energy = 20;
+  if (typeof state.merge.maxEnergy !== 'number') state.merge.maxEnergy = 50;
+  if (typeof state.merge.energyRegen !== 'number') state.merge.energyRegen = 0.08;
+  if (!Array.isArray(state.merge.customers)) state.merge.customers = [];
 }
 
 export function activeBoardCount(state) {
   return state.merge.board.filter(Boolean).length;
 }
 
-export function makeItem(chain, level = 1) {
-  return { id: uid(), chain, level };
+export function makeItem(chain, level = 1, type = 'product') {
+  const item = { id: uid(), chain, level, type };
+  if (type === 'generator') {
+    const gen = Object.values(GENERATORS).find(g => g.produces === chain) || GENERATORS.partsBin;
+    item.generatorKey = gen.key;
+    item.energyCost = gen.energyCost;
+  }
+  return item;
 }
 
 export function randomStarterItem(state) {
   const keys = unlockedChainKeys(state);
   const chain = keys[Math.floor(Math.random() * keys.length)];
-  return makeItem(chain, 1);
+  // Occasionally drop a generator shard instead of a product
+  if (Math.random() < 0.15) {
+    return makeItem(chain, 1, 'generator');
+  }
+  return makeItem(chain, 1, 'product');
 }
 
 export function tickSupplier(state, dt) {
   normalizeMergeState(state);
+  // Energy regen
+  if (state.merge.energy < state.merge.maxEnergy) {
+    state.merge.energy = Math.min(state.merge.maxEnergy, state.merge.energy + state.merge.energyRegen * dt);
+  }
   if (state.merge.supplierSlots.every(Boolean)) return;
   state.merge.supplierTimer -= dt;
   if (state.merge.supplierTimer <= 0) {
     const empty = state.merge.supplierSlots.findIndex((slot) => !slot);
     if (empty >= 0) state.merge.supplierSlots[empty] = randomStarterItem(state);
     state.merge.supplierTimer = state.merge.supplierDuration;
+  }
+  // Keep 1-2 customers active
+  if (state.merge.customers.length < 2 && Math.random() < 0.02) {
+    spawnCustomer(state);
   }
 }
 
@@ -101,7 +123,8 @@ export function selectOrMergeCell(state, index) {
     return { ok: true, message: 'Moved item.' };
   }
   if (source.chain === target.chain && source.level === target.level && source.level < CHAINS[source.chain].items.length) {
-    const merged = makeItem(source.chain, source.level + 1);
+    const mergedType = source.type === 'generator' || target.type === 'generator' ? 'generator' : 'product';
+    const merged = makeItem(source.chain, source.level + 1, mergedType);
     state.merge.board[index] = merged;
     state.merge.board[selected] = null;
     state.merge.selectedIndex = null;
@@ -135,7 +158,8 @@ export function autoMergeOnce(state) {
     for (let j = i + 1; j < board.length; j += 1) {
       if (!board[j]) continue;
       if (board[i].chain === board[j].chain && board[i].level === board[j].level) {
-        const merged = makeItem(board[i].chain, board[i].level + 1);
+        const mergedType = board[i].type === 'generator' || board[j].type === 'generator' ? 'generator' : 'product';
+        const merged = makeItem(board[i].chain, board[i].level + 1, mergedType);
         board[j] = merged;
         board[i] = null;
         state.merge.selectedIndex = null;
@@ -147,8 +171,55 @@ export function autoMergeOnce(state) {
   return { ok: false, message: 'No matching pair found.' };
 }
 
+export function tapGenerator(state, index) {
+  normalizeMergeState(state);
+  const item = state.merge.board[index];
+  if (!item || item.type !== 'generator') return { ok: false, message: 'Not a generator.' };
+  const cost = item.energyCost || 1;
+  if (state.merge.energy < cost) return { ok: false, message: 'Not enough energy.' };
+  if (activeBoardCount(state) >= boardLimit(state)) return { ok: false, message: 'Board full. Merge or sell first.' };
+  const empty = state.merge.board.findIndex((cell) => !cell);
+  if (empty < 0) return { ok: false, message: 'No empty slot.' };
+  state.merge.energy -= cost;
+  const product = makeItem(item.chain, 1, 'product');
+  state.merge.board[empty] = product;
+  return { ok: true, message: `Produced ${itemDisplayName(product)}.` };
+}
+
+export function spawnCustomer(state) {
+  const unlocked = unlockedChainKeys(state);
+  const possible = CUSTOMER_TEMPLATES.filter(t => unlocked.includes(t.chain));
+  if (!possible.length) return;
+  const template = possible[Math.floor(Math.random() * possible.length)];
+  state.merge.customers.push({
+    id: uid(),
+    ...template,
+    expires: Date.now() + 120000
+  });
+}
+
+export function deliverCustomer(state, customerId, boardIndex) {
+  normalizeMergeState(state);
+  const custIdx = state.merge.customers.findIndex(c => c.id === customerId);
+  if (custIdx < 0) return { ok: false, message: 'Customer gone.' };
+  const customer = state.merge.customers[custIdx];
+  const item = state.merge.board[boardIndex];
+  if (!item || item.type !== 'product' || item.chain !== customer.chain || item.level < customer.level) {
+    return { ok: false, message: 'Need a matching or higher product.' };
+  }
+  state.merge.board[boardIndex] = null;
+  state.merge.customers.splice(custIdx, 1);
+  Object.entries(customer.reward || {}).forEach(([key, amount]) => addCurrency(state, key, amount));
+  addXp(state, 12);
+  return { ok: true, message: `Delivered ${customer.title}.` };
+}
+
 export function itemDisplayName(item) {
   if (!item) return '';
+  if (item.type === 'generator') {
+    const gen = GENERATORS[item.generatorKey] || Object.values(GENERATORS)[0];
+    return `${gen.label} L${item.level}`;
+  }
   const chain = CHAINS[item.chain];
   return chain.items[item.level - 1] || chain.items[chain.items.length - 1];
 }
