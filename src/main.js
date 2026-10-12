@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=71';
+import './ui/roadRunnerRuntime.js?v=72';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -38,7 +38,7 @@ import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
 import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, fireLineManager, toggleLineAutoCollect, getLineState } from './systems/idleLineSystem.js';
 import { characterForLine } from './data/characterRoster.js';
-import { trainCharacter, useCharacter, upgradeCharacter, promoteCharacter, tickPayroll, hireCharacter, fireCharacter, setCrewPayRate } from './systems/characterSystem.js';
+import { trainCharacter, useCharacter, upgradeCharacter, promoteCharacter, tickPayroll, hireCharacter, fireCharacter, setCrewPayRate, equipCrewTask } from './systems/characterSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
 const WEBSITE_URL = 'https://www.365motorsales.com';
@@ -463,6 +463,7 @@ function handleClick(event) {
   }
 
   if (action === 'hireCrew') result = hireCharacter(state, target.dataset.staff);
+  if (action === 'equipTask') result = equipCrewTask(state, target.dataset.staff, target.dataset.task || '');
   if (action === 'fireCrew') {
     result = fireCharacter(state, target.dataset.staff);
     clearStaffFire();

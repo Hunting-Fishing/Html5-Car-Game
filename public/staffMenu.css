@@ -25,7 +25,13 @@
 #screen-staff .salarySlide span { color: #9fd8ff; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
 #screen-staff .salarySlide b { color: #fff; font-size: 12px; letter-spacing: 0; text-transform: none; }
 #screen-staff .salarySlide small { color: #d5e7f2; font-size: 11px; }
-#screen-staff .salarySlide input[type='range'] { width: 100%; accent-color: #3ddc84; }
+#screen-staff .taskRow { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+#screen-staff .taskRow > span { width: 100%; color: #9fd8ff; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .taskNote { grid-column: 1 / -1; margin: 0; color: #d5e7f2; font-size: 12px; }
+#screen-staff .taskBtn { min-height: 36px; border: 1px solid #3d6d88; border-radius: 10px; padding: 4px 8px; background: #123044; color: #fff; font-size: 11px; font-weight: 800; }
+#screen-staff .taskBtn small { display: block; color: #9fd8ff; font-size: 9px; font-weight: 700; }
+#screen-staff .taskBtn.on { border-color: #7dffb2; background: #14543a; }
+#screen-staff .taskRow > small { width: 100%; color: #d5e7f2; font-size: 11px; }
 #screen-staff .assignLead {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);

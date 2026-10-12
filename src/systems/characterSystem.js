@@ -14,6 +14,21 @@ const CARDS = {
   route: ['scrap', 'Route card'],
   tow: ['scrap', 'Tow card']
 };
+const TASKS = {
+  race: { label: 'Race crew', where: 'Race', blurb: 'More speed and coins while racing.' },
+  grip: { label: 'Grip coach', where: 'Race · Tune', blurb: 'Less wear while racing. Extra tune from Performance Bay.' },
+  fuel: { label: 'Fuel tech', where: 'Race · Fuel', blurb: 'Less fuel used while racing. Extra fuel from Fuel Run.' },
+  repair: { label: 'Pit crew', where: 'Race · Tools', blurb: 'Less damage while racing. Extra tools from Mobile Mechanic.' },
+  parts: { label: 'Parts bench', where: 'Parts', blurb: 'Extra parts from Parts Delivery and merges.' },
+  route: { label: 'Route lead', where: 'Business', blurb: 'Extra coins from Street Route and idle driving.' },
+  tow: { label: 'Tow desk', where: 'Towing', blurb: 'Extra scrap from Towing Job.' },
+  sales: { label: 'Sales floor', where: 'Showcase', blurb: 'Extra reputation from Dealer Showcase.' }
+};
+
+export function taskInfo(key) {
+  return TASKS[key] || null;
+}
+
 const DESKS = [
   { id: 'sales', roles: ['Sales'] },
   { id: 'service', roles: ['Mechanic', 'Tuner', 'Pit Crew'] },
@@ -57,6 +72,7 @@ function rowFor(state, character) {
   }
   if (typeof row.payRate !== 'number') row.payRate = 1;
   if (typeof row.hired !== 'boolean') row.hired = false;
+  if (typeof row.task !== 'string') row.task = '';
   if (typeof row.promotions !== 'number') row.promotions = 0;
   if (typeof row.lastChange !== 'string') row.lastChange = '';
   return row;
@@ -118,6 +134,7 @@ export function characterView(state, character) {
     cardLabel,
     cardActive: promotions > 0,
     hired: Boolean(row.hired),
+    task: TASKS[row.task] ? row.task : '',
     hireCost: { coins: 40 + level * 20 },
     upgradeCost: { coins: 30 + level * 15 },
     promoCost: promotions >= 5 ? null : { coins: 100 + (promotions + 1) * 90 },
@@ -184,6 +201,38 @@ export function promoteCharacter(state, id) {
   const next = characterView(state, character);
   const cardNote = row.promotions === 1 ? ` ${next.cardLabel} now costs 1 each payday.` : '';
   return { ok: true, message: `${character.name} promoted to ${title}. Bonus ${change}. Pay is now ${next.pay.coins} coins.${cardNote}` };
+}
+
+export function equipCrewTask(state, id, task) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} before assigning a task.` };
+  if (!task) {
+    row.task = '';
+    return { ok: true, message: `${character.name} is off task.` };
+  }
+  if (!TASKS[task] || !character.skills.some((skill) => skill.key === task)) {
+    return { ok: false, message: `${character.name} does not have that talent.` };
+  }
+  if ((row.energy || 0) <= 0) return { ok: false, message: `${character.name} is too tired to take a task.` };
+  row.task = task;
+  const info = TASKS[task];
+  return { ok: true, message: `${character.name} equipped ${info.label}. Helps ${info.where}.` };
+}
+
+export function crewTaskBonus(state, key) {
+  if (!TASKS[key]) return 0;
+  const rows = state.characters || {};
+  let total = 0;
+  for (const [id, row] of Object.entries(rows)) {
+    if (!row?.hired || row.task !== key || (row.energy || 0) <= 0) continue;
+    const character = characterById(id);
+    const skill = character?.skills.find((item) => item.key === key);
+    if (!skill) continue;
+    total += skillValue(skill, row.boosts?.[key]) / 100 * 0.35;
+  }
+  return Math.min(0.75, total);
 }
 
 export function setCrewPayRate(state, id, percent) {

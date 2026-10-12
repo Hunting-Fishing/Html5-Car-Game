@@ -3,7 +3,7 @@ import { personAssetForKey } from '../../data/worldAssetMap.js';
 import { CHARACTERS, characterById } from '../../data/characterRoster.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { costToText, canAfford } from '../../systems/economySystem.js';
-import { characterView, ensureCrewEmployment } from '../../systems/characterSystem.js';
+import { characterView, ensureCrewEmployment, taskInfo } from '../../systems/characterSystem.js';
 import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
@@ -193,6 +193,20 @@ function renderAvatar(person, className = 'staffAvatar') {
   return `<img class="${className}" src="${src}" alt="" loading="lazy">`;
 }
 
+function renderTasks(view) {
+  if (!view?.hired) return '<p class="taskNote">Hire them to equip a task.</p>';
+  const current = taskInfo(view.task);
+  const buttons = view.skills.map((skill) => {
+    const info = taskInfo(skill.key);
+    if (!info) return '';
+    const on = view.task === skill.key ? 'on' : '';
+    const bonus = Math.round(Math.min(35, skill.value * 0.35));
+    return `<button type="button" class="taskBtn ${on}" data-action="equipTask" data-staff="${view.id}" data-task="${skill.key}">${info.label}<small>+${bonus}% · ${info.where}</small></button>`;
+  }).join('');
+  const clear = view.task ? `<button type="button" class="taskBtn" data-action="equipTask" data-staff="${view.id}" data-task="">Unequip</button>` : '';
+  return `<div class="taskRow"><span>Task</span>${buttons}${clear}<small>${current ? current.blurb : 'Pick a task that matches a talent.'}</small></div>`;
+}
+
 function renderSalary(view) {
   if (!view?.hired) return '';
   const percent = Math.round(view.payRate * 100);
@@ -259,6 +273,7 @@ function renderDock(state, view, managerId) {
       ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
       <div class="staffPay"><span>Salary</span><b>${costToText({ coins: view.pay.coins })}</b><small>${card}</small></div>
       ${renderSalary(view)}
+      ${renderTasks(view)}
       <div class="assignDockActions">${hire}${fire}${makeManager}${upgrade}${promote}${jobButton}</div>
     </div>
   </div>`;

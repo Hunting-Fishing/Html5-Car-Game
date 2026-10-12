@@ -1,14 +1,20 @@
 import { RACE_MODES, PROBLEMS } from '../data/gameData.js';
 import { addCurrency, addXp, spendCost } from './economySystem.js';
+import { crewTaskBonus } from './characterSystem.js';
 
 export function getRaceStats(state) {
   const mode = RACE_MODES[state.race.mode] || RACE_MODES.street;
-  const tapPower = 6 + state.upgrades.tapCrew * 3.2 + state.buildings.testTrack * 2.2;
-  const idlePower = 0.7 + state.upgrades.idleDriver * 0.32 + state.buildings.companionHub * 0.15;
-  const rewardMult = 1 + state.upgrades.routeScout * 0.07 + state.buildings.testTrack * 0.09 + (state.lot?.owned?.billboard ? 0.08 : 0);
+  const raceBonus = crewTaskBonus(state, 'race');
+  const routeBonus = crewTaskBonus(state, 'route');
+  const gripBonus = crewTaskBonus(state, 'grip');
+  const fuelBonus = crewTaskBonus(state, 'fuel');
+  const repairBonus = crewTaskBonus(state, 'repair');
+  const tapPower = (6 + state.upgrades.tapCrew * 3.2 + state.buildings.testTrack * 2.2) * (1 + raceBonus);
+  const idlePower = (0.7 + state.upgrades.idleDriver * 0.32 + state.buildings.companionHub * 0.15) * (1 + routeBonus * 0.8 + raceBonus * 0.2);
+  const rewardMult = 1 + state.upgrades.routeScout * 0.07 + state.buildings.testTrack * 0.09 + (state.lot?.owned?.billboard ? 0.08 : 0) + raceBonus;
   const fuelMax = 100 + state.upgrades.fuelPlan * 12;
   const conditionMax = 100 + state.upgrades.pitKit * 10;
-  return { mode, tapPower, idlePower, rewardMult, fuelMax, conditionMax };
+  return { mode, tapPower, idlePower, rewardMult, fuelMax, conditionMax, raceBonus, routeBonus, gripBonus, fuelBonus, repairBonus };
 }
 
 export function tapRace(state) {
@@ -16,13 +22,13 @@ export function tapRace(state) {
   if (state.race.problem) return { ok: false, message: `Fix ${PROBLEMS[state.race.problem].label} first.` };
   const stats = getRaceStats(state);
   state.race.progress += stats.tapPower;
-  state.race.fuel -= stats.mode.fuelDrain * 1.25 * Math.max(0.5, 1 - state.upgrades.fuelPlan * 0.035);
-  state.race.condition -= stats.mode.conditionDrain * 1.05 * Math.max(0.5, 1 - state.upgrades.pitKit * 0.04);
+  state.race.fuel -= stats.mode.fuelDrain * 1.25 * Math.max(0.45, 1 - state.upgrades.fuelPlan * 0.035 - stats.fuelBonus);
+  state.race.condition -= stats.mode.conditionDrain * 1.05 * Math.max(0.45, 1 - state.upgrades.pitKit * 0.04 - stats.gripBonus - stats.repairBonus * 0.5);
   state.race.heat += stats.mode.heatGain * Math.max(0.45, 1 - state.upgrades.routeScout * 0.045);
   state.race.lifetimeMeters += stats.tapPower;
   state.objectives.firstTap = true;
   state.daily.taps = (state.daily.taps || 0) + 1;
-  addCurrency(state, 'coins', 1.5 + state.upgrades.tapCrew * 1.1);
+  addCurrency(state, 'coins', (1.5 + state.upgrades.tapCrew * 1.1) * (1 + stats.raceBonus));
   checkRaceState(state);
   return { ok: true, message: `+${Math.round(stats.tapPower)}m route boost.` };
 }
@@ -34,11 +40,11 @@ export function tickRace(state, dt) {
   const stats = getRaceStats(state);
   const distance = stats.idlePower * dt * 4.2;
   state.race.progress += distance;
-  state.race.fuel -= stats.mode.fuelDrain * dt * Math.max(0.48, 1 - state.upgrades.fuelPlan * 0.04);
-  state.race.condition -= stats.mode.conditionDrain * dt * Math.max(0.5, 1 - state.upgrades.pitKit * 0.045);
+  state.race.fuel -= stats.mode.fuelDrain * dt * Math.max(0.4, 1 - state.upgrades.fuelPlan * 0.04 - stats.fuelBonus);
+  state.race.condition -= stats.mode.conditionDrain * dt * Math.max(0.4, 1 - state.upgrades.pitKit * 0.045 - stats.gripBonus - stats.repairBonus * 0.5);
   state.race.heat += stats.mode.heatGain * dt * Math.max(0.45, 1 - state.upgrades.routeScout * 0.05);
   state.race.lifetimeMeters += distance;
-  addCurrency(state, 'coins', (0.16 + state.upgrades.idleDriver * 0.06) * dt);
+  addCurrency(state, 'coins', (0.16 + state.upgrades.idleDriver * 0.06) * dt * (1 + stats.routeBonus));
   checkRaceState(state, dt);
 }
 
