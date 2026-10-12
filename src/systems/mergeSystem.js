@@ -5,6 +5,8 @@ function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
+const BOARD_SIZE = 42;
+
 export function unlockedChainKeys(state) {
   const keys = ['original', 'tools'];
   if (state.buildings.tuningCorner > 0 || state.lot?.owned?.tuningCorner) keys.push('performance');
@@ -14,7 +16,7 @@ export function unlockedChainKeys(state) {
 
 export function boardLimit(state) {
   const lot = state.lot?.owned?.partsStorage ? 4 : 0;
-  return 8 + state.upgrades.supplierShelf * 2 + state.buildings.partsStorage * 4 + lot;
+  return Math.min(BOARD_SIZE, 12 + state.upgrades.supplierShelf * 2 + state.buildings.partsStorage * 4 + lot);
 }
 
 export function shelfCapacity(state) {
@@ -22,9 +24,8 @@ export function shelfCapacity(state) {
 }
 
 export function normalizeMergeState(state) {
-  const boardSize = 16;
-  while (state.merge.board.length < boardSize) state.merge.board.push(null);
-  if (state.merge.board.length > boardSize) state.merge.board = state.merge.board.slice(0, boardSize);
+  while (state.merge.board.length < BOARD_SIZE) state.merge.board.push(null);
+  if (state.merge.board.length > BOARD_SIZE) state.merge.board = state.merge.board.slice(0, BOARD_SIZE);
   const shelfSize = shelfCapacity(state);
   while (state.merge.supplierSlots.length < shelfSize) state.merge.supplierSlots.push(null);
   if (state.merge.supplierSlots.length > shelfSize) state.merge.supplierSlots = state.merge.supplierSlots.slice(0, shelfSize);
@@ -37,6 +38,10 @@ export function normalizeMergeState(state) {
   if (state.merge.board.every(cell => !cell) && state.merge.totalMerges === 0) {
     state.merge.board[0] = makeItem('original', 1, 'generator');
     state.merge.board[1] = makeItem('tools', 1, 'generator');
+    // Seed a few cobwebs on early open slots
+    for (let i = 2; i < 6; i += 1) {
+      if (!state.merge.board[i]) state.merge.board[i] = makeCobweb();
+    }
   }
 }
 
@@ -54,12 +59,15 @@ export function makeItem(chain, level = 1, type = 'product') {
   return item;
 }
 
+export function makeCobweb() {
+  return { id: uid(), type: 'cobweb' };
+}
+
 export function randomStarterItem(state) {
   const keys = unlockedChainKeys(state);
   const chain = keys[Math.floor(Math.random() * keys.length)];
-  if (Math.random() < 0.12) {
-    return makeItem(chain, 1, 'generator');
-  }
+  if (Math.random() < 0.08) return makeCobweb();
+  if (Math.random() < 0.12) return makeItem(chain, 1, 'generator');
   return makeItem(chain, 1, 'product');
 }
 
@@ -88,7 +96,7 @@ export function placeSupplierItem(state, shelfIndex) {
   const item = state.merge.supplierSlots[shelfIndex];
   if (!item) return { ok: false, message: 'Shelf slot is empty.' };
   if (activeBoardCount(state) >= boardLimit(state)) return { ok: false, message: 'Board permit full. Merge or build Parts Storage on the Lot.' };
-  const empty = state.merge.board.findIndex((cell) => !cell);
+  const empty = state.merge.board.findIndex((cell, i) => i < boardLimit(state) && !cell);
   if (empty < 0) return { ok: false, message: 'Merge board is full.' };
   state.merge.board[empty] = item;
   state.merge.supplierSlots[shelfIndex] = null;
@@ -107,10 +115,11 @@ export function placeAllReady(state) {
 }
 
 export function selectOrMergeCell(state, index) {
+  if (index >= boardLimit(state)) return { ok: false, message: 'Slot locked.' };
   const selected = state.merge.selectedIndex;
   const target = state.merge.board[index];
   if (selected === null || selected === undefined) {
-    if (target) state.merge.selectedIndex = index;
+    if (target && target.type !== 'cobweb') state.merge.selectedIndex = index;
     return { ok: true, message: '' };
   }
   if (selected === index) {
@@ -121,6 +130,9 @@ export function selectOrMergeCell(state, index) {
   if (!source) {
     state.merge.selectedIndex = null;
     return { ok: false, message: 'Selected slot is empty.' };
+  }
+  if (target && target.type === 'cobweb') {
+    return { ok: false, message: 'Clear the cobweb first.' };
   }
   if (!target) {
     state.merge.board[index] = source;
@@ -143,12 +155,23 @@ export function selectOrMergeCell(state, index) {
   return { ok: true, message: 'Swapped items.' };
 }
 
+export function clearCobweb(state, index) {
+  normalizeMergeState(state);
+  const item = state.merge.board[index];
+  if (!item || item.type !== 'cobweb') return { ok: false, message: 'Nothing to clear.' };
+  if ((state.merge.energy || 0) < 1) return { ok: false, message: 'Need 1 energy to clear cobweb.' };
+  state.merge.energy -= 1;
+  state.merge.board[index] = null;
+  return { ok: true, message: 'Cleared cobweb.' };
+}
+
 export function sellSelected(state) {
   const selected = state.merge.selectedIndex;
   if (selected === null || selected === undefined || !state.merge.board[selected]) {
     return { ok: false, message: 'Select an item first.' };
   }
   const item = state.merge.board[selected];
+  if (item.type === 'cobweb') return { ok: false, message: 'Clear cobwebs instead of selling.' };
   const value = item.level * 6;
   addCurrency(state, 'scrap', Math.max(1, Math.floor(item.level / 2)));
   addCurrency(state, 'coins', value);
@@ -159,10 +182,11 @@ export function sellSelected(state) {
 
 export function autoMergeOnce(state) {
   const board = state.merge.board;
-  for (let i = 0; i < board.length; i += 1) {
-    if (!board[i]) continue;
-    for (let j = i + 1; j < board.length; j += 1) {
-      if (!board[j]) continue;
+  const limit = boardLimit(state);
+  for (let i = 0; i < limit; i += 1) {
+    if (!board[i] || board[i].type === 'cobweb') continue;
+    for (let j = i + 1; j < limit; j += 1) {
+      if (!board[j] || board[j].type === 'cobweb') continue;
       if (board[i].chain === board[j].chain && board[i].level === board[j].level) {
         const mergedType = board[i].type === 'generator' || board[j].type === 'generator' ? 'generator' : 'product';
         const merged = makeItem(board[i].chain, board[i].level + 1, mergedType);
@@ -184,7 +208,7 @@ export function tapGenerator(state, index) {
   const cost = item.energyCost || 1;
   if (state.merge.energy < cost) return { ok: false, message: 'Not enough energy.' };
   if (activeBoardCount(state) >= boardLimit(state)) return { ok: false, message: 'Board full. Merge or sell first.' };
-  const empty = state.merge.board.findIndex((cell) => !cell);
+  const empty = state.merge.board.findIndex((cell, i) => i < boardLimit(state) && !cell);
   if (empty < 0) return { ok: false, message: 'No empty slot.' };
   state.merge.energy -= cost;
   const product = makeItem(item.chain, 1, 'product');
@@ -293,13 +317,14 @@ export function freeEnergyRefill(state) {
 
 export function getTutorialHint(state) {
   if (!state.objectives?.firstGeneratorTap) return 'Tap a highlighted generator to produce items.';
-  if (!state.objectives?.firstMerge) return 'Drag or tap two matching items to merge.';
+  if (!state.objectives?.firstMerge) return 'Tap two matching items to merge.';
   if (!state.objectives?.firstDelivery) return 'Fill a customer order and tap Deliver for rewards.';
-  return '';
+  return 'Tap cobwebs to clear them (costs 1 energy).';
 }
 
 export function itemDisplayName(item) {
   if (!item) return '';
+  if (item.type === 'cobweb') return 'Cobweb';
   if (item.type === 'generator') {
     const gen = GENERATORS[item.generatorKey] || Object.values(GENERATORS)[0];
     return `${gen.label} L${item.level}`;
