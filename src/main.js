@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=70';
+import './ui/roadRunnerRuntime.js?v=71';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -38,7 +38,7 @@ import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
 import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, fireLineManager, toggleLineAutoCollect, getLineState } from './systems/idleLineSystem.js';
 import { characterForLine } from './data/characterRoster.js';
-import { trainCharacter, useCharacter, upgradeCharacter, promoteCharacter, tickPayroll, hireCharacter, fireCharacter } from './systems/characterSystem.js';
+import { trainCharacter, useCharacter, upgradeCharacter, promoteCharacter, tickPayroll, hireCharacter, fireCharacter, setCrewPayRate } from './systems/characterSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
 const WEBSITE_URL = 'https://www.365motorsales.com';
@@ -107,6 +107,32 @@ function boot() {
   mountShell(root, { screens: SCREENS });
   render();
   root.addEventListener('click', handleClick);
+  root.addEventListener('input', (event) => {
+    const input = event.target.closest('[data-salary]');
+    if (!input) return;
+    const rate = Number(input.value) / 100;
+    const coins = Math.max(1, Math.round(Number(input.dataset.base) * rate));
+    const box = input.closest('.salarySlide');
+    const readout = box?.querySelector('[data-salary-readout]');
+    const mood = box?.querySelector('[data-salary-mood]');
+    if (readout) readout.textContent = `${input.value}% · ${coins} coins`;
+    if (mood) mood.textContent = rate < 1 ? 'Underpaid. Energy drops on payday.' : rate > 1 ? 'Raise. Energy recovers on payday.' : 'Fair pay.';
+    root.querySelectorAll(`[data-salary][data-staff="${input.dataset.staff}"]`).forEach((other) => {
+      if (other === input) return;
+      other.value = input.value;
+      const otherBox = other.closest('.salarySlide');
+      const otherReadout = otherBox?.querySelector('[data-salary-readout]');
+      const otherMood = otherBox?.querySelector('[data-salary-mood]');
+      if (otherReadout) otherReadout.textContent = `${input.value}% · ${coins} coins`;
+      if (otherMood && mood) otherMood.textContent = mood.textContent;
+    });
+  });
+  root.addEventListener('change', (event) => {
+    const input = event.target.closest('[data-salary]');
+    if (!input) return;
+    setCrewPayRate(state, input.dataset.staff, Number(input.value));
+    queueSave();
+  });
   window.addEventListener('roadRunnerFirstGas', handleRoadRunnerFirstGas);
   window.addEventListener('roadRunnerGhostPreview', handleRoadRunnerGhostPreview);
   requestAnimationFrame(gameLoop);

@@ -193,9 +193,15 @@ function renderAvatar(person, className = 'staffAvatar') {
   return `<img class="${className}" src="${src}" alt="" loading="lazy">`;
 }
 
-function renderStars(level) {
-  const filled = starsFor(level);
-  return `<span class="assignStars" aria-label="${filled} of 5 stars">${'★'.repeat(filled)}${'☆'.repeat(5 - filled)}</span>`;
+function renderSalary(view) {
+  if (!view?.hired) return '';
+  const percent = Math.round(view.payRate * 100);
+  const mood = view.payRate < 1 ? 'Underpaid. Energy drops on payday.' : view.payRate > 1 ? 'Raise. Energy recovers on payday.' : 'Fair pay.';
+  return `<label class="salarySlide">
+    <span>Salary <b data-salary-readout>${percent}% · ${view.pay.coins} coins</b></span>
+    <input type="range" min="50" max="200" step="5" value="${percent}" data-salary data-staff="${view.id}" data-base="${view.basePay}" aria-label="Salary for ${view.name}">
+    <small data-salary-mood>${mood}</small>
+  </label>`;
 }
 
 function renderAssignCard(view, managerId) {
@@ -252,6 +258,7 @@ function renderDock(state, view, managerId) {
       ${renderBars(view)}
       ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
       <div class="staffPay"><span>Salary</span><b>${costToText({ coins: view.pay.coins })}</b><small>${card}</small></div>
+      ${renderSalary(view)}
       <div class="assignDockActions">${hire}${fire}${makeManager}${upgrade}${promote}${jobButton}</div>
     </div>
   </div>`;
@@ -273,6 +280,7 @@ function renderDesk(state, desk) {
     </button>`;
   return `<section class="assignDesk ${desk.id} ${open ? 'picking' : ''}">
     ${head}
+    ${lead ? renderSalary(lead) : ''}
     <button type="button" class="assignChange" data-action="${open ? 'cancelChangeManager' : 'beginChangeManager'}" data-desk="${desk.id}">${open ? 'Cancel' : 'Change'}</button>
     ${grid}
   </section>`;

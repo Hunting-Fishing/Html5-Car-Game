@@ -55,6 +55,7 @@ function rowFor(state, character) {
     });
     row.boostReady = true;
   }
+  if (typeof row.payRate !== 'number') row.payRate = 1;
   if (typeof row.hired !== 'boolean') row.hired = false;
   if (typeof row.promotions !== 'number') row.promotions = 0;
   if (typeof row.lastChange !== 'string') row.lastChange = '';
@@ -93,7 +94,9 @@ export function characterView(state, character) {
   }));
   const promotions = row.promotions || 0;
   const [cardKey, cardLabel] = benefitFor(character);
-  const pay = { coins: 5 + level * 2 + promotions * 6 };
+  const basePay = 5 + level * 2 + promotions * 6;
+  const payRate = Math.max(0.5, Math.min(2, row.payRate || 1));
+  const pay = { coins: Math.max(1, Math.round(basePay * payRate)) };
   if (promotions > 0) pay[cardKey] = 1;
   return {
     ...character,
@@ -108,6 +111,8 @@ export function characterView(state, character) {
     energyMax: character.energy,
     skills,
     lastChange: row.lastChange || '',
+    basePay,
+    payRate,
     pay,
     cardKey,
     cardLabel,
@@ -179,6 +184,16 @@ export function promoteCharacter(state, id) {
   const next = characterView(state, character);
   const cardNote = row.promotions === 1 ? ` ${next.cardLabel} now costs 1 each payday.` : '';
   return { ok: true, message: `${character.name} promoted to ${title}. Bonus ${change}. Pay is now ${next.pay.coins} coins.${cardNote}` };
+}
+
+export function setCrewPayRate(state, id, percent) {
+  const character = characterById(id);
+  if (!character) return { ok: false };
+  const row = rowFor(state, character);
+  const rate = Math.max(0.5, Math.min(2, Math.round(Number(percent) || 100) / 100));
+  row.payRate = Math.round(rate * 20) / 20;
+  const view = characterView(state, character);
+  return { ok: true, coins: view.pay.coins, rate: view.payRate };
 }
 
 function deskForRole(role) {
@@ -259,6 +274,9 @@ export function tickPayroll(state, dt) {
     }
     if (!bill.coins) continue;
     spendCost(state, bill);
+    const row = rowFor(state, character);
+    if (view.payRate < 1) row.energy = Math.max(0, view.energy - 6);
+    else if (view.payRate > 1) row.energy = Math.min(character.energy, view.energy + 4);
     people += 1;
     for (const [key, amount] of Object.entries(bill)) spent[key] = (spent[key] || 0) + amount;
   }

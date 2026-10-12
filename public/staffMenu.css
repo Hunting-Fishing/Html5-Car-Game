@@ -19,7 +19,13 @@
 #screen-staff .assignDesk.service { border-left-color: #2f7dff; }
 #screen-staff .assignDesk.parts { border-left-color: #e0a325; }
 #screen-staff .assignDesk.drive { border-left-color: #3ddc84; }
+#screen-staff .assignDesk .salarySlide,
 #screen-staff .assignDesk .assignGrid { grid-column: 1 / -1; }
+#screen-staff .salarySlide { display: grid; gap: 3px; }
+#screen-staff .salarySlide span { color: #9fd8ff; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .salarySlide b { color: #fff; font-size: 12px; letter-spacing: 0; text-transform: none; }
+#screen-staff .salarySlide small { color: #d5e7f2; font-size: 11px; }
+#screen-staff .salarySlide input[type='range'] { width: 100%; accent-color: #3ddc84; }
 #screen-staff .assignLead {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
