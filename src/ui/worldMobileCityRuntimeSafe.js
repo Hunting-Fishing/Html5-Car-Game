@@ -198,6 +198,7 @@ const tradeCache = {};
 const purseCache = {};
 const spentBond = new Set();
 let lastBondNote = '';
+let lastReputationDelta = 0;
 
 const CITY_PROBLEM_DEFS = {
   mapBuild: { label: 'Built Map', type: 'streetKiosk', types: [], help: 'More placed services make the city feel complete.' },
@@ -631,6 +632,7 @@ function html() {
         <div class="mobileCityStatus">
           <span class="mobileCityModeBadge" data-mobile-city-mode>Normal</span>
           <span data-mobile-city-help>Tap buildings to collect, inspect, and upgrade.</span>
+          <div class="cityReputation" data-city-reputation><b data-city-reputation-rank>Unknown</b><span><i data-city-reputation-bar></i></span><small data-city-reputation-score>0</small></div>
           <div class="mobileMapTools">
             <button class="btn small primary" onclick="window.openMobileBuildTraySafe?.()">Build</button>
             <button class="btn small ghost" onclick="window.centerMobileCitySafe?.()">Center</button>
@@ -1135,10 +1137,10 @@ const NPC_MARKET = {
 };
 
 function tradeRate(score) {
-  if (score >= 70) return 0.25;
-  if (score >= 40) return 0.15;
-  if (score >= 20) return 0.05;
-  return 0;
+  const personal = score >= 70 ? 0.25 : score >= 40 ? 0.15 : score >= 20 ? 0.05 : 0;
+  const city = cityReputation();
+  const civic = city >= 85 ? 0.1 : city >= 60 ? 0.06 : city >= 35 ? 0.03 : 0;
+  return Math.min(0.35, personal + civic);
 }
 
 function tradeBook(id) {
@@ -1223,7 +1225,8 @@ window.tradeWithNpc = (id, side, key) => {
         spentBond.add(spentKey);
         shiftRelationship(id, person.name, 2);
       }
-      lastBondNote = side === 'sell' ? `Bought ${item.name}` : `Sold ${item.name}`;
+      lastBondNote = `${side === 'sell' ? 'Bought' : 'Sold'} ${item.name}${lastReputationDelta ? ` · Rep ${lastReputationDelta > 0 ? '+' : ''}${lastReputationDelta}` : ''}`;
+      lastReputationDelta = 0;
       window.dispatchEvent(new CustomEvent('npc-trade', {
         detail: { id, pay, gain, stock, note: lastBondNote }
       }));
@@ -1246,6 +1249,23 @@ function relationshipRank(score) {
   return 'Stranger';
 }
 
+let reputationCache = null;
+
+function cityReputation() {
+  if (typeof reputationCache === 'number') return reputationCache;
+  const save = readSupplyState();
+  reputationCache = Math.max(0, Math.min(100, Number(save.reputation || 0)));
+  return reputationCache;
+}
+
+function reputationTitle(score) {
+  if (score >= 85) return 'Famous';
+  if (score >= 60) return 'Respected';
+  if (score >= 35) return 'Known';
+  if (score >= 15) return 'Local';
+  return 'Unknown';
+}
+
 function bondFor(choice) {
   if (choice.screen === 'close') return 0;
   if (choice.id === 'later' || choice.next === 'brush') return -5;
@@ -1260,7 +1280,12 @@ function shiftRelationship(id, name, delta) {
   let gift = null;
   if (score >= 70 && prev < 70) gift = 'partner';
   else if (score >= 40 && prev < 40) gift = 'friend';
-  window.dispatchEvent(new CustomEvent('npc-relationship', { detail: { id, name, score, delta, gift } }));
+  const repDelta = delta > 0 ? Math.max(1, Math.round(delta / 2)) : Math.min(-1, Math.round(delta / 2));
+  const reputation = Math.max(0, Math.min(100, cityReputation() + repDelta));
+  reputationCache = reputation;
+  lastReputationDelta = repDelta;
+  window.dispatchEvent(new CustomEvent('npc-relationship', { detail: { id, name, score, delta, gift, reputation } }));
+  updateHud();
   return score;
 }
 
@@ -1279,7 +1304,9 @@ window.replyToNpc = (id, choiceId) => {
     const gained = delta > 0 && spentBond.has(spentKey) ? 0 : delta;
     if (delta > 0) spentBond.add(spentKey);
     if (gained) shiftRelationship(id, person.name, gained);
-    lastBondNote = gained > 0 ? `Trust +${gained}` : gained < 0 ? `Trust ${gained}` : '';
+    const repBit = lastReputationDelta ? ` · Rep ${lastReputationDelta > 0 ? '+' : ''}${lastReputationDelta}` : '';
+    lastBondNote = gained > 0 ? `Trust +${gained}${repBit}` : gained < 0 ? `Trust ${gained}${repBit}` : '';
+    lastReputationDelta = 0;
     if (choice.next) npcStep[id] = choice.next;
     if (choice.screen === 'close') {
       window.closeMobileResidentSheetSafe?.();
@@ -1496,6 +1523,13 @@ function updateHud() {
     const sync = getBuildSync();
     syncLines.textContent = `${sync?.unlockedLineCount || 0}/${sync?.totalLineCount || 0} linked supplies`;
   }
+  const repScore = cityReputation();
+  const repRank = document.querySelector('[data-city-reputation-rank]');
+  const repBar = document.querySelector('[data-city-reputation-bar]');
+  const repValue = document.querySelector('[data-city-reputation-score]');
+  if (repRank) repRank.textContent = reputationTitle(repScore);
+  if (repBar) repBar.style.width = `${repScore}%`;
+  if (repValue) repValue.textContent = String(repScore);
   document.querySelectorAll('[data-building-key]').forEach((button) => {
     const key = button.getAttribute('data-building-key');
     button.classList.toggle('primary', key === selectedKey);

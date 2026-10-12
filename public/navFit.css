@@ -815,6 +815,10 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .npcTradeRow { display: flex; justify-content: space-between; gap: 8px; min-height: 36px; padding: 6px 8px; border: 0; border-radius: 10px; background: #1c4668; color: #fff; text-align: left; }
 .npcTradeRow span { color: #f6c445; font-size: 11px; font-weight: 800; }
 .npcTradeRow:disabled { opacity: .45; }
+.cityReputation { display: grid; grid-template-columns: 78px minmax(0, 1fr) 24px; gap: 6px; align-items: center; min-width: 0; }
+.cityReputation b, .cityReputation small { color: #f6c445; font-size: 11px; }
+.cityReputation span { height: 8px; border-radius: 99px; background: #123044; overflow: hidden; }
+.cityReputation i { display: block; height: 100%; width: 0; background: #7dd3fc; }
 #screen-lines .adcapBuyBar {
   position: sticky;
   top: 0;

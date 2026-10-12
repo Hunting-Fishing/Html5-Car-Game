@@ -25,14 +25,14 @@
     <link rel="stylesheet" href="./linesAssetRuntime.css" />
     <link rel="stylesheet" href="./worldAssetRuntime.css" />
     <link rel="stylesheet" href="./buildAssetRuntime.css" />
-    <link rel="stylesheet" href="./navFit.css?v=46" />
+    <link rel="stylesheet" href="./navFit.css?v=47" />
     <title>365 Micro Garage Companion</title>
   </head>
   <body>
     <div id="app"></div>
     <script>
       (function () {
-        var key = 'mg-map-clear-46';
+        var key = 'mg-map-clear-47';
         if (localStorage.getItem(key) === '1' || !('serviceWorker' in navigator)) return;
         navigator.serviceWorker.getRegistrations().then(function (regs) {
           return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
@@ -48,6 +48,6 @@
         });
       })();
     </script>
-    <script type="module" src="./src/main.js?v=46"></script>
+    <script type="module" src="./src/main.js?v=47"></script>
   </body>
 </html>

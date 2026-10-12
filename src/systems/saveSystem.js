@@ -53,6 +53,7 @@ function reconcile(base, saved) {
     relationships: { ...(base.relationships || {}), ...(saved.relationships || {}) },
     relationshipGifts: { ...(base.relationshipGifts || {}), ...(saved.relationshipGifts || {}) },
     npcTrade: { ...(base.npcTrade || {}), ...(saved.npcTrade || {}) },
+    reputation: Number.isFinite(saved.reputation) ? saved.reputation : (base.reputation || 0),
     tips: { ...base.tips, ...(saved.tips || {}) }
   };
 }

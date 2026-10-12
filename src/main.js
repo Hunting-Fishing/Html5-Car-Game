@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=46';
+import './ui/roadRunnerRuntime.js?v=47';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -422,6 +422,21 @@ window.addEventListener('npc-relationship', (event) => {
   const { id, name, score, gift } = event.detail || {};
   if (!id) return;
   state.relationships = { ...(state.relationships || {}), [id]: score };
+  const prevReputation = Number(state.reputation || 0);
+  if (typeof event.detail.reputation === 'number') state.reputation = event.detail.reputation;
+  state.relationshipGifts = state.relationshipGifts || {};
+  [
+    { at: 35, key: 'known', coins: 25, label: 'Known' },
+    { at: 60, key: 'respected', coins: 60, label: 'Respected' },
+    { at: 85, key: 'famous', coins: 100, label: 'Famous' }
+  ].forEach((rank) => {
+    const giftKey = `city:${rank.key}`;
+    if (prevReputation < rank.at && state.reputation >= rank.at && !state.relationshipGifts[giftKey]) {
+      state.relationshipGifts[giftKey] = true;
+      addCurrency(state, 'coins', rank.coins);
+      toast(`City reputation: ${rank.label}. +${rank.coins} coins.`);
+    }
+  });
   if (gift) {
     state.relationshipGifts = state.relationshipGifts || {};
     const key = `${id}:${gift}`;
