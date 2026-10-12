@@ -7,6 +7,7 @@ export function ensureIdleLineState(state) {
   if (!state.idleLines.managers) state.idleLines.managers = {};
   if (!state.idleLines.autoCollect) state.idleLines.autoCollect = {};
   if (typeof state.idleLines.lifetimeCollections !== 'number') state.idleLines.lifetimeCollections = 0;
+  if (![1, 10, 100, 'max'].includes(state.idleLines.buyQty)) state.idleLines.buyQty = 1;
 
   IDLE_LINES.forEach((line) => {
     if (!state.idleLines.lines[line.key]) {
@@ -70,8 +71,34 @@ export function unlockText(line) {
 
 export function getLineUpgradeCost(state, line) {
   const level = getLineState(state, line.key).level;
+  return nextLevelCost(line, level);
+}
+
+function nextLevelCost(line, level) {
   const value = Math.floor(line.baseCost * Math.pow(line.costRate, level));
   return { [line.costResource || 'coins']: Math.max(1, value) };
+}
+
+export function quoteLineUpgrade(state, line, qty = 1) {
+  const start = getLineState(state, line.key).level;
+  const resource = line.costResource || 'coins';
+  const wanted = qty === 'max' ? maxAffordableLevels(state, line, start, resource) : Math.max(1, Number(qty) || 1);
+  const count = Math.max(1, wanted);
+  const cost = { [resource]: 0 };
+  for (let i = 0; i < count; i += 1) cost[resource] += nextLevelCost(line, start + i)[resource];
+  return { count: wanted > 0 ? count : 0, cost, affordable: wanted > 0 && canAfford(state, cost) };
+}
+
+function maxAffordableLevels(state, line, start, resource) {
+  let purse = state.currencies?.[resource] || 0;
+  let count = 0;
+  while (count < 500) {
+    const price = nextLevelCost(line, start + count)[resource];
+    if (purse < price) break;
+    purse -= price;
+    count += 1;
+  }
+  return count;
 }
 
 export function getManagerCost(state, line) {
@@ -149,15 +176,15 @@ export function collectIdleLine(state, lineKey) {
   return { ok: true, message: `${line.name}: +${reward.amount} ${reward.label}.` };
 }
 
-export function buyLineUpgrade(state, lineKey) {
+export function buyLineUpgrade(state, lineKey, qty = 1) {
   const line = getLineDef(lineKey);
   if (!line) return { ok: false, message: 'Unknown income line.' };
   if (!isLineUnlocked(state, line)) return { ok: false, message: unlockText(line) };
-  const cost = getLineUpgradeCost(state, line);
-  if (!canAfford(state, cost)) return { ok: false, message: 'Not enough resources for this line.' };
-  spendCost(state, cost);
+  const quote = quoteLineUpgrade(state, line, qty);
+  if (!quote.affordable) return { ok: false, message: 'Not enough resources for this buy.' };
+  spendCost(state, quote.cost);
   const current = getLineState(state, line.key);
-  current.level += 1;
+  current.level += quote.count;
   state.objectives.idleLineUpgrade = true;
   return { ok: true, message: `${line.name} upgraded to Lv ${current.level}.` };
 }

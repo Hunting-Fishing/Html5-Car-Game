@@ -20,6 +20,7 @@ import {
   hasManager,
   isAutoCollectEnabled,
   isLineUnlocked,
+  quoteLineUpgrade,
   unlockText
 } from '../../systems/idleLineSystem.js';
 
@@ -30,10 +31,14 @@ export function renderLinesScreen(state) {
 
   return ScreenFrame({
     title: 'Supplies',
-    subtitle: 'Buy levels, wait for the bar, collect. Hire a manager to auto-collect.',
+    subtitle: 'Buy a stack, watch the bar, then collect. Hire a manager and it keeps running.',
     badge: `${buildComm.unlockedLineCount}/${buildComm.totalLineCount}`,
     className: 'linesCompactFrame',
     body: `
+      <div class="adcapBuyBar" role="group" aria-label="Buy amount">
+        <span>Buy</span>
+        ${[1, 10, 100, 'max'].map((qty) => `<button type="button" class="${state.idleLines.buyQty === qty ? 'active' : ''}" data-action="lineBuyQty" data-qty="${qty}">${qty === 'max' ? 'Max' : `x${qty}`}</button>`).join('')}
+      </div>
       <div class="capitalistList">
         ${lines.map((item) => renderCapitalistLine(state, item)).join('')}
       </div>
@@ -247,24 +252,33 @@ function renderManagerRequirement(state, line, level, managerOwned, managerCost,
 }
 
 function renderCapitalistLine(state, item) {
-  const { line, current, unlocked, level, cycleMs, income, upgradeCost, collectReady, upgradeAffordable, managerOwned, managerCost } = item;
+  const { line, current, unlocked, level, cycleMs, income, collectReady, managerOwned, autoEnabled } = item;
+  const qty = state.idleLines.buyQty || 1;
+  const quote = unlocked ? quoteLineUpgrade(state, line, qty) : null;
   const progress = unlocked ? Math.min(100, Math.round((current.cycle / Math.max(1, cycleMs)) * 100)) : 0;
   const guideTarget = line.key === 'streetRoute' && !state.objectives?.idleLineUpgrade ? ' data-guide-target="upgradeStreetRoute"' : '';
-  const secondsLeft = unlocked ? Math.max(0, (cycleMs - current.cycle) / 1000).toFixed(1) : '';
+  const running = managerOwned && autoEnabled;
+  const barLabel = !unlocked ? 'Locked' : collectReady && !running ? 'Collect' : `+${fmt(income)}`;
+  const canHire = unlocked && !managerOwned && level >= line.manager.unlockLevel && canAfford(state, item.managerCost);
+  const managerAction = managerOwned ? 'toggleLineAuto' : 'buyManager';
+  const managerLabel = managerOwned
+    ? `<b>${line.manager.name.split(' ')[0]}</b><small>${autoEnabled ? 'Auto' : 'Off'}</small>`
+    : canHire
+      ? `<b>Hire</b><small>${costToText(item.managerCost)}</small>`
+      : `<b>Lv ${line.manager.unlockLevel}</b><small>Mgr</small>`;
   return `
     <article class="adcapRow ${unlocked ? '' : 'lockedLine'}" data-line-key="${line.key}">
       <div class="adcapIcon">${renderLineIcon(line)}<b>${level}</b></div>
-      <button class="adcapBuy" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${upgradeAffordable ? '' : 'disabled'}>
-        <b>${unlocked ? costToText(upgradeCost) : 'Locked'}</b>
-        <small>${unlocked ? `+${fmt(income)} ${line.outputLabel}` : unlockText(line)}</small>
+      <button class="adcapBuy" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${quote?.affordable ? '' : 'disabled'}>
+        <b>${line.name}</b>
+        <small>${unlocked ? `${qty === 'max' ? `x${quote.count || 1}` : `x${qty}`} ${costToText(quote.cost)}` : unlockText(line)}</small>
       </button>
-      <button class="adcapTrack" data-action="collectLine" data-line="${line.key}" ${collectReady ? '' : 'disabled'}>
+      <button class="adcapTrack ${collectReady && !running ? 'ready' : ''} ${running ? 'auto' : ''}" data-action="collectLine" data-line="${line.key}" ${collectReady && !running ? '' : 'disabled'}>
         <span class="adcapFill" data-line-progress style="width:${progress}%"></span>
-        <em>${collectReady ? 'Collect' : secondsLeft ? `${secondsLeft}s` : 'Locked'}</em>
+        <em>${barLabel}</em>
       </button>
-      <button class="adcapManager" data-action="buyManager" data-line="${line.key}" ${unlocked && !managerOwned && level >= line.manager.unlockLevel ? '' : 'disabled'}>
-        <b>${managerOwned ? 'On' : level}</b>
-        <small>${managerOwned ? 'Auto' : 'Mgr'}</small>
+      <button class="adcapManager ${managerOwned ? 'hired' : ''}" data-action="${managerAction}" data-line="${line.key}" ${managerOwned || canHire ? '' : 'disabled'}>
+        ${managerLabel}
       </button>
     </article>
   `;
@@ -281,11 +295,15 @@ export function updateLineBars(state) {
     const progress = Math.min(100, (current.cycle / Math.max(1, cycleMs)) * 100);
     const fill = row.querySelector('[data-line-progress]');
     const label = row.querySelector('.adcapTrack em');
-    const canCollect = canCollectLine(state, line);
+    const running = hasManager(state, line.key) && isAutoCollectEnabled(state, line.key);
+    const canCollect = canCollectLine(state, line) && !running;
     if (canCollect) ready += 1;
     if (fill) fill.style.width = `${progress}%`;
-    if (label) label.textContent = canCollect ? 'Collect' : `${Math.max(0, (cycleMs - current.cycle) / 1000).toFixed(1)}s`;
-    row.querySelector('.adcapTrack')?.toggleAttribute('disabled', !canCollect);
+    if (label) label.textContent = !isLineUnlocked(state, line) ? 'Locked' : canCollect ? 'Collect' : `+${fmt(getLineIncome(state, line))}`;
+    const track = row.querySelector('.adcapTrack');
+    track?.classList.toggle('ready', canCollect);
+    track?.classList.toggle('auto', running);
+    track?.toggleAttribute('disabled', !canCollect);
   });
 }
 

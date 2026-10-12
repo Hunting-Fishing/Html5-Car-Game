@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=40';
+import './ui/roadRunnerRuntime.js?v=41';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -284,6 +284,15 @@ function handleClick(event) {
     return;
   }
 
+  if (action === 'lineBuyQty') {
+    const qty = target.dataset.qty === 'max' ? 'max' : Number(target.dataset.qty);
+    ensureIdleLineState(state);
+    state.idleLines.buyQty = [1, 10, 100, 'max'].includes(qty) ? qty : 1;
+    render();
+    queueSave();
+    return;
+  }
+
   if (action === 'garageTab') {
     state.garage = state.garage || {};
     const tab = target.dataset.tab;
@@ -322,7 +331,7 @@ function handleClick(event) {
   if (action === 'raceMode') result = changeRaceMode(state, target.dataset.mode);
   if (action === 'fixProblem') result = fixProblem(state, Number(target.dataset.fix));
   if (action === 'collectLine') result = collectIdleLine(state, target.dataset.line);
-  if (action === 'upgradeLine') result = buyLineUpgrade(state, target.dataset.line);
+  if (action === 'upgradeLine') result = buyLineUpgrade(state, target.dataset.line, state.idleLines?.buyQty || 1);
   if (action === 'buyManager') result = buyLineManager(state, target.dataset.line);
   if (action === 'toggleLineAuto') result = toggleLineAutoCollect(state, target.dataset.line);
   if (action === 'worldLocation') result = handleWorldLocation(target.dataset.location);
