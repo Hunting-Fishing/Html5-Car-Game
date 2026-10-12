@@ -4,6 +4,7 @@ import { meterLine } from '../components/StatMeter.js';
 import { fmt } from '../../systems/economySystem.js';
 import { getObjectiveList } from '../../systems/objectiveSystem.js';
 import { DAILY_ORDERS } from '../../data/gameData.js';
+import { soundEnabled } from '../sfx.js';
 
 const MENU_TABS = [
   { id: 'today', label: 'Today', icon: 'coin' },
@@ -13,9 +14,23 @@ const MENU_TABS = [
 ];
 
 let menuTab = 'today';
+let resetArmed = false;
 
 export function setMenuTab(tab) {
   menuTab = MENU_TABS.some((item) => item.id === tab) ? tab : 'today';
+  if (menuTab !== 'settings') resetArmed = false;
+}
+
+export function armMenuReset() {
+  resetArmed = true;
+}
+
+export function disarmMenuReset() {
+  resetArmed = false;
+}
+
+export function isMenuResetArmed() {
+  return resetArmed;
 }
 
 function escapeHtml(value = '') {
@@ -87,9 +102,23 @@ function goPane() {
 }
 
 function settingsPane() {
-  return `<section class="menuSettingsStrip">
-    <button type="button" data-action="screenToggle"><b>Fullscreen</b><span>Fill this device</span></button>
-    <button type="button" class="danger" data-action="reset"><b>Reset</b><span>Clear this save</span></button>
+  const soundOn = soundEnabled();
+  const fullscreen = typeof document !== 'undefined' && Boolean(document.fullscreenElement);
+  const reset = resetArmed
+    ? `<div class="setupWarn">
+        <b>Erase this save?</b>
+        <p>Coins, garage, lines, and menu progress on this device will be deleted. This cannot be undone.</p>
+        <div>
+          <button type="button" data-action="menuResetCancel">Cancel</button>
+          <button type="button" class="danger" data-action="resetConfirm">Erase save</button>
+        </div>
+      </div>`
+    : `<button type="button" class="setupRow danger" data-action="menuResetArm"><b>Reset save</b><span>Asks again before anything is deleted</span><em>Locked</em></button>`;
+  return `<section class="menuSetup">
+    <button type="button" class="setupRow" data-action="menuSound"><b>Sound</b><span>Engine, tires, and rewards</span><em class="${soundOn ? 'on' : ''}">${soundOn ? 'On' : 'Off'}</em></button>
+    <button type="button" class="setupRow" data-action="screenToggle"><b>Fullscreen</b><span>Use the whole screen</span><em class="${fullscreen ? 'on' : ''}">${fullscreen ? 'On' : 'Off'}</em></button>
+    <div class="setupRow"><b>Save</b><span>Stored on this device only</span><em>Local</em></div>
+    ${reset}
   </section>`;
 }
 

@@ -5,13 +5,13 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=38';
+import './ui/roadRunnerRuntime.js?v=39';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
 import './ui/linesAssetRuntime.js';
 import './ui/buildAssetRuntime.js';
-import { playSfx } from './ui/sfx.js';
+import { playSfx, setSoundEnabled, soundEnabled, stopEngineSound, stopTireScreech } from './ui/sfx.js';
 import { SCREENS } from './data/gameData.js';
 import { AUTO_WORLD_LOCATIONS } from './data/visualData.js';
 import { mountShell, renderScreenContent, setActiveScreen } from './ui/components/Shell.js';
@@ -25,7 +25,7 @@ import { renderRaceScreen } from './ui/screens/RaceScreen.js';
 import { renderLinesScreen, updateLineBars, updateReadyBadge } from './ui/screens/LinesScreen.js';
 import { renderMergeScreen } from './ui/screens/MergeScreen.js';
 import { renderGarageScreen } from './ui/screens/GarageScreen.js';
-import { renderProfileScreen, setMenuTab } from './ui/screens/ProfileScreen.js';
+import { renderProfileScreen, setMenuTab, armMenuReset, disarmMenuReset, isMenuResetArmed } from './ui/screens/ProfileScreen.js';
 import { renderCreatorScreen } from './ui/screens/CreatorScreen.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, addCurrency, addXp } from './systems/economySystem.js';
@@ -260,6 +260,30 @@ function handleClick(event) {
     return;
   }
 
+  if (action === 'menuSound') {
+    const next = !soundEnabled();
+    setSoundEnabled(next);
+    if (next) playSfx('tap');
+    else {
+      stopEngineSound();
+      stopTireScreech();
+    }
+    render();
+    return;
+  }
+
+  if (action === 'menuResetArm') {
+    armMenuReset();
+    render();
+    return;
+  }
+
+  if (action === 'menuResetCancel') {
+    disarmMenuReset();
+    render();
+    return;
+  }
+
   if (action === 'garageTab') {
     state.garage = state.garage || {};
     const tab = target.dataset.tab;
@@ -311,15 +335,17 @@ function handleClick(event) {
   if (action === 'upgrade') result = buyUpgrade(state, target.dataset.key);
   if (action === 'building') result = buyBuilding(state, target.dataset.key);
   if (action === 'claimDaily') result = claimDaily(state, target.dataset.key);
-  if (action === 'reset') {
-    if (confirm('Reset local save?')) {
-      state = resetState();
-      ensureIdleLineState(state);
-      toast('Local save reset.');
-      render();
-    }
+  if (action === 'resetConfirm') {
+    if (!isMenuResetArmed()) return;
+    disarmMenuReset();
+    state = resetState();
+    ensureIdleLineState(state);
+    toast('Save erased.');
+    render();
+    queueSave();
     return;
   }
+  if (action === 'reset') return;
   applyDerivedObjectives(state);
   if (result?.ok && action === 'cell') playSfx('merge');
   if (result?.ok && (action === 'collectLine' || action === 'claimDaily' || action === 'claimOffline')) playSfx(action === 'collectLine' ? 'collect' : 'claim');

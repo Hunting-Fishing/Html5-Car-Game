@@ -102,6 +102,18 @@ export function stopEngineSound() {
   engine = null;
 }
 
+export function soundEnabled() {
+  return localStorage.getItem('mg-mute') !== '1';
+}
+
+export function setSoundEnabled(on) {
+  localStorage.setItem('mg-mute', on ? '0' : '1');
+  if (!on) {
+    stopEngineSound();
+    stopTireScreech();
+  }
+}
+
 export function playSfx(name) {
   if (localStorage.getItem('mg-mute') === '1') return;
   try {

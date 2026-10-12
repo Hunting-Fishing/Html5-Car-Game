@@ -689,7 +689,64 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 #screen-profile .menuObjectiveRow span { display: grid; gap: 2px; }
 #screen-profile .menuObjectiveRow b { font-size: 13px; }
 #screen-profile .menuObjectiveRow small { color: #bfe9f5; font-size: 11px; }
-#screen-profile .menuObjectiveRow em { color: #f6c445; font-style: normal; font-weight: 800; }
+#screen-profile .menuSetup {
+  height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  overflow: auto;
+}
+#screen-profile .setupRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'title value' 'note value';
+  gap: 2px 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: #123044;
+  color: #fff;
+  text-align: left;
+}
+#screen-profile .setupRow b { grid-area: title; font-size: 14px; }
+#screen-profile .setupRow span { grid-area: note; color: #b7d4e4; font-size: 11px; }
+#screen-profile .setupRow em {
+  grid-area: value;
+  min-width: 52px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: #243140;
+  color: #d5e2ea;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+#screen-profile .setupRow em.on { background: #166534; color: #dcfce7; }
+#screen-profile .setupRow.danger { background: #3a1d28; }
+#screen-profile .setupRow.danger em { background: #7f1d1d; color: #fecaca; }
+#screen-profile .setupWarn {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #3a1d28;
+  color: #fff;
+}
+#screen-profile .setupWarn p { margin: 0; color: #fecaca; font-size: 12px; line-height: 1.35; }
+#screen-profile .setupWarn div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#screen-profile .setupWarn button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  background: #123044;
+  color: #fff;
+  font-weight: 800;
+}
+#screen-profile .setupWarn button.danger { background: #b91c1c; }
 #screen-race .roadRunnerShell[data-rr-active-tab="routes"] .racerPages {
   height: auto !important;
   max-height: 100% !important;
