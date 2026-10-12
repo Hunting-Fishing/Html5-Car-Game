@@ -32,6 +32,7 @@ export function normalizeMergeState(state) {
   if (typeof state.merge.maxEnergy !== 'number') state.merge.maxEnergy = 50;
   if (typeof state.merge.energyRegen !== 'number') state.merge.energyRegen = 0.08;
   if (!Array.isArray(state.merge.customers)) state.merge.customers = [];
+  if (typeof state.merge.energyUpgrades !== 'number') state.merge.energyUpgrades = 0;
   if (state.merge.board.every(cell => !cell) && state.merge.totalMerges === 0) {
     state.merge.board[0] = makeItem('original', 1, 'generator');
     state.merge.board[1] = makeItem('tools', 1, 'generator');
@@ -203,6 +204,14 @@ export function spawnCustomer(state) {
   });
 }
 
+function relatedLineKey(chain) {
+  if (chain === 'original') return 'partsDelivery';
+  if (chain === 'tools') return 'mobileMechanic';
+  if (chain === 'performance') return 'performanceBay';
+  if (chain === 'racing') return 'raceEvent';
+  return null;
+}
+
 export function deliverCustomer(state, customerId, boardIndex) {
   normalizeMergeState(state);
   const custIdx = state.merge.customers.findIndex(c => c.id === customerId);
@@ -220,7 +229,19 @@ export function deliverCustomer(state, customerId, boardIndex) {
   state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + energyBack);
   state.reputation = (state.reputation || 0) + 1;
   state.objectives.firstDelivery = true;
-  return { ok: true, message: `Delivered ${customer.title}. +${energyBack} energy, +1 rep.` };
+
+  // Small related idle line boost
+  const lineKey = relatedLineKey(customer.chain);
+  let lineMsg = '';
+  if (lineKey && state.idleLines?.lines?.[lineKey]) {
+    const line = state.idleLines.lines[lineKey];
+    if (line.level > 0) {
+      line.cycle = Math.min((line.cycle || 0) + 1500, 10000);
+      lineMsg = ` Boosted ${lineKey}.`;
+    }
+  }
+
+  return { ok: true, message: `Delivered ${customer.title}. +${energyBack} energy, +1 rep.${lineMsg}` };
 }
 
 export function buyEnergyPack(state) {
@@ -231,6 +252,18 @@ export function buyEnergyPack(state) {
   const gain = 15;
   state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + gain);
   return { ok: true, message: `Energy pack: +${gain} energy.` };
+}
+
+export function upgradeEnergyCap(state) {
+  normalizeMergeState(state);
+  const upgrades = state.merge.energyUpgrades || 0;
+  if (upgrades >= 5) return { ok: false, message: 'Energy capacity is maxed.' };
+  const cost = { coins: 150 + upgrades * 80 };
+  if (!canAfford(state, cost)) return { ok: false, message: `Need ${cost.coins} coins to raise energy cap.` };
+  spendCost(state, cost);
+  state.merge.energyUpgrades = upgrades + 1;
+  state.merge.maxEnergy = 50 + state.merge.energyUpgrades * 10;
+  return { ok: true, message: `Energy capacity raised to ${state.merge.maxEnergy}.` };
 }
 
 export function itemDisplayName(item) {
