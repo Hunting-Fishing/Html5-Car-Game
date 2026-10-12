@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=59';
+import './ui/roadRunnerRuntime.js?v=60';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -266,7 +266,7 @@ function handleClick(event) {
 
   if (action === 'selectStaff' || action === 'openStaff') {
     const id = target.dataset.staff || target.dataset.line;
-    if (action === 'selectStaff' && isPickingManager() && id) {
+    if (action === 'selectStaff' && isPickingManager() && id && !target.dataset.desk) {
       const assigned = assignDeskManager(state, id);
       setSelectedStaff(id);
       state.activeScreen = 'staff';
@@ -282,7 +282,7 @@ function handleClick(event) {
   }
 
   if (action === 'beginChangeManager') {
-    beginManagerChange();
+    beginManagerChange(target.dataset.desk);
     state.activeScreen = 'staff';
     render();
     return;

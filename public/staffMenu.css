@@ -5,22 +5,36 @@
 #screen-staff .staffTabs { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 #screen-staff.active { overflow-y: auto !important; padding-bottom: 12px !important; background: #071722; }
 #screen-staff .staffTabs button { font-size: 12px; letter-spacing: .02em; }
-#screen-staff .assignBoard { display: grid; gap: 8px; }
-#screen-staff .assignHead {
+#screen-staff .assignList { display: grid; gap: 8px; }
+#screen-staff .assignDesk {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #1a3d5c, #10283c);
-  color: #fff;
+  padding: 8px;
+  border-radius: 14px;
+  background: #10283c;
+  border-left: 4px solid #3a2468;
 }
-#screen-staff .assignBoard.sales .assignHead { background: linear-gradient(180deg, #3a2468, #24143f); }
-#screen-staff .assignBoard.service .assignHead { background: linear-gradient(180deg, #123e78, #0c2748); }
-#screen-staff .assignBoard.parts .assignHead { background: linear-gradient(180deg, #6a4a12, #3a280c); }
-#screen-staff .assignBoard.drive .assignHead { background: linear-gradient(180deg, #14573a, #0c3324); }
-#screen-staff .assignHead b { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .assignDesk.service { border-left-color: #2f7dff; }
+#screen-staff .assignDesk.parts { border-left-color: #e0a325; }
+#screen-staff .assignDesk.drive { border-left-color: #3ddc84; }
+#screen-staff .assignDesk .assignGrid { grid-column: 1 / -1; }
+#screen-staff .assignLead {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+}
+#screen-staff .assignLead b { display: block; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .assignLead small { display: block; color: #d5e7f2; font-size: 12px; line-height: 1.3; }
+#screen-staff .assignLead.selected img { outline: 2px solid #fff; }
 #screen-staff .assignChange {
   min-height: 28px;
   padding: 4px 8px;
@@ -31,7 +45,7 @@
   font-size: 12px;
   font-weight: 800;
 }
-#screen-staff .assignBoard.picking .assignCard { outline: 2px dashed #f6c445; outline-offset: 1px; }
+#screen-staff .assignDesk.picking .assignCard { outline: 2px dashed #f6c445; outline-offset: 1px; }
 #screen-staff .assignCard.manager { box-shadow: inset 0 0 0 2px #7dffb2; }
 #screen-staff .assignRole {
   position: absolute;

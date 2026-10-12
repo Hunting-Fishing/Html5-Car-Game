@@ -57,7 +57,14 @@ export function isPickingManager() {
   return pickingManager;
 }
 
-export function beginManagerChange() {
+export function beginManagerChange(deskId) {
+  const desk = DESKS.find((item) => item.id === deskId);
+  if (!desk) return;
+  if (pickingManager && staffDesk === desk.id) {
+    pickingManager = false;
+    return;
+  }
+  staffDesk = desk.id;
   pickingManager = true;
 }
 
@@ -226,34 +233,43 @@ function renderDock(state, view, managerId) {
   </div>`;
 }
 
-export function renderStaffScreen(state) {
-  const desk = deskOf(staffDesk);
+function renderDesk(state, desk) {
   const roster = viewsForDesk(state, desk);
-  const view = roster.find((item) => item.id === selectedStaff) || roster[0] || null;
-  if (view && !pickingManager) selectedStaff = view.id;
   const managerId = managerIdFor(state, desk, roster);
-  const lead = roster.find((item) => item.id === managerId);
+  const lead = roster.find((item) => item.id === managerId) || roster[0];
+  if (!lead) return '';
+  const open = pickingManager && staffDesk === desk.id;
   const teamPct = roster.reduce((sum, item) => sum + bonusFor(item), 0);
-  const teamRate = roster.reduce((sum, item) => sum + rateFor(item), 0);
-  const hint = pickingManager ? 'Tap a card to change the manager.' : (lead ? `Manager: ${lead.name}` : '');
+  const grid = open
+    ? `<div class="assignGrid">${roster.map((item) => renderAssignCard(item, managerId)).join('')}</div>`
+    : '';
+  return `<section class="assignDesk ${desk.id} ${open ? 'picking' : ''}">
+    <button type="button" class="assignLead ${lead.id === selectedStaff ? 'selected' : ''}" data-action="selectStaff" data-staff="${lead.id}" data-desk="${desk.id}">
+      ${renderAvatar(lead, 'assignDockFace')}
+      <span><b>${desk.label}</b><small>${lead.name} · Lv ${lead.level} · ${formatPct(bonusFor(lead))}</small><small>Desk ${formatPct(teamPct)}</small></span>
+    </button>
+    <button type="button" class="assignChange" data-action="${open ? 'cancelChangeManager' : 'beginChangeManager'}" data-desk="${desk.id}">${open ? 'Cancel' : 'Change'}</button>
+    ${grid}
+  </section>`;
+}
+
+export function renderStaffScreen(state) {
+  const picked = DESKS.map((desk) => {
+    const roster = viewsForDesk(state, desk);
+    return roster.find((item) => item.id === selectedStaff) || null;
+  }).find(Boolean);
+  const view = picked || viewsForDesk(state, deskOf(staffDesk))[0] || null;
+  const home = DESKS.map((desk) => ({ desk, roster: viewsForDesk(state, desk) })).find((item) => item.roster.some((person) => person.id === view?.id));
+  if (home && !pickingManager) staffDesk = home.desk.id;
+  const managerId = home ? managerIdFor(state, home.desk, home.roster) : '';
+  const hint = pickingManager ? 'Tap a card to change this desk’s manager.' : 'Each desk has its own manager.';
   return ScreenFrame({
     title: 'Assignments',
-    subtitle: hint || 'Each desk is a manager type. Train them and the bonus climbs.',
-    badge: `${roster.length}`,
+    subtitle: hint,
+    badge: `${DESKS.length}`,
     className: 'staffFrame',
     body: `
-      <nav class="staffTabs" role="tablist">
-        ${DESKS.map((item) => `<button type="button" class="${desk.id === item.id ? 'active' : ''}" data-action="staffTab" data-tab="${item.id}">${item.short}</button>`).join('')}
-      </nav>
-      <section class="assignBoard ${desk.id} ${pickingManager ? 'picking' : ''}">
-        <header class="assignHead">
-          <b>${desk.label}</b>
-          <button type="button" class="assignChange" data-action="${pickingManager ? 'cancelChangeManager' : 'beginChangeManager'}">${pickingManager ? 'Cancel' : 'Change'}</button>
-          <span class="assignPct">${formatPct(teamPct)}</span>
-          <span class="assignRate">${formatRate(teamRate)}</span>
-        </header>
-        <div class="assignGrid">${roster.map((item) => renderAssignCard(item, managerId)).join('')}</div>
-      </section>
+      <div class="assignList">${DESKS.map((desk) => renderDesk(state, desk)).join('')}</div>
       ${renderDock(state, view, managerId)}
     `
   });
