@@ -55,6 +55,7 @@ function rowFor(state, character) {
     });
     row.boostReady = true;
   }
+  if (typeof row.hired !== 'boolean') row.hired = false;
   if (typeof row.promotions !== 'number') row.promotions = 0;
   if (typeof row.lastChange !== 'string') row.lastChange = '';
   return row;
@@ -111,6 +112,8 @@ export function characterView(state, character) {
     cardKey,
     cardLabel,
     cardActive: promotions > 0,
+    hired: Boolean(row.hired),
+    hireCost: { coins: 40 + level * 20 },
     upgradeCost: { coins: 30 + level * 15 },
     promoCost: promotions >= 5 ? null : { coins: 100 + (promotions + 1) * 90 },
     trainCost: { coins: 30 + level * 15 }
@@ -147,6 +150,7 @@ export function upgradeCharacter(state, id) {
   if (!character) return { ok: false, message: 'Unknown crew.' };
   const view = characterView(state, character);
   const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} before upgrading.` };
   if (!canAfford(state, view.upgradeCost)) return { ok: false, message: 'Not enough coins to upgrade.' };
   const change = raiseSkill(character, row, character.step);
   if (!change) return { ok: false, message: `${character.name} is already at 100% on every stat.` };
@@ -164,6 +168,7 @@ export function promoteCharacter(state, id) {
   if (!character) return { ok: false, message: 'Unknown crew.' };
   const view = characterView(state, character);
   const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} before promoting.` };
   if (!view.promoCost) return { ok: false, message: `${character.name} is already a Partner.` };
   if (!canAfford(state, view.promoCost)) return { ok: false, message: 'Not enough coins to promote.' };
   const change = raiseSkill(character, row, Math.max(0.5, Math.min(1, character.step)));
@@ -176,15 +181,65 @@ export function promoteCharacter(state, id) {
   return { ok: true, message: `${character.name} promoted to ${title}. Bonus ${change}. Pay is now ${next.pay.coins} coins.${cardNote}` };
 }
 
-function employedIds(state) {
-  const ids = [];
+function deskForRole(role) {
+  return DESKS.find((desk) => desk.roles.includes(role)) || null;
+}
+
+export function ensureCrewEmployment(state) {
+  if (!state.payroll) state.payroll = { elapsed: 0 };
+  if (state.payroll.seeded) return;
   for (const desk of DESKS) {
     const roster = CHARACTERS.filter((character) => desk.roles.includes(character.role));
     const saved = state.assignments?.[desk.id];
     const id = saved && roster.some((character) => character.id === saved) ? saved : roster[0]?.id;
-    if (id) ids.push(id);
+    const character = id ? characterById(id) : null;
+    if (!character) continue;
+    rowFor(state, character).hired = true;
+    if (!state.assignments) state.assignments = {};
+    state.assignments[desk.id] = character.id;
   }
-  return [...new Set(ids)];
+  state.payroll.seeded = true;
+}
+
+export function hireCharacter(state, id) {
+  ensureCrewEmployment(state);
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const view = characterView(state, character);
+  const row = rowFor(state, character);
+  if (row.hired) return { ok: false, message: `${character.name} is already hired.` };
+  if (!canAfford(state, view.hireCost)) return { ok: false, message: 'Not enough coins to hire.' };
+  spendCost(state, view.hireCost);
+  row.hired = true;
+  const desk = deskForRole(character.role);
+  if (desk) {
+    if (!state.assignments) state.assignments = {};
+    const current = state.assignments[desk.id];
+    const currentCrew = current ? characterById(current) : null;
+    const currentHired = currentCrew ? rowFor(state, currentCrew).hired : false;
+    if (!currentHired) state.assignments[desk.id] = character.id;
+  }
+  return { ok: true, message: `${character.name} hired. Salary ${view.pay.coins} coins.` };
+}
+
+export function fireCharacter(state, id) {
+  ensureCrewEmployment(state);
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `${character.name} is not on staff.` };
+  row.hired = false;
+  const desk = deskForRole(character.role);
+  if (desk && state.assignments?.[desk.id] === character.id) {
+    const next = CHARACTERS.find((item) => desk.roles.includes(item.role) && item.id !== character.id && rowFor(state, item).hired);
+    state.assignments[desk.id] = next?.id || '';
+  }
+  return { ok: true, message: `${character.name} was fired. Their salary stops.` };
+}
+
+function employedIds(state) {
+  ensureCrewEmployment(state);
+  return CHARACTERS.filter((character) => rowFor(state, character).hired).map((character) => character.id);
 }
 
 export function tickPayroll(state, dt) {
@@ -208,5 +263,5 @@ export function tickPayroll(state, dt) {
     for (const [key, amount] of Object.entries(bill)) spent[key] = (spent[key] || 0) + amount;
   }
   if (!people) return '';
-  return `Payday for ${people} managers. -${costToText(spent)}.`;
+  return `Payday for ${people} employees. -${costToText(spent)}.`;
 }

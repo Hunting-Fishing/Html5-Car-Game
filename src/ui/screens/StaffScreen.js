@@ -3,7 +3,7 @@ import { personAssetForKey } from '../../data/worldAssetMap.js';
 import { CHARACTERS, characterById } from '../../data/characterRoster.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { costToText, canAfford } from '../../systems/economySystem.js';
-import { characterView } from '../../systems/characterSystem.js';
+import { characterView, ensureCrewEmployment } from '../../systems/characterSystem.js';
 import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
@@ -81,14 +81,14 @@ export function cancelManagerChange() {
 
 function managerIdFor(state, desk, roster) {
   const saved = state.assignments?.[desk.id];
-  if (saved && roster.some((item) => item.id === saved)) return saved;
-  return roster[0]?.id || '';
+  if (saved && roster.some((item) => item.id === saved && item.hired)) return saved;
+  return roster.find((item) => item.hired)?.id || '';
 }
 
 export function assignDeskManager(state, characterId) {
   const desk = deskOf(staffDesk);
   const roster = viewsForDesk(state, desk);
-  if (!roster.some((item) => item.id === characterId)) return { ok: false, message: 'Pick someone on this desk.' };
+  if (!roster.some((item) => item.id === characterId && item.hired)) return { ok: false, message: 'Hire them before making them manager.' };
   if (!state.assignments) state.assignments = {};
   state.assignments[desk.id] = characterId;
   selectedStaff = characterId;
@@ -202,8 +202,8 @@ function renderAssignCard(view, managerId) {
   const selected = view.id === selectedStaff ? 'selected' : '';
   const lead = view.id === managerId ? 'manager' : '';
   const first = view.name.split(' ')[0];
-  const badge = lead ? '<span class="assignRole">MGR</span>' : '';
-  return `<button type="button" class="assignCard ${rarityFor(view.level)} ${selected} ${lead}" data-action="selectStaff" data-staff="${view.id}">
+  const badge = lead ? '<span class="assignRole">MGR</span>' : view.hired ? '<span class="assignRole hired">Hired</span>' : '';
+  return `<button type="button" class="assignCard ${rarityFor(view.level)} ${selected} ${lead} ${view.hired ? '' : 'open'}" data-action="selectStaff" data-staff="${view.id}">
     ${renderAvatar(view, 'assignFace')}
     <span class="assignName">${first}</span>
     ${badge}
@@ -215,21 +215,30 @@ function renderDock(state, view, managerId) {
   if (!view) return '';
   const line = view.lineKey ? IDLE_LINES.find((item) => item.key === view.lineKey) : null;
   const job = line ? managerStats(state, { id: line.key }) : null;
-  const armed = job && fireArmed === line.key;
+  const armed = fireArmed === view.id;
   const isLead = view.id === managerId;
-  const makeManager = isLead
+  const hire = view.hired
+    ? ''
+    : `<button class="btn small primary" data-action="hireCrew" data-staff="${view.id}" ${canAfford(state, view.hireCost) ? '' : 'disabled'}>Hire ${costToText(view.hireCost)}</button>`;
+  const fire = !view.hired
+    ? ''
+    : armed
+      ? `<button class="btn small ghost" data-action="fireCrewCancel">Cancel</button><button class="btn small red" data-action="fireCrew" data-staff="${view.id}">Confirm fire</button>`
+      : `<button class="btn small ghost" data-action="fireCrewArm" data-staff="${view.id}">Fire</button>`;
+  const makeManager = !view.hired || isLead
     ? ''
     : `<button class="btn small primary" data-action="assignManager" data-staff="${view.id}">Make manager</button>`;
   const grade = view.promotions ? view.promoTitle : '';
   const card = view.cardActive
     ? `${view.cardLabel}: ${costToText({ [view.cardKey]: view.pay[view.cardKey] })} each payday`
     : `${view.cardLabel} starts after a promotion`;
-  const upgrade = `<button class="btn small primary" data-action="upgradeCrew" data-staff="${view.id}" ${canAfford(state, view.upgradeCost) ? '' : 'disabled'}>Upgrade ${costToText(view.upgradeCost)}</button>`;
-  const promote = `<button class="btn small primary" data-action="promoteCrew" data-staff="${view.id}" ${view.promoCost && canAfford(state, view.promoCost) ? '' : 'disabled'}>${view.promoCost ? `Promote ${costToText(view.promoCost)}` : 'Partner'}</button>`;
+  const upgrade = view.hired ? `<button class="btn small primary" data-action="upgradeCrew" data-staff="${view.id}" ${canAfford(state, view.upgradeCost) ? '' : 'disabled'}>Upgrade ${costToText(view.upgradeCost)}</button>` : '';
+  const promote = view.hired ? `<button class="btn small primary" data-action="promoteCrew" data-staff="${view.id}" ${view.promoCost && canAfford(state, view.promoCost) ? '' : 'disabled'}>${view.promoCost ? `Promote ${costToText(view.promoCost)}` : 'Partner'}</button>` : '';
   let jobButton = '';
+  const lineArmed = Boolean(job && fireArmed === line?.key);
   if (job && !job.hired) {
     jobButton = `<button class="btn small ghost" data-action="buyManager" data-line="${line.key}" ${job.canHire ? '' : 'disabled'}>${job.ready ? `Hire line ${costToText(job.cost)}` : `Line Lv ${line.manager.unlockLevel}`}</button>`;
-  } else if (job && armed) {
+  } else if (lineArmed) {
     jobButton = `<button class="btn small ghost" data-action="fireManagerCancel">Cancel</button><button class="btn small red" data-action="fireManager" data-line="${line.key}">Confirm</button>`;
   } else if (job) {
     jobButton = `<button class="btn small ghost" data-action="fireManagerArm" data-line="${line.key}">Release line</button>`;
@@ -239,11 +248,11 @@ function renderDock(state, view, managerId) {
     <div class="staffPopCard">
       <button type="button" class="staffPopX" data-action="closeStaffSheet" aria-label="Close">×</button>
       ${renderAvatar(view, 'assignDockFace')}
-      <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${view.promotions ? ` · ${grade}` : ''}${isLead ? ' · Manager' : ''}</span></div>
+      <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${view.promotions ? ` · ${grade}` : ''}${view.hired ? '' : ' · Not hired'}${isLead ? ' · Manager' : ''}</span></div>
       ${renderBars(view)}
       ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
       <div class="staffPay"><span>Salary</span><b>${costToText({ coins: view.pay.coins })}</b><small>${card}</small></div>
-      <div class="assignDockActions">${makeManager}${upgrade}${promote}${jobButton}</div>
+      <div class="assignDockActions">${hire}${fire}${makeManager}${upgrade}${promote}${jobButton}</div>
     </div>
   </div>`;
 }
@@ -251,21 +260,27 @@ function renderDock(state, view, managerId) {
 function renderDesk(state, desk) {
   const roster = viewsForDesk(state, desk);
   const managerId = managerIdFor(state, desk, roster);
-  const lead = roster.find((item) => item.id === managerId) || roster[0];
-  if (!lead) return '';
+  const lead = roster.find((item) => item.id === managerId) || null;
   const open = pickingManager && staffDesk === desk.id;
   const grid = open ? `<div class="assignGrid">${roster.map((item) => renderAssignCard(item, managerId)).join('')}</div>` : '';
-  return `<section class="assignDesk ${desk.id} ${open ? 'picking' : ''}">
-    <button type="button" class="assignLead ${lead.id === selectedStaff ? 'selected' : ''}" data-action="selectStaff" data-staff="${lead.id}" data-desk="${desk.id}">
+  const head = lead
+    ? `<button type="button" class="assignLead ${lead.id === selectedStaff ? 'selected' : ''}" data-action="selectStaff" data-staff="${lead.id}" data-desk="${desk.id}">
       ${renderAvatar(lead, 'assignDockFace')}
       <span><b>${desk.label}</b><small>${lead.name}</small>${renderBars(lead)}</span>
-    </button>
+    </button>`
+    : `<button type="button" class="assignLead vacant" data-action="beginChangeManager" data-desk="${desk.id}">
+      <span><b>${desk.label}</b><small>Open seat</small></span>
+    </button>`;
+  return `<section class="assignDesk ${desk.id} ${open ? 'picking' : ''}">
+    ${head}
     <button type="button" class="assignChange" data-action="${open ? 'cancelChangeManager' : 'beginChangeManager'}" data-desk="${desk.id}">${open ? 'Cancel' : 'Change'}</button>
     ${grid}
   </section>`;
 }
 
 export function renderStaffScreen(state) {
+  ensureCrewEmployment(state);
+  const hiredCount = CHARACTERS.filter((character) => characterView(state, character).hired).length;
   const picked = DESKS.map((desk) => {
     const roster = viewsForDesk(state, desk);
     return roster.find((item) => item.id === selectedStaff) || null;
@@ -274,11 +289,11 @@ export function renderStaffScreen(state) {
   const home = DESKS.map((desk) => ({ desk, roster: viewsForDesk(state, desk) })).find((item) => item.roster.some((person) => person.id === view?.id));
   if (home && !pickingManager) staffDesk = home.desk.id;
   const managerId = home ? managerIdFor(state, home.desk, home.roster) : '';
-  const hint = pickingManager ? 'Tap a card to change this desk’s manager.' : 'Each desk has its own manager.';
+  const hint = pickingManager ? 'Tap a person, then hire them.' : `${hiredCount} hired. Open Change to hire or fire.`;
   return ScreenFrame({
     title: 'Assignments',
     subtitle: hint,
-    badge: `${DESKS.length}`,
+    badge: `${hiredCount}`,
     className: 'staffFrame',
     body: `
       <div class="assignList">${DESKS.map((desk) => renderDesk(state, desk)).join('')}</div>

@@ -87,6 +87,9 @@
 }
 #screen-staff .assignDesk.picking .assignCard { outline: 2px dashed #f6c445; outline-offset: 1px; }
 #screen-staff .assignCard.manager { box-shadow: inset 0 0 0 2px #7dffb2; }
+#screen-staff .assignRole.hired { background: #1f8f4e; }
+#screen-staff .assignCard.open { opacity: .72; }
+#screen-staff .assignLead.vacant { color: #d5e7f2; }
 #screen-staff .assignRole {
   position: absolute;
   top: 20px;
