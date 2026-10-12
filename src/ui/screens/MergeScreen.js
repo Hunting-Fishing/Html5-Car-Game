@@ -32,6 +32,8 @@ export function renderMergeScreen(state) {
   const shelfGuideTarget = guideNeedsPair && !pairSet.size ? ' data-guide-target="placeAll"' : '';
   const energy = Math.floor(state.merge.energy || 0);
   const maxEnergy = state.merge.maxEnergy || 50;
+  const upgrades = state.merge.energyUpgrades || 0;
+  const capCost = 150 + upgrades * 80;
 
   return `
     <section class="card gamePanel RewardPanel mergeUnifiedPanel mergePlayArea" data-component="RewardPanel">
@@ -59,7 +61,8 @@ export function renderMergeScreen(state) {
           <button class="btn small primary" data-action="placeAll" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="placeAll"' : ''}>Place All</button>
           <button class="btn small" data-action="autoMerge" ${guideNeedsPair && pairSet.size ? 'data-guide-target="mergePair"' : ''}>Auto Merge</button>
           <button class="btn small red" data-action="sellSelected">Sell</button>
-          <button class="btn small gold" data-action="buyEnergyPack">Energy Pack (80 coins)</button>
+          <button class="btn small gold" data-action="buyEnergyPack">Energy Pack (80)</button>
+          <button class="btn small" data-action="upgradeEnergyCap" ${upgrades >= 5 ? 'disabled' : ''}>Cap +10 (${capCost})</button>
         </div>
 
         <div class="mergeBoardArea">
@@ -270,7 +273,7 @@ function renderMergeTips(state, active, limit) {
       </div>
       <div class="mergeTipCard">
         <b>Fast Rule</b>
-        <span>Tap generators for products. Merge pairs or Auto Merge. Deliver to customers. Buy energy packs with coins.</span>
+        <span>Tap generators. Merge. Deliver customers (boosts related idle lines). Raise energy cap with coins.</span>
       </div>
     </div>
   `;
