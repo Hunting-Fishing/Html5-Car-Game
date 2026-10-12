@@ -102,6 +102,8 @@ const NPC_DIALOGUE = {
 };
 
 const npcStep = {};
+const relationshipCache = {};
+let lastBondNote = '';
 
 const CITY_PROBLEM_DEFS = {
   mapBuild: { label: 'Built Map', type: 'streetKiosk', types: [], help: 'More placed services make the city feel complete.' },
@@ -958,8 +960,41 @@ function currentNpcNode(person) {
 function renderNpcTalk(person) {
   const id = person.lineKey || person.key;
   const node = currentNpcNode(person);
+  const score = relationshipScore(id);
+  const rank = relationshipRank(score);
   const replies = (node.choices || []).map((choice) => `<button type="button" class="btn small" onclick="window.replyToNpc?.('${id}','${choice.id}')">${escapeHtml(choice.label)}</button>`).join('');
-  return `<div class="npcTalk"><p>${escapeHtml(node.text)}</p><div class="npcReplies">${replies}</div></div>`;
+  return `<div class="npcTalk"><div class="npcBond"><b>${rank}</b><span><i style="width:${score}%"></i></span><small>${score}</small></div><p>${escapeHtml(node.text)}</p>${lastBondNote ? `<em>${escapeHtml(lastBondNote)}</em>` : ''}<div class="npcReplies">${replies}</div></div>`;
+}
+
+function relationshipScore(id) {
+  if (typeof relationshipCache[id] === 'number') return relationshipCache[id];
+  const save = readSupplyState();
+  return Math.max(0, Math.min(100, Number(save.relationships?.[id] || 0)));
+}
+
+function relationshipRank(score) {
+  if (score >= 70) return 'Partner';
+  if (score >= 40) return 'Friend';
+  if (score >= 20) return 'Neighbor';
+  return 'Stranger';
+}
+
+function bondFor(choice) {
+  if (choice.screen === 'close') return 0;
+  if (choice.id === 'later' || choice.next === 'brush') return -5;
+  if (choice.id === 'race') return -3;
+  return 8;
+}
+
+function shiftRelationship(id, name, delta) {
+  const prev = relationshipScore(id);
+  const score = Math.max(0, Math.min(100, prev + delta));
+  relationshipCache[id] = score;
+  let gift = null;
+  if (score >= 70 && prev < 70) gift = 'partner';
+  else if (score >= 40 && prev < 40) gift = 'friend';
+  window.dispatchEvent(new CustomEvent('npc-relationship', { detail: { id, name, score, delta, gift } }));
+  return score;
 }
 
 window.replyToNpc = (id, choiceId) => {
@@ -967,6 +1002,9 @@ window.replyToNpc = (id, choiceId) => {
   if (!person) return;
   const choice = (currentNpcNode(person).choices || []).find((item) => item.id === choiceId);
   if (!choice) return;
+  const delta = bondFor(choice);
+  if (delta) shiftRelationship(id, person.name, delta);
+  lastBondNote = delta > 0 ? `Trust +${delta}` : delta < 0 ? `Trust ${delta}` : '';
   if (choice.next) npcStep[id] = choice.next;
   if (choice.screen === 'close') {
     window.closeMobileResidentSheetSafe?.();
@@ -1017,6 +1055,7 @@ function renderSupplyManagerSheet(staff) {
 
 function openSupplyManager(staff) {
   if (mode !== 'normal' || !staff) return;
+  if (selectedSupplyKey !== staff.lineKey) lastBondNote = '';
   const placedSheet = document.querySelector('[data-placed-sheet]');
   if (placedSheet) placedSheet.hidden = true;
   selectedSupplyKey = staff.lineKey;
@@ -1690,6 +1729,7 @@ function renderResidentSheet(resident) {
 
 function openResidentSheet(resident) {
   if (mode !== 'normal') return;
+  if (selectedResidentKey !== resident.key) lastBondNote = '';
   const placedSheet = document.querySelector('[data-placed-sheet]');
   if (placedSheet) placedSheet.hidden = true;
   if (selectedResidentKey !== resident.key) selectedResidentMenu = 'mood';

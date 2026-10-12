@@ -50,6 +50,8 @@ function reconcile(base, saved) {
     merge: { ...base.merge, ...(saved.merge || {}) },
     daily: { ...base.daily, ...(saved.daily || {}) },
     objectives: { ...base.objectives, ...(saved.objectives || {}) },
+    relationships: { ...(base.relationships || {}), ...(saved.relationships || {}) },
+    relationshipGifts: { ...(base.relationshipGifts || {}), ...(saved.relationshipGifts || {}) },
     tips: { ...base.tips, ...(saved.tips || {}) }
   };
 }

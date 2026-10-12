@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=43';
+import './ui/roadRunnerRuntime.js?v=44';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -417,5 +417,22 @@ function queueSave() {
     saveState(state);
   }, 300);
 }
+
+window.addEventListener('npc-relationship', (event) => {
+  const { id, name, score, gift } = event.detail || {};
+  if (!id) return;
+  state.relationships = { ...(state.relationships || {}), [id]: score };
+  if (gift) {
+    state.relationshipGifts = state.relationshipGifts || {};
+    const key = `${id}:${gift}`;
+    if (!state.relationshipGifts[key]) {
+      state.relationshipGifts[key] = true;
+      const coins = gift === 'partner' ? 80 : 40;
+      addCurrency(state, 'coins', coins);
+      toast(`${name || 'Someone'} trusts you. +${coins} coins.`);
+    }
+  }
+  queueSave();
+});
 
 setInterval(() => saveState(state), 5000);

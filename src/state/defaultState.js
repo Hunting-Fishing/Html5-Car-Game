@@ -129,6 +129,8 @@ export function defaultState() {
       fixProblem: false,
       stageFive: false
     },
+    relationships: {},
+    relationshipGifts: {},
     tips: {
       welcome: false,
       race: false,

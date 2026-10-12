@@ -804,7 +804,11 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
   object-fit: contain !important;
 }
 .npcTalk { display: grid; gap: 8px; padding: 10px; border-radius: 14px; background: rgba(8, 28, 44, .72); }
-.npcTalk p { margin: 0; color: #fff; font-size: 13px; line-height: 1.35; }
+.npcTalk p, .npcTalk em { margin: 0; color: #fff; font-size: 13px; line-height: 1.35; }
+.npcTalk em { color: #f6c445; font-style: normal; font-size: 12px; font-weight: 800; }
+.npcBond { display: grid; grid-template-columns: 72px minmax(0, 1fr) 28px; gap: 6px; align-items: center; color: #d6b87a; font-size: 11px; font-weight: 800; }
+.npcBond span { height: 8px; border-radius: 99px; background: #123044; overflow: hidden; }
+.npcBond i { display: block; height: 100%; background: #35e58a; }
 .npcReplies { display: grid; gap: 6px; }
 .npcReplies .btn { min-height: 36px; text-align: left; }
 #screen-lines .adcapBuyBar {
