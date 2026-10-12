@@ -32,7 +32,7 @@ import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, addCurrency, addXp, canAfford, spendCost } from './systems/economySystem.js';
 import { applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { claimDaily } from './systems/objectiveSystem.js';
-import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState, tapGenerator, deliverCustomer, buyEnergyPack, upgradeEnergyCap, freeEnergyRefill } from './systems/mergeSystem.js';
+import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState, tapGenerator, deliverCustomer, buyEnergyPack, upgradeEnergyCap, freeEnergyRefill, clearLastDelivery } from './systems/mergeSystem.js';
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
 import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
@@ -407,6 +407,12 @@ function handleClick(event) {
   if (action === 'buyEnergyPack') result = buyEnergyPack(state);
   if (action === 'upgradeEnergyCap') result = upgradeEnergyCap(state);
   if (action === 'freeEnergyRefill') result = freeEnergyRefill(state);
+  if (action === 'clearLastDelivery') {
+    clearLastDelivery(state);
+    render();
+    queueSave();
+    return;
+  }
   if (action === 'upgrade') result = buyUpgrade(state, target.dataset.key);
   if (action === 'building') result = buyBuilding(state, target.dataset.key);
   if (action === 'claimDaily') result = claimDaily(state, target.dataset.key);
