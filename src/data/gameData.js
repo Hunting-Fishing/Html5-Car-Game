@@ -12,6 +12,7 @@ export const SCREENS = [
   { id: 'world', label: 'World', icon: iconPath(UI_ICON_BASE, 'home.png'), fallbackIcon: '\u{1F5FA}\uFE0F' },
   { id: 'race', label: 'Race', icon: iconPath(UI_ICON_BASE, 'race.png'), fallbackIcon: '\u{1F697}' },
   { id: 'lines', label: 'Supplies', icon: iconPath(UI_ICON_BASE, 'parts.png'), fallbackIcon: '\u{1F4C8}' },
+  { id: 'staff', label: 'Staff', icon: iconPath(UI_ICON_BASE, 'profile.png'), fallbackIcon: '\u{1F465}' },
   { id: 'merge', label: 'Merge', icon: iconPath(UI_ICON_BASE, 'parts.png'), fallbackIcon: '\u{1F527}' },
   { id: 'garage', label: 'Build', icon: iconPath(UI_ICON_BASE, 'garage.png'), fallbackIcon: '\u{1F3D7}\uFE0F' },
   { id: 'profile', label: 'Profile', icon: iconPath(UI_ICON_BASE, 'profile.png'), fallbackIcon: '\u{1F464}' },

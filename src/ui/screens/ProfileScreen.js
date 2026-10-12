@@ -93,6 +93,7 @@ function goPane() {
   const spots = [
     ['race', 'drive', 'Race'],
     ['world', '', 'World'],
+    ['staff', '', 'Staff'],
     ['lines', '', 'Supplies'],
     ['merge', '', 'Merge'],
     ['garage', '', 'Build'],

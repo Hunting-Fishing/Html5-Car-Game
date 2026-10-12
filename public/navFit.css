@@ -820,6 +820,25 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .cityReputation b, .cityReputation small { color: #f6c445; font-size: 11px; }
 .cityReputation span { height: 8px; border-radius: 99px; background: #123044; overflow: hidden; }
 .cityReputation i { display: block; height: 100%; width: 0; background: #7dd3fc; }
+.staffJump { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.staffHeading { margin: 8px 0 0; color: #d6b87a; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+.staffRoster { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.staffCard { display: grid; justify-items: center; gap: 2px; min-width: 0; padding: 6px 4px; border: 1px solid transparent; border-radius: 12px; background: #123044; color: #fff; }
+.staffCard.selected { border-color: #f6c445; }
+.staffCard.hired { background: #14573a; }
+.staffCard b, .staffCard small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.staffCard small { color: #f6c445; font-size: 10px; }
+.staffAvatar, .staffPortrait { width: 42px; height: 42px; object-fit: contain; }
+.staffPortrait { width: 64px; height: 64px; }
+.staffDetail { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; align-items: center; padding: 8px; border-radius: 14px; background: #0d3348; color: #fff; }
+.staffDetail b { display: block; }
+.staffDetail span { color: #d5e7f2; font-size: 12px; }
+.staffStats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
+.staffStats div { min-width: 0; }
+.staffStats strong, .staffStats small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.staffStats small { color: #9fd8ff; font-size: 10px; }
+.staffActions, .staffDetail > .btn { grid-column: 1 / -1; }
+.staffActions { display: grid; grid-template-columns: 1.4fr .8fr .8fr; gap: 6px; }
 #screen-lines .adcapBuyBar {
   position: sticky;
   top: 0;

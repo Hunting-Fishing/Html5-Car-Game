@@ -35,6 +35,10 @@ export function renderLinesScreen(state) {
     badge: `${buildComm.unlockedLineCount}/${buildComm.totalLineCount}`,
     className: 'linesCompactFrame',
     body: `
+      <div class="staffJump">
+        <button class="btn gold" data-action="screen" data-screen="world">World</button>
+        <button class="btn primary" data-action="openStaff" data-staff="streetRoute">Managers</button>
+      </div>
       <div class="adcapBuyBar" role="group" aria-label="Buy amount">
         <span>Buy</span>
         ${[1, 10, 100, 'max'].map((qty) => `<button type="button" class="${state.idleLines.buyQty === qty ? 'active' : ''}" data-action="lineBuyQty" data-qty="${qty}">${qty === 'max' ? 'Max' : `x${qty}`}</button>`).join('')}
@@ -260,7 +264,6 @@ function renderCapitalistLine(state, item) {
   const running = managerOwned && autoEnabled;
   const barLabel = !unlocked ? 'Locked' : collectReady && !running ? 'Collect' : `+${fmt(income)}`;
   const canHire = unlocked && !managerOwned && level >= line.manager.unlockLevel && canAfford(state, item.managerCost);
-  const managerAction = managerOwned ? 'toggleLineAuto' : 'buyManager';
   const managerLabel = managerOwned
     ? `<b>${line.manager.name.split(' ')[0]}</b><small>${autoEnabled ? 'Auto' : 'Off'}</small>`
     : canHire
@@ -277,7 +280,7 @@ function renderCapitalistLine(state, item) {
         <span class="adcapFill" data-line-progress style="width:${progress}%"></span>
         <em>${barLabel}</em>
       </button>
-      <button class="adcapManager ${managerOwned ? 'hired' : ''}" data-action="${managerAction}" data-line="${line.key}" ${managerOwned || canHire ? '' : 'disabled'}>
+      <button class="adcapManager ${managerOwned ? 'hired' : ''}" data-action="openStaff" data-line="${line.key}">
         ${managerLabel}
       </button>
     </article>

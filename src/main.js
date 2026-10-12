@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=48';
+import './ui/roadRunnerRuntime.js?v=49';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -23,6 +23,7 @@ import { renderHubScreen } from './ui/screens/HubScreen.js';
 import { renderWorldScreen } from './ui/screens/WorldScreen.js';
 import { renderRaceScreen } from './ui/screens/RaceScreen.js';
 import { renderLinesScreen, updateLineBars, updateReadyBadge } from './ui/screens/LinesScreen.js';
+import { renderStaffScreen, setSelectedStaff } from './ui/screens/StaffScreen.js';
 import { renderMergeScreen } from './ui/screens/MergeScreen.js';
 import { renderGarageScreen } from './ui/screens/GarageScreen.js';
 import { renderProfileScreen, setMenuTab, armMenuReset, disarmMenuReset, isMenuResetArmed } from './ui/screens/ProfileScreen.js';
@@ -148,6 +149,7 @@ function renderActiveScreen() {
       world: () => renderWorldScreen(state),
       race: () => renderRaceScreen(state),
       lines: () => renderLinesScreen(state),
+      staff: () => renderStaffScreen(state),
       merge: () => renderMergeScreen(state),
       garage: () => renderGarageScreen(state),
       profile: () => renderProfileScreen(state),
@@ -256,6 +258,13 @@ function handleClick(event) {
 
   if (action === 'menuTab') {
     setMenuTab(target.dataset.tab);
+    render();
+    return;
+  }
+
+  if (action === 'selectStaff' || action === 'openStaff') {
+    setSelectedStaff(target.dataset.staff || target.dataset.line);
+    state.activeScreen = 'staff';
     render();
     return;
   }
