@@ -1,3 +1,5 @@
+import { publicAsset } from './assetUrl.js';
+
 const FIRST = ['Liza', 'Marco', 'Nico', 'Ari', 'Rae', 'Sol', 'Bea', 'Carlo', 'Dina', 'Enzo', 'Faye', 'Gino', 'Hana', 'Isko', 'Jade', 'Kiko', 'Lani', 'Mico', 'Nia', 'Omar', 'Pia', 'Quin', 'Rosa', 'Tito', 'Uma'];
 const LAST = ['Reyes', 'Santos', 'Cruz', 'Bautista'];
 const ROLES = [
@@ -25,6 +27,7 @@ export const CHARACTERS = Array.from({ length: 100 }, (_, index) => {
     role: role.role,
     crew: role.crew,
     avatar: role.avatar,
+    sprite: publicAsset(`assets/World/people/crew/crew-${String(index + 1).padStart(3, '0')}.svg`),
     lineKey: LINES[index] || '',
     startLevel,
     base: {

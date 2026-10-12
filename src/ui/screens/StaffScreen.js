@@ -95,7 +95,8 @@ function managerStats(state, person) {
 }
 
 function renderAvatar(person, className = 'staffAvatar') {
-  return `<img class="${className}" src="${personAssetForKey(person.avatar)}" alt="" loading="eager">`;
+  const src = person.sprite || personAssetForKey(person.avatar);
+  return `<img class="${className}" src="${src}" alt="" loading="lazy">`;
 }
 
 function renderContacts(person) {
