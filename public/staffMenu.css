@@ -2,3 +2,10 @@
 .bottomNav .tab span { font-size: 10px !important; }
 #screen-profile .gameMenuTabs { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
 #screen-profile .gameMenuTabs button { font-size: 10px; min-height: 48px; }
+.staffRoster { grid-template-columns: 1fr !important; }
+.staffCard { grid-template-columns: 42px minmax(0, 1fr); justify-items: stretch; text-align: left; align-items: center; }
+.staffWho { display: grid; min-width: 0; }
+.staffWho b, .staffWho em, .staffWho span, .staffContact, .staffWho small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.staffWho em { color: #f6c445; font-style: normal; font-size: 10px; font-weight: 800; }
+.staffContact, .staffWho small, .staffDetail .staffContact { color: #9fd8ff; font-size: 11px; }
+

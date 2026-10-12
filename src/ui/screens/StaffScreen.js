@@ -5,23 +5,23 @@ import { costToText, canAfford } from '../../systems/economySystem.js';
 import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked, quoteLineUpgrade } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
-  { id: 'streetRoute', avatar: 'driver', name: 'Route Driver', role: 'Manager' },
-  { id: 'partsDelivery', avatar: 'residentGreen', name: 'Parts Courier', role: 'Manager' },
-  { id: 'mobileMechanic', avatar: 'mechanic', name: 'Mobile Tech', role: 'Manager' },
-  { id: 'fuelRun', avatar: 'residentBlue', name: 'Fuel Runner', role: 'Manager' },
-  { id: 'towingJob', avatar: 'residentOrange', name: 'Tow Operator', role: 'Manager' },
-  { id: 'dealerShowcase', avatar: 'residentPurple', name: 'Sales Rep', role: 'Manager' },
-  { id: 'performanceBay', avatar: 'mechanic', name: 'Tuner', role: 'Manager' },
-  { id: 'raceEvent', avatar: 'driver', name: 'Crew Chief', role: 'Manager' }
+  { id: 'streetRoute', avatar: 'driver', name: 'Route Driver', role: 'Manager', phone: '365-010', place: 'Bay 1 sidewalk', desk: 'Street Route' },
+  { id: 'partsDelivery', avatar: 'residentGreen', name: 'Parts Courier', role: 'Manager', phone: '365-020', place: 'Warehouse dock', desk: 'Parts Delivery' },
+  { id: 'mobileMechanic', avatar: 'mechanic', name: 'Mobile Tech', role: 'Manager', phone: '365-030', place: 'Service van', desk: 'Mobile Mechanic' },
+  { id: 'fuelRun', avatar: 'residentBlue', name: 'Fuel Runner', role: 'Manager', phone: '365-040', place: 'Fuel bay', desk: 'Fuel Run' },
+  { id: 'towingJob', avatar: 'residentOrange', name: 'Tow Operator', role: 'Manager', phone: '365-050', place: 'Tow yard', desk: 'Towing Job' },
+  { id: 'dealerShowcase', avatar: 'residentPurple', name: 'Sales Rep', role: 'Manager', phone: '365-060', place: 'Showroom floor', desk: 'Dealer Showcase' },
+  { id: 'performanceBay', avatar: 'mechanic', name: 'Tuner', role: 'Manager', phone: '365-070', place: 'Dyno bay', desk: 'Performance Bay' },
+  { id: 'raceEvent', avatar: 'driver', name: 'Crew Chief', role: 'Manager', phone: '365-080', place: 'Pit lane', desk: 'Race Event' }
 ];
 
 const EMPLOYEES = [
-  { id: 'residentBlue', avatar: 'residentBlue', name: 'Mia', role: 'Employee', job: 'Tires' },
-  { id: 'residentGreen', avatar: 'residentGreen', name: 'Jay', role: 'Employee', job: 'Parts' },
-  { id: 'residentOrange', avatar: 'residentOrange', name: 'Nico', role: 'Employee', job: 'Traffic' },
-  { id: 'residentPurple', avatar: 'residentPurple', name: 'Ari', role: 'Employee', job: 'Sales' },
-  { id: 'mechanic', avatar: 'mechanic', name: 'Rae', role: 'Employee', job: 'Tools' },
-  { id: 'driver', avatar: 'driver', name: 'Sol', role: 'Employee', job: 'Tow' }
+  { id: 'residentBlue', avatar: 'residentBlue', name: 'Mia', role: 'Employee', job: 'Tires', phone: '365-101', place: 'Tire shop sidewalk', desk: 'Tire Repair' },
+  { id: 'residentGreen', avatar: 'residentGreen', name: 'Jay', role: 'Employee', job: 'Parts', phone: '365-102', place: 'Parts warehouse', desk: 'Parts Desk' },
+  { id: 'residentOrange', avatar: 'residentOrange', name: 'Nico', role: 'Employee', job: 'Traffic', phone: '365-103', place: 'Avenue corner', desk: 'Street Watch' },
+  { id: 'residentPurple', avatar: 'residentPurple', name: 'Ari', role: 'Employee', job: 'Sales', phone: '365-104', place: 'Dealer sidewalk', desk: 'Showroom' },
+  { id: 'mechanic', avatar: 'mechanic', name: 'Rae', role: 'Employee', job: 'Tools', phone: '365-105', place: 'Mechanic bay', desk: 'Tool Crib' },
+  { id: 'driver', avatar: 'driver', name: 'Sol', role: 'Employee', job: 'Tow', phone: '365-106', place: 'Dispatch curb', desk: 'Tow Desk' }
 ];
 
 let selectedStaff = 'streetRoute';
@@ -88,13 +88,18 @@ function renderAvatar(person, className = 'staffAvatar') {
   return `<img class="${className}" src="${personAssetForKey(person.avatar)}" alt="" loading="eager">`;
 }
 
+function renderContacts(person) {
+  return `<span class="staffContact">${person.phone} · ${person.place}</span><small>${person.desk}</small>`;
+}
+
 function renderCard(person, state) {
   const selected = person.id === selectedStaff;
   const manager = person.role === 'Manager';
   const stats = manager ? managerStats(state, person) : null;
   const trust = manager ? stats.trust : Number(state.relationships?.[person.id] || 0);
   const status = manager ? (stats.hired ? (stats.auto ? 'Auto' : 'Paused') : stats.ready ? 'Ready' : 'Locked') : trustRank(trust);
-  return `<button type="button" class="staffCard ${selected ? 'selected' : ''} ${manager && stats.hired ? 'hired' : ''}" data-action="selectStaff" data-staff="${person.id}">${renderAvatar(person)}<b>${person.name.split(' ')[0]}</b><small>${status}</small></button>`;
+  const title = manager ? person.desk : `${person.job} · ${person.role}`;
+  return `<button type="button" class="staffCard ${selected ? 'selected' : ''} ${manager && stats.hired ? 'hired' : ''}" data-action="selectStaff" data-staff="${person.id}">${renderAvatar(person)}<span class="staffWho"><b>${person.name}</b><em>${status}</em><span>${title}</span>${renderContacts(person)}</span></button>`;
 }
 
 function renderDetail(state, person) {
@@ -107,6 +112,7 @@ function renderDetail(state, person) {
         <div>
           <b>${person.name}</b>
           <span>${person.role} · ${person.job}</span>
+          ${renderContacts(person)}
           <div class="staffStats">
             <div><strong>${trust}</strong><small>Trust</small></div>
             <div><strong>${trustRank(trust)}</strong><small>Rank</small></div>
@@ -126,6 +132,7 @@ function renderDetail(state, person) {
         <div>
           <b>${person.name}</b>
           <span>Upgrade ${stats.line?.name || 'supply'}</span>
+          ${renderContacts(person)}
           <div class="staffStats">
             <div><strong>Lv ${stats.level}</strong><small>Now</small></div>
             <div><strong>${stats.auto ? 'Auto' : 'Paused'}</strong><small>Collect</small></div>
@@ -150,7 +157,8 @@ function renderDetail(state, person) {
         ${renderAvatar(person, 'staffPortrait')}
         <div>
           <b>${person.name}</b>
-          <span>${armed ? 'This cannot be undone. They stop collecting.' : 'Let them go. The supply goes back to manual.'}</span>
+          <span>${person.phone} · ${person.place}</span>
+          <small>${armed ? 'Confirm before they are let go.' : person.desk}</small>
         </div>
         <div class="staffActions">${fire}<button class="btn ghost" data-action="screen" data-screen="world">World</button></div>
       </article>
@@ -163,6 +171,7 @@ function renderDetail(state, person) {
       <div>
         <b>${person.name}</b>
         <span>Manager · ${stats.line?.name || 'Supply'}</span>
+        ${renderContacts(person)}
         <div class="staffStats">
           <div><strong>Lv ${stats.level}</strong><small>Supply</small></div>
           <div><strong>${stats.hired ? 'Hired' : 'Open'}</strong><small>Job</small></div>
