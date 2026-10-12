@@ -1,4 +1,4 @@
-import { renderIconImage } from '../components/GamePanel.js';
+import { renderIconImage, renderFlatDataIcon } from '../components/GamePanel.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { meterLine } from '../components/StatMeter.js';
 import { fmt } from '../../systems/economySystem.js';
@@ -6,10 +6,10 @@ import { getObjectiveList } from '../../systems/objectiveSystem.js';
 import { DAILY_ORDERS } from '../../data/gameData.js';
 
 const MENU_TABS = [
-  { id: 'today', label: 'Today' },
-  { id: 'driver', label: 'Driver' },
-  { id: 'go', label: 'Go' },
-  { id: 'settings', label: 'Settings' }
+  { id: 'today', label: 'Today', icon: 'coin' },
+  { id: 'driver', label: 'Driver', icon: 'profile' },
+  { id: 'go', label: 'Go', icon: 'race' },
+  { id: 'settings', label: 'Settings', icon: 'tools' }
 ];
 
 let menuTab = 'today';
@@ -119,7 +119,7 @@ export function renderProfileScreen(state) {
     body: `
       <div class="gameMenu">
         <nav class="gameMenuTabs" role="tablist">
-          ${MENU_TABS.map((tab) => `<button type="button" role="tab" class="${menuTab === tab.id ? 'active' : ''}" data-action="menuTab" data-tab="${tab.id}" aria-selected="${menuTab === tab.id}">${tab.label}${tab.id === 'today' && readyOrders ? `<i>${readyOrders}</i>` : ''}</button>`).join('')}
+          ${MENU_TABS.map((tab) => `<button type="button" role="tab" class="${menuTab === tab.id ? 'active' : ''}" data-action="menuTab" data-tab="${tab.id}" aria-selected="${menuTab === tab.id}">${renderFlatDataIcon(tab.icon, tab.label, 'menuTabIcon')}<span>${tab.label}</span>${tab.id === 'today' && readyOrders ? `<i>${readyOrders}</i>` : ''}</button>`).join('')}
         </nav>
         <div class="gameMenuPane">${panes[menuTab] || panes.today}</div>
       </div>

@@ -637,14 +637,19 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 }
 #screen-profile .gameMenuTabs button {
   position: relative;
-  min-height: 40px;
+  min-height: 52px;
   border: 0;
   border-radius: 12px;
   background: #123044;
   color: #d7eef8;
   font-weight: 800;
-  font-size: 12px;
+  font-size: 11px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
 }
+#screen-profile .menuTabIcon { width: 20px; height: 20px; object-fit: contain; }
 #screen-profile .gameMenuTabs button.active { background: #f6c445; color: #2a1d0b; }
 #screen-profile .gameMenuTabs button i {
   position: absolute;
