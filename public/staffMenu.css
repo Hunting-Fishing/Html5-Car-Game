@@ -3,44 +3,94 @@
 #screen-profile .gameMenuTabs { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
 #screen-profile .gameMenuTabs button { font-size: 10px; min-height: 48px; }
 #screen-staff .staffTabs { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-#screen-staff.active { overflow-y: auto !important; padding-bottom: 28px !important; }
-#screen-staff .staffRoster { grid-template-columns: 1fr !important; gap: 8px !important; }
-#screen-staff .staffCard {
-  display: grid !important;
-  grid-template-columns: 48px minmax(0, 1fr) auto !important;
-  justify-items: stretch !important;
-  align-items: center !important;
-  gap: 10px !important;
-  padding: 10px !important;
-  text-align: left !important;
-}
-#screen-staff .staffCard b,
-#screen-staff .staffCard small,
-#screen-staff .staffCard span {
-  max-width: none !important;
-  overflow: visible !important;
-  text-overflow: unset !important;
-  white-space: normal !important;
-}
-#screen-staff .staffWho { display: grid; gap: 2px; min-width: 0; }
-#screen-staff .staffWho b { color: #fff; font-size: 16px; line-height: 1.2; }
-#screen-staff .staffPlace { color: #d5e7f2; font-size: 13px; line-height: 1.3; }
-#screen-staff .staffPhone { color: #f6c445; font-size: 15px; font-weight: 800; text-align: right; }
-#screen-staff .staffPhone small { display: block; color: #9fd8ff; font-size: 11px; font-weight: 700; }
-#screen-staff .staffPick {
+#screen-staff.active { overflow-y: auto !important; padding-bottom: 12px !important; background: #071722; }
+#screen-staff .staffTabs button { font-size: 12px; letter-spacing: .02em; }
+#screen-staff .assignBoard { display: grid; gap: 8px; }
+#screen-staff .assignHead {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 8px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
   align-items: center;
   padding: 8px 10px;
   border-radius: 12px;
-  background: #0d3348;
+  background: linear-gradient(180deg, #1a3d5c, #10283c);
   color: #fff;
 }
-#screen-staff .staffPick b { font-size: 15px; }
-#screen-staff .crewFilters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-#screen-staff .crewFilters button { min-height: 32px; border: 0; border-radius: 10px; background: #123044; color: #d5e7f2; font-weight: 800; }
-#screen-staff .crewFilters button.active { background: #f6c445; color: #1b1408; }
-#screen-staff .staffPick span { line-height: 1.35; }
-#screen-staff .staffPick .btn { grid-column: 2; grid-row: 1 / span 2; }
+#screen-staff .assignBoard.sales .assignHead { background: linear-gradient(180deg, #3a2468, #24143f); }
+#screen-staff .assignBoard.service .assignHead { background: linear-gradient(180deg, #123e78, #0c2748); }
+#screen-staff .assignBoard.parts .assignHead { background: linear-gradient(180deg, #6a4a12, #3a280c); }
+#screen-staff .assignBoard.drive .assignHead { background: linear-gradient(180deg, #14573a, #0c3324); }
+#screen-staff .assignHead b { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .assignPct { color: #7dffb2; font-size: 13px; font-weight: 800; }
+#screen-staff .assignRate { color: #9fd8ff; font-size: 12px; font-weight: 800; }
+#screen-staff .assignGrid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+#screen-staff .assignCard {
+  position: relative;
+  display: grid !important;
+  grid-template-rows: 72px auto;
+  min-width: 0;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 3px solid #3ddc84 !important;
+  border-radius: 14px !important;
+  background: #143526 !important;
+  color: #fff;
+  text-align: center;
+}
+#screen-staff .assignCard.rare { border-color: #f6c445 !important; background: #3a3012 !important; }
+#screen-staff .assignCard.epic { border-color: #c59bff !important; background: #2c1848 !important; }
+#screen-staff .assignCard.selected { box-shadow: 0 0 0 2px #fff; }
+#screen-staff .assignFace {
+  width: 100%;
+  height: 72px;
+  object-fit: cover;
+  object-position: center 18%;
+}
+#screen-staff .assignName {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#screen-staff .assignFoot {
+  display: grid;
+  gap: 1px;
+  padding: 4px 3px 6px;
+  background: rgba(6, 16, 28, .78);
+}
+#screen-staff .assignFoot b { color: #fff; font-size: 11px; }
+#screen-staff .assignStars { color: #f6c445; font-size: 9px; letter-spacing: -0.5px; }
+#screen-staff .assignFoot em { color: #7dffb2; font-size: 11px; font-style: normal; font-weight: 800; }
+#screen-staff .assignDock {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 6px 8px;
+  align-items: center;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid #24506a;
+  border-radius: 14px;
+  background: #0c2233;
+  color: #fff;
+}
+#screen-staff .assignDockFace { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; }
+#screen-staff .assignDock b { display: block; font-size: 14px; }
+#screen-staff .assignDock span,
+#screen-staff .assignDock small { display: block; color: #d5e7f2; font-size: 11px; line-height: 1.3; }
+#screen-staff .assignDockActions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+#screen-staff .assignDockActions .btn { min-height: 32px; padding: 6px 8px; font-size: 12px; }
 
