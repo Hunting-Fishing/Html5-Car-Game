@@ -1,4 +1,5 @@
 import './styles.css';
+import './ui/mergeLazada.css';
 import './ui/screenControlRuntime.js';
 import './ui/assetFallbackRuntime.js';
 import { publicAsset } from './data/assetUrl.js';
