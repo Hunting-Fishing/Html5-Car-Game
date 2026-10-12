@@ -39,14 +39,13 @@ export function renderProfileScreen(state) {
 
   return ScreenFrame({
     title: 'Menu',
-    subtitle: 'Profile, settings, and creator tools.',
+    subtitle: 'Profile and settings.',
     badge: `Lv ${state.level}`,
     className: 'menuCompactFrame',
     body: `
       ${SubTabBar({
         tabs: [
           { label: 'Profile', screen: 'profile', active: true, icon: 'profile' },
-          { label: 'Creator Rules', screen: 'creator', icon: 'menu' },
           { label: 'Home', screen: 'hub', icon: 'home' }
         ]
       })}
@@ -83,7 +82,6 @@ export function renderProfileScreen(state) {
       <section class="menuActionDock assetBottomSheet">
         ${ActionDock({
           actions: [
-            { label: 'Creator Rules', screen: 'creator', icon: 'menu' },
             { label: 'World Map', screen: 'world', icon: 'home', className: 'primary' },
             { label: 'Business Lines', screen: 'lines', icon: 'parts', className: 'gold' },
             { label: 'Reset Save', action: 'reset', icon: 'tools', className: 'red' }
@@ -94,7 +92,6 @@ export function renderProfileScreen(state) {
       <section id="profile-settings" class="menuSettingsStrip assetPanel settingsPanel">
         <button type="button" data-action="screen" data-screen="profile"><b>Local Save</b><span>Stay on this profile</span></button>
         <button type="button" data-action="screenToggle"><b>Fullscreen</b><span>Open the full screen</span></button>
-        <button type="button" data-action="screen" data-screen="creator"><b>Creator</b><span>Open the rules</span></button>
         <button type="button" class="danger" data-action="reset"><b>Reset</b><span>Clear this test profile</span></button>
       </section>
 
