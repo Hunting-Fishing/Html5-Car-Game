@@ -22,6 +22,187 @@ export function ensureIdleLineState(state) {
   });
 }
 
+export function tickIdleLines(state, dt) {
+  ensureIdleLineState(state);
+  IDLE_LINES.forEach((line) => {
+    const current = getLineState(state, line.key);
+    if (!current || current.level <= 0) return;
+    const cycleMs = getLineCycleMs(state, line);
+    current.cycle += dt * 1000;
+    if (!hasManager(state, line.key) || !isAutoCollectEnabled(state, line.key)) {
+      current.cycle = Math.min(current.cycle, cycleMs);
+      return;
+    }
+    let loops = 0;
+    while (current.cycle >= cycleMs && loops < 20) {
+      current.cycle -= cycleMs;
+      collectLineReward(state, line, true);
+      loops += 1;
+    }
+  });
+}
+
+export function getLineDef(lineKey) {
+  return IDLE_LINES.find((line) => line.key === lineKey);
+}
+
+export function getLineState(state, lineKey) {
+  ensureIdleLineState(state);
+  return state.idleLines.lines[lineKey];
+}
+
+export function isLineUnlocked(state, line) {
+  const current = getLineState(state, line.key);
+  if (current.level > 0) return true;
+  if (!line.unlock || line.unlock.type === 'starter') return true;
+  if (line.unlock.type === 'lineLevel') return (getLineState(state, line.unlock.key)?.level || 0) >= line.unlock.level;
+  if (line.unlock.type === 'building') return (state.buildings?.[line.unlock.key] || 0) >= line.unlock.level;
+  if (line.unlock.type === 'stage') return (state.stage || 1) >= line.unlock.stage;
+  return false;
+}
+
+export function unlockText(line) {
+  if (!line.unlock || line.unlock.type === 'starter') return 'Unlocked from start.';
+  if (line.unlock.type === 'lineLevel') return `Requires ${line.unlock.label} Lv ${line.unlock.level}.`;
+  if (line.unlock.type === 'building') return `Requires ${line.unlock.label} Lv ${line.unlock.level}.`;
+  if (line.unlock.type === 'stage') return `Requires Stage ${line.unlock.stage}.`;
+  return 'Locked.';
+}
+
+export function getLineUpgradeCost(state, line) {
+  const level = getLineState(state, line.key).level;
+  return nextLevelCost(line, level);
+}
+
+function nextLevelCost(line, level) {
+  const value = Math.floor(line.baseCost * Math.pow(line.costRate, level));
+  return { [line.costResource || 'coins']: Math.max(1, value) };
+}
+
+export function quoteLineUpgrade(state, line, qty = 1) {
+  const start = getLineState(state, line.key).level;
+  const resource = line.costResource || 'coins';
+  const wanted = qty === 'max' ? maxAffordableLevels(state, line, start, resource) : Math.max(1, Number(qty) || 1);
+  const count = Math.max(1, wanted);
+  const cost = { [resource]: 0 };
+  for (let i = 0; i < count; i += 1) cost[resource] += nextLevelCost(line, start + i)[resource];
+  return { count: wanted > 0 ? count : 0, cost, affordable: wanted > 0 && canAfford(state, cost) };
+}
+
+function maxAffordableLevels(state, line, start, resource) {
+  let purse = state.currencies?.[resource] || 0;
+  let count = 0;
+  while (count < 500) {
+    const price = nextLevelCost(line, start + count)[resource];
+    if (purse < price) break;
+    purse -= price;
+    count += 1;
+  }
+  return count;
+}
+
+export function getManagerCost(state, line) {
+  const level = getLineState(state, line.key).level;
+  const multiplier = Math.max(1, Math.floor(level / 25) + 1);
+  return Object.fromEntries(Object.entries(line.manager.cost).map(([key, value]) => [key, Math.floor(value * multiplier)]));
+}
+
+export function getLineIncome(state, line) {
+  const level = getLineState(state, line.key).level;
+  if (level <= 0) return 0;
+  return Math.max(1, Math.floor(line.baseIncome * level * getIncomeMultiplier(state, line)));
+}
+
+export function getLineCycleMs(state, line) {
+  return Math.max(850, Math.floor(line.baseCycleMs * getCycleMultiplier(state, line)));
+}
+
+export function getIncomeMultiplier(state, line) {
+  const level = getLineState(state, line.key).level;
+  return line.milestones.reduce((mult, milestone) => {
+    if (level >= milestone.level && milestone.type === 'incomeMultiplier') return mult * milestone.value;
+    return mult;
+  }, 1);
+}
+
+export function getCycleMultiplier(state, line) {
+  const level = getLineState(state, line.key).level;
+  return line.milestones.reduce((mult, milestone) => {
+    if (level >= milestone.level && milestone.type === 'cycleMultiplier') return mult * milestone.value;
+    return mult;
+  }, 1);
+}
+
+export function getNextMilestone(state, line) {
+  const level = getLineState(state, line.key).level;
+  return line.milestones.find((milestone) => level < milestone.level) || null;
+}
+
+export function hasManager(state, lineKey) {
+  ensureIdleLineState(state);
+  return Boolean(state.idleLines.managers[lineKey]);
+}
+
+export function isAutoCollectEnabled(state, lineKey) {
+  ensureIdleLineState(state);
+  return state.idleLines.autoCollect[lineKey] !== false;
+}
+
+export function toggleLineAutoCollect(state, lineKey) {
+  const line = getLineDef(lineKey);
+  if (!line) return { ok: false, message: 'Unknown income line.' };
+  if (!hasManager(state, lineKey)) return { ok: false, message: `Hire ${line.manager.name} before toggling auto collect.` };
+  state.idleLines.autoCollect[lineKey] = !isAutoCollectEnabled(state, lineKey);
+  return {
+    ok: true,
+    message: `${line.name} auto collect ${state.idleLines.autoCollect[lineKey] ? 'enabled' : 'paused'}.`
+  };
+}
+
+export function canCollectLine(state, line) {
+  const current = getLineState(state, line.key);
+  return current.level > 0 && current.cycle >= getLineCycleMs(state, line);
+}
+
+export function collectIdleLine(state, lineKey) {
+  const line = getLineDef(lineKey);
+  if (!line) return { ok: false, message: 'Unknown income line.' };
+  const current = getLineState(state, line.key);
+  if (current.level <= 0) return { ok: false, message: `${line.name} is not open yet.` };
+  if (!canCollectLine(state, line)) return { ok: false, message: `${line.name} is still running.` };
+  current.cycle -= getLineCycleMs(state, line);
+  const reward = collectLineReward(state, line, false);
+  state.daily.lotCollects = (state.daily.lotCollects || 0) + 1;
+  return { ok: true, message: `${line.name}: +${reward.amount} ${reward.label}.` };
+}
+
+export function buyLineUpgrade(state, lineKey, qty = 1) {
+  const line = getLineDef(lineKey);
+  if (!line) return { ok: false, message: 'Unknown income line.' };
+  if (!isLineUnlocked(state, line)) return { ok: false, message: unlockText(line) };
+  const quote = quoteLineUpgrade(state, line, qty);
+  if (!quote.affordable) return { ok: false, message: 'Not enough resources for this buy.' };
+  spendCost(state, quote.cost);
+  const current = getLineState(state, line.key);
+  current.level += quote.count;
+  state.objectives.idleLineUpgrade = true;
+  return { ok: true, message: `${line.name} upgraded to Lv ${current.level}.` };
+}
+
+export function buyLineManager(state, lineKey) {
+  const line = getLineDef(lineKey);
+  if (!line) return { ok: false, message: 'Unknown income line.' };
+  const current = getLineState(state, line.key);
+  if (current.level < line.manager.unlockLevel) return { ok: false, message: `${line.manager.name} unlocks at Lv ${line.manager.unlockLevel}.` };
+  if (hasManager(state, line.key)) return { ok: false, message: `${line.manager.name} is already hired.` };
+  const cost = getManagerCost(state, line);
+  if (!canAfford(state, cost)) return { ok: false, message: 'Not enough resources for manager.' };
+  spendCost(state, cost);
+  state.idleLines.managers[line.key] = true;
+  state.objectives.firstManager = true;
+  return { ok: true, message: `${line.manager.name} hired. ${line.name} now auto-collects.` };
+}
+
 export function fireLineManager(state, lineKey) {
   const line = getLineDef(lineKey);
   if (!line) return { ok: false, message: 'Unknown income line.' };
@@ -29,4 +210,25 @@ export function fireLineManager(state, lineKey) {
   state.idleLines.managers[line.key] = false;
   state.idleLines.autoCollect[line.key] = false;
   return { ok: true, message: `${line.manager.name} was let go. ${line.name} is manual again.` };
+}
+
+export function getTotalIdlePerMinute(state) {
+  ensureIdleLineState(state);
+  return IDLE_LINES.reduce((totals, line) => {
+    const current = getLineState(state, line.key);
+    if (current.level <= 0) return totals;
+    const amount = (getLineIncome(state, line) * 60000) / getLineCycleMs(state, line);
+    totals[line.output] = (totals[line.output] || 0) + amount;
+    return totals;
+  }, {});
+}
+
+function collectLineReward(state, line, automatic) {
+  const amount = getLineIncome(state, line);
+  addCurrency(state, line.output, amount);
+  addXp(state, Math.max(1, Math.floor(amount / 12)));
+  const current = getLineState(state, line.key);
+  current.collected += 1;
+  state.idleLines.lifetimeCollections += 1;
+  return { amount, label: line.outputLabel };
 }
