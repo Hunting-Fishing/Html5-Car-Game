@@ -99,8 +99,8 @@ function renderCard(person, state) {
   const stats = manager ? managerStats(state, person) : null;
   const trust = manager ? stats.trust : Number(state.relationships?.[person.id] || 0);
   const status = manager ? (stats.hired ? (stats.auto ? 'Auto' : 'Paused') : stats.ready ? 'Ready' : 'Locked') : trustRank(trust);
-  const title = manager ? person.desk : `${person.job} · ${person.role}`;
-  return `<button type="button" class="staffCard ${selected ? 'selected' : ''} ${manager && stats.hired ? 'hired' : ''}" data-action="selectStaff" data-staff="${person.id}">${renderAvatar(person)}<span class="staffWho"><b>${person.name}</b><em>${status}</em><span>${title}</span>${renderContacts(person)}</span></button>`;
+  const title = manager ? person.desk : person.job;
+  return `<button type="button" class="staffCard ${selected ? 'selected' : ''} ${manager && stats.hired ? 'hired' : ''}" data-action="selectStaff" data-staff="${person.id}">${renderAvatar(person)}<span class="staffWho"><b>${person.name}</b><span class="staffPlace">${person.place} · ${title}</span></span><span class="staffPhone">${person.phone}<small>${status}</small></span></button>`;
 }
 
 function renderDetail(state, person) {
@@ -206,7 +206,8 @@ export function renderStaffScreen(state) {
       <nav class="staffTabs" role="tablist">
         ${STAFF_TABS.map((tab) => `<button type="button" class="${staffTab === tab.id ? 'active' : ''}" data-action="staffTab" data-tab="${tab.id}">${tab.label}</button>`).join('')}
       </nav>
-      ${person ? renderDetail(state, person) : `<p class="staffEmpty">${empty}</p>`}
+      ${staffTab === 'list' && person ? `<div class="staffPick"><b>${person.name}</b><span>${person.phone} · ${person.place}</span><button class="btn small gold" data-action="screen" data-screen="world">Meet</button></div>` : ''}
+      ${staffTab === 'list' ? '' : person ? renderDetail(state, person) : `<p class="staffEmpty">${empty}</p>`}
       <div class="staffRoster">${roster.map((item) => renderCard(item, state)).join('')}</div>
     `
   });
