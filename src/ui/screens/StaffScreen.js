@@ -3,7 +3,7 @@ import { personAssetForKey } from '../../data/worldAssetMap.js';
 import { CHARACTERS, characterById } from '../../data/characterRoster.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { costToText, canAfford } from '../../systems/economySystem.js';
-import { characterView, ensureCrewEmployment, taskInfo } from '../../systems/characterSystem.js';
+import { characterView, ensureCrewEmployment, taskInfo, perkList } from '../../systems/characterSystem.js';
 import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
@@ -207,6 +207,22 @@ function renderTasks(view) {
   return `<div class="taskRow"><span>Task</span>${buttons}${clear}<small>${current ? current.blurb : 'Pick a task that matches a talent.'}</small></div>`;
 }
 
+function renderTraining(state, view) {
+  if (!view?.hired) return '';
+  const ready = canAfford(state, view.trainCost) && view.energy >= view.trainEnergy;
+  const buttons = view.skills.map((skill) => `<button type="button" class="taskBtn" data-action="trainSkill" data-staff="${view.id}" data-skill="${skill.key}" ${ready ? '' : 'disabled'}>Train ${skill.label}<small>${costToText(view.trainCost)} · ${view.trainEnergy} energy</small></button>`).join('');
+  const rest = `<button type="button" class="taskBtn" data-action="restCrew" data-staff="${view.id}" ${canAfford(state, { coins: 10 }) ? '' : 'disabled'}>Rest<small>20 energy · 10 coins</small></button>`;
+  return `<div class="taskRow"><span>Training · ${view.trains} done</span>${buttons}${rest}</div>`;
+}
+
+function renderPerks(view) {
+  if (!view?.hired) return '';
+  if (view.trains < 1) return '<p class="taskNote">Train once to unlock a perk.</p>';
+  const buttons = perkList().map((perk) => `<button type="button" class="taskBtn ${view.perk === perk.key ? 'on' : ''}" data-action="equipPerk" data-staff="${view.id}" data-perk="${perk.key}">${perk.label}<small>${perk.blurb}</small></button>`).join('');
+  const clear = view.perk ? `<button type="button" class="taskBtn" data-action="equipPerk" data-staff="${view.id}" data-perk="">Clear perk</button>` : '';
+  return `<div class="taskRow"><span>Perk</span>${buttons}${clear}</div>`;
+}
+
 function renderSalary(view) {
   if (!view?.hired) return '';
   const percent = Math.round(view.payRate * 100);
@@ -274,6 +290,8 @@ function renderDock(state, view, managerId) {
       <div class="staffPay"><span>Salary</span><b>${costToText({ coins: view.pay.coins })}</b><small>${card}</small></div>
       ${renderSalary(view)}
       ${renderTasks(view)}
+      ${renderTraining(state, view)}
+      ${renderPerks(view)}
       <div class="assignDockActions">${hire}${fire}${makeManager}${upgrade}${promote}${jobButton}</div>
     </div>
   </div>`;
