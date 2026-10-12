@@ -241,7 +241,18 @@ export function deliverCustomer(state, customerId, boardIndex) {
     }
   }
 
+  state.merge.lastDelivery = {
+    title: customer.title,
+    energy: energyBack,
+    rewards: customer.reward || {},
+    line: lineMsg
+  };
+
   return { ok: true, message: `Delivered ${customer.title}. +${energyBack} energy, +1 rep.${lineMsg}` };
+}
+
+export function clearLastDelivery(state) {
+  if (state.merge) state.merge.lastDelivery = null;
 }
 
 export function buyEnergyPack(state) {
