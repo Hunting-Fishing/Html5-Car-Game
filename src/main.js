@@ -32,7 +32,7 @@ import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, addCurrency, addXp, canAfford, spendCost } from './systems/economySystem.js';
 import { applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { claimDaily } from './systems/objectiveSystem.js';
-import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState } from './systems/mergeSystem.js';
+import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState, tapGenerator, deliverCustomer } from './systems/mergeSystem.js';
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
 import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
@@ -395,6 +395,15 @@ function handleClick(event) {
   if (action === 'autoMerge') result = autoMergeOnce(state);
   if (action === 'sellSelected') result = sellSelected(state);
   if (action === 'cell') result = selectOrMergeCell(state, Number(target.dataset.index));
+  if (action === 'tapGenerator') result = tapGenerator(state, Number(target.dataset.index));
+  if (action === 'deliverCustomer') {
+    const custId = target.dataset.customer;
+    const matchIdx = state.merge.board.findIndex(item => {
+      const c = (state.merge.customers || []).find(x => x.id === custId);
+      return c && item && item.type === 'product' && item.chain === c.chain && item.level >= c.level;
+    });
+    result = deliverCustomer(state, custId, matchIdx >= 0 ? matchIdx : 0);
+  }
   if (action === 'upgrade') result = buyUpgrade(state, target.dataset.key);
   if (action === 'building') result = buyBuilding(state, target.dataset.key);
   if (action === 'claimDaily') result = claimDaily(state, target.dataset.key);
@@ -410,7 +419,7 @@ function handleClick(event) {
   }
   if (action === 'reset') return;
   applyDerivedObjectives(state);
-  if (result?.ok && action === 'cell') playSfx('merge');
+  if (result?.ok && (action === 'cell' || action === 'tapGenerator')) playSfx(action === 'tapGenerator' ? 'tap' : 'merge');
   if (result?.ok && (action === 'collectLine' || action === 'claimDaily' || action === 'claimOffline')) playSfx(action === 'collectLine' ? 'collect' : 'claim');
   if (result?.message) {
     emitRewardFeedback({ state, result, before: feedbackBefore, action });
