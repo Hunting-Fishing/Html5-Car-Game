@@ -32,7 +32,6 @@ export function normalizeMergeState(state) {
   if (typeof state.merge.maxEnergy !== 'number') state.merge.maxEnergy = 50;
   if (typeof state.merge.energyRegen !== 'number') state.merge.energyRegen = 0.08;
   if (!Array.isArray(state.merge.customers)) state.merge.customers = [];
-  // Seed starter generators only if board is completely empty (new or migrated empty save)
   if (state.merge.board.every(cell => !cell) && state.merge.totalMerges === 0) {
     state.merge.board[0] = makeItem('original', 1, 'generator');
     state.merge.board[1] = makeItem('tools', 1, 'generator');
@@ -67,9 +66,7 @@ export function tickSupplier(state, dt) {
   if (state.merge.energy < state.merge.maxEnergy) {
     state.merge.energy = Math.min(state.merge.maxEnergy, state.merge.energy + state.merge.energyRegen * dt);
   }
-  if (state.merge.supplierSlots.every(Boolean)) {
-    // still process customers
-  } else {
+  if (!state.merge.supplierSlots.every(Boolean)) {
     state.merge.supplierTimer -= dt;
     if (state.merge.supplierTimer <= 0) {
       const empty = state.merge.supplierSlots.findIndex((slot) => !slot);
@@ -77,10 +74,8 @@ export function tickSupplier(state, dt) {
       state.merge.supplierTimer = state.merge.supplierDuration;
     }
   }
-  // Expire old customers
   const now = Date.now();
   state.merge.customers = state.merge.customers.filter(c => !c.expires || c.expires > now);
-  // Spawn if room
   if (state.merge.customers.length < 2 && Math.random() < 0.015) {
     spawnCustomer(state);
   }
@@ -221,8 +216,12 @@ export function deliverCustomer(state, customerId, boardIndex) {
   state.merge.customers.splice(custIdx, 1);
   Object.entries(customer.reward || {}).forEach(([key, amount]) => addCurrency(state, key, amount));
   addXp(state, 12);
+  // Energy and reputation feedback
+  const energyBack = 3 + Math.floor(customer.level || 1);
+  state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + energyBack);
+  state.reputation = (state.reputation || 0) + 1;
   state.objectives.firstDelivery = true;
-  return { ok: true, message: `Delivered ${customer.title}.` };
+  return { ok: true, message: `Delivered ${customer.title}. +${energyBack} energy, +1 rep.` };
 }
 
 export function itemDisplayName(item) {
