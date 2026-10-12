@@ -8,7 +8,8 @@ import {
   itemDisplayName,
   normalizeMergeState,
   shelfCapacity,
-  unlockedChainKeys
+  unlockedChainKeys,
+  getTutorialHint
 } from '../../systems/mergeSystem.js';
 
 function renderChainIcon(key, label, className = 'chainIconAsset') {
@@ -34,6 +35,8 @@ export function renderMergeScreen(state) {
   const maxEnergy = state.merge.maxEnergy || 50;
   const upgrades = state.merge.energyUpgrades || 0;
   const capCost = 150 + upgrades * 80;
+  const hint = getTutorialHint(state);
+  const freeReady = Date.now() - (state.merge.lastFreeEnergy || 0) >= 5 * 60 * 1000;
 
   return `
     <section class="card gamePanel RewardPanel mergeUnifiedPanel mergePlayArea" data-component="RewardPanel">
@@ -55,6 +58,8 @@ export function renderMergeScreen(state) {
           </div>
         </div>
 
+        ${hint ? `<div class="mergeHint" style="background:#fff3cd;padding:8px;border-radius:6px;margin:6px 0;font-size:0.9em;">${hint}</div>` : ''}
+
         ${renderCustomers(state)}
 
         <div class="mergeBoardActions">
@@ -63,6 +68,7 @@ export function renderMergeScreen(state) {
           <button class="btn small red" data-action="sellSelected">Sell</button>
           <button class="btn small gold" data-action="buyEnergyPack">Energy Pack (80)</button>
           <button class="btn small" data-action="upgradeEnergyCap" ${upgrades >= 5 ? 'disabled' : ''}>Cap +10 (${capCost})</button>
+          <button class="btn small" data-action="freeEnergyRefill" ${freeReady ? '' : 'disabled'}>Free Energy</button>
         </div>
 
         <div class="mergeBoardArea">
@@ -273,7 +279,7 @@ function renderMergeTips(state, active, limit) {
       </div>
       <div class="mergeTipCard">
         <b>Fast Rule</b>
-        <span>Tap generators. Merge. Deliver customers (boosts related idle lines). Raise energy cap with coins.</span>
+        <span>Tap generators. Merge. Deliver customers. Free energy every 5 min (ad placeholder).</span>
       </div>
     </div>
   `;
