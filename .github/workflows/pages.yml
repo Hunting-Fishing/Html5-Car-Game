@@ -1,7 +1,7 @@
 name: Deploy GitHub Pages
 on:
   push:
-    branches: [main]
+    branches: [main, feature/merge-generators]
   workflow_dispatch:
 permissions:
   contents: write
