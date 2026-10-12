@@ -42,6 +42,33 @@ export const CHAINS = {
   }
 };
 
+export const GENERATORS = {
+  partsBin: {
+    key: 'partsBin', label: 'Parts Bin', short: 'BIN', chain: 'original', produces: 'original',
+    energyCost: 1, maxLevel: 4, description: 'Tap to spawn Original Parts. Merge shards to upgrade.'
+  },
+  workbench: {
+    key: 'workbench', label: 'Workbench', short: 'BENCH', chain: 'tools', produces: 'tools',
+    energyCost: 1, maxLevel: 4, description: 'Tap to spawn Shop Tools.'
+  },
+  tireStation: {
+    key: 'tireStation', label: 'Tire Station', short: 'TIRE', chain: 'racing', produces: 'racing',
+    energyCost: 2, maxLevel: 3, description: 'Tap to spawn Racing Gear. Unlocks with Test Track.'
+  },
+  diagnostic: {
+    key: 'diagnostic', label: 'Diagnostic Bench', short: 'DIAG', chain: 'performance', produces: 'performance',
+    energyCost: 2, maxLevel: 3, description: 'Tap to spawn Performance Parts. Unlocks with Tuning Corner.'
+  }
+};
+
+export const CUSTOMER_TEMPLATES = [
+  { key: 'oil', title: 'Oil change', chain: 'original', level: 7, reward: { coins: 40, parts: 4 }, hint: 'Needs Oil Filter or higher' },
+  { key: 'brake', title: 'Brake job', chain: 'original', level: 9, reward: { coins: 55, parts: 6 }, hint: 'Needs Brake Pads' },
+  { key: 'tool', title: 'Tool request', chain: 'tools', level: 4, reward: { coins: 35, tools: 3 }, hint: 'Needs a basic tool' },
+  { key: 'tire', title: 'Tire change', chain: 'racing', level: 2, reward: { coins: 50, rep: 2 }, hint: 'Needs Sport Tire' },
+  { key: 'tune', title: 'Quick tune', chain: 'performance', level: 3, reward: { coins: 60, tune: 2 }, hint: 'Needs Intake Pipe' }
+];
+
 export const RACE_MODES = {
   street: {
     label: 'Street Loop', icon: iconPath(RACE_ROUTE_ICON_BASE, 'street.svg'), fallbackIcon: '\u{1F306}',
