@@ -69,40 +69,127 @@ const RESIDENT_WANTS = [
   { key: 'driver', name: 'Sol', want: 'I want tow dispatch ready when cars break down.', building: 'towDispatch', menuLabel: 'Tow and recovery buildings', factors: ['vehicleBreakdowns', 'stuckVehicles', 'trafficJams'] }
 ];
 
+function residentTree({ problem, ask, personal, favor, cold }) {
+  return {
+    greet: {
+      text: problem,
+      choices: [
+        { id: 'help', label: 'What do you need?', next: 'ask' },
+        { id: 'personal', label: 'How are you holding up?', next: 'personal' },
+        { id: 'later', label: 'Not now', next: 'brush' }
+      ]
+    },
+    ask: {
+      text: ask,
+      choices: [
+        { id: 'shops', label: 'Open Supplies', screen: 'lines', next: 'sent' },
+        { id: 'more', label: 'Tell me the rest', next: 'more' },
+        { id: 'back', label: 'Back', next: 'greet' }
+      ]
+    },
+    more: {
+      text: personal,
+      choices: [
+        { id: 'help', label: 'I will handle it', next: 'favor' },
+        { id: 'garage', label: 'Open Garage', screen: 'garage', next: 'sent' },
+        { id: 'back', label: 'Back', next: 'ask' }
+      ]
+    },
+    personal: {
+      text: personal,
+      friend: 'You have shown up before. I can tell you the part I do not tell strangers.',
+      partner: 'You are one of us. Skip the small talk. The favor is yours.',
+      choices: [
+        { id: 'help', label: 'I am listening', next: 'favor' },
+        { id: 'secret', label: 'Ask for a favor', next: 'secret', need: 40 },
+        { id: 'back', label: 'Back', next: 'greet' }
+      ]
+    },
+    favor: {
+      text: favor,
+      choices: [
+        { id: 'shops', label: 'Open Supplies', screen: 'lines', next: 'sent' },
+        { id: 'race', label: 'I have a race first', screen: 'race', next: 'brush' },
+        { id: 'back', label: 'Back', next: 'greet' }
+      ]
+    },
+    secret: {
+      text: favor,
+      partner: 'Because it is you, I will keep watch on this block while you are gone.',
+      choices: [
+        { id: 'shops', label: 'Open Supplies', screen: 'lines', next: 'sent' },
+        { id: 'back', label: 'Thanks', next: 'greet' }
+      ]
+    },
+    locked: {
+      text: 'Not yet. Help the block a little and ask me again.',
+      choices: [{ id: 'back', label: 'Fair', next: 'personal' }]
+    },
+    sent: {
+      text: 'I will be on this sidewalk when you get back.',
+      choices: [
+        { id: 'back', label: 'Keep talking', next: 'greet' },
+        { id: 'close', label: 'See you', screen: 'close' }
+      ]
+    },
+    brush: {
+      text: cold,
+      choices: [
+        { id: 'back', label: 'Sorry. Go on.', next: 'greet' },
+        { id: 'close', label: 'Later', screen: 'close' }
+      ]
+    }
+  };
+}
+
 const NPC_DIALOGUE = {
-  residentBlue: {
-    greet: { text: 'My tires keep popping on this block. A closer tire shop would save the rims.', choices: [{ id: 'help', label: 'I will check the shops', next: 'thanks' }, { id: 'later', label: 'Not today', next: 'brush' }] },
-    thanks: { text: 'Good. Restock the tire shop and the potholes stop eating the rubber.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'Anything else?', next: 'greet' }] },
-    brush: { text: 'Fine. Do not leave me stranded when the next one blows.', choices: [{ id: 'back', label: 'I changed my mind', next: 'greet' }, { id: 'close', label: 'Later', screen: 'close' }] }
-  },
-  residentGreen: {
-    greet: { text: 'The parts warehouse is thin. Deliveries stall when the shelves go empty.', choices: [{ id: 'help', label: 'I can restock it', next: 'thanks' }, { id: 'later', label: 'Later', next: 'brush' }] },
-    thanks: { text: 'Bring parts in and the courier can keep the shops moving.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'Got it', next: 'greet' }] },
-    brush: { text: 'Then the next repair waits on a box that is not here.', choices: [{ id: 'back', label: 'Alright, I will look', next: 'thanks' }, { id: 'close', label: 'Close', screen: 'close' }] }
-  },
-  residentOrange: {
-    greet: { text: 'Traffic is stacking up. We need a repair shop before the next breakdown.', choices: [{ id: 'help', label: 'Where should I start?', next: 'thanks' }, { id: 'race', label: 'I am headed to a race', screen: 'race', next: 'brush' }] },
-    thanks: { text: 'Upgrade the repair shop. A working bay clears the street faster than another horn.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'garage', label: 'Open Garage', screen: 'garage' }] },
-    brush: { text: 'Race if you want. Just come back before this lane locks up.', choices: [{ id: 'back', label: 'I will', next: 'greet' }, { id: 'close', label: 'Close', screen: 'close' }] }
-  },
-  residentPurple: {
-    greet: { text: 'The showroom looks empty from the sidewalk. Buyers walk past.', choices: [{ id: 'help', label: 'I can fill the lot', next: 'thanks' }, { id: 'later', label: 'They will come back', next: 'brush' }] },
-    thanks: { text: 'Put cars on the dealer showcase. I will send people over.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'Thanks', next: 'greet' }] },
-    brush: { text: 'They will not. An empty lot does not get a second look.', choices: [{ id: 'back', label: 'Fair', next: 'thanks' }, { id: 'close', label: 'Close', screen: 'close' }] }
-  },
-  mechanic: {
-    greet: { text: 'I have work orders and no tools. Upgrade the shops or I am standing around.', choices: [{ id: 'help', label: 'What do you need?', next: 'thanks' }, { id: 'garage', label: 'Open the garage', screen: 'garage' }] },
-    thanks: { text: 'Toolkits from the mobile mechanic. Then I can clear the work orders.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'On it', next: 'greet' }] }
-  },
-  driver: {
-    greet: { text: 'Cars die in the lane and nobody tows them. Dispatch has to be ready.', choices: [{ id: 'help', label: 'I will check dispatch', next: 'thanks' }, { id: 'later', label: 'Drive around them', next: 'brush' }] },
-    thanks: { text: 'Hire the tow operator and keep the yard stocked. I will stop honking.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'Deal', next: 'greet' }] },
-    brush: { text: 'Until you are the one stuck behind them.', choices: [{ id: 'back', label: 'Point taken', next: 'thanks' }, { id: 'close', label: 'Close', screen: 'close' }] }
-  }
+  residentBlue: residentTree({
+    problem: 'My tires keep popping on this block. A closer tire shop would save the rims.',
+    ask: 'Restock the tire shop. The potholes are eating the rubber.',
+    personal: 'I drive this street every morning. One more flat and I am walking to work.',
+    favor: 'If the tire shop stays stocked, I will send the neighbors there instead of cursing the road.',
+    cold: 'Fine. Do not leave me stranded when the next one blows.'
+  }),
+  residentGreen: residentTree({
+    problem: 'The parts warehouse is thin. Deliveries stall when the shelves go empty.',
+    ask: 'Bring parts in. The courier cannot move shops on an empty shelf.',
+    personal: 'I count boxes for a living. Today the count is embarrassing.',
+    favor: 'Keep Parts Delivery running and I will stop flagging you down about it.',
+    cold: 'Then the next repair waits on a box that is not here.'
+  }),
+  residentOrange: residentTree({
+    problem: 'Traffic is stacking up. We need a repair shop before the next breakdown.',
+    ask: 'A working bay clears the street faster than another horn.',
+    personal: 'I have been stuck behind the same dead car twice this week.',
+    favor: 'Upgrade the repair shop. I will stop waving people into the jam.',
+    cold: 'Race if you want. Just come back before this lane locks up.'
+  }),
+  residentPurple: residentTree({
+    problem: 'The showroom looks empty from the sidewalk. Buyers walk past.',
+    ask: 'Put cars on the dealer showcase. An empty lot does not get a second look.',
+    personal: 'I sell the idea of a car before anyone sits in it. I cannot sell a blank row.',
+    favor: 'Fill the showcase and I will walk buyers over myself.',
+    cold: 'They will not come back. An empty lot stays empty.'
+  }),
+  mechanic: residentTree({
+    problem: 'I have work orders and no tools. Upgrade the shops or I am standing around.',
+    ask: 'Toolkits come from the mobile mechanic. Without them the orders sit.',
+    personal: 'I can fix the car. I cannot invent a wrench.',
+    favor: 'Stock the tools and I will clear the work orders on this block.',
+    cold: 'Then I will keep standing here with a list and nothing to turn.'
+  }),
+  driver: residentTree({
+    problem: 'Cars die in the lane and nobody tows them. Dispatch has to be ready.',
+    ask: 'Hire the tow operator and keep the yard stocked.',
+    personal: 'I drive around them until I am the one stuck behind them.',
+    favor: 'Keep tow dispatch ready and I will stop laying on the horn.',
+    cold: 'Drive around them, then. Until you are the one boxed in.'
+  })
 };
 
 const npcStep = {};
 const relationshipCache = {};
+const spentBond = new Set();
 let lastBondNote = '';
 
 const CITY_PROBLEM_DEFS = {
@@ -920,23 +1007,70 @@ function supplyStatus(lineKey) {
 
 function managerDialogue(staff) {
   const status = supplyStatus(staff.lineKey);
+  const score = relationshipScore(staff.lineKey);
   const running = status.hired
     ? `${staff.business} is covered. I am collecting it. We are at level ${status.level}.`
     : `Nobody is running ${staff.business} yet. It is level ${status.level}. Hire me from Supplies and I will collect it.`;
+  const trusted = score >= 40
+    ? `You have been straight with me. ${staff.business} is in better shape because of it.`
+    : `I stay on ${staff.business} while you race. You still buy the levels. I only collect.`;
   return {
     greet: {
       text: running,
       choices: [
-        { id: 'shop', label: 'Open Supplies', screen: 'lines' },
         { id: 'job', label: 'What do you do?', next: 'job' },
-        { id: 'later', label: 'Later', screen: 'close' }
+        { id: 'pay', label: 'How does the pay work?', next: 'pay' },
+        { id: 'later', label: 'Later', next: 'brush' }
       ]
     },
     job: {
-      text: `I stay on ${staff.business} while you race. You still buy the levels. I only collect.`,
+      text: trusted,
       choices: [
-        { id: 'shop', label: 'Open Supplies', screen: 'lines' },
-        { id: 'back', label: 'Got it', next: 'greet' }
+        { id: 'shops', label: 'Open Supplies', screen: 'lines', next: 'sent' },
+        { id: 'more', label: 'What if I hire you?', next: 'hire' },
+        { id: 'back', label: 'Back', next: 'greet' }
+      ]
+    },
+    pay: {
+      text: 'The supply pays the shop, not me. My cut is the route staying open.',
+      choices: [
+        { id: 'help', label: 'That is fair', next: 'hire' },
+        { id: 'back', label: 'Back', next: 'greet' }
+      ]
+    },
+    hire: {
+      text: status.hired ? 'I am already hired. Leave the levels to you and the collecting to me.' : `Hire me once ${staff.business} is high enough. Then this route runs while you are gone.`,
+      friend: `We are good. Keep buying levels and I will not let ${staff.business} sit full.`,
+      choices: [
+        { id: 'shops', label: 'Open Supplies', screen: 'lines', next: 'sent' },
+        { id: 'secret', label: 'Watch the route for me', next: 'secret', need: 40 },
+        { id: 'back', label: 'Back', next: 'greet' }
+      ]
+    },
+    secret: {
+      text: `I will keep an eye on ${staff.business} and wave you down if it stalls.`,
+      partner: `Partner's word. If ${staff.business} stalls, I am the first person you see.`,
+      choices: [
+        { id: 'back', label: 'I am counting on you', next: 'greet' },
+        { id: 'close', label: 'See you on the route', screen: 'close' }
+      ]
+    },
+    locked: {
+      text: 'Ask me that when we are friends. Help the route a little first.',
+      choices: [{ id: 'back', label: 'Alright', next: 'hire' }]
+    },
+    sent: {
+      text: 'I will keep walking this sidewalk. Come back when the supply changes.',
+      choices: [
+        { id: 'back', label: 'Keep talking', next: 'greet' },
+        { id: 'close', label: 'See you', screen: 'close' }
+      ]
+    },
+    brush: {
+      text: 'The route does not pause because you do. I will be here.',
+      choices: [
+        { id: 'back', label: 'Sorry. Go on.', next: 'greet' },
+        { id: 'close', label: 'Later', screen: 'close' }
       ]
     }
   };
@@ -957,13 +1091,19 @@ function currentNpcNode(person) {
   return book?.[step] || book?.greet || { text: person.want || person.business || 'Hey.', choices: [] };
 }
 
+function spokenText(node, score) {
+  if (score >= 70 && node.partner) return node.partner;
+  if (score >= 40 && node.friend) return node.friend;
+  return node.text;
+}
+
 function renderNpcTalk(person) {
   const id = person.lineKey || person.key;
   const node = currentNpcNode(person);
   const score = relationshipScore(id);
   const rank = relationshipRank(score);
   const replies = (node.choices || []).map((choice) => `<button type="button" class="btn small" onclick="window.replyToNpc?.('${id}','${choice.id}')">${escapeHtml(choice.label)}</button>`).join('');
-  return `<div class="npcTalk"><div class="npcBond"><b>${rank}</b><span><i style="width:${score}%"></i></span><small>${score}</small></div><p>${escapeHtml(node.text)}</p>${lastBondNote ? `<em>${escapeHtml(lastBondNote)}</em>` : ''}<div class="npcReplies">${replies}</div></div>`;
+  return `<div class="npcTalk"><div class="npcBond"><b>${rank}</b><span><i style="width:${score}%"></i></span><small>${score}</small></div><p>${escapeHtml(spokenText(node, score))}</p>${lastBondNote ? `<em>${escapeHtml(lastBondNote)}</em>` : ''}<div class="npcReplies">${replies}</div></div>`;
 }
 
 function relationshipScore(id) {
@@ -1000,19 +1140,28 @@ function shiftRelationship(id, name, delta) {
 window.replyToNpc = (id, choiceId) => {
   const person = npcById(id);
   if (!person) return;
+  const step = npcStep[id] || 'greet';
   const choice = (currentNpcNode(person).choices || []).find((item) => item.id === choiceId);
   if (!choice) return;
-  const delta = bondFor(choice);
-  if (delta) shiftRelationship(id, person.name, delta);
-  lastBondNote = delta > 0 ? `Trust +${delta}` : delta < 0 ? `Trust ${delta}` : '';
-  if (choice.next) npcStep[id] = choice.next;
-  if (choice.screen === 'close') {
-    window.closeMobileResidentSheetSafe?.();
-    return;
+  if (choice.need && relationshipScore(id) < choice.need) {
+    npcStep[id] = 'locked';
+    lastBondNote = 'Need more trust';
+  } else {
+    const delta = bondFor(choice);
+    const spentKey = `${id}:${step}:${choice.id}`;
+    const gained = delta > 0 && spentBond.has(spentKey) ? 0 : delta;
+    if (delta > 0) spentBond.add(spentKey);
+    if (gained) shiftRelationship(id, person.name, gained);
+    lastBondNote = gained > 0 ? `Trust +${gained}` : gained < 0 ? `Trust ${gained}` : '';
+    if (choice.next) npcStep[id] = choice.next;
+    if (choice.screen === 'close') {
+      window.closeMobileResidentSheetSafe?.();
+      return;
+    }
+    if (choice.screen === 'lines') window.openSupplyFromWorld?.();
+    if (choice.screen === 'garage') document.querySelector('.pixiWorldProxy[data-proxy="garage"]')?.click();
+    if (choice.screen === 'race') document.querySelector('.pixiWorldProxy[data-proxy="race"]')?.click();
   }
-  if (choice.screen === 'lines') window.openSupplyFromWorld?.();
-  if (choice.screen === 'garage') document.querySelector('.pixiWorldProxy[data-proxy="garage"]')?.click();
-  if (choice.screen === 'race') document.querySelector('.pixiWorldProxy[data-proxy="race"]')?.click();
   if (selectedSupplyKey) refreshSupplyManagerSheet();
   else if (selectedResidentKey) refreshOpenResidentSheet();
 };
