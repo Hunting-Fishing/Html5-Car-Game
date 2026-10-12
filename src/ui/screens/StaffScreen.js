@@ -235,9 +235,7 @@ function renderDesk(state, desk) {
   const lead = roster.find((item) => item.id === managerId) || roster[0];
   if (!lead) return '';
   const open = pickingManager && staffDesk === desk.id;
-  const grid = open
-    ? `<div class="assignGrid">${roster.map((item) => renderAssignCard(item, managerId)).join('')}</div>`
-    : '';
+  const grid = `<div class="assignGrid">${roster.map((item) => renderAssignCard(item, managerId)).join('')}</div>`;
   return `<section class="assignDesk ${desk.id} ${open ? 'picking' : ''}">
     <button type="button" class="assignLead ${lead.id === selectedStaff ? 'selected' : ''}" data-action="selectStaff" data-staff="${lead.id}" data-desk="${desk.id}">
       ${renderAvatar(lead, 'assignDockFace')}
@@ -257,7 +255,7 @@ export function renderStaffScreen(state) {
   const home = DESKS.map((desk) => ({ desk, roster: viewsForDesk(state, desk) })).find((item) => item.roster.some((person) => person.id === view?.id));
   if (home && !pickingManager) staffDesk = home.desk.id;
   const managerId = home ? managerIdFor(state, home.desk, home.roster) : '';
-  const hint = pickingManager ? 'Tap a card to change this desk’s manager.' : 'Each desk has its own manager.';
+  const hint = pickingManager ? 'Tap a card to change this desk’s manager.' : 'Every crew member has their own face. Tap Change to pick a manager.';
   return ScreenFrame({
     title: 'Assignments',
     subtitle: hint,
