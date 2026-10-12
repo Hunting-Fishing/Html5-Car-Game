@@ -69,12 +69,14 @@ const RESIDENT_WANTS = [
   { key: 'driver', name: 'Sol', want: 'I want tow dispatch ready when cars break down.', building: 'towDispatch', menuLabel: 'Tow and recovery buildings', factors: ['vehicleBreakdowns', 'stuckVehicles', 'trafficJams'] }
 ];
 
-function residentTree({ problem, ask, personal, favor, cold }) {
+function residentTree({ problem, ask, personal, favor, cold, rumor, stake }) {
   return {
     greet: {
       text: problem,
+      topic: 'Start',
       choices: [
         { id: 'help', label: 'What do you need?', next: 'ask' },
+        { id: 'rumor', label: 'Heard anything?', next: 'rumor' },
         { id: 'trade', label: 'Want to trade?', next: 'trade' },
         { id: 'personal', label: 'How are you holding up?', next: 'personal' },
         { id: 'later', label: 'Not now', next: 'brush' }
@@ -142,7 +144,41 @@ function residentTree({ problem, ask, personal, favor, cold }) {
     },
     trade: {
       text: 'Here is what I am carrying, and what I will take off your hands.',
-      choices: [{ id: 'back', label: 'Back', next: 'greet' }]
+      topic: 'Trade',
+      choices: [{ id: 'back', label: 'Back to the talk', next: 'greet' }]
+    },
+    rumor: {
+      text: rumor,
+      topic: 'Rumor',
+      choices: [
+        { id: 'help', label: 'Who is behind it?', next: 'stake' },
+        { id: 'city', label: 'What does the city say?', next: 'city', need: 35, needKind: 'rep' },
+        { id: 'back', label: 'Back', next: 'greet' }
+      ]
+    },
+    stake: {
+      text: stake,
+      topic: 'Rumor',
+      choices: [
+        { id: 'help', label: 'I will look into it', next: 'favor' },
+        { id: 'trade', label: 'Show me your stock', next: 'trade' },
+        { id: 'back', label: 'Back', next: 'rumor' }
+      ]
+    },
+    city: {
+      text: 'Your name is getting around. Do not spend it on an empty promise.',
+      topic: 'City',
+      friend: 'They know you here. If you fix this, I will say it was you.',
+      partner: 'You are the name they trust. I will tell the block you handled it.',
+      choices: [
+        { id: 'help', label: 'Then I will handle it', next: 'favor' },
+        { id: 'back', label: 'Back', next: 'rumor' }
+      ]
+    },
+    repLocked: {
+      text: 'The block does not know you well enough for that story. Raise your city name first.',
+      topic: 'Locked',
+      choices: [{ id: 'back', label: 'Fair', next: 'rumor' }]
     }
   };
 }
@@ -153,42 +189,54 @@ const NPC_DIALOGUE = {
     ask: 'Restock the tire shop. The potholes are eating the rubber.',
     personal: 'I drive this street every morning. One more flat and I am walking to work.',
     favor: 'If the tire shop stays stocked, I will send the neighbors there instead of cursing the road.',
-    cold: 'Fine. Do not leave me stranded when the next one blows.'
+    cold: 'Fine. Do not leave me stranded when the next one blows.',
+    rumor: 'Someone said the tire truck skipped this block again. The flats are not an accident.',
+    stake: 'The parts courier knows who held the delivery. Ask around the warehouse, not the drivers.'
   }),
   residentGreen: residentTree({
     problem: 'The parts warehouse is thin. Deliveries stall when the shelves go empty.',
     ask: 'Bring parts in. The courier cannot move shops on an empty shelf.',
     personal: 'I count boxes for a living. Today the count is embarrassing.',
     favor: 'Keep Parts Delivery running and I will stop flagging you down about it.',
-    cold: 'Then the next repair waits on a box that is not here.'
+    cold: 'Then the next repair waits on a box that is not here.',
+    rumor: 'A whole pallet was marked delivered and never hit the shelf.',
+    stake: 'The mobile mechanic signed for it. Either the tools ate the parts, or the paper is a lie.'
   }),
   residentOrange: residentTree({
     problem: 'Traffic is stacking up. We need a repair shop before the next breakdown.',
     ask: 'A working bay clears the street faster than another horn.',
     personal: 'I have been stuck behind the same dead car twice this week.',
     favor: 'Upgrade the repair shop. I will stop waving people into the jam.',
-    cold: 'Race if you want. Just come back before this lane locks up.'
+    cold: 'Race if you want. Just come back before this lane locks up.',
+    rumor: 'The jam is not random. The same car dies in the same lane after lunch.',
+    stake: 'Tow dispatch has the plate. They will not roll until the yard has fuel and a driver.'
   }),
   residentPurple: residentTree({
     problem: 'The showroom looks empty from the sidewalk. Buyers walk past.',
     ask: 'Put cars on the dealer showcase. An empty lot does not get a second look.',
     personal: 'I sell the idea of a car before anyone sits in it. I cannot sell a blank row.',
     favor: 'Fill the showcase and I will walk buyers over myself.',
-    cold: 'They will not come back. An empty lot stays empty.'
+    cold: 'They will not come back. An empty lot stays empty.',
+    rumor: 'A buyer with cash asked for a car this morning and left because the row was bare.',
+    stake: 'The sales rep still has the name. One car on the showcase and I can call them back.'
   }),
   mechanic: residentTree({
     problem: 'I have work orders and no tools. Upgrade the shops or I am standing around.',
     ask: 'Toolkits come from the mobile mechanic. Without them the orders sit.',
     personal: 'I can fix the car. I cannot invent a wrench.',
     favor: 'Stock the tools and I will clear the work orders on this block.',
-    cold: 'Then I will keep standing here with a list and nothing to turn.'
+    cold: 'Then I will keep standing here with a list and nothing to turn.',
+    rumor: 'Three work orders are for the same car. Somebody is putting it back on the road half fixed.',
+    stake: 'It is a garage job, not a sidewalk job. Open the bay and I will stop pretending a wrench will appear.'
   }),
   driver: residentTree({
     problem: 'Cars die in the lane and nobody tows them. Dispatch has to be ready.',
     ask: 'Hire the tow operator and keep the yard stocked.',
     personal: 'I drive around them until I am the one stuck behind them.',
     favor: 'Keep tow dispatch ready and I will stop laying on the horn.',
-    cold: 'Drive around them, then. Until you are the one boxed in.'
+    cold: 'Drive around them, then. Until you are the one boxed in.',
+    rumor: 'The last tow made it two blocks and quit. Out of fuel, not out of road.',
+    stake: 'Fuel Run has the cans. Dispatch has the truck. Neither moves until you say so.'
   })
 };
 
@@ -1028,6 +1076,7 @@ function managerDialogue(staff) {
       text: running,
       choices: [
         { id: 'job', label: 'What do you do?', next: 'job' },
+        { id: 'rumor', label: 'Heard anything?', next: 'rumor' },
         { id: 'trade', label: 'Want to trade?', next: 'trade' },
         { id: 'pay', label: 'How does the pay work?', next: 'pay' },
         { id: 'later', label: 'Later', next: 'brush' }
@@ -1085,7 +1134,42 @@ function managerDialogue(staff) {
     },
     trade: {
       text: 'I can spare a little from the route, or buy what you are hauling.',
-      choices: [{ id: 'back', label: 'Back', next: 'greet' }]
+      topic: 'Trade',
+      choices: [{ id: 'back', label: 'Back to the talk', next: 'greet' }]
+    },
+    rumor: {
+      text: `People on this sidewalk keep asking if ${staff.business} is actually running.`,
+      topic: 'Rumor',
+      choices: [
+        { id: 'more', label: 'What are they saying?', next: 'stake' },
+        { id: 'city', label: 'Does the city know my name?', next: 'city', need: 35, needKind: 'rep' },
+        { id: 'back', label: 'Back', next: 'greet' }
+      ]
+    },
+    stake: {
+      text: status.hired
+        ? `They say it is running because I am on it. Level ${status.level} is the part they can see.`
+        : `They say it is idle. Level ${status.level} and no one hired. That story travels.`,
+      topic: 'Rumor',
+      choices: [
+        { id: 'shops', label: 'Open Supplies', screen: 'lines', next: 'sent' },
+        { id: 'help', label: 'I will fix that', next: 'hire' },
+        { id: 'back', label: 'Back', next: 'rumor' }
+      ]
+    },
+    city: {
+      text: 'Yes. Your name is attached to the shops now. A stalled route makes both of us look bad.',
+      topic: 'City',
+      partner: 'They say partner, not boss. Keep the route moving and I will keep saying it.',
+      choices: [
+        { id: 'shops', label: 'Open Supplies', screen: 'lines', next: 'sent' },
+        { id: 'back', label: 'Back', next: 'rumor' }
+      ]
+    },
+    repLocked: {
+      text: 'Not yet. The city still talks about the shops, not about you.',
+      topic: 'Locked',
+      choices: [{ id: 'back', label: 'Alright', next: 'rumor' }]
     }
   };
 }
@@ -1118,7 +1202,7 @@ function renderNpcTalk(person) {
   const rank = relationshipRank(score);
   const replies = (node.choices || []).map((choice) => `<button type="button" class="btn small" onclick="window.replyToNpc?.('${id}','${choice.id}')">${escapeHtml(choice.label)}</button>`).join('');
   const market = (npcStep[id] || 'greet') === 'trade' ? renderNpcMarket(person) : '';
-  return `<div class="npcTalk"><div class="npcBond"><b>${rank}</b><span><i style="width:${score}%"></i></span><small>${score}</small></div><p>${escapeHtml(spokenText(node, score))}</p>${market}${lastBondNote ? `<em>${escapeHtml(lastBondNote)}</em>` : ''}<div class="npcReplies">${replies}</div></div>`;
+  return `<div class="npcTalk"><div class="npcBond"><b>${rank}</b><span><i style="width:${score}%"></i></span><small>${score}</small></div><em class="npcTopic">${escapeHtml(node.topic || 'Talk')}</em><p>${escapeHtml(spokenText(node, score))}</p>${market}${lastBondNote ? `<em>${escapeHtml(lastBondNote)}</em>` : ''}<div class="npcReplies">${replies}</div></div>`;
 }
 
 const NPC_MARKET = {
@@ -1295,9 +1379,9 @@ window.replyToNpc = (id, choiceId) => {
   const step = npcStep[id] || 'greet';
   const choice = (currentNpcNode(person).choices || []).find((item) => item.id === choiceId);
   if (!choice) return;
-  if (choice.need && relationshipScore(id) < choice.need) {
-    npcStep[id] = 'locked';
-    lastBondNote = 'Need more trust';
+  if (choice.need && (choice.needKind === 'rep' ? cityReputation() : relationshipScore(id)) < choice.need) {
+    npcStep[id] = choice.needKind === 'rep' ? 'repLocked' : 'locked';
+    lastBondNote = choice.needKind === 'rep' ? 'Need a higher city name' : 'Need more trust';
   } else {
     const delta = bondFor(choice);
     const spentKey = `${id}:${step}:${choice.id}`;
