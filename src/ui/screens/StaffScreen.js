@@ -3,7 +3,7 @@ import { personAssetForKey } from '../../data/worldAssetMap.js';
 import { CHARACTERS, characterById } from '../../data/characterRoster.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { costToText, canAfford } from '../../systems/economySystem.js';
-import { characterView, ensureCrewEmployment, taskInfo, perkList } from '../../systems/characterSystem.js';
+import { characterView, ensureCrewEmployment, taskInfo, perkList, courseList } from '../../systems/characterSystem.js';
 import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
@@ -215,6 +215,18 @@ function renderTraining(state, view) {
   return `<div class="taskRow"><span>Training · ${view.trains} done</span>${buttons}${rest}</div>`;
 }
 
+function renderCourses(state, view) {
+  if (!view?.hired) return '';
+  const open = view.skills.length < view.slots;
+  const note = view.skills.length >= 4
+    ? 'All 4 stats are filled. Re-Training rerolls them.'
+    : open
+      ? `Stat slot ${view.skills.length + 1} of ${view.slots} is open.`
+      : `Stats ${view.skills.length}/${view.slots}. Upgrade to open the next slot.`;
+  const buttons = courseList().map((course) => `<button type="button" class="taskBtn" data-action="sendCourse" data-staff="${view.id}" data-course="${course.id}" ${canAfford(state, course.cost) ? '' : 'disabled'}>${course.label}<small>${course.blurb} · ${costToText(course.cost)}</small></button>`).join('');
+  return `<div class="taskRow"><span>Courses</span><small>${note}</small>${buttons}</div>`;
+}
+
 function renderPerks(view) {
   if (!view?.hired) return '';
   if (view.trains < 1) return '<p class="taskNote">Train once to unlock a perk.</p>';
@@ -292,6 +304,7 @@ function renderDock(state, view, managerId) {
       ${renderTasks(view)}
       ${renderTraining(state, view)}
       ${renderPerks(view)}
+      ${renderCourses(state, view)}
       <div class="assignDockActions">${hire}${fire}${makeManager}${upgrade}${promote}${jobButton}</div>
     </div>
   </div>`;
