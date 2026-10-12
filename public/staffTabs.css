@@ -1,0 +1,4 @@
+.staffTabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.staffTabs button { min-height: 36px; border: 0; border-radius: 12px; background: #123044; color: #d5e7f2; font-weight: 800; }
+.staffTabs button.active { background: #f6c445; color: #1b1408; }
+.staffEmpty { margin: 8px 0; color: #d5e7f2; font-size: 13px; }
