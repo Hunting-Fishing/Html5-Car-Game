@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=35';
+import './ui/roadRunnerRuntime.js?v=37';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -25,7 +25,7 @@ import { renderRaceScreen } from './ui/screens/RaceScreen.js';
 import { renderLinesScreen, updateLineBars, updateReadyBadge } from './ui/screens/LinesScreen.js';
 import { renderMergeScreen } from './ui/screens/MergeScreen.js';
 import { renderGarageScreen } from './ui/screens/GarageScreen.js';
-import { renderProfileScreen } from './ui/screens/ProfileScreen.js';
+import { renderProfileScreen, setMenuTab } from './ui/screens/ProfileScreen.js';
 import { renderCreatorScreen } from './ui/screens/CreatorScreen.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
 import { fmt, addCurrency, addXp } from './systems/economySystem.js';
@@ -251,6 +251,12 @@ function handleClick(event) {
     state.merge.activeTab = 'recipes';
     render();
     queueSave();
+    return;
+  }
+
+  if (action === 'menuTab') {
+    setMenuTab(target.dataset.tab);
+    render();
     return;
   }
 

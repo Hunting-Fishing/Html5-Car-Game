@@ -600,6 +600,91 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 #screen-profile .menuSettingsStrip,
 #screen-profile .menuObjectiveCompact,
 #screen-profile .menuActionDock { position: relative; z-index: 1; }
+#screen-profile.active {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding-bottom: 8px !important;
+}
+#screen-profile .menuCompactFrame {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden !important;
+  margin: 0 !important;
+}
+#screen-profile .menuCompactFrame > .screenFrameHeader { flex: none; }
+#screen-profile .menuCompactFrame > .screenFrameBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column;
+}
+#screen-profile .gameMenu {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#screen-profile .gameMenuTabs {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+#screen-profile .gameMenuTabs button {
+  position: relative;
+  min-height: 40px;
+  border: 0;
+  border-radius: 12px;
+  background: #123044;
+  color: #d7eef8;
+  font-weight: 800;
+  font-size: 12px;
+}
+#screen-profile .gameMenuTabs button.active { background: #f6c445; color: #2a1d0b; }
+#screen-profile .gameMenuTabs button i {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 99px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 16px;
+}
+#screen-profile .gameMenuPane {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+#screen-profile .menuPaneCard,
+#screen-profile .menuSettingsStrip,
+#screen-profile .menuGoGrid {
+  height: 100%;
+  overflow: hidden;
+}
+#screen-profile .menuPaneCard { display: grid; align-content: start; gap: 8px; padding: 10px; border-radius: 16px; background: rgba(8, 28, 44, .55); }
+#screen-profile .menuGoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+#screen-profile .menuGoGrid button {
+  min-height: 64px;
+  border: 0;
+  border-radius: 16px;
+  background: #1c4668;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+#screen-profile .menuObjectiveRow span { display: grid; gap: 2px; }
+#screen-profile .menuObjectiveRow b { font-size: 13px; }
+#screen-profile .menuObjectiveRow small { color: #bfe9f5; font-size: 11px; }
+#screen-profile .menuObjectiveRow em { color: #f6c445; font-style: normal; font-weight: 800; }
 #screen-race .roadRunnerShell[data-rr-active-tab="routes"] .racerPages {
   height: auto !important;
   max-height: 100% !important;
