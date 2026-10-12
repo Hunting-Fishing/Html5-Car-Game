@@ -40,7 +40,7 @@ export function renderMergeScreen(state) {
           <span class="gameIconBadge">${renderDataIcon('parts', 'Parts icon', 'gameIconBadgeImg')}</span>
           <div class="mergeUnifiedTitle">
             <h2>Parts</h2>
-            <p>Merge pairs. Tap generators.</p>
+            <p>Tap generators. Merge. Deliver.</p>
           </div>
           <div class="mergeBayDock" aria-label="Merge Bay supplier slots">
             <div class="mergeBayDockMeta">
@@ -62,7 +62,7 @@ export function renderMergeScreen(state) {
         </div>
 
         <div class="mergeBoardArea">
-          <div class="board mergeBoardGrid" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => index >= limit ? `<button class="cell locked" type="button" disabled aria-label="Locked slot"><span class="emptyText">🔒</span></button>` : renderBoardCell(state, item, index, pairSet)).join('')}</div>
+          <div class="board mergeBoardGrid" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => index >= limit ? `<button class="cell locked crate" type="button" disabled aria-label="Locked crate" style="background:#c4a574;opacity:0.7;"><span class="emptyText">📦</span></button>` : renderBoardCell(state, item, index, pairSet)).join('')}</div>
         </div>
 
         <div class="mergeRecipeDrawer">
@@ -96,12 +96,12 @@ export function renderMergeScreen(state) {
 
 function renderCustomers(state) {
   const customers = state.merge.customers || [];
-  if (!customers.length) return '';
+  if (!customers.length) return '<div class="mergeCustomers" style="font-size:0.85em;opacity:0.7;margin:6px 0;">Waiting for customers...</div>';
   return `<div class="mergeCustomers" style="display:flex;gap:8px;margin:8px 0;overflow-x:auto;">
-    ${customers.map(c => `<div class="customerCard" style="background:#f0f4ff;padding:8px;border-radius:8px;min-width:140px;">
-      <b>${c.title}</b><br>
-      <small>${c.hint || ''}</small><br>
-      <button class="btn small" data-action="deliverCustomer" data-customer="${c.id}">Deliver</button>
+    ${customers.map(c => `<div class="customerCard" style="background:#e8f4ff;padding:10px;border-radius:10px;min-width:150px;border:2px solid #4a90d9;">
+      <div style="font-weight:bold;font-size:0.95em;">${c.title}</div>
+      <div style="font-size:0.75em;opacity:0.8;margin:4px 0;">${c.hint || ''}</div>
+      <button class="btn small primary" data-action="deliverCustomer" data-customer="${c.id}" style="margin-top:4px;">Deliver</button>
     </div>`).join('')}
   </div>`;
 }
@@ -143,7 +143,7 @@ function renderBoardCell(state, item, index, pairSet = new Set()) {
   const guideTarget = !state.objectives?.firstMerge && pairSet.has(index) ? 'data-guide-target="mergePair"' : '';
   const isGen = item.type === 'generator';
   const action = isGen ? 'tapGenerator' : 'cell';
-  return `<button class="cell ${selected} ${isGen ? 'generator' : ''}" data-action="${action}" data-index="${index}" ${guideTarget}>${renderItem(item)}</button>`;
+  return `<button class="cell ${selected} ${isGen ? 'generator' : ''}" data-action="${action}" data-index="${index}" ${guideTarget} style="${isGen ? 'box-shadow:0 0 0 2px #ffd700;' : ''}">${renderItem(item)}</button>`;
 }
 
 function renderItem(item) {
@@ -269,7 +269,7 @@ function renderMergeTips(state, active, limit) {
       </div>
       <div class="mergeTipCard">
         <b>Fast Rule</b>
-        <span>Tap generators for products. Merge pairs or Auto Merge.</span>
+        <span>Tap generators for products. Merge pairs or Auto Merge. Deliver to customers.</span>
       </div>
     </div>
   `;
