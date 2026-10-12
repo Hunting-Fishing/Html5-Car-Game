@@ -69,6 +69,40 @@ const RESIDENT_WANTS = [
   { key: 'driver', name: 'Sol', want: 'I want tow dispatch ready when cars break down.', building: 'towDispatch', menuLabel: 'Tow and recovery buildings', factors: ['vehicleBreakdowns', 'stuckVehicles', 'trafficJams'] }
 ];
 
+const NPC_DIALOGUE = {
+  residentBlue: {
+    greet: { text: 'My tires keep popping on this block. A closer tire shop would save the rims.', choices: [{ id: 'help', label: 'I will check the shops', next: 'thanks' }, { id: 'later', label: 'Not today', next: 'brush' }] },
+    thanks: { text: 'Good. Restock the tire shop and the potholes stop eating the rubber.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'Anything else?', next: 'greet' }] },
+    brush: { text: 'Fine. Do not leave me stranded when the next one blows.', choices: [{ id: 'back', label: 'I changed my mind', next: 'greet' }, { id: 'close', label: 'Later', screen: 'close' }] }
+  },
+  residentGreen: {
+    greet: { text: 'The parts warehouse is thin. Deliveries stall when the shelves go empty.', choices: [{ id: 'help', label: 'I can restock it', next: 'thanks' }, { id: 'later', label: 'Later', next: 'brush' }] },
+    thanks: { text: 'Bring parts in and the courier can keep the shops moving.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'Got it', next: 'greet' }] },
+    brush: { text: 'Then the next repair waits on a box that is not here.', choices: [{ id: 'back', label: 'Alright, I will look', next: 'thanks' }, { id: 'close', label: 'Close', screen: 'close' }] }
+  },
+  residentOrange: {
+    greet: { text: 'Traffic is stacking up. We need a repair shop before the next breakdown.', choices: [{ id: 'help', label: 'Where should I start?', next: 'thanks' }, { id: 'race', label: 'I am headed to a race', screen: 'race', next: 'brush' }] },
+    thanks: { text: 'Upgrade the repair shop. A working bay clears the street faster than another horn.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'garage', label: 'Open Garage', screen: 'garage' }] },
+    brush: { text: 'Race if you want. Just come back before this lane locks up.', choices: [{ id: 'back', label: 'I will', next: 'greet' }, { id: 'close', label: 'Close', screen: 'close' }] }
+  },
+  residentPurple: {
+    greet: { text: 'The showroom looks empty from the sidewalk. Buyers walk past.', choices: [{ id: 'help', label: 'I can fill the lot', next: 'thanks' }, { id: 'later', label: 'They will come back', next: 'brush' }] },
+    thanks: { text: 'Put cars on the dealer showcase. I will send people over.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'Thanks', next: 'greet' }] },
+    brush: { text: 'They will not. An empty lot does not get a second look.', choices: [{ id: 'back', label: 'Fair', next: 'thanks' }, { id: 'close', label: 'Close', screen: 'close' }] }
+  },
+  mechanic: {
+    greet: { text: 'I have work orders and no tools. Upgrade the shops or I am standing around.', choices: [{ id: 'help', label: 'What do you need?', next: 'thanks' }, { id: 'garage', label: 'Open the garage', screen: 'garage' }] },
+    thanks: { text: 'Toolkits from the mobile mechanic. Then I can clear the work orders.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'On it', next: 'greet' }] }
+  },
+  driver: {
+    greet: { text: 'Cars die in the lane and nobody tows them. Dispatch has to be ready.', choices: [{ id: 'help', label: 'I will check dispatch', next: 'thanks' }, { id: 'later', label: 'Drive around them', next: 'brush' }] },
+    thanks: { text: 'Hire the tow operator and keep the yard stocked. I will stop honking.', choices: [{ id: 'shops', label: 'Open Supplies', screen: 'lines' }, { id: 'back', label: 'Deal', next: 'greet' }] },
+    brush: { text: 'Until you are the one stuck behind them.', choices: [{ id: 'back', label: 'Point taken', next: 'thanks' }, { id: 'close', label: 'Close', screen: 'close' }] }
+  }
+};
+
+const npcStep = {};
+
 const CITY_PROBLEM_DEFS = {
   mapBuild: { label: 'Built Map', type: 'streetKiosk', types: [], help: 'More placed services make the city feel complete.' },
   vehicleBreakdowns: { label: 'Breakdowns', type: 'towDispatch', types: ['towDispatch', 'tireRepair', 'privateShop'], help: 'Tow, tire, and repair health reduce breakdown stress.' },
@@ -882,9 +916,68 @@ function supplyStatus(lineKey) {
   };
 }
 
+function managerDialogue(staff) {
+  const status = supplyStatus(staff.lineKey);
+  const running = status.hired
+    ? `${staff.business} is covered. I am collecting it. We are at level ${status.level}.`
+    : `Nobody is running ${staff.business} yet. It is level ${status.level}. Hire me from Supplies and I will collect it.`;
+  return {
+    greet: {
+      text: running,
+      choices: [
+        { id: 'shop', label: 'Open Supplies', screen: 'lines' },
+        { id: 'job', label: 'What do you do?', next: 'job' },
+        { id: 'later', label: 'Later', screen: 'close' }
+      ]
+    },
+    job: {
+      text: `I stay on ${staff.business} while you race. You still buy the levels. I only collect.`,
+      choices: [
+        { id: 'shop', label: 'Open Supplies', screen: 'lines' },
+        { id: 'back', label: 'Got it', next: 'greet' }
+      ]
+    }
+  };
+}
+
+function npcById(id) {
+  return SUPPLY_MANAGERS.find((staff) => staff.lineKey === id) || RESIDENT_WANTS.find((resident) => resident.key === id) || null;
+}
+
 function supplyManagerByLine(lineKey) {
   return SUPPLY_MANAGERS.find((staff) => staff.lineKey === lineKey) || null;
 }
+
+function currentNpcNode(person) {
+  const id = person.lineKey || person.key;
+  const book = person.lineKey ? managerDialogue(person) : NPC_DIALOGUE[person.key];
+  const step = npcStep[id] || 'greet';
+  return book?.[step] || book?.greet || { text: person.want || person.business || 'Hey.', choices: [] };
+}
+
+function renderNpcTalk(person) {
+  const id = person.lineKey || person.key;
+  const node = currentNpcNode(person);
+  const replies = (node.choices || []).map((choice) => `<button type="button" class="btn small" onclick="window.replyToNpc?.('${id}','${choice.id}')">${escapeHtml(choice.label)}</button>`).join('');
+  return `<div class="npcTalk"><p>${escapeHtml(node.text)}</p><div class="npcReplies">${replies}</div></div>`;
+}
+
+window.replyToNpc = (id, choiceId) => {
+  const person = npcById(id);
+  if (!person) return;
+  const choice = (currentNpcNode(person).choices || []).find((item) => item.id === choiceId);
+  if (!choice) return;
+  if (choice.next) npcStep[id] = choice.next;
+  if (choice.screen === 'close') {
+    window.closeMobileResidentSheetSafe?.();
+    return;
+  }
+  if (choice.screen === 'lines') window.openSupplyFromWorld?.();
+  if (choice.screen === 'garage') document.querySelector('.pixiWorldProxy[data-proxy="garage"]')?.click();
+  if (choice.screen === 'race') document.querySelector('.pixiWorldProxy[data-proxy="race"]')?.click();
+  if (selectedSupplyKey) refreshSupplyManagerSheet();
+  else if (selectedResidentKey) refreshOpenResidentSheet();
+};
 
 function addSupplyWalker(path, staff) {
   const p = new PIXI.Container();
@@ -903,7 +996,6 @@ function addSupplyWalker(path, staff) {
 }
 
 function renderSupplyManagerSheet(staff) {
-  const status = supplyStatus(staff.lineKey);
   return `
     <div class="residentWindow">
       <div class="residentWindowHeader">
@@ -913,10 +1005,7 @@ function renderSupplyManagerSheet(staff) {
         </div>
       </div>
       <div class="residentMoodCard">
-        <div>
-          <b>${escapeHtml(staff.business)}</b>
-          <span>${status.hired ? 'On the job. This supply collects itself.' : `Not hired yet. The supply is level ${status.level}.`}</span>
-        </div>
+        ${renderNpcTalk(staff)}
       </div>
       <div class="mobilePlacedActions residentFooterActions">
         <button class="btn gold" onclick="window.openSupplyFromWorld?.()">Open Supplies</button>
@@ -1575,6 +1664,7 @@ function renderResidentSheet(resident) {
         </div>
         <strong>${escapeHtml(mood.label)} ${mood.score}%</strong>
       </div>
+      ${renderNpcTalk(resident)}
       <div class="residentMoodCard residentHero mood-${mood.key}" data-resident-mood-card>
         <div class="residentMoodFace" data-resident-mood-face aria-label="${escapeHtml(mood.label)}">${escapeHtml(mood.face)}</div>
         <div class="residentMoodInfo">
