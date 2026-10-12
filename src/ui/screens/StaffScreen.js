@@ -25,10 +25,11 @@ const EMPLOYEES = [
 ];
 
 let selectedStaff = 'streetRoute';
-let staffTab = 'hire';
+let staffTab = 'list';
 let fireArmed = '';
 
 const STAFF_TABS = [
+  { id: 'list', label: 'List' },
   { id: 'hire', label: 'Hire' },
   { id: 'upgrade', label: 'Upgrade' },
   { id: 'fire', label: 'Fire' }
@@ -89,7 +90,7 @@ function renderAvatar(person, className = 'staffAvatar') {
 }
 
 function renderContacts(person) {
-  return `<span class="staffContact">${person.phone} · ${person.place}</span><small>${person.desk}</small>`;
+  return `<span class="staffContact">${person.phone}</span><small>${person.place}</small><small>${person.desk}</small>`;
 }
 
 function renderCard(person, state) {
@@ -104,14 +105,15 @@ function renderCard(person, state) {
 
 function renderDetail(state, person) {
   const city = Number(state.reputation || 0);
-  if (person.role === 'Employee') {
+  if (staffTab === 'list' || person.role === 'Employee') {
     const trust = Number(state.relationships?.[person.id] || 0);
+    const job = person.role === 'Employee' ? `${person.role} · ${person.job}` : `Manager · ${person.desk}`;
     return `
       <article class="staffDetail">
         ${renderAvatar(person, 'staffPortrait')}
         <div>
           <b>${person.name}</b>
-          <span>${person.role} · ${person.job}</span>
+          <span>${job}</span>
           ${renderContacts(person)}
           <div class="staffStats">
             <div><strong>${trust}</strong><small>Trust</small></div>
@@ -186,15 +188,14 @@ function renderDetail(state, person) {
 export function renderStaffScreen(state) {
   const hired = MANAGERS.filter((person) => managerStats(state, person).hired);
   const open = MANAGERS.filter((person) => !managerStats(state, person).hired);
-  const roster = staffTab === 'hire' ? open : hired;
-  const employee = staffTab === 'hire' ? EMPLOYEES.find((item) => item.id === selectedStaff) : null;
-  const person = employee || roster.find((item) => item.id === selectedStaff) || roster[0] || null;
+  const roster = staffTab === 'list' ? [...MANAGERS, ...EMPLOYEES] : staffTab === 'hire' ? open : hired;
+  const person = roster.find((item) => item.id === selectedStaff) || roster[0] || null;
   const empty = staffTab === 'hire'
     ? 'Every manager is already hired.'
     : 'Nobody is hired yet. Start on the Hire tab.';
   return ScreenFrame({
     title: 'Staff',
-    subtitle: 'Hire, upgrade, or fire.',
+    subtitle: 'Phone, place, and desk.',
     badge: reputationTitle(Number(state.reputation || 0)),
     className: 'staffFrame',
     body: `
@@ -207,7 +208,6 @@ export function renderStaffScreen(state) {
       </nav>
       ${person ? renderDetail(state, person) : `<p class="staffEmpty">${empty}</p>`}
       <div class="staffRoster">${roster.map((item) => renderCard(item, state)).join('')}</div>
-      ${staffTab === 'hire' ? `<h3 class="staffHeading">Employees</h3><div class="staffRoster">${EMPLOYEES.map((item) => renderCard(item, state)).join('')}</div>` : ''}
     `
   });
 }
