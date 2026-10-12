@@ -96,3 +96,109 @@ function renderCard(person, state) {
   const status = manager ? (stats.hired ? (stats.auto ? 'Auto' : 'Paused') : stats.ready ? 'Ready' : 'Locked') : trustRank(trust);
   return `<button type="button" class="staffCard ${selected ? 'selected' : ''} ${manager && stats.hired ? 'hired' : ''}" data-action="selectStaff" data-staff="${person.id}">${renderAvatar(person)}<b>${person.name.split(' ')[0]}</b><small>${status}</small></button>`;
 }
+
+function renderDetail(state, person) {
+  const city = Number(state.reputation || 0);
+  if (person.role === 'Employee') {
+    const trust = Number(state.relationships?.[person.id] || 0);
+    return `
+      <article class="staffDetail">
+        ${renderAvatar(person, 'staffPortrait')}
+        <div>
+          <b>${person.name}</b>
+          <span>${person.role} · ${person.job}</span>
+          <div class="staffStats">
+            <div><strong>${trust}</strong><small>Trust</small></div>
+            <div><strong>${trustRank(trust)}</strong><small>Rank</small></div>
+            <div><strong>${reputationTitle(city)}</strong><small>City</small></div>
+          </div>
+        </div>
+        <button class="btn gold" data-action="screen" data-screen="world">Meet in World</button>
+      </article>
+    `;
+  }
+  const stats = managerStats(state, person);
+  if (staffTab === 'upgrade') {
+    const quote = stats.line ? quoteLineUpgrade(state, stats.line, 1) : null;
+    return `
+      <article class="staffDetail">
+        ${renderAvatar(person, 'staffPortrait')}
+        <div>
+          <b>${person.name}</b>
+          <span>Upgrade ${stats.line?.name || 'supply'}</span>
+          <div class="staffStats">
+            <div><strong>Lv ${stats.level}</strong><small>Now</small></div>
+            <div><strong>${stats.auto ? 'Auto' : 'Paused'}</strong><small>Collect</small></div>
+            <div><strong>${stats.trust}</strong><small>${trustRank(stats.trust)}</small></div>
+          </div>
+        </div>
+        <div class="staffActions">
+          <button class="btn gold" data-action="upgradeLine" data-line="${person.id}" data-qty="1" ${quote?.affordable ? '' : 'disabled'}>Upgrade${quote ? ` ${costToText(quote.cost)}` : ''}</button>
+          <button class="btn ${stats.auto ? 'red' : 'primary'}" data-action="toggleLineAuto" data-line="${person.id}">${stats.auto ? 'Pause' : 'Auto'}</button>
+          <button class="btn ghost" data-action="screen" data-screen="lines">Supplies</button>
+        </div>
+      </article>
+    `;
+  }
+  if (staffTab === 'fire') {
+    const armed = fireArmed === person.id;
+    const fire = armed
+      ? `<button class="btn ghost" data-action="fireManagerCancel">Cancel</button><button class="btn red" data-action="fireManager" data-line="${person.id}">Confirm fire</button>`
+      : `<button class="btn red" data-action="fireManagerArm" data-line="${person.id}">Fire ${person.name.split(' ')[0]}</button>`;
+    return `
+      <article class="staffDetail">
+        ${renderAvatar(person, 'staffPortrait')}
+        <div>
+          <b>${person.name}</b>
+          <span>${armed ? 'This cannot be undone. They stop collecting.' : 'Let them go. The supply goes back to manual.'}</span>
+        </div>
+        <div class="staffActions">${fire}<button class="btn ghost" data-action="screen" data-screen="world">World</button></div>
+      </article>
+    `;
+  }
+  const hire = `<button class="btn gold" data-action="buyManager" data-line="${person.id}" ${stats.canHire ? '' : 'disabled'}>${stats.ready ? `Hire ${costToText(stats.cost)}` : `Unlocks at Lv ${stats.line?.manager.unlockLevel || 10}`}</button>`;
+  return `
+    <article class="staffDetail">
+      ${renderAvatar(person, 'staffPortrait')}
+      <div>
+        <b>${person.name}</b>
+        <span>Manager · ${stats.line?.name || 'Supply'}</span>
+        <div class="staffStats">
+          <div><strong>Lv ${stats.level}</strong><small>Supply</small></div>
+          <div><strong>${stats.hired ? 'Hired' : 'Open'}</strong><small>Job</small></div>
+          <div><strong>${stats.trust}</strong><small>${trustRank(stats.trust)}</small></div>
+        </div>
+      </div>
+      <div class="staffActions">${hire}<button class="btn ghost" data-action="screen" data-screen="world">World</button><button class="btn ghost" data-action="screen" data-screen="lines">Supplies</button></div>
+    </article>
+  `;
+}
+
+export function renderStaffScreen(state) {
+  const hired = MANAGERS.filter((person) => managerStats(state, person).hired);
+  const open = MANAGERS.filter((person) => !managerStats(state, person).hired);
+  const roster = staffTab === 'hire' ? open : hired;
+  const employee = staffTab === 'hire' ? EMPLOYEES.find((item) => item.id === selectedStaff) : null;
+  const person = employee || roster.find((item) => item.id === selectedStaff) || roster[0] || null;
+  const empty = staffTab === 'hire'
+    ? 'Every manager is already hired.'
+    : 'Nobody is hired yet. Start on the Hire tab.';
+  return ScreenFrame({
+    title: 'Staff',
+    subtitle: 'Hire, upgrade, or fire.',
+    badge: reputationTitle(Number(state.reputation || 0)),
+    className: 'staffFrame',
+    body: `
+      <div class="staffJump">
+        <button class="btn gold" data-action="screen" data-screen="world">World</button>
+        <button class="btn ghost" data-action="screen" data-screen="lines">Supplies</button>
+      </div>
+      <nav class="staffTabs" role="tablist">
+        ${STAFF_TABS.map((tab) => `<button type="button" class="${staffTab === tab.id ? 'active' : ''}" data-action="staffTab" data-tab="${tab.id}">${tab.label}</button>`).join('')}
+      </nav>
+      ${person ? renderDetail(state, person) : `<p class="staffEmpty">${empty}</p>`}
+      <div class="staffRoster">${roster.map((item) => renderCard(item, state)).join('')}</div>
+      ${staffTab === 'hire' ? `<h3 class="staffHeading">Employees</h3><div class="staffRoster">${EMPLOYEES.map((item) => renderCard(item, state)).join('')}</div>` : ''}
+    `
+  });
+}
