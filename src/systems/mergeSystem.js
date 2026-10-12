@@ -33,6 +33,7 @@ export function normalizeMergeState(state) {
   if (typeof state.merge.energyRegen !== 'number') state.merge.energyRegen = 0.08;
   if (!Array.isArray(state.merge.customers)) state.merge.customers = [];
   if (typeof state.merge.energyUpgrades !== 'number') state.merge.energyUpgrades = 0;
+  if (typeof state.merge.lastFreeEnergy !== 'number') state.merge.lastFreeEnergy = 0;
   if (state.merge.board.every(cell => !cell) && state.merge.totalMerges === 0) {
     state.merge.board[0] = makeItem('original', 1, 'generator');
     state.merge.board[1] = makeItem('tools', 1, 'generator');
@@ -230,7 +231,6 @@ export function deliverCustomer(state, customerId, boardIndex) {
   state.reputation = (state.reputation || 0) + 1;
   state.objectives.firstDelivery = true;
 
-  // Small related idle line boost
   const lineKey = relatedLineKey(customer.chain);
   let lineMsg = '';
   if (lineKey && state.idleLines?.lines?.[lineKey]) {
@@ -264,6 +264,27 @@ export function upgradeEnergyCap(state) {
   state.merge.energyUpgrades = upgrades + 1;
   state.merge.maxEnergy = 50 + state.merge.energyUpgrades * 10;
   return { ok: true, message: `Energy capacity raised to ${state.merge.maxEnergy}.` };
+}
+
+export function freeEnergyRefill(state) {
+  normalizeMergeState(state);
+  const now = Date.now();
+  const cooldown = 5 * 60 * 1000;
+  if (now - (state.merge.lastFreeEnergy || 0) < cooldown) {
+    const wait = Math.ceil((cooldown - (now - state.merge.lastFreeEnergy)) / 60000);
+    return { ok: false, message: `Free energy ready in ${wait} min.` };
+  }
+  const gain = 10;
+  state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + gain);
+  state.merge.lastFreeEnergy = now;
+  return { ok: true, message: `Free energy: +${gain}. (Ad placeholder)` };
+}
+
+export function getTutorialHint(state) {
+  if (!state.objectives?.firstGeneratorTap) return 'Tap a highlighted generator to produce items.';
+  if (!state.objectives?.firstMerge) return 'Drag or tap two matching items to merge.';
+  if (!state.objectives?.firstDelivery) return 'Fill a customer order and tap Deliver for rewards.';
+  return '';
 }
 
 export function itemDisplayName(item) {
