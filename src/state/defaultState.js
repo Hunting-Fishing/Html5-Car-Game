@@ -11,6 +11,7 @@ export function defaultState() {
     stage: 1,
     level: 1,
     xp: 0,
+    vipLevel: 0,
     currencies: {
       coins: 160,
       scrap: 16,

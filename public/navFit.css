@@ -514,6 +514,65 @@ html.rrRaceViewport .currencyGrid { grid-template-columns: repeat(3, minmax(0, 1
 html.rrRaceViewport .cur { min-height: 40px !important; }
 html.rrRaceViewport .cur b { font-size: 16px !important; }
 html.rrRaceViewport .cur span { font-size: 10px !important; }
+.brandLogo { width: 32px !important; height: 32px !important; border-radius: 10px !important; box-shadow: none !important; }
+.brandText span { display: none !important; }
+.brandText b { font-size: 12px !important; }
+.topBar { padding: 4px 6px 5px !important; }
+.topLine { margin-bottom: 3px !important; }
+.topBar .cur,
+.topBar .currencyGridExtra .cur,
+.cur {
+  min-height: 22px !important;
+  height: 22px !important;
+  padding: 0 4px !important;
+  gap: 3px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+.topBar .cur span,
+.cur span { display: none !important; }
+.topBar .cur b,
+.cur b,
+.topBar .currencyGridExtra .cur b { font-size: 11px !important; }
+.topBar .currencyGrid,
+.topBar .currencyGridExtra,
+.currencyGrid { gap: 3px !important; margin-top: 0 !important; }
+.topBar .currencyGridExtra { margin-top: 3px !important; }
+.curIcon { width: 12px !important; height: 12px !important; }
+.stagePill { min-height: 26px !important; padding: 2px 5px !important; border-radius: 10px !important; }
+.stageCopy b { font-size: 12px !important; }
+.vipBadge {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  min-width: 36px;
+  height: 26px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  border: 2px solid #fff1b0;
+  background: linear-gradient(180deg, #ffe36a, #e39b12);
+  color: #4a2a00;
+  box-shadow: 0 2px 0 #8a5a10;
+  line-height: 1;
+}
+.vipBadge small { font-size: 8px; font-weight: 900; letter-spacing: .04em; }
+.vipBadge b { font-size: 12px; }
+.hudActions { position: relative; }
+.vipMenu {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  z-index: 30;
+  width: 220px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #10283c;
+  color: #fff;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .25);
+}
+.vipMenu p, .vipMenu li { color: #d7eef8; font-size: 11px; }
+.vipMenu ol { margin: 6px 0 0; padding-left: 16px; }
+:root { --top-hud-safe-area: 74px; }
 .curPlus { display: none !important; }
 .bottomNav {
   height: auto !important;

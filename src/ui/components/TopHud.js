@@ -12,6 +12,18 @@ export function renderTopHud() {
           <div class="brandText"><b>Micro Garage</b><span>Playable auto world - local save</span></div>
         </div>
         <div class="hudActions">
+          <button class="vipBadge" type="button" data-action="toggleVip" aria-expanded="false">
+            <small>VIP</small><b id="vipBadge">0</b>
+          </button>
+          <div class="vipMenu" id="vipMenu" hidden>
+            <b>VIP ranks</b>
+            <p>Paid VIP upgrades are not on yet. Rewards will come in mechanic toolboxes, not chests.</p>
+            <ol>
+              <li>VIP 1 · +5% race coins</li>
+              <li>VIP 2 · +10% race coins</li>
+              <li>VIP 3 · a toolbox on a win</li>
+            </ol>
+          </div>
           <div class="stagePill" aria-label="Stage 1">
             <span class="stageTrophy" aria-hidden="true"></span>
             <span class="stageCopy"><small>Stage</small><b id="stagePillValue">1</b></span>
@@ -43,8 +55,10 @@ function setText(root, id, value) {
   if (el) el.textContent = value;
 }
 
-export function updateTopHud({ currencies, stage, format = (value) => value, root = document }) {
+export function updateTopHud({ currencies, stage, vipLevel = 0, format = (value) => value, root = document }) {
   setText(root, 'stagePillValue', stage);
+  setText(root, 'vipBadge', vipLevel);
   root.querySelector('.stagePill')?.setAttribute('aria-label', `Stage ${stage}`);
+  root.querySelector('.vipBadge')?.setAttribute('aria-label', `VIP ${vipLevel}`);
   HUD_RESOURCE_KEYS.forEach((key) => setText(root, `cur-${key}`, format(currencies[key])));
 }

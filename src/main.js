@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=87';
+import './ui/roadRunnerRuntime.js?v=88';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -198,7 +198,7 @@ function renderActiveScreen() {
 }
 
 function updateTopBar() {
-  updateTopHud({ currencies: state.currencies, stage: state.stage, format: fmt });
+  updateTopHud({ currencies: state.currencies, stage: state.stage, vipLevel: state.vipLevel || 0, format: fmt });
 }
 
 function updateGuide() {
@@ -215,9 +215,21 @@ function closeQuestMenu() {
 function handleClick(event) {
   const target = event.target.closest('[data-action]');
   if (!event.target.closest('.questAnchor')) closeQuestMenu();
+  if (!event.target.closest('.vipBadge') && !event.target.closest('#vipMenu')) {
+    const vip = document.querySelector('#vipMenu');
+    if (vip) vip.hidden = true;
+  }
   if (!target) return;
   const action = target.dataset.action;
   let result = null;
+
+  if (action === 'toggleVip') {
+    const menu = document.querySelector('#vipMenu');
+    if (!menu) return;
+    menu.hidden = !menu.hidden;
+    document.querySelector('.vipBadge')?.setAttribute('aria-expanded', String(!menu.hidden));
+    return;
+  }
 
   if (action === 'toggleQuest') {
     const menu = document.querySelector('#questMenu');

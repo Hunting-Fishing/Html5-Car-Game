@@ -11,7 +11,7 @@ export function getRaceStats(state) {
   const repairBonus = crewTaskBonus(state, 'repair');
   const tapPower = (6 + state.upgrades.tapCrew * 3.2 + state.buildings.testTrack * 2.2) * (1 + raceBonus);
   const idlePower = (0.7 + state.upgrades.idleDriver * 0.32 + state.buildings.companionHub * 0.15) * (1 + routeBonus * 0.8 + raceBonus * 0.2);
-  const rewardMult = 1 + state.upgrades.routeScout * 0.07 + state.buildings.testTrack * 0.09 + (state.lot?.owned?.billboard ? 0.08 : 0) + raceBonus;
+  const rewardMult = 1 + state.upgrades.routeScout * 0.07 + state.buildings.testTrack * 0.09 + (state.lot?.owned?.billboard ? 0.08 : 0) + raceBonus + Math.min(3, state.vipLevel || 0) * 0.05;
   const fuelMax = 100 + state.upgrades.fuelPlan * 12;
   const conditionMax = 100 + state.upgrades.pitKit * 10;
   return { mode, tapPower, idlePower, rewardMult, fuelMax, conditionMax, raceBonus, routeBonus, gripBonus, fuelBonus, repairBonus };

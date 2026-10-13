@@ -41,6 +41,7 @@ function reconcile(base, saved) {
     ...base,
     ...saved,
     version: base.version,
+    vipLevel: Number.isFinite(saved.vipLevel) ? saved.vipLevel : (base.vipLevel || 0),
     currencies: { ...base.currencies, ...(saved.currencies || {}) },
     race: { ...base.race, ...(saved.race || {}) },
     idleLines: {
