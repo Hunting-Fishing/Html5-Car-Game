@@ -24,12 +24,12 @@ export const CHAINS = {
   original: {
     label: 'Original Parts', short: 'ORG', icon: iconPath(MERGE_ICON_BASE, 'original/org%20parts.svg'), fallbackIcon: '\u{1F529}', resource: 'parts', unlockStage: 1,
     description: 'The ordinary parts chain. This must stay active from the start.',
-    items: ['Bolt Pack','Washer Set','Nut Kit','Hose Clamp','Spark Plug','Fuse Pack','Oil Filter','Air Filter','Brake Pads','Rotor Pair','Water Pump','Service Engine']
+    items: ['Bolt Pack','Washer Set','Nut Kit','Hose Clamp','Spark Plug','Fuse Pack','Oil Filter','Air Filter','Brake Pads','Rotor Pair','Water Pump','Service Engine','Timing Belt','Radiator','Serpentine Belt','Crate Motor']
   },
   tools: {
     label: 'Shop Tools', short: 'TLS', icon: iconPath(MERGE_ICON_BASE, 'tools/shoptoolstls.svg'), fallbackIcon: '\u{1F9F0}', resource: 'tools', unlockStage: 1,
     description: 'Basic tools that build the mechanic shop systems.',
-    items: ['Shop Rag','Gloves','Screwdriver','10mm Socket','Ratchet','Multimeter','Torque Wrench','Jack Stand','Floor Jack','Scanner','Tire Machine','Shop Lift']
+    items: ['Shop Rag','Gloves','Screwdriver','10mm Socket','Ratchet','Multimeter','Torque Wrench','Jack Stand','Floor Jack','Scanner','Tire Machine','Shop Lift','Impact Gun','Air Hose','Welder','Paint Booth']
   },
   performance: {
     label: 'Performance Parts', short: 'PER', icon: iconPath(MERGE_ICON_BASE, 'performance/performancepartsper.svg'), fallbackIcon: '\u2699\uFE0F', resource: 'tune', unlockStage: 3,
@@ -40,6 +40,16 @@ export const CHAINS = {
     label: 'Racing Gear', short: 'RCE', icon: iconPath(UI_ICON_BASE, 'race.png'), fallbackIcon: '\u{1F3CE}\uFE0F', resource: 'rep', unlockStage: 4,
     description: 'Race support chain. Locked until Test Track is built.',
     items: ['Tire Gauge','Sport Tire','Coilovers','Strut Bar','Race Seat','Harness','Helmet','Roll Cage','Splitter','Wing','Rally Lamps','Drag Slicks']
+  },
+  fluids: {
+    label: 'Shop Fluids', short: 'FLD', icon: iconPath(MERGE_ICON_BASE, 'fluids/motor-oil.svg'), fallbackIcon: '\u{1F6E2}', resource: 'parts', unlockStage: 1,
+    description: 'Oils and fluids. Open from the start.',
+    items: ['Motor Oil','Coolant','Brake Fluid','Power Steering','Gear Oil','Diff Fluid','Washer Fluid','Race Fuel']
+  },
+  electrical: {
+    label: 'Electrical', short: 'ELC', icon: iconPath(MERGE_ICON_BASE, 'electrical/car-battery.svg'), fallbackIcon: '\u26A1', resource: 'tools', unlockStage: 1,
+    description: 'Wiring and electrical parts. Open from the start.',
+    items: ['Fuse Wire','Relay','Car Battery','Alternator','Starter','Coil Pack','Wire Harness','Control Module']
   }
 };
 
@@ -60,6 +70,14 @@ export const GENERATORS = {
   diagnostic: {
     key: 'diagnostic', label: 'Diagnostic Bench', short: 'DIAG', chain: 'performance', produces: 'performance',
     energyCost: 2, maxLevel: 3, description: 'Tap to spawn Performance Parts. Unlocks with Tuning Corner.'
+  },
+  fluidCabinet: {
+    key: 'fluidCabinet', label: 'Fluid Cabinet', short: 'FLUID', chain: 'fluids', produces: 'fluids',
+    energyCost: 1, maxLevel: 4, description: 'Tap to spawn shop fluids.'
+  },
+  wireRack: {
+    key: 'wireRack', label: 'Wire Rack', short: 'WIRE', chain: 'electrical', produces: 'electrical',
+    energyCost: 1, maxLevel: 4, description: 'Tap to spawn electrical parts.'
   }
 };
 
@@ -68,7 +86,11 @@ export const CUSTOMER_TEMPLATES = [
   { key: 'brake', title: 'Brake job', chain: 'original', level: 9, reward: { coins: 55, parts: 6 }, hint: 'Needs Brake Pads' },
   { key: 'tool', title: 'Tool request', chain: 'tools', level: 4, reward: { coins: 35, tools: 3 }, hint: 'Needs a basic tool' },
   { key: 'tire', title: 'Tire change', chain: 'racing', level: 2, reward: { coins: 50, rep: 2 }, hint: 'Needs Sport Tire' },
-  { key: 'tune', title: 'Quick tune', chain: 'performance', level: 3, reward: { coins: 60, tune: 2 }, hint: 'Needs Intake Pipe' }
+  { key: 'tune', title: 'Quick tune', chain: 'performance', level: 3, reward: { coins: 60, tune: 2 }, hint: 'Needs Intake Pipe' },
+  { key: 'coolant', title: 'Coolant top-up', chain: 'fluids', level: 2, reward: { coins: 32, parts: 3 }, hint: 'Needs Coolant' },
+  { key: 'oilfluid', title: 'Oil service', chain: 'fluids', level: 1, reward: { coins: 24, parts: 2 }, hint: 'Needs Motor Oil' },
+  { key: 'battery', title: 'Battery swap', chain: 'electrical', level: 3, reward: { coins: 48, tools: 3 }, hint: 'Needs Car Battery' },
+  { key: 'relay', title: 'Relay fix', chain: 'electrical', level: 2, reward: { coins: 28, tools: 2 }, hint: 'Needs Relay' }
 ];
 
 export const RACE_MODES = {

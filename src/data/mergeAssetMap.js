@@ -55,6 +55,34 @@ export const MERGE_ASSETS = {
   'Splitter': publicAsset('/assets/Merge/racing/splitter.svg'),
   'Wing': publicAsset('/assets/Merge/racing/wing.svg'),
   'Rally Lamps': publicAsset('/assets/Merge/racing/rally-lamps.svg'),
+
+  'Timing Belt': publicAsset('/assets/Merge/original/water-pump.svg'),
+  'Radiator': publicAsset('/assets/Merge/original/air-filter.svg'),
+  'Serpentine Belt': publicAsset('/assets/Merge/original/hose-clamp.svg'),
+  'Crate Motor': publicAsset('/assets/Merge/original/service-engine.svg'),
+
+  'Impact Gun': publicAsset('/assets/Merge/tools/ratchet.svg'),
+  'Air Hose': publicAsset('/assets/Merge/tools/shop-rag.svg'),
+  'Welder': publicAsset('/assets/Merge/tools/multimeter.svg'),
+  'Paint Booth': publicAsset('/assets/Merge/tools/shop-lift.svg'),
+
+  'Motor Oil': publicAsset('/assets/Merge/fluids/motor-oil.svg'),
+  'Coolant': publicAsset('/assets/Merge/fluids/coolant.svg'),
+  'Brake Fluid': publicAsset('/assets/Merge/fluids/brake-fluid.svg'),
+  'Power Steering': publicAsset('/assets/Merge/fluids/power-steering.svg'),
+  'Gear Oil': publicAsset('/assets/Merge/fluids/gear-oil.svg'),
+  'Diff Fluid': publicAsset('/assets/Merge/fluids/diff-fluid.svg'),
+  'Washer Fluid': publicAsset('/assets/Merge/fluids/washer-fluid.svg'),
+  'Race Fuel': publicAsset('/assets/Merge/fluids/race-fuel.svg'),
+
+  'Fuse Wire': publicAsset('/assets/Merge/electrical/fuse-wire.svg'),
+  'Relay': publicAsset('/assets/Merge/electrical/relay.svg'),
+  'Car Battery': publicAsset('/assets/Merge/electrical/car-battery.svg'),
+  'Alternator': publicAsset('/assets/Merge/electrical/alternator.svg'),
+  'Starter': publicAsset('/assets/Merge/electrical/starter.svg'),
+  'Coil Pack': publicAsset('/assets/Merge/electrical/coil-pack.svg'),
+  'Wire Harness': publicAsset('/assets/Merge/electrical/wire-harness.svg'),
+  'Control Module': publicAsset('/assets/Merge/electrical/control-module.svg'),
   'Drag Slicks': publicAsset('/assets/Merge/racing/drag-slicks.svg')
 };
 

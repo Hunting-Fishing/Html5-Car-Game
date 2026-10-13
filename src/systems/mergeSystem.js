@@ -9,7 +9,7 @@ function uid() {
 const BOARD_SIZE = 42;
 
 export function unlockedChainKeys(state) {
-  const keys = ['original', 'tools'];
+  const keys = ['original', 'tools', 'fluids', 'electrical'];
   if (state.buildings.tuningCorner > 0 || state.lot?.owned?.tuningCorner) keys.push('performance');
   if (state.buildings.testTrack > 0 || state.lot?.owned?.testTrack) keys.push('racing');
   return keys;
@@ -39,9 +39,21 @@ export function normalizeMergeState(state) {
   if (state.merge.board.every(cell => !cell) && state.merge.totalMerges === 0) {
     state.merge.board[0] = makeItem('original', 1, 'generator');
     state.merge.board[1] = makeItem('tools', 1, 'generator');
-    for (let i = 2; i < 6; i += 1) {
+    state.merge.board[2] = makeItem('fluids', 1, 'generator');
+    state.merge.board[3] = makeItem('electrical', 1, 'generator');
+    for (let i = 4; i < 8; i += 1) {
       if (!state.merge.board[i]) state.merge.board[i] = makeCobweb();
     }
+  }
+  if (!state.merge.seededExtraGens) {
+    const has = (chain) => state.merge.board.some(cell => cell && cell.type === 'generator' && cell.chain === chain);
+    const place = (chain) => {
+      const empty = state.merge.board.findIndex((cell, i) => i < boardLimit(state) && !cell);
+      if (empty >= 0) state.merge.board[empty] = makeItem(chain, 1, 'generator');
+    };
+    if (!has('fluids')) place('fluids');
+    if (!has('electrical')) place('electrical');
+    state.merge.seededExtraGens = true;
   }
 }
 
@@ -235,6 +247,8 @@ function relatedLineKey(chain) {
   if (chain === 'tools') return 'mobileMechanic';
   if (chain === 'performance') return 'performanceBay';
   if (chain === 'racing') return 'raceEvent';
+  if (chain === 'fluids') return 'partsDelivery';
+  if (chain === 'electrical') return 'mobileMechanic';
   return null;
 }
 

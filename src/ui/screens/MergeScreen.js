@@ -236,7 +236,7 @@ function renderBoardCell(state, item, index, pairSet = new Set()) {
   const guideTarget = !state.objectives?.firstMerge && pairSet.has(index) ? 'data-guide-target="mergePair"' : '';
   const isGen = item.type === 'generator';
   const action = isGen ? 'tapGenerator' : 'cell';
-  return `<button class="cell ${selected} ${isGen ? 'generator' : ''}" data-action="${action}" data-index="${index}" ${guideTarget}>${renderItem(item)}</button>`;
+  return `<button class="cell chain-${item.chain} ${selected} ${isGen ? 'generator' : ''}" data-action="${action}" data-index="${index}" ${guideTarget}>${renderItem(item)}</button>`;
 }
 
 function renderItem(item) {
@@ -265,9 +265,11 @@ function mergeChainRequirement(state, key) {
 function renderMergeChainCompact(state, key, chain, selectedChain) {
   const unlocked = unlockedChainKeys(state).includes(key);
   const req = mergeChainRequirement(state, key);
+  const preview = (chain.items || []).slice(0, 4).map((name, i) => `L${i + 1} ${name}`).join(' · ');
   return `<div class="mergeChainCompact ${unlocked ? 'unlocked' : 'locked'}">
     <b>${renderChainLabel(key, chain)}</b>
-    <span>${unlocked ? '2 matching → next' : req.text}</span>
+    <span>${unlocked ? `${chain.items.length} items · 2 matching → next` : req.text}</span>
+    <em>${preview}</em>
   </div>`;
 }
 

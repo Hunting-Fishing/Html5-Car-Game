@@ -394,3 +394,23 @@
   border-radius: 10px;
   background: rgba(255,255,255,.06);
 }
+
+#screen-merge .lazadaBoard .cell.chain-original { box-shadow: inset 0 0 0 2px #5ab7ff; }
+#screen-merge .lazadaBoard .cell.chain-tools { box-shadow: inset 0 0 0 2px #ff9f1c; }
+#screen-merge .lazadaBoard .cell.chain-fluids { box-shadow: inset 0 0 0 2px #2dd4bf; }
+#screen-merge .lazadaBoard .cell.chain-electrical { box-shadow: inset 0 0 0 2px #facc15; }
+#screen-merge .lazadaBoard .cell.chain-performance { box-shadow: inset 0 0 0 2px #e879f9; }
+#screen-merge .lazadaBoard .cell.chain-racing { box-shadow: inset 0 0 0 2px #fb7185; }
+#screen-merge .lazadaBoard .cell.generator { box-shadow: inset 0 0 0 3px #35e58a, 0 0 10px rgba(53,229,138,.55); }
+#screen-merge .lazadaBoard .cell:empty,
+#screen-merge .lazadaBoard .cell:not(.crate):not(.cobweb):not(.generator):not([class*="chain-"]) {
+  background: radial-gradient(circle at 50% 40%, rgba(90,183,255,.12), rgba(0,0,0,.45)) !important;
+  border: 2px solid rgba(125,220,255,.28) !important;
+}
+#screen-merge .mergeChainCompact em {
+  display: block;
+  margin-top: 2px;
+  font-style: normal;
+  font-size: 10px;
+  color: #d7f3ff;
+}
