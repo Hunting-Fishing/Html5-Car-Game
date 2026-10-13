@@ -615,42 +615,60 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .bottomNav {
   height: auto !important;
   max-height: none !important;
-  min-height: 78px !important;
+  min-height: 72px !important;
   display: grid !important;
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-  gap: 4px !important;
+  align-items: end !important;
+  gap: 2px !important;
   overflow: visible !important;
-  background: linear-gradient(180deg, #0c2436, #061018) !important;
+  background: linear-gradient(180deg, #16365a, #0b1e33) !important;
   background-image: none !important;
-  border-top: 2px solid #f6c445 !important;
-  padding: 6px 4px calc(6px + env(safe-area-inset-bottom)) !important;
+  border-top: 3px solid #071422 !important;
+  padding: 16px 4px calc(4px + env(safe-area-inset-bottom)) !important;
 }
 .bottomNav .tab {
-  min-height: 66px !important;
+  min-height: 46px !important;
   height: auto !important;
-  overflow: hidden !important;
-  background: linear-gradient(180deg, #1b4d72, #10283c) !important;
+  overflow: visible !important;
+  background: transparent !important;
   background-image: none !important;
-  color: #e7f6ff !important;
-  font-size: 9px !important;
-  font-weight: 900 !important;
-  border-radius: 16px !important;
-  border: 2px solid rgba(255,255,255,.16) !important;
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 3px 0 #061018 !important;
+  color: #d7eef8 !important;
+  border: 0 !important;
+  border-radius: 14px 14px 8px 8px !important;
+  box-shadow: none !important;
+  transform: none;
+}
+.bottomNav .tab span { display: none !important; }
+.bottomNav .tab .tabIcon {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  object-fit: cover !important;
+  box-shadow: none !important;
 }
 .bottomNav .tab.active {
-  background: linear-gradient(180deg, #ffe36a, #e39b12) !important;
+  min-height: 74px !important;
+  margin-top: -14px !important;
+  padding-top: 4px !important;
+  background: linear-gradient(180deg, #ffe56a, #f0a51a) !important;
   color: #3a2404 !important;
-  border-color: #fff6c8 !important;
-  box-shadow: inset 0 2px 0 #fff, 0 3px 0 #8a5a10 !important;
+  border: 2px solid #fff6c2 !important;
+  box-shadow: inset 0 2px 0 #fff, 0 4px 0 #8a5a10 !important;
+  transform: scale(1.04);
+  z-index: 2;
 }
-.bottomNav .tab span { display: block !important; font-size: 9px !important; line-height: 1.05 !important; letter-spacing: .01em; }
-.bottomNav .tabIcon {
-  width: 36px !important;
-  height: 36px !important;
+.bottomNav .tab.active span {
+  display: block !important;
+  margin-top: 1px;
+  color: #3a2404 !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+.bottomNav .tab.active .tabIcon {
+  width: 40px !important;
+  height: 40px !important;
   border-radius: 10px !important;
-  object-fit: cover !important;
-  box-shadow: 0 2px 0 rgba(0,0,0,.35);
 }
 .bottomNav .tab.questReady {
   position: relative;
@@ -680,7 +698,7 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
   0%, 100% { opacity: .45; transform: scale(.85); }
   50% { opacity: 1; transform: scale(1.2); }
 }
-.bottomNav .tabIcon { width: 36px !important; height: 36px !important; border-radius: 10px !important; object-fit: cover !important; }
+.bottomNav .tab.questReady .tabIcon { outline: 2px solid #ffe27a; }
 #screen-profile .menuActionDock .actionDock { grid-template-columns: 1fr 1fr !important; }
 #screen-profile .menuActionDock .actionDockButton {
   min-height: 48px !important;
