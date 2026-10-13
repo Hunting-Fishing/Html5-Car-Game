@@ -152,9 +152,24 @@ export function renderMergeScreen(state) {
   `;
 }
 
+function formatRemain(ms) {
+  if (!ms || ms <= 0) return '0:00';
+  const s = Math.ceil(ms / 1000);
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+function hasMatchingItem(state, customer) {
+  return (state.merge.board || []).some(item =>
+    item && item.type === 'product' && item.chain === customer.chain && item.level >= customer.level
+  );
+}
+
 function renderCustomers(state) {
   const customers = state.merge.customers || [];
   if (!customers.length) return '<div class="mergeCustomersEmpty">Waiting for customers…</div>';
+  const now = Date.now();
   return `<div class="mergeCustomerStrip">
     ${customers.map(c => {
       const chain = CHAINS[c.chain];
@@ -162,14 +177,17 @@ function renderCustomers(state) {
       const asset = mergeAssetForName(needName);
       const art = asset ? `<img class="customerNeedArt" src="${asset}" alt="${needName}">` : renderChainIcon(c.chain, chain?.label || needName, 'customerNeedArt');
       const coins = c.reward?.coins || 0;
-      return `<div class="customerCard">
+      const remain = formatRemain((c.expires || 0) - now);
+      const ready = hasMatchingItem(state, c);
+      return `<div class="customerCard ${ready ? 'ready' : ''}">
         <div class="customerHead">
           <div class="customerAvatar">👤</div>
           <div class="customerReward">💰 ${coins}</div>
         </div>
         <div class="customerNeed">${art}</div>
         <div class="customerTitle">${c.title}</div>
-        <button class="btn small primary" data-action="deliverCustomer" data-customer="${c.id}">Deliver</button>
+        <div class="customerMeta">Need L${c.level || 1} · ${remain}</div>
+        <button class="btn small primary" data-action="deliverCustomer" data-customer="${c.id}"${ready ? '' : ' disabled'}>Deliver</button>
       </div>`;
     }).join('')}
   </div>`;
@@ -241,5 +259,5 @@ function renderMergeChainCompact(state, key, chain, selectedChain) {
 }
 
 function renderMergeTips(state, active, limit) {
-  return `<div class="mergeTips">Board ${active}/${limit} · Merge generators · Daily energy & spin · Deliver for rewards</div>`;
+  return `<div class="mergeTips">Board ${active}/${limit} · Merge generators · Fill customer orders · Daily energy & spin</div>`;
 }
