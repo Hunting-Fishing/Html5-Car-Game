@@ -1,55 +1,58 @@
-/* Lazada-style merge board — single screen, no scroll */
-.mergeLazadaScreen {
+/* Lazada-style merge board — one screen, grid fills the play area */
+#screen-merge .mergeLazadaScreen {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   height: 100%;
+  min-height: 0;
   max-height: 100%;
   overflow: hidden;
   gap: 4px;
-  padding: 2px;
+  padding: 0;
 }
 
-.mergeTabs {
+#screen-merge .mergeTabs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   flex: 0 0 auto;
 }
 
-.mergeTabs button {
-  min-height: 28px;
-  font-size: 11px;
-  font-weight: 800;
-  border-radius: 8px;
+#screen-merge .mergeTabs button {
+  min-height: 30px;
+  font-size: 12px;
+  font-weight: 900;
+  border-radius: 10px;
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.15);
   color: #bfe9f5;
 }
 
-.mergeTabs button.active {
+#screen-merge .mergeTabs button.active {
   background: linear-gradient(180deg, #ffe08a, #f59e0b);
   color: #2b1700;
   border-color: rgba(0,0,0,.3);
 }
 
-.mergePanel {
+#screen-merge .mergePanel {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  gap: 4px;
 }
 
-.mergeTopBar {
+#screen-merge .mergeTopBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 2px 4px;
+  padding: 0 2px;
   flex: 0 0 auto;
 }
 
-.mergeEnergyPill {
+#screen-merge .mergeEnergyPill {
   background: linear-gradient(180deg, #ffe08a, #f59e0b);
   color: #2b1700;
   font-weight: 900;
@@ -59,110 +62,112 @@
   border: 2px solid rgba(0,0,0,.25);
 }
 
-.mergeBoardMeta {
-  font-size: 10px;
+#screen-merge .mergeBoardMeta {
+  font-size: 11px;
   color: #bfe9f5;
-  font-weight: 700;
+  font-weight: 800;
 }
 
-.mergeCustomerStrip {
-  display: flex;
+#screen-merge .mergeCustomerStrip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
-  padding: 2px;
+  padding: 0;
   flex: 0 0 auto;
-  justify-content: center;
+  width: 100%;
 }
 
-.customerCard {
-  flex: 1 1 0;
-  max-width: 120px;
+#screen-merge .customerCard {
+  width: auto;
+  max-width: none;
   background: #e8f4ff;
   border: 2px solid #4a90d9;
-  border-radius: 10px;
-  padding: 4px;
+  border-radius: 12px;
+  padding: 4px 6px;
   text-align: center;
   color: #123;
-  font-size: 9px;
+  font-size: 10px;
 }
 
-.customerCard.ready {
+#screen-merge .customerCard.ready {
   border-color: #1a7a3a;
   box-shadow: 0 0 0 2px rgba(26,122,58,.35);
 }
 
-.customerHead {
+#screen-merge .customerHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
-.customerAvatar {
-  width: 20px;
-  height: 20px;
+#screen-merge .customerAvatar {
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #cfe3ff;
   display: grid;
   place-items: center;
-  font-size: 12px;
+  font-size: 11px;
 }
 
-.customerReward {
-  font-size: 9px;
+#screen-merge .customerReward {
+  font-size: 10px;
   font-weight: 900;
   color: #1a7a3a;
 }
 
-.customerNeed {
-  height: 28px;
+#screen-merge .customerNeed {
+  height: 26px;
   display: grid;
   place-items: center;
 }
 
-.customerNeedArt {
-  width: 26px;
-  height: 26px;
+#screen-merge .customerNeedArt {
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
-.customerTitle {
-  font-size: 8px;
-  font-weight: 700;
+#screen-merge .customerTitle {
+  font-size: 9px;
+  font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.customerMeta {
-  font-size: 7px;
-  color: #456;
-  margin: 1px 0;
-}
-
-.customerCard .btn.small {
-  min-height: 22px;
+#screen-merge .customerMeta {
   font-size: 8px;
-  padding: 2px 4px;
+  color: #456;
+  margin: 0;
 }
 
-.mergeCustomersEmpty {
+#screen-merge .customerCard .btn.small {
+  min-height: 22px;
+  font-size: 9px;
+  padding: 2px 4px;
+  margin-top: 2px;
+}
+
+#screen-merge .mergeCustomersEmpty {
   font-size: 11px;
-  opacity: .6;
+  opacity: .7;
   text-align: center;
   padding: 4px;
 }
 
-.mergeHint {
+#screen-merge .mergeHint {
   background: #fff3cd;
   color: #5a4a00;
-  padding: 3px 6px;
-  border-radius: 6px;
+  padding: 3px 8px;
+  border-radius: 8px;
   font-size: 10px;
   text-align: center;
   flex: 0 0 auto;
 }
 
-.mergeSelectedInfo {
+#screen-merge .mergeSelectedInfo {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -173,86 +178,97 @@
   flex: 0 0 auto;
 }
 
-.mergeSelectedArt {
-  width: 32px;
-  height: 32px;
+#screen-merge .mergeSelectedArt {
+  width: 28px;
+  height: 28px;
   flex: 0 0 auto;
 }
 
-.mergeSelectedCopy {
+#screen-merge .mergeSelectedCopy {
   display: flex;
   flex-direction: column;
   gap: 1px;
   min-width: 0;
 }
 
-.mergeSelectedCopy b {
+#screen-merge .mergeSelectedCopy b {
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.mergeSelectedCopy span {
+#screen-merge .mergeSelectedCopy span {
   font-size: 9px;
   color: #bfe9f5;
 }
 
-.mergeBoardArea {
+#screen-merge .mergeBoardArea {
   flex: 1 1 auto;
   min-height: 0;
+  width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   overflow: hidden;
 }
 
-.lazadaBoard {
+#screen-merge .mergeBoardGrid.lazadaBoard {
   display: grid !important;
-  grid-template-columns: repeat(6, 1fr) !important;
-  gap: 3px !important;
-  width: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  aspect-ratio: 6 / 7;
-  margin: 0 auto;
-  padding: 2px;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(7, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  align-content: stretch;
 }
 
-.lazadaBoard .cell {
-  aspect-ratio: 1 / 1;
-  border-radius: 6px;
-  min-width: 0;
-  min-height: 0;
-  padding: 1px;
+#screen-merge .lazadaBoard .cell {
+  aspect-ratio: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border-radius: 10px !important;
+  padding: 0 !important;
 }
 
-.lazadaBoard .cell.locked.crate {
-  background: linear-gradient(180deg, #d4b483, #b8956a) !important;
-  border: 2px solid #8a6a45;
-  opacity: 0.85;
+#screen-merge .lazadaBoard .cell.locked.crate {
+  background: linear-gradient(180deg, #e7c48a, #b88955 55%, #8d6238) !important;
+  border: 2px solid #6b4524 !important;
+  opacity: 1;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.35);
 }
 
-.lazadaBoard .crateIcon {
-  font-size: 14px;
+#screen-merge .lazadaBoard .crateIcon {
+  font-size: clamp(16px, 4.2vw, 26px);
 }
 
-.lazadaBoard .cell.cobweb {
-  background: linear-gradient(180deg, rgba(180,180,200,.3), rgba(20,20,30,.6));
-  border: 1px dashed #aaa;
+#screen-merge .lazadaBoard .cell.cobweb {
+  background: linear-gradient(180deg, rgba(180,180,200,.35), rgba(20,20,30,.75)) !important;
+  border: 1px dashed #aaa !important;
 }
 
-.lazadaBoard .cobwebIcon {
-  font-size: 16px;
-  opacity: 0.85;
+#screen-merge .lazadaBoard .cobwebIcon {
+  font-size: clamp(16px, 4.2vw, 26px);
+  opacity: 0.9;
 }
 
-.lazadaBoard .cell.generator {
-  box-shadow: 0 0 0 2px #ffd700, 0 0 6px rgba(255,215,0,.5);
-  background: linear-gradient(180deg, rgba(255,209,102,.25), rgba(5,27,43,.9));
+#screen-merge .lazadaBoard .cell.generator {
+  box-shadow: inset 0 0 0 2px #35e58a, 0 0 8px rgba(53,229,138,.45);
+  background: linear-gradient(180deg, rgba(53,229,138,.22), rgba(5,27,43,.92)) !important;
 }
 
-.lazadaBoard .itemInner {
+#screen-merge .lazadaBoard .itemInner {
   position: relative;
   width: 100%;
   height: 100%;
@@ -260,119 +276,121 @@
   place-items: center;
 }
 
-.lazadaBoard .lvl {
+#screen-merge .lazadaBoard .lvl {
   position: absolute;
-  top: 0;
-  left: 0;
-  font-size: 6px;
-  background: rgba(0,0,0,.55);
-  padding: 1px 2px;
-  border-radius: 3px;
+  top: 2px;
+  left: 2px;
+  font-size: 8px;
+  background: rgba(0,0,0,.6);
+  padding: 1px 3px;
+  border-radius: 4px;
   line-height: 1;
 }
 
-.lazadaBoard .mergeItemArt,
-.lazadaBoard .itemIcon {
-  width: 70%;
-  height: 70%;
+#screen-merge .lazadaBoard .mergeItemArt,
+#screen-merge .lazadaBoard .itemIcon {
+  width: 72% !important;
+  height: 72% !important;
+  max-width: none;
   object-fit: contain;
 }
 
-.lazadaBoard .chainTag {
+#screen-merge .lazadaBoard .chainTag {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  font-size: 5px;
+  bottom: 2px;
+  right: 2px;
+  font-size: 7px;
   background: #ffd700;
   color: #111;
-  padding: 1px 2px;
-  border-radius: 2px;
+  padding: 1px 3px;
+  border-radius: 3px;
   font-weight: 900;
 }
 
-.mergeBottomActions {
+#screen-merge .mergeBottomActions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
+  gap: 6px;
   flex: 0 0 auto;
-  padding: 2px 0;
+  padding: 0;
 }
 
-.mergeBottomActions .btn.small {
-  min-height: 32px;
-  padding: 4px 2px;
-  font-size: 10px;
-  border-radius: 8px !important;
+#screen-merge .mergeBottomActions .btn.small {
+  min-height: 40px;
+  padding: 6px 4px;
+  font-size: 13px;
+  border-radius: 12px !important;
 }
 
-.mergeShopPanel {
-  border-radius: 10px;
+#screen-merge .mergeShopPanel {
+  border-radius: 12px;
   background: rgba(255,209,102,.1);
   border: 1px solid rgba(255,209,102,.3);
-  padding: 8px;
+  padding: 10px;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: center;
+  gap: 10px;
 }
 
-.mergeShopTitle {
-  font-size: 13px;
+#screen-merge .mergeShopTitle {
+  font-size: 14px;
   font-weight: 900;
   text-align: center;
   color: #ffe08a;
 }
 
-.mergeShopGrid {
+#screen-merge .mergeShopGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 8px;
 }
 
-.mergeShopGrid .btn.small {
-  min-height: 56px;
-  font-size: 10px;
-  line-height: 1.2;
-  border-radius: 10px !important;
+#screen-merge .mergeShopGrid .btn.small {
+  min-height: 64px;
+  font-size: 11px;
+  line-height: 1.25;
+  border-radius: 12px !important;
 }
 
-.mergeShopExtras {
+#screen-merge .mergeShopExtras {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 6px;
 }
 
-.mergeShopExtras .btn.small {
-  min-height: 36px;
+#screen-merge .mergeShopExtras .btn.small {
+  min-height: 40px;
   font-size: 10px;
 }
 
-.mergeRecipePanel {
+#screen-merge .mergeRecipePanel {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 4px;
+  gap: 8px;
+  padding: 4px 2px;
 }
 
-.mergeTips {
-  font-size: 11px;
+#screen-merge .mergeTips {
+  font-size: 12px;
   color: #bfe9f5;
   text-align: center;
 }
 
-.mergeChainCompactList {
+#screen-merge .mergeChainCompactList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   overflow: hidden;
 }
 
-.mergeChainCompact {
-  padding: 6px 8px;
-  font-size: 11px;
-  border-radius: 8px;
+#screen-merge .mergeChainCompact {
+  padding: 8px 10px;
+  font-size: 12px;
+  border-radius: 10px;
   background: rgba(255,255,255,.06);
 }
