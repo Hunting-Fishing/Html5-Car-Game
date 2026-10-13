@@ -169,11 +169,17 @@ function formatPct(value) {
   return `${Number(value).toFixed(2)}%`;
 }
 
+function barWidth(value) {
+  const amount = Math.max(0, Math.min(100, Number(value) || 0));
+  if (amount <= 0) return 0;
+  return Math.max(8, Math.round(100 * Math.pow(amount / 100, 0.45)));
+}
+
 function renderBars(view, compact = false) {
   const energyPct = Math.max(0, Math.min(100, (view.energy / Math.max(1, view.energyMax)) * 100));
   const energy = `<div class="statBar energy"><span>Energy</span><i><b style="width:${energyPct}%"></b></i>${compact ? '' : `<em>${Math.round(view.energy)}</em>`}</div>`;
   const skills = view.skills.map((skill) => {
-    const width = Math.max(0, Math.min(100, Number(skill.value) || 0));
+    const width = barWidth(skill.value);
     return `<div class="statBar ${skill.key}"><span>${skill.label}</span><i><b style="width:${width}%"></b></i>${compact ? '' : `<em>${formatPct(skill.value)}</em>`}</div>`;
   }).join('');
   return `<div class="statBars${compact ? ' compact' : ''}">${energy}${skills}</div>`;
