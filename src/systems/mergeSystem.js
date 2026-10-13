@@ -307,25 +307,28 @@ export function upgradeEnergyCap(state) {
   return { ok: true, message: `Energy capacity raised to ${state.merge.maxEnergy}.` };
 }
 
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
 export function freeEnergyRefill(state) {
   normalizeMergeState(state);
-  const now = Date.now();
-  const cooldown = 5 * 60 * 1000;
-  if (now - (state.merge.lastFreeEnergy || 0) < cooldown) {
-    const wait = Math.ceil((cooldown - (now - state.merge.lastFreeEnergy)) / 60000);
-    return { ok: false, message: `Free energy ready in ${wait} min.` };
+  const today = todayKey();
+  if (state.merge.lastDailyEnergy === today) {
+    return { ok: false, message: 'Daily energy already claimed. Come back tomorrow.' };
   }
-  const gain = 10;
+  const gain = 25;
   state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + gain);
-  state.merge.lastFreeEnergy = now;
-  return { ok: true, message: `Free energy: +${gain}. (Ad placeholder)` };
+  state.merge.lastDailyEnergy = today;
+  return { ok: true, message: `Daily energy: +${gain}.` };
 }
 
 export function getTutorialHint(state) {
   if (!state.objectives?.firstGeneratorTap) return 'Tap a highlighted generator to produce items.';
   if (!state.objectives?.firstMerge) return 'Tap two matching items to merge. Merge generators for better output.';
   if (!state.objectives?.firstDelivery) return 'Fill a customer order and tap Deliver for rewards.';
-  return 'Open the Shop for energy packs.';
+  return 'Claim your daily energy in the shop.';
 }
 
 export function itemDisplayName(item) {
