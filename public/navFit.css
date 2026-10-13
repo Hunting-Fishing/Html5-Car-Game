@@ -12,7 +12,7 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 .capitalistList { display: grid; gap: 12px; }
 .adcapRow { display: grid !important; grid-template-columns: 46px minmax(0, 1.25fr) minmax(68px, .7fr) 58px; gap: 10px; align-items: center; padding: 10px; border-radius: 18px; background: linear-gradient(180deg, rgba(16, 40, 58, .88), rgba(8, 22, 34, .92)); border: 1px solid rgba(214, 184, 122, .28); }
 .adcapIcon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); box-shadow: none; position: relative; }
-.adcapIcon img, .adcapIcon .lineIcon { width: 30px; height: 30px; border-radius: 8px; object-fit: cover; }
+.adcapIcon img, .adcapIcon .lineIcon { width: 40px; height: 40px; border-radius: 8px; object-fit: contain; }
 .adcapIcon b { position: absolute; right: -4px; bottom: -4px; background: #d6b87a; color: #1b1408; border-radius: 999px; font-size: 9px; min-width: 16px; padding: 1px 4px; text-align: center; }
 .adcapBuy, .adcapTrack, .adcapManager { min-height: 42px !important; border: 0 !important; border-radius: 12px !important; padding: 6px 8px !important; background-image: none !important; box-shadow: none !important; font-weight: 650; }
 .adcapBuy { background: rgba(214, 184, 122, .92) !important; color: #2a1d0b !important; text-align: left; }
@@ -147,8 +147,8 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   box-shadow: none !important;
 }
 #screen-hub .homeGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-#screen-hub .homeTile { min-height: 96px; border: 0; border-radius: 16px; background: #1c4668; color: #fff; display: grid; justify-items: start; align-content: center; gap: 2px; padding: 10px; text-align: left; }
-#screen-hub .homeTile img { width: 28px; height: 28px; object-fit: contain; }
+#screen-hub .homeTile { min-height: 112px; border: 0; border-radius: 16px; background: #1c4668; color: #fff; display: grid; justify-items: start; align-content: center; gap: 2px; padding: 10px; text-align: left; }
+#screen-hub .homeTile img { width: 56px; height: 56px; object-fit: contain; }
 #screen-hub .homeTile b { font-size: 15px; }
 #screen-hub .homeTile small { color: #d5e6f0; font-size: 11px; }
 #screen-hub .homeVip {
@@ -173,7 +173,7 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-hub .homeVip b { font-size: 18px; }
 #screen-hub .homeVip span { font-size: 12px; font-weight: 800; }
 #screen-hub .homeLink { display: block; text-align: center; color: #d6b87a; font-size: 13px; text-decoration: none; padding: 6px; }
-#screen-hub .adcapIcon img { width: 28px; height: 28px; object-fit: contain; }
+#screen-hub .adcapIcon img { width: 40px; height: 40px; object-fit: contain; }
 #screen-race .roadRunnerShell {
   display: grid !important;
   grid-template-rows: auto minmax(0, 1fr) !important;
@@ -559,16 +559,16 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .topBar .currencyGridExtra,
 .currencyGrid { gap: 3px !important; margin-top: 0 !important; }
 .topBar .currencyGridExtra { margin-top: 3px !important; }
-.curIcon { width: 18px !important; height: 18px !important; object-fit: contain !important; background: transparent !important; }
+.curIcon { width: 26px !important; height: 26px !important; object-fit: contain !important; background: transparent !important; }
 #screen-profile .gameMenuTabs button {
-  min-height: 64px !important;
+  min-height: 78px !important;
   font-size: 12px !important;
   font-weight: 900 !important;
 }
-#screen-profile .menuTabIcon { width: 36px !important; height: 36px !important; object-fit: contain !important; background: transparent !important; }
+#screen-profile .menuTabIcon { width: 48px !important; height: 48px !important; object-fit: contain !important; background: transparent !important; }
 #screen-profile .iconEmojiFallback,
 #screen-hub .iconEmojiFallback { display: none !important; }
-#screen-hub .homeTile img { width: 40px !important; height: 40px !important; object-fit: contain !important; }
+#screen-hub .homeTile img { width: 56px !important; height: 56px !important; object-fit: contain !important; }
 .stagePill { min-height: 26px !important; padding: 2px 5px !important; border-radius: 10px !important; }
 .stageCopy b { font-size: 12px !important; }
 .vipBadge {
@@ -637,7 +637,7 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
   padding: 10px 6px calc(6px + env(safe-area-inset-bottom)) !important;
 }
 .bottomNav .tab {
-  min-height: 48px !important;
+  min-height: 60px !important;
   height: auto !important;
   overflow: hidden !important;
   background: linear-gradient(180deg, #1d5274, #12344c) !important;
@@ -653,15 +653,15 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .bottomNav .tab span,
 .bottomNav .tab .tabReady { display: none !important; }
 .bottomNav .tab .tabIcon {
-  width: 44px !important;
-  height: 44px !important;
+  width: 52px !important;
+  height: 52px !important;
   border-radius: 0 !important;
   object-fit: contain !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 .bottomNav .tab.active {
-  min-height: 78px !important;
+  min-height: 92px !important;
   margin: -14px 0 0 !important;
   padding: 4px 2px 5px !important;
   background: linear-gradient(180deg, #fff1c2, #e7b34a) !important;
@@ -682,8 +682,8 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
   text-shadow: none !important;
 }
 .bottomNav .tab.active .tabIcon {
-  width: 48px !important;
-  height: 48px !important;
+  width: 58px !important;
+  height: 58px !important;
 }
 .bottomNav .iconEmojiFallback,
 .bottomNav .tabIconFallback { display: none !important; }
@@ -820,7 +820,7 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
   align-content: center;
   gap: 2px;
 }
-#screen-profile .menuTabIcon { width: 20px; height: 20px; object-fit: contain; }
+#screen-profile .menuTabIcon { width: 48px; height: 48px; object-fit: contain; }
 #screen-profile .gameMenuTabs button.active { background: #f6c445; color: #2a1d0b; }
 #screen-profile .gameMenuTabs button i {
   position: absolute;
