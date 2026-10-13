@@ -397,8 +397,8 @@ export function renderStaffScreen(state) {
     badge: `${hiredCount}`,
     className: 'staffFrame',
     body: `
-      <div class="assignList">${DESKS.map((desk) => renderDesk(state, desk)).join('')}</div>
       ${personOpen ? renderDock(state, view, managerId) : ''}
+      <div class="assignList">${DESKS.map((desk) => renderDesk(state, desk)).join('')}</div>
     `
   });
 }

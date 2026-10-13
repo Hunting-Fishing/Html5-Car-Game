@@ -37,6 +37,8 @@
 #screen-staff .taskBtn.on { border-color: #7dffb2; background: #14543a; }
 #screen-staff .taskRow > small { width: 100%; color: #d5e7f2; font-size: 11px; }
 #screen-staff .assignLead {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
   gap: 8px;
@@ -48,6 +50,8 @@
   color: #fff;
   text-align: left;
   cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 #screen-staff .assignLead b { display: block; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
 #screen-staff .assignLead small { display: block; color: #d5e7f2; font-size: 12px; line-height: 1.3; }

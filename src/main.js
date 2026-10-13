@@ -6,7 +6,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=91';
+import './ui/roadRunnerRuntime.js?v=92';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -324,6 +324,7 @@ function handleClick(event) {
     setSelectedStaff(id);
     state.activeScreen = 'staff';
     render();
+    document.querySelector('#screen-staff')?.scrollTo?.(0, 0);
     return;
   }
 
