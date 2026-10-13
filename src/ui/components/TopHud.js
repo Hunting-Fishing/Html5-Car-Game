@@ -12,7 +12,7 @@ export function renderTopHud() {
           <div class="brandText"><b>Micro Garage</b><span>Playable auto world - local save</span></div>
         </div>
         <div class="hudActions">
-          <button class="vipBadge" type="button" data-action="openVip" aria-label="VIP shop">
+          <button class="vipBadge" type="button" data-action="screen" data-screen="vip" aria-label="VIP shop">
             <small>VIP</small><b id="vipBadge">0</b>
           </button>
           <div class="stagePill" aria-label="Stage 1">

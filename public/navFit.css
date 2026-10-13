@@ -152,11 +152,13 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-hub .homeTile b { font-size: 15px; }
 #screen-hub .homeTile small { color: #d5e6f0; font-size: 11px; }
 #screen-hub .homeVip {
+  position: relative;
+  z-index: 5;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 48px;
+  min-height: 56px;
   margin: 8px 0;
   padding: 8px 14px;
   border-radius: 14px;
@@ -164,6 +166,9 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
   background: linear-gradient(180deg, #ffe36a, #e39b12);
   color: #4a2a00;
   box-shadow: 0 3px 0 #8a5a10;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 #screen-hub .homeVip b { font-size: 18px; }
 #screen-hub .homeVip span { font-size: 12px; font-weight: 800; }
@@ -559,17 +564,21 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .stageCopy b { font-size: 12px !important; }
 .vipBadge {
   position: relative;
+  z-index: 6;
   display: grid;
   justify-items: center;
-  min-width: 36px;
-  height: 26px;
-  padding: 1px 6px;
+  min-width: 44px;
+  height: 32px;
+  padding: 1px 8px;
   border-radius: 8px;
   border: 2px solid #fff1b0;
   background: linear-gradient(180deg, #ffe36a, #e39b12);
   color: #4a2a00;
   box-shadow: 0 2px 0 #8a5a10;
   line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 .vipBadge small { font-size: 8px; font-weight: 900; letter-spacing: .04em; }
 .vipBadge b { font-size: 12px; }

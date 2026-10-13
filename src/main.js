@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=90';
+import './ui/roadRunnerRuntime.js?v=91';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -286,9 +286,11 @@ function handleClick(event) {
     return;
   }
 
-  if (action === 'screen') {
+  if (action === 'screen' || action === 'openVip') {
+    const next = action === 'openVip' ? 'vip' : target.dataset.screen;
     if (target.dataset.rrTab) window.__openRaceTab = target.dataset.rrTab;
-    state.activeScreen = target.dataset.screen;
+    if (next === 'vip' && state.activeScreen !== 'vip') state.vipReturn = state.activeScreen;
+    state.activeScreen = next;
     render();
     queueSave();
     return;
