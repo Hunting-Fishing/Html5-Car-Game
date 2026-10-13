@@ -9,6 +9,7 @@ export function loadState() {
     const raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem(OLD_SAVE_KEY);
     if (!raw) return defaultState();
     const state = reconcile(defaultState(), JSON.parse(raw));
+    repairInflatedWallet(state);
     rollDaily(state);
     applyOfflineProgress(state);
     return state;
@@ -27,6 +28,12 @@ export function resetState() {
   localStorage.removeItem(SAVE_KEY);
   localStorage.removeItem(OLD_SAVE_KEY);
   return defaultState();
+}
+
+function repairInflatedWallet(state) {
+  if (state.repairs?.wallet84) return;
+  if ((state.currencies?.coins || 0) > 250000) state.currencies.coins = 5000;
+  state.repairs = { ...(state.repairs || {}), wallet84: true };
 }
 
 function reconcile(base, saved) {
@@ -57,6 +64,7 @@ function reconcile(base, saved) {
     characters: { ...(base.characters || {}), ...(saved.characters || {}) },
     assignments: { ...(base.assignments || {}), ...(saved.assignments || {}) },
     payroll: { ...(base.payroll || { elapsed: 0 }), ...(saved.payroll || {}) },
+    repairs: { ...(base.repairs || {}), ...(saved.repairs || {}) },
     tips: { ...base.tips, ...(saved.tips || {}) }
   };
 }
