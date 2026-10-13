@@ -241,29 +241,45 @@
   border-radius: 10px !important;
 }
 
-.mergeShop {
-  margin-top: 4px;
-  border-radius: 10px;
-  background: rgba(255,209,102,.08);
-  border: 1px solid rgba(255,209,102,.25);
+.mergeShopPanel {
+  margin-top: 6px;
+  border-radius: 12px;
+  background: rgba(255,209,102,.1);
+  border: 1px solid rgba(255,209,102,.3);
+  padding: 8px;
 }
 
-.mergeShop summary {
-  padding: 8px 10px;
+.mergeShopTitle {
   font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 6px;
+  color: #ffe08a;
 }
 
-.mergeShopRow {
+.mergeShopGrid {
   display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 4px;
-  padding: 0 8px 8px;
+  margin-bottom: 6px;
 }
 
-.mergeShopRow .btn.small {
+.mergeShopGrid .btn.small {
+  min-height: 52px;
+  font-size: 9px;
+  line-height: 1.2;
+  border-radius: 10px !important;
+}
+
+.mergeShopExtras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.mergeShopExtras .btn.small {
   min-height: 32px;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .mergeRecipeDrawer {
