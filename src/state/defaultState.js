@@ -11,6 +11,7 @@ export function defaultState() {
     stage: 1,
     level: 1,
     xp: 0,
+    vipLevel: 0,
     currencies: {
       coins: 160,
       scrap: 16,
@@ -139,6 +140,8 @@ export function defaultState() {
     relationshipGifts: {},
     reputation: 0,
     characters: {},
+    assignments: { sales: '', service: '', parts: '', drive: '' },
+    payroll: { elapsed: 0 },
     npcTrade: {},
     tips: {
       welcome: false,
