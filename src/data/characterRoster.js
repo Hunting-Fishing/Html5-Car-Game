@@ -1,7 +1,14 @@
 import { publicAsset } from './assetUrl.js';
 
-const FIRST = ['Liza', 'Marco', 'Nico', 'Ari', 'Rae', 'Sol', 'Bea', 'Carlo', 'Dina', 'Enzo', 'Faye', 'Gino', 'Hana', 'Isko', 'Jade', 'Kiko', 'Lani', 'Mico', 'Nia', 'Omar', 'Pia', 'Quin', 'Rosa', 'Tito', 'Uma'];
 const LAST = ['Reyes', 'Santos', 'Cruz', 'Bautista'];
+const FACE = 'MFFMMMMFMFMFMFFMFMMFMFMFMFMMFMFMFMFMMFMFFMFFMMFMFMMFFMFMMFFMMFMFMFMFFMMMMFFMMFFMFMFMFMFMFFMFMFMFFMMM';
+const MALE = ['Marco', 'Nico', 'Carlo', 'Enzo', 'Gino', 'Isko', 'Kiko', 'Mico', 'Omar', 'Tito', 'Sol', 'Rae', 'Andres', 'Ben', 'Cesar', 'Diego', 'Eli', 'Felix', 'Hugo', 'Ivan', 'Jorge', 'Ken', 'Luis', 'Mateo', 'Noel', 'Paolo', 'Rafael', 'Sergio', 'Tomas', 'Vicente', 'Bong', 'Danilo', 'Emil', 'Franco', 'Hector', 'Jun', 'Leo', 'Mario', 'Nestor', 'Oscar', 'Pedro', 'Ramon', 'Teo', 'Vito', 'Wilson', 'Alex', 'Bruno', 'Chris', 'Dante', 'Edgar', 'Fred', 'Gabe', 'Hiro'];
+const FEMALE = ['Liza', 'Bea', 'Dina', 'Faye', 'Hana', 'Jade', 'Lani', 'Nia', 'Pia', 'Rosa', 'Uma', 'Ari', 'Ana', 'Bella', 'Cora', 'Elena', 'Flora', 'Gina', 'Ines', 'Joy', 'Kara', 'Luz', 'Maya', 'Nina', 'Olga', 'Perla', 'Rita', 'Sara', 'Tala', 'Vera', 'Willa', 'Yana', 'Zia', 'Amina', 'Bianca', 'Celia', 'Daisy', 'Eva', 'Fe', 'Grace', 'Helen', 'Ida', 'Jessa', 'Kim', 'Lara', 'Mina', 'Nora'];
+const FIRST = Array.from(FACE, (face, index) => {
+  const pool = face === 'M' ? MALE : FEMALE;
+  const used = FACE.slice(0, index).split('').filter((item) => item === face).length;
+  return pool[used];
+});
 const ROLES = [
   { role: 'Driver', crew: 'Drive', avatar: 'driver', parts: ['race', 'grip', 'fuel'] },
   { role: 'Mechanic', crew: 'Shop', avatar: 'mechanic', parts: ['repair', 'parts', 'grip'] },
@@ -58,7 +65,7 @@ export const CHARACTERS = Array.from({ length: 100 }, (_, index) => {
   const startLevel = 1 + (index % 11 === 0 ? 4 : index % 6 === 0 ? 2 : 0);
   return {
     id: `crew-${String(index + 1).padStart(3, '0')}`,
-    name: `${FIRST[index % FIRST.length]} ${LAST[Math.floor(index / FIRST.length)]}`,
+    name: `${FIRST[index]} ${LAST[Math.floor(index / 25)]}`,
     role: role.role,
     crew: role.crew,
     avatar: role.avatar,
