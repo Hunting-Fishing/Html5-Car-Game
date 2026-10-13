@@ -559,7 +559,16 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .topBar .currencyGridExtra,
 .currencyGrid { gap: 3px !important; margin-top: 0 !important; }
 .topBar .currencyGridExtra { margin-top: 3px !important; }
-.curIcon { width: 12px !important; height: 12px !important; }
+.curIcon { width: 18px !important; height: 18px !important; object-fit: contain !important; background: transparent !important; }
+#screen-profile .gameMenuTabs button {
+  min-height: 64px !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+#screen-profile .menuTabIcon { width: 36px !important; height: 36px !important; object-fit: contain !important; background: transparent !important; }
+#screen-profile .iconEmojiFallback,
+#screen-hub .iconEmojiFallback { display: none !important; }
+#screen-hub .homeTile img { width: 40px !important; height: 40px !important; object-fit: contain !important; }
 .stagePill { min-height: 26px !important; padding: 2px 5px !important; border-radius: 10px !important; }
 .stageCopy b { font-size: 12px !important; }
 .vipBadge {

@@ -45,7 +45,7 @@ export function renderHubScreen(state) {
       </button>
       <div class="homeGrid">
         ${tile('race', UI_ICONS.race, 'Race', 'Stage map')}
-        ${tile('lines', UI_ICONS.garage, 'Supplies', 'Stock the shop')}
+        ${tile('lines', UI_ICONS.tools, 'Supplies', 'Stock the shop')}
         ${tile('merge', UI_ICONS.parts, 'Parts', 'Merge pairs')}
         ${tile('garage', UI_ICONS.garage, 'Garage', 'Build rooms')}
       </div>

@@ -1,38 +1,43 @@
 import { publicAsset } from './assetUrl.js';
-const UI_ICON_BASE = publicAsset('/assets/ui/icons');
 const UI_NAV_BASE = publicAsset('/assets/ui/nav');
-const ROAD_RUNNER_ICON_BASE = publicAsset('/assets/road-runner');
 
 // Player-facing UI icons live in public/assets/ui/icons.
 // Keep these paths stable so designers can replace PNG/SVG files without
 // touching rendering code. New HUD/nav art should stay under public/assets/ui/.
+const ART = '?v=99';
+
 export const UI_ICONS = {
-  home: `${UI_ICON_BASE}/home.png`,
-  race: `${UI_ICON_BASE}/race.png`,
-  parts: `${UI_ICON_BASE}/parts.png`,
-  garage: `${UI_ICON_BASE}/garage.png`,
-  profile: `${UI_ICON_BASE}/profile.png`,
-  menu: `${UI_ICON_BASE}/menu.png`,
-  coin: `${UI_ICON_BASE}/coin.png`,
-  tools: `${UI_ICON_BASE}/tools.png`,
-  scrap: `${UI_ICON_BASE}/scrap.png`,
-  tune: `${UI_ICON_BASE}/tune.png`,
-  rep: `${UI_ICON_BASE}/rep.png`,
-  fuel: `${ROAD_RUNNER_ICON_BASE}/token-energy.svg`
+  home: `${UI_NAV_BASE}/nav-home.png${ART}`,
+  race: `${UI_NAV_BASE}/nav-race.png${ART}`,
+  parts: `${UI_NAV_BASE}/nav-parts.png${ART}`,
+  garage: `${UI_NAV_BASE}/nav-garage.png${ART}`,
+  profile: `${UI_NAV_BASE}/item-driver.png${ART}`,
+  menu: `${UI_NAV_BASE}/nav-menu.png${ART}`,
+  staff: `${UI_NAV_BASE}/nav-staff.png${ART}`,
+  settings: `${UI_NAV_BASE}/item-settings.png${ART}`,
+  coin: `${UI_NAV_BASE}/item-coin.png${ART}`,
+  tools: `${UI_NAV_BASE}/item-tools.png${ART}`,
+  scrap: `${UI_NAV_BASE}/item-scrap.png${ART}`,
+  tune: `${UI_NAV_BASE}/item-tune.png${ART}`,
+  rep: `${UI_NAV_BASE}/item-rep.png${ART}`,
+  fuel: `${UI_NAV_BASE}/item-fuel.png${ART}`
 };
 
 export const UI_NAV_ICONS = {
-  home: `${UI_NAV_BASE}/nav-home.png?v=97`,
-  race: `${UI_NAV_BASE}/nav-race.png?v=97`,
-  parts: `${UI_NAV_BASE}/nav-parts.png?v=97`,
-  garage: `${UI_NAV_BASE}/nav-garage.png?v=97`,
-  staff: `${UI_NAV_BASE}/nav-staff.png?v=97`,
-  menu: `${UI_NAV_BASE}/nav-menu.png?v=97`,
-  tools: `${UI_NAV_BASE}/icon-tools.svg`,
-  tune: `${UI_NAV_BASE}/icon-tune.svg`,
-  rep: `${UI_NAV_BASE}/icon-rep.svg`,
-  scrap: `${UI_NAV_BASE}/icon-scrap.svg`,
-  fuel: `${UI_NAV_BASE}/icon-fuel.svg`
+  home: `${UI_NAV_BASE}/nav-home.png${ART}`,
+  race: `${UI_NAV_BASE}/nav-race.png${ART}`,
+  parts: `${UI_NAV_BASE}/nav-parts.png${ART}`,
+  garage: `${UI_NAV_BASE}/nav-garage.png${ART}`,
+  staff: `${UI_NAV_BASE}/nav-staff.png${ART}`,
+  menu: `${UI_NAV_BASE}/nav-menu.png${ART}`,
+  driver: `${UI_NAV_BASE}/item-driver.png${ART}`,
+  settings: `${UI_NAV_BASE}/item-settings.png${ART}`,
+  coin: `${UI_NAV_BASE}/item-coin.png${ART}`,
+  tools: `${UI_NAV_BASE}/item-tools.png${ART}`,
+  tune: `${UI_NAV_BASE}/item-tune.png${ART}`,
+  rep: `${UI_NAV_BASE}/item-rep.png${ART}`,
+  scrap: `${UI_NAV_BASE}/item-scrap.png${ART}`,
+  fuel: `${UI_NAV_BASE}/item-fuel.png${ART}`
 };
 
 export const SCREEN_ICON_MAP = {
