@@ -35,6 +35,19 @@ function renderCongrats(delivery) {
   </div>`;
 }
 
+function renderSpinResult(state) {
+  const result = state.merge.lastSpinResult;
+  if (!result) return '';
+  return `<div class="congratsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;z-index:200;">
+    <div style="background:#fff;padding:24px;border-radius:16px;text-align:center;max-width:240px;color:#111;">
+      <div style="font-size:2.4em;">🎡</div>
+      <h3 style="margin:8px 0;">Spin!</h3>
+      <p style="font-size:1.2em;font-weight:900;">+${result} ⚡</p>
+      <button class="btn small primary" data-action="clearSpinResult" style="margin-top:12px;">Collect</button>
+    </div>
+  </div>`;
+}
+
 function selectedItemInfo(state) {
   const idx = state.merge.selectedIndex;
   const item = idx != null ? state.merge.board[idx] : null;
@@ -64,6 +77,7 @@ function renderShop(state) {
   const upgrades = state.merge.energyUpgrades || 0;
   const capCost = 150 + upgrades * 80;
   const dailyReady = state.merge.lastDailyEnergy !== todayKey();
+  const spinReady = state.merge.lastDailySpin !== todayKey();
   return `<div class="mergeShopPanel">
     <div class="mergeShopTitle">Energy Shop</div>
     <div class="mergeShopGrid">
@@ -74,6 +88,7 @@ function renderShop(state) {
     <div class="mergeShopExtras">
       <button class="btn small" data-action="upgradeEnergyCap" ${upgrades >= 5 ? 'disabled' : ''}>Raise Cap +10 (${capCost})</button>
       <button class="btn small primary" data-action="freeEnergyRefill" ${dailyReady ? '' : 'disabled'}>Daily +25 ⚡</button>
+      <button class="btn small gold" data-action="dailySpin" ${spinReady ? '' : 'disabled'}>Spin Wheel</button>
     </div>
   </div>`;
 }
@@ -93,6 +108,7 @@ export function renderMergeScreen(state) {
 
   return `
     ${renderCongrats(delivery)}
+    ${renderSpinResult(state)}
     <section class="mergeLazadaScreen">
       <div class="mergeTopBar">
         <div class="mergeEnergyPill">⚡ ${energy}/${maxEnergy}</div>
@@ -225,5 +241,5 @@ function renderMergeChainCompact(state, key, chain, selectedChain) {
 }
 
 function renderMergeTips(state, active, limit) {
-  return `<div class="mergeTips">Board ${active}/${limit} · Merge generators · Claim daily energy · Deliver for rewards</div>`;
+  return `<div class="mergeTips">Board ${active}/${limit} · Merge generators · Daily energy & spin · Deliver for rewards</div>`;
 }
