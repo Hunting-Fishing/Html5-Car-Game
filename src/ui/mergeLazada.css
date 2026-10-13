@@ -118,15 +118,16 @@
 }
 
 #screen-merge .customerNeed {
-  height: 26px;
+  height: 52px;
   display: grid;
   place-items: center;
 }
 
 #screen-merge .customerNeedArt {
-  width: 24px;
-  height: 24px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.25));
 }
 
 #screen-merge .customerTitle {
@@ -250,7 +251,7 @@
 }
 
 #screen-merge .lazadaBoard .crateIcon {
-  font-size: clamp(16px, 4.2vw, 26px);
+  font-size: clamp(22px, 6vw, 36px);
 }
 
 #screen-merge .lazadaBoard .cell.cobweb {
@@ -278,21 +279,33 @@
 
 #screen-merge .lazadaBoard .lvl {
   position: absolute;
-  top: 2px;
-  left: 2px;
+  top: 1px;
+  left: 1px;
+  z-index: 2;
   font-size: 8px;
-  background: rgba(0,0,0,.6);
+  background: rgba(0,0,0,.55);
   padding: 1px 3px;
   border-radius: 4px;
   line-height: 1;
 }
 
-#screen-merge .lazadaBoard .mergeItemArt,
 #screen-merge .lazadaBoard .itemIcon {
-  width: 72% !important;
-  height: 72% !important;
+  width: 100% !important;
+  height: 100% !important;
   max-width: none;
+  display: grid;
+  place-items: center;
+  font-size: inherit;
+}
+
+#screen-merge .lazadaBoard .mergeItemArt {
+  width: 94% !important;
+  height: 94% !important;
+  max-width: none !important;
+  max-height: none !important;
   object-fit: contain;
+  filter: drop-shadow(0 3px 0 rgba(0,0,0,.28));
+  pointer-events: none;
 }
 
 #screen-merge .lazadaBoard .chainTag {
