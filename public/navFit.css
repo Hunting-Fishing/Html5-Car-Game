@@ -644,19 +644,19 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .bottomNav .tab span,
 .bottomNav .tab .tabReady { display: none !important; }
 .bottomNav .tab .tabIcon {
-  width: 34px !important;
-  height: 34px !important;
+  width: 44px !important;
+  height: 44px !important;
   border-radius: 0 !important;
   object-fit: contain !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 .bottomNav .tab.active {
-  min-height: 68px !important;
-  margin: -12px 0 0 !important;
-  padding: 4px 2px 3px !important;
+  min-height: 78px !important;
+  margin: -14px 0 0 !important;
+  padding: 4px 2px 5px !important;
   background: linear-gradient(180deg, #fff1c2, #e7b34a) !important;
-  color: #2a1c08 !important;
+  color: #1a1206 !important;
   border: 1px solid #fff6d4 !important;
   border-radius: 14px !important;
   box-shadow: inset 0 1px 0 #fff, 0 3px 0 #8a6230 !important;
@@ -664,17 +664,20 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 }
 .bottomNav .tab.active span {
   display: block !important;
-  margin: 0;
-  color: #2a1c08 !important;
-  font-size: 10px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0;
+  margin: 1px 0 0 !important;
+  color: #1a1206 !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0 !important;
   line-height: 1 !important;
+  text-shadow: none !important;
 }
 .bottomNav .tab.active .tabIcon {
-  width: 38px !important;
-  height: 38px !important;
+  width: 48px !important;
+  height: 48px !important;
 }
+.bottomNav .iconEmojiFallback,
+.bottomNav .tabIconFallback { display: none !important; }
 .bottomNav .tab.questReady::after { content: none !important; }
 .bottomNav .tab.questReady {
   position: relative;

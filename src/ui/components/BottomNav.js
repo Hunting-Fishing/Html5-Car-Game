@@ -11,7 +11,7 @@ export const PRIMARY_NAV = [
 ];
 
 export function renderScreenIcon(screen) {
-  return renderIconImage(screen.icon || screenIconForId(screen.id), `${screen.label} icon`, 'tabIcon', screen.fallbackIcon);
+  return renderIconImage(screen.icon || screenIconForId(screen.id), `${screen.label} icon`, 'tabIcon', '');
 }
 
 export function renderPrimaryNavTab(tab) {

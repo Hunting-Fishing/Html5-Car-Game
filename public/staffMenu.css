@@ -1,7 +1,9 @@
 .bottomNav { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; align-items: end !important; }
 .bottomNav .tab span { display: none !important; }
-.bottomNav .tab.active { min-height: 68px !important; }
-.bottomNav .tab.active span { display: block !important; font-size: 10px !important; font-weight: 800 !important; color: #2a1c08 !important; }
+.bottomNav .tab.active { min-height: 78px !important; }
+.bottomNav .tab.active > span { display: block !important; font-size: 13px !important; font-weight: 900 !important; color: #1a1206 !important; }
+.bottomNav .iconEmojiFallback,
+.bottomNav .tabIconFallback { display: none !important; }
 #screen-profile .gameMenuTabs { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
 #screen-profile .gameMenuTabs button { font-size: 10px; min-height: 48px; }
 #screen-staff .staffTabs { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
