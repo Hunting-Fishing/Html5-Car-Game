@@ -44,12 +44,22 @@ export const CHAINS = {
   fluids: {
     label: 'Shop Fluids', short: 'FLD', icon: iconPath(MERGE_ICON_BASE, 'fluids/motor-oil.svg'), fallbackIcon: '\u{1F6E2}', resource: 'parts', unlockStage: 1,
     description: 'Oils and fluids. Open from the start.',
-    items: ['Motor Oil','Coolant','Brake Fluid','Power Steering','Gear Oil','Diff Fluid','Washer Fluid','Race Fuel']
+    items: ['Motor Oil','Coolant','Brake Fluid','Power Steering','Gear Oil','Diff Fluid','Washer Fluid','Race Fuel','Additive','Flush Kit','Sealant','Shop Barrel']
   },
   electrical: {
     label: 'Electrical', short: 'ELC', icon: iconPath(MERGE_ICON_BASE, 'electrical/car-battery.svg'), fallbackIcon: '\u26A1', resource: 'tools', unlockStage: 1,
     description: 'Wiring and electrical parts. Open from the start.',
-    items: ['Fuse Wire','Relay','Car Battery','Alternator','Starter','Coil Pack','Wire Harness','Control Module']
+    items: ['Fuse Wire','Relay','Car Battery','Alternator','Starter','Coil Pack','Wire Harness','Control Module','Sensor Pack','Amp','Inverter','Wiring Loom']
+  },
+  body: {
+    label: 'Body Shop', short: 'BDY', icon: iconPath(MERGE_ICON_BASE, 'body/hood.svg'), fallbackIcon: '\u{1F697}', resource: 'parts', unlockStage: 1,
+    description: 'Body and glass parts. Open from the start.',
+    items: ['Mirror','Headlamp','Grille','Bumper','Fender','Door Skin','Hood','Windshield']
+  },
+  interior: {
+    label: 'Cabin', short: 'CAB', icon: iconPath(MERGE_ICON_BASE, 'interior/seat.svg'), fallbackIcon: '\u{1FA91}', resource: 'rep', unlockStage: 1,
+    description: 'Interior parts. Open from the start.',
+    items: ['Floor Mat','Shift Knob','Radio','Steering Wheel','Seat','Dash','Door Panel','Cabin Kit']
   }
 };
 
@@ -78,6 +88,14 @@ export const GENERATORS = {
   wireRack: {
     key: 'wireRack', label: 'Wire Rack', short: 'WIRE', chain: 'electrical', produces: 'electrical',
     energyCost: 1, maxLevel: 4, description: 'Tap to spawn electrical parts.'
+  },
+  bodyRack: {
+    key: 'bodyRack', label: 'Body Rack', short: 'BODY', chain: 'body', produces: 'body',
+    energyCost: 1, maxLevel: 4, description: 'Tap to spawn body and glass parts.'
+  },
+  cabinBin: {
+    key: 'cabinBin', label: 'Cabin Bin', short: 'CABIN', chain: 'interior', produces: 'interior',
+    energyCost: 1, maxLevel: 4, description: 'Tap to spawn interior parts.'
   }
 };
 
@@ -90,7 +108,11 @@ export const CUSTOMER_TEMPLATES = [
   { key: 'coolant', title: 'Coolant top-up', chain: 'fluids', level: 2, reward: { coins: 32, parts: 3 }, hint: 'Needs Coolant' },
   { key: 'oilfluid', title: 'Oil service', chain: 'fluids', level: 1, reward: { coins: 24, parts: 2 }, hint: 'Needs Motor Oil' },
   { key: 'battery', title: 'Battery swap', chain: 'electrical', level: 3, reward: { coins: 48, tools: 3 }, hint: 'Needs Car Battery' },
-  { key: 'relay', title: 'Relay fix', chain: 'electrical', level: 2, reward: { coins: 28, tools: 2 }, hint: 'Needs Relay' }
+  { key: 'relay', title: 'Relay fix', chain: 'electrical', level: 2, reward: { coins: 28, tools: 2 }, hint: 'Needs Relay' },
+  { key: 'lamp', title: 'Lamp swap', chain: 'body', level: 2, reward: { coins: 30, parts: 2 }, hint: 'Needs Headlamp' },
+  { key: 'bumper', title: 'Bumper repair', chain: 'body', level: 4, reward: { coins: 42, parts: 4 }, hint: 'Needs Bumper' },
+  { key: 'radio', title: 'Radio install', chain: 'interior', level: 3, reward: { coins: 36, tools: 2 }, hint: 'Needs Radio' },
+  { key: 'seat', title: 'Seat recover', chain: 'interior', level: 5, reward: { coins: 50, rep: 2 }, hint: 'Needs Seat' }
 ];
 
 export const RACE_MODES = {

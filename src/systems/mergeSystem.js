@@ -9,7 +9,7 @@ function uid() {
 const BOARD_SIZE = 42;
 
 export function unlockedChainKeys(state) {
-  const keys = ['original', 'tools', 'fluids', 'electrical'];
+  const keys = ['original', 'tools', 'fluids', 'electrical', 'body', 'interior'];
   if (state.buildings.tuningCorner > 0 || state.lot?.owned?.tuningCorner) keys.push('performance');
   if (state.buildings.testTrack > 0 || state.lot?.owned?.testTrack) keys.push('racing');
   return keys;
@@ -41,19 +41,24 @@ export function normalizeMergeState(state) {
     state.merge.board[1] = makeItem('tools', 1, 'generator');
     state.merge.board[2] = makeItem('fluids', 1, 'generator');
     state.merge.board[3] = makeItem('electrical', 1, 'generator');
-    for (let i = 4; i < 8; i += 1) {
+    state.merge.board[4] = makeItem('body', 1, 'generator');
+    state.merge.board[5] = makeItem('interior', 1, 'generator');
+    for (let i = 6; i < 10; i += 1) {
       if (!state.merge.board[i]) state.merge.board[i] = makeCobweb();
     }
   }
-  if (!state.merge.seededExtraGens) {
+  if (!state.merge.grantedGens) state.merge.grantedGens = { fluids: !!state.merge.seededExtraGens, electrical: !!state.merge.seededExtraGens };
+  {
     const has = (chain) => state.merge.board.some(cell => cell && cell.type === 'generator' && cell.chain === chain);
     const place = (chain) => {
       const empty = state.merge.board.findIndex((cell, i) => i < boardLimit(state) && !cell);
       if (empty >= 0) state.merge.board[empty] = makeItem(chain, 1, 'generator');
     };
-    if (!has('fluids')) place('fluids');
-    if (!has('electrical')) place('electrical');
-    state.merge.seededExtraGens = true;
+    for (const chain of ['fluids', 'electrical', 'body', 'interior']) {
+      if (state.merge.grantedGens[chain]) continue;
+      if (!has(chain)) place(chain);
+      if (has(chain)) state.merge.grantedGens[chain] = true;
+    }
   }
 }
 
@@ -249,6 +254,8 @@ function relatedLineKey(chain) {
   if (chain === 'racing') return 'raceEvent';
   if (chain === 'fluids') return 'partsDelivery';
   if (chain === 'electrical') return 'mobileMechanic';
+  if (chain === 'body') return 'dealerShowcase';
+  if (chain === 'interior') return 'dealerShowcase';
   return null;
 }
 

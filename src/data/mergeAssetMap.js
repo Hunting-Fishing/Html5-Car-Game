@@ -83,6 +83,33 @@ export const MERGE_ASSETS = {
   'Coil Pack': publicAsset('/assets/Merge/electrical/coil-pack.svg'),
   'Wire Harness': publicAsset('/assets/Merge/electrical/wire-harness.svg'),
   'Control Module': publicAsset('/assets/Merge/electrical/control-module.svg'),
+  'Sensor Pack': publicAsset('/assets/Merge/electrical/relay.svg'),
+  'Amp': publicAsset('/assets/Merge/electrical/coil-pack.svg'),
+  'Inverter': publicAsset('/assets/Merge/electrical/alternator.svg'),
+  'Wiring Loom': publicAsset('/assets/Merge/electrical/wire-harness.svg'),
+
+  'Additive': publicAsset('/assets/Merge/fluids/motor-oil.svg'),
+  'Flush Kit': publicAsset('/assets/Merge/fluids/coolant.svg'),
+  'Sealant': publicAsset('/assets/Merge/fluids/brake-fluid.svg'),
+  'Shop Barrel': publicAsset('/assets/Merge/fluids/race-fuel.svg'),
+
+  'Mirror': publicAsset('/assets/Merge/body/mirror.svg'),
+  'Headlamp': publicAsset('/assets/Merge/body/headlamp.svg'),
+  'Grille': publicAsset('/assets/Merge/body/grille.svg'),
+  'Bumper': publicAsset('/assets/Merge/body/bumper.svg'),
+  'Fender': publicAsset('/assets/Merge/body/fender.svg'),
+  'Door Skin': publicAsset('/assets/Merge/body/door-skin.svg'),
+  'Hood': publicAsset('/assets/Merge/body/hood.svg'),
+  'Windshield': publicAsset('/assets/Merge/body/windshield.svg'),
+
+  'Floor Mat': publicAsset('/assets/Merge/interior/floor-mat.svg'),
+  'Shift Knob': publicAsset('/assets/Merge/interior/shift-knob.svg'),
+  'Radio': publicAsset('/assets/Merge/interior/radio.svg'),
+  'Steering Wheel': publicAsset('/assets/Merge/interior/steering-wheel.svg'),
+  'Seat': publicAsset('/assets/Merge/interior/seat.svg'),
+  'Dash': publicAsset('/assets/Merge/interior/dash.svg'),
+  'Door Panel': publicAsset('/assets/Merge/interior/door-panel.svg'),
+  'Cabin Kit': publicAsset('/assets/Merge/interior/cabin.svg'),
   'Drag Slicks': publicAsset('/assets/Merge/racing/drag-slicks.svg')
 };
 
