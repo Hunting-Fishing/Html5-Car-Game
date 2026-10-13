@@ -32,6 +32,7 @@ let fireArmed = '';
 let pickingManager = false;
 let personOpen = false;
 let staffPane = 'overview';
+let growPane = 'train';
 
 const DESKS = [
   { id: 'sales', label: 'Sales Floor', short: 'Sales', roles: ['Sales'] },
@@ -45,10 +46,15 @@ export function setSelectedStaff(id) {
   if (known) selectedStaff = id;
   personOpen = Boolean(characterById(id));
   staffPane = 'overview';
+  growPane = 'train';
 }
 
 export function setStaffPane(pane) {
   if (pane === 'work' || pane === 'grow' || pane === 'overview') staffPane = pane;
+}
+
+export function setGrowPane(pane) {
+  if (pane === 'train' || pane === 'perk' || pane === 'course' || pane === 'tree') growPane = pane;
 }
 
 export function closeStaffSheet() {
@@ -205,6 +211,22 @@ function renderAvatar(person, className = 'staffAvatar') {
   return `<img class="${className}" src="${src}" alt="" loading="lazy">`;
 }
 
+function paneIcon(kind) {
+  const paths = {
+    overview: '<circle cx="12" cy="8" r="3"/><path d="M5 19c1.2-3 2.8-4.5 7-4.5S17.8 16 19 19"/>',
+    work: '<path d="M8 7V5h8v2"/><path d="M4 7h16v12H4z"/><path d="M4 12h16"/>',
+    grow: '<path d="M5 16l4-4 3 3 6-7"/><path d="M14 8h5v5"/>'
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[kind] || ''}</svg>`;
+}
+
+function renderPaneNav() {
+  return ['overview', 'work', 'grow'].map((pane) => {
+    const label = pane === 'overview' ? 'Overview' : pane === 'work' ? 'Work' : 'Grow';
+    return `<button type="button" class="paneBtn ${pane} ${staffPane === pane ? 'on' : ''}" data-action="staffPane" data-pane="${pane}">${paneIcon(pane)}<b>${label}</b></button>`;
+  }).join('');
+}
+
 function renderTasks(view) {
   if (!view?.hired) return '<p class="taskNote">Hire them to equip a task.</p>';
   const current = taskInfo(view.task);
@@ -320,30 +342,37 @@ function renderDock(state, view, managerId) {
   } else if (job) {
     jobButton = `<button class="btn small ghost" data-action="fireManagerArm" data-line="${line.key}">Release line</button>`;
   }
-  const panes = view.hired
-    ? `<nav class="staffPanes">
-        <button type="button" data-action="staffPane" data-pane="overview" class="${staffPane === 'overview' ? 'on' : ''}">Overview</button>
-        <button type="button" data-action="staffPane" data-pane="work" class="${staffPane === 'work' ? 'on' : ''}">Work</button>
-        <button type="button" data-action="staffPane" data-pane="grow" class="${staffPane === 'grow' ? 'on' : ''}">Grow</button>
-      </nav>`
-    : '';
+  const panes = view.hired ? `<nav class="staffPanes">${renderPaneNav()}</nav>` : '';
   const overview = staffPane === 'overview' || !view.hired
-    ? `${renderBars(view)}
+    ? `<div class="paneBody">${renderBars(view)}
       ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
       <div class="staffPay"><span>Salary</span><b>${costToText({ coins: view.pay.coins })}</b><small>${card}</small></div>
       ${renderSalary(view)}
-      <div class="assignDockActions">${hire}${fire}${makeManager}${jobButton}</div>`
+      <div class="assignDockActions">${hire}${fire}${makeManager}${jobButton}</div></div>`
     : '';
-  const work = staffPane === 'work' && view.hired ? renderTasks(view) : '';
+  const work = staffPane === 'work' && view.hired ? `<div class="paneBody">${renderTasks(view)}</div>` : '';
+  const growSwitch = ['train', 'perk', 'course', 'tree'].map((pane) => {
+    const label = pane === 'train' ? 'Train' : pane === 'perk' ? 'Perk' : pane === 'course' ? 'Course' : 'Tree';
+    return `<button type="button" class="${growPane === pane ? 'on' : ''}" data-action="growPane" data-grow="${pane}">${label}</button>`;
+  }).join('');
+  const growPanel = growPane === 'perk'
+    ? renderPerks(view)
+    : growPane === 'course'
+      ? renderCourses(state, view)
+      : growPane === 'tree'
+        ? renderTrees(state, view)
+        : renderTraining(state, view);
   const grow = staffPane === 'grow' && view.hired
-    ? `${renderTraining(state, view)}${renderPerks(view)}${renderCourses(state, view)}${renderTrees(state, view)}<div class="assignDockActions">${upgrade}${promote}</div>`
+    ? `<div class="paneBody"><div class="growSwitch">${growSwitch}</div>${growPanel}<div class="assignDockActions">${upgrade}${promote}</div></div>`
     : '';
   return `<div class="staffPop">
     <button type="button" class="staffPopBack" data-action="closeStaffSheet" aria-label="Close"></button>
     <div class="staffPopCard">
       <button type="button" class="staffPopX" data-action="closeStaffSheet" aria-label="Close">×</button>
-      ${renderAvatar(view, 'assignDockFace')}
-      <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${view.promotions ? ` · ${grade}` : ''}${view.hired ? '' : ' · Not hired'}${isLead ? ' · Manager' : ''}</span></div>
+      <div class="staffPopHead">
+        ${renderAvatar(view, 'assignDockFace')}
+        <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${view.promotions ? ` · ${grade}` : ''}${view.hired ? '' : ' · Not hired'}${isLead ? ' · Manager' : ''}</span></div>
+      </div>
       ${panes}
       ${overview}
       ${work}

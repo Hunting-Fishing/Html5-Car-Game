@@ -226,18 +226,61 @@
   color: #fff;
   box-shadow: none;
 }
-#screen-staff .staffPanes { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-#screen-staff .staffPanes button {
-  min-height: 44px;
+#screen-staff .staffPop { padding: 8px; }
+#screen-staff .staffPopCard {
+  display: flex;
+  flex-direction: column;
+  width: min(420px, 100%);
+  height: calc(100dvh - 16px);
+  max-height: calc(100dvh - 16px);
+  overflow: hidden;
+  gap: 8px;
+  padding: 12px;
+}
+#screen-staff .staffPopHead { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; align-items: center; }
+#screen-staff .staffPopCard .assignDockFace { width: 72px; height: 72px; }
+#screen-staff .staffPanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+#screen-staff .paneBtn {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 52px;
+  padding: 6px 4px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 12px;
+  background: #182430;
+  color: #9eb0be;
+}
+#screen-staff .paneBtn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#screen-staff .paneBtn b { font-size: 11px; font-weight: 700; }
+#screen-staff .paneBtn.on.overview { color: #d9ffe8; background: #173628; border-color: #3cba78; }
+#screen-staff .paneBtn.on.work { color: #d6e8ff; background: #163044; border-color: #4c93e0; }
+#screen-staff .paneBtn.on.grow { color: #fff1cc; background: #3a3018; border-color: #e0b34a; }
+#screen-staff .paneBody { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+#screen-staff .paneBody .statBars,
+#screen-staff .paneBody .taskRow,
+#screen-staff .paneBody .assignDockActions,
+#screen-staff .paneBody .staffPay,
+#screen-staff .paneBody .staffDelta,
+#screen-staff .paneBody .salarySlide { grid-column: auto; }
+#screen-staff .paneBody .taskRow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-content: start; }
+#screen-staff .paneBody .taskRow > span,
+#screen-staff .paneBody .taskRow > small,
+#screen-staff .paneBody .treeLine { grid-column: 1 / -1; }
+#screen-staff .paneBody .taskBtn { min-height: 40px; }
+#screen-staff .paneBody .taskBtn small { font-size: 9px; line-height: 1.2; }
+#screen-staff .growSwitch { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+#screen-staff .growSwitch button {
+  min-height: 32px;
   border: 0;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  background: transparent;
-  color: #8ea6b6;
-  font-size: 13px;
+  border-radius: 8px;
+  background: #182430;
+  color: #9eb0be;
+  font-size: 11px;
   font-weight: 700;
 }
-#screen-staff .staffPanes button.on { color: #fff; border-bottom-color: #3cba78; }
+#screen-staff .growSwitch button.on { background: #3a3018; color: #fff1cc; }
+#screen-staff .treeNodes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 #screen-staff .staffPopCard .staffPay { background: transparent; padding: 0; }
 #screen-staff .staffPopCard .taskBtn {
   min-height: 44px;
@@ -260,7 +303,7 @@
   font-size: 18px;
   line-height: 1;
 }
-#screen-staff .staffPopCard .assignDockFace { width: 96px; height: 96px; }
+#screen-staff .staffPopCard .assignDockFace { width: 72px; height: 72px; }
 #screen-staff .staffPopCard .statBars,
 #screen-staff .staffPopCard .assignDockActions { grid-column: 1 / -1; }
 #screen-staff .staffDelta { grid-column: 1 / -1; color: #7dffb2; font-size: 12px; font-style: normal; font-weight: 800; }
