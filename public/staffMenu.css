@@ -209,33 +209,32 @@
   border: 0;
   background: rgba(2, 8, 16, .72);
 }
+#screen-staff { position: relative; }
+#screen-staff:has(.staffPop) { overflow: hidden !important; }
+#screen-staff .staffPop {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 90;
+  display: flex !important;
+  padding: 8px;
+  overflow: hidden !important;
+}
 #screen-staff .staffPopCard {
   position: relative;
   z-index: 1;
-  width: min(360px, 100%);
-  max-height: min(460px, calc(100% - 32px));
-  overflow: auto;
-  display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
-  gap: 16px 8px;
-  align-items: center;
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, .08);
-  border-radius: 16px;
-  background: #101820;
-  color: #fff;
-  box-shadow: none;
-}
-#screen-staff .staffPop { padding: 8px; }
-#screen-staff .staffPopCard {
-  display: flex;
+  display: flex !important;
   flex-direction: column;
-  width: min(420px, 100%);
-  height: calc(100dvh - 16px);
-  max-height: calc(100dvh - 16px);
-  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  max-height: 100% !important;
+  overflow: hidden !important;
   gap: 8px;
-  padding: 12px;
+  padding: 10px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #16324a 0%, #0c1c2c 42%, #0b1724 100%);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16);
 }
 #screen-staff .staffPopHead { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; align-items: center; }
 #screen-staff .staffPopCard .assignDockFace { width: 72px; height: 72px; }
@@ -243,19 +242,29 @@
 #screen-staff .paneBtn {
   display: grid;
   justify-items: center;
-  gap: 2px;
-  min-height: 52px;
-  padding: 6px 4px;
-  border: 1px solid rgba(255, 255, 255, .1);
-  border-radius: 12px;
-  background: #182430;
-  color: #9eb0be;
+  gap: 1px;
+  min-height: 48px;
+  padding: 6px 4px 8px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #31485c, #1c2c3a);
+  color: #c5d5e2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 3px 0 #101820;
 }
-#screen-staff .paneBtn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-#screen-staff .paneBtn b { font-size: 11px; font-weight: 700; }
-#screen-staff .paneBtn.on.overview { color: #d9ffe8; background: #173628; border-color: #3cba78; }
-#screen-staff .paneBtn.on.work { color: #d6e8ff; background: #163044; border-color: #4c93e0; }
-#screen-staff .paneBtn.on.grow { color: #fff1cc; background: #3a3018; border-color: #e0b34a; }
+#screen-staff .paneBtn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#screen-staff .paneBtn b { font-size: 11px; font-weight: 800; }
+#screen-staff .paneBtn.on.overview { color: #08321c; background: linear-gradient(180deg, #7dffb2, #22b86a); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 3px 0 #0e7a42; }
+#screen-staff .paneBtn.on.work { color: #062038; background: linear-gradient(180deg, #8ec5ff, #2f86e0); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 3px 0 #14528f; }
+#screen-staff .paneBtn.on.grow { color: #3a2804; background: linear-gradient(180deg, #ffe08a, #e0a325); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 3px 0 #8a6410; }
+#screen-staff .staffPopHead .assignDockFace { width: 64px; height: 64px; border: 3px solid #f6c445; box-shadow: 0 0 0 3px rgba(246, 196, 69, .25); }
+#screen-staff .payNote { margin: 0; color: #b7c9d6; font-size: 11px; }
+#screen-staff .paneBody .assignDockActions { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 6px; margin-top: auto; }
+#screen-staff .paneBody .assignDockActions .btn { min-width: 0; min-height: 36px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 0; border-radius: 12px; }
+#screen-staff .paneBody .btn.primary { background: linear-gradient(180deg, #6eb6ff, #1d74d6); box-shadow: 0 3px 0 #124e8f; color: #fff; }
+#screen-staff .paneBody .btn.ghost { background: linear-gradient(180deg, #4d6274, #2b3c4c); box-shadow: 0 3px 0 #16222c; color: #fff; }
+#screen-staff .paneBody .btn.red { background: linear-gradient(180deg, #ff7b88, #e23b4e); box-shadow: 0 3px 0 #8e1d2b; color: #fff; }
+#screen-staff .paneBody .taskBtn { background: linear-gradient(180deg, #21445d, #163246); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12); }
+#screen-staff .paneBody .taskBtn.on { background: linear-gradient(180deg, #1f8f4e, #146b38); border-color: #7dffb2; }
 #screen-staff .paneBody { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
 #screen-staff .paneBody .statBars,
 #screen-staff .paneBody .taskRow,

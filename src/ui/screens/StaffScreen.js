@@ -258,8 +258,8 @@ function renderTrees(state, view) {
       const has = owned.includes(node.id);
       const previous = index === 0 || owned.includes(nodes[index - 1].id);
       const ready = !has && previous && skill.value >= node.need && canAfford(state, node.cost);
-      const note = has ? 'Owned' : !previous ? `Needs ${nodes[index - 1].label}` : skill.value < node.need ? `Needs ${node.need}%` : costToText(node.cost);
-      return `<button type="button" class="taskBtn treeNode ${has ? 'on' : ''}" data-action="buyTree" data-staff="${view.id}" data-stat="${skill.key}" data-node="${node.id}" ${has || !ready ? 'disabled' : ''}>${node.label}<small>${node.blurb} · ${note}</small></button>`;
+      const note = has ? 'Owned' : !previous ? nodes[index - 1].label : skill.value < node.need ? `${node.need}%` : costToText(node.cost);
+      return `<button type="button" class="taskBtn treeNode ${has ? 'on' : ''}" data-action="buyTree" data-staff="${view.id}" data-stat="${skill.key}" data-node="${node.id}" ${has || !ready ? 'disabled' : ''}>${node.label}<small>${note}</small></button>`;
     }).join('');
     return `<div class="treeLine"><b>${skill.label} ${formatPct(skill.value)}</b><div class="treeNodes">${buttons}</div></div>`;
   }).join('');
@@ -274,7 +274,7 @@ function renderCourses(state, view) {
     : open
       ? `Stat slot ${view.skills.length + 1} of ${view.slots} is open.`
       : `Stats ${view.skills.length}/${view.slots}. Upgrade to open the next slot.`;
-  const buttons = courseList().map((course) => `<button type="button" class="taskBtn" data-action="sendCourse" data-staff="${view.id}" data-course="${course.id}" ${canAfford(state, course.cost) ? '' : 'disabled'}>${course.label}<small>${course.blurb} · ${costToText(course.cost)}</small></button>`).join('');
+  const buttons = courseList().map((course) => `<button type="button" class="taskBtn" data-action="sendCourse" data-staff="${view.id}" data-course="${course.id}" ${canAfford(state, course.cost) ? '' : 'disabled'}>${course.label}<small>${costToText(course.cost)}</small></button>`).join('');
   return `<div class="taskRow"><span>Courses</span><small>${note}</small>${buttons}</div>`;
 }
 
@@ -326,7 +326,7 @@ function renderDock(state, view, managerId) {
       : `<button class="btn small ghost" data-action="fireCrewArm" data-staff="${view.id}">Fire</button>`;
   const makeManager = !view.hired || isLead
     ? ''
-    : `<button class="btn small primary" data-action="assignManager" data-staff="${view.id}">Make manager</button>`;
+    : `<button class="btn small primary" data-action="assignManager" data-staff="${view.id}">Lead</button>`;
   const grade = view.promotions ? view.promoTitle : '';
   const card = view.cardActive
     ? `${view.cardLabel}: ${costToText({ [view.cardKey]: view.pay[view.cardKey] })} each payday`
@@ -336,7 +336,7 @@ function renderDock(state, view, managerId) {
   let jobButton = '';
   const lineArmed = Boolean(job && fireArmed === line?.key);
   if (job && !job.hired) {
-    jobButton = `<button class="btn small ghost" data-action="buyManager" data-line="${line.key}" ${job.canHire ? '' : 'disabled'}>${job.ready ? `Hire line ${costToText(job.cost)}` : `Line Lv ${line.manager.unlockLevel}`}</button>`;
+    jobButton = `<button class="btn small ghost" data-action="buyManager" data-line="${line.key}" title="${job.ready ? costToText(job.cost) : `Level ${line.manager.unlockLevel}`}" ${job.canHire ? '' : 'disabled'}>${job.ready ? 'Line' : 'Locked'}</button>`;
   } else if (lineArmed) {
     jobButton = `<button class="btn small ghost" data-action="fireManagerCancel">Cancel</button><button class="btn small red" data-action="fireManager" data-line="${line.key}">Confirm</button>`;
   } else if (job) {
@@ -346,8 +346,8 @@ function renderDock(state, view, managerId) {
   const overview = staffPane === 'overview' || !view.hired
     ? `<div class="paneBody">${renderBars(view)}
       ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
-      <div class="staffPay"><span>Salary</span><b>${costToText({ coins: view.pay.coins })}</b><small>${card}</small></div>
       ${renderSalary(view)}
+      <p class="payNote">${card}</p>
       <div class="assignDockActions">${hire}${fire}${makeManager}${jobButton}</div></div>`
     : '';
   const work = staffPane === 'work' && view.hired ? `<div class="paneBody">${renderTasks(view)}</div>` : '';
