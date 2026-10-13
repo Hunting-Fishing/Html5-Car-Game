@@ -1,6 +1,6 @@
 export function defaultState() {
   return {
-    version: 10,
+    version: 11,
     activeScreen: 'hub',
     driveTab: 'idle',
     lotTab: 'town',
@@ -108,7 +108,11 @@ export function defaultState() {
       board: Array.from({ length: 16 }, () => null),
       selectedIndex: null,
       totalMerges: 0,
-      highestItemLevel: 1
+      highestItemLevel: 1,
+      energy: 20,
+      maxEnergy: 50,
+      energyRegen: 0.08,
+      customers: []
     },
     daily: {
       day: new Date().toDateString(),
@@ -128,7 +132,9 @@ export function defaultState() {
       unlockPerformance: false,
       unlockTrack: false,
       fixProblem: false,
-      stageFive: false
+      stageFive: false,
+      firstGeneratorTap: false,
+      firstDelivery: false
     },
     relationships: {},
     relationshipGifts: {},

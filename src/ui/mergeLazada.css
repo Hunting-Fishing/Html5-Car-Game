@@ -1,0 +1,324 @@
+/* Lazada-style merge board layout */
+.mergeLazadaScreen {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 100%;
+  padding: 4px 2px 8px;
+}
+
+.mergeTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+}
+
+.mergeEnergyPill {
+  background: linear-gradient(180deg, #ffe08a, #f59e0b);
+  color: #2b1700;
+  font-weight: 900;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,.25);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.4), 0 3px 0 rgba(0,0,0,.2);
+}
+
+.mergeBoardMeta {
+  font-size: 11px;
+  color: #bfe9f5;
+  font-weight: 700;
+}
+
+.mergeCustomerStrip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: none;
+}
+.mergeCustomerStrip::-webkit-scrollbar { display: none; }
+
+.customerCard {
+  flex: 0 0 auto;
+  width: 110px;
+  background: #e8f4ff;
+  border: 2px solid #4a90d9;
+  border-radius: 12px;
+  padding: 8px;
+  text-align: center;
+  color: #123;
+}
+
+.customerCard.ready {
+  border-color: #1a7a3a;
+  box-shadow: 0 0 0 2px rgba(26,122,58,.35);
+}
+
+.customerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.customerAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #cfe3ff;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+}
+
+.customerReward {
+  font-size: 11px;
+  font-weight: 900;
+  color: #1a7a3a;
+}
+
+.customerNeed {
+  height: 40px;
+  display: grid;
+  place-items: center;
+  margin: 2px 0;
+}
+
+.customerNeedArt {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.customerTitle {
+  font-size: 9px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.customerMeta {
+  font-size: 8px;
+  color: #456;
+  margin-bottom: 4px;
+}
+
+.mergeCustomersEmpty {
+  font-size: 12px;
+  opacity: .6;
+  text-align: center;
+  padding: 8px;
+}
+
+.mergeHint {
+  background: #fff3cd;
+  color: #5a4a00;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  text-align: center;
+}
+
+.mergeSelectedInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,209,102,.35);
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.mergeSelectedArt {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+}
+
+.mergeSelectedCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mergeSelectedCopy b {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mergeSelectedCopy span {
+  font-size: 10px;
+  color: #bfe9f5;
+}
+
+.lazadaBoard {
+  display: grid !important;
+  grid-template-columns: repeat(6, 1fr) !important;
+  gap: 4px !important;
+  max-width: 100% !important;
+  margin: 0 auto;
+  padding: 4px;
+}
+
+.lazadaBoard .cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  min-width: 0;
+  padding: 2px;
+}
+
+.lazadaBoard .cell.locked.crate {
+  background: linear-gradient(180deg, #d4b483, #b8956a) !important;
+  border: 2px solid #8a6a45;
+  opacity: 0.85;
+}
+
+.lazadaBoard .crateIcon {
+  font-size: 18px;
+}
+
+.lazadaBoard .cell.cobweb {
+  background: linear-gradient(180deg, rgba(180,180,200,.3), rgba(20,20,30,.6));
+  border: 1px dashed #aaa;
+}
+
+.lazadaBoard .cobwebIcon {
+  font-size: 20px;
+  opacity: 0.85;
+}
+
+.lazadaBoard .cell.generator {
+  box-shadow: 0 0 0 2px #ffd700, 0 0 8px rgba(255,215,0,.5);
+  background: linear-gradient(180deg, rgba(255,209,102,.25), rgba(5,27,43,.9));
+}
+
+.lazadaBoard .itemInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.lazadaBoard .lvl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 7px;
+  background: rgba(0,0,0,.55);
+  padding: 1px 3px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.lazadaBoard .mergeItemArt,
+.lazadaBoard .itemIcon {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+}
+
+.lazadaBoard .chainTag {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 6px;
+  background: #ffd700;
+  color: #111;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-weight: 900;
+}
+
+.mergeBottomActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.mergeBottomActions .btn.small {
+  min-height: 36px;
+  padding: 4px 2px;
+  font-size: 9px;
+  border-radius: 10px !important;
+}
+
+.mergeShopPanel {
+  margin-top: 6px;
+  border-radius: 12px;
+  background: rgba(255,209,102,.1);
+  border: 1px solid rgba(255,209,102,.3);
+  padding: 8px;
+}
+
+.mergeShopTitle {
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 6px;
+  color: #ffe08a;
+}
+
+.mergeShopGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.mergeShopGrid .btn.small {
+  min-height: 52px;
+  font-size: 9px;
+  line-height: 1.2;
+  border-radius: 10px !important;
+}
+
+.mergeShopExtras {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+}
+
+.mergeShopExtras .btn.small {
+  min-height: 32px;
+  font-size: 9px;
+}
+
+.mergeRecipeDrawer {
+  margin-top: 4px;
+  border-radius: 10px;
+  background: rgba(1,12,22,.5);
+  border: 1px solid rgba(255,255,255,.1);
+}
+
+.mergeRecipeDrawer summary {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mergeRecipeDrawer[open] {
+  padding-bottom: 8px;
+}
+
+.mergeTips {
+  font-size: 10px;
+  color: #bfe9f5;
+  padding: 0 10px 6px;
+}
+
+.mergeChainCompact {
+  padding: 6px 10px;
+  font-size: 11px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}

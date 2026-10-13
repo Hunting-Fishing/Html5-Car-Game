@@ -1,4 +1,4 @@
-import { CHAINS } from '../../data/gameData.js';
+import { CHAINS, CUSTOMER_TEMPLATES } from '../../data/gameData.js';
 import { mergeAssetForName } from '../../data/mergeAssetMap.js';
 import { chainIconForKey } from '../../data/uiIconMap.js';
 import { renderDataIcon } from '../components/GamePanel.js';
@@ -8,7 +8,8 @@ import {
   itemDisplayName,
   normalizeMergeState,
   shelfCapacity,
-  unlockedChainKeys
+  unlockedChainKeys,
+  getTutorialHint
 } from '../../systems/mergeSystem.js';
 
 function renderChainIcon(key, label, className = 'chainIconAsset') {
@@ -20,6 +21,78 @@ function renderChainLabel(key, chain) {
   return `<span class="chainLabel">${renderChainIcon(key, chain.label, 'chainLabelIcon')}<span>${chain.label}</span></span>`;
 }
 
+function renderCongrats(delivery) {
+  if (!delivery) return '';
+  const rewardLines = Object.entries(delivery.rewards || {}).map(([k, v]) => `${k}: +${v}`).join('<br>');
+  return `<div class="congratsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;z-index:200;">
+    <div style="background:#fff;padding:24px;border-radius:16px;text-align:center;max-width:280px;color:#111;">
+      <div style="font-size:2em;">⭐</div>
+      <h3 style="margin:8px 0;">Congrats!</h3>
+      <p style="margin:4px 0;">${delivery.title}</p>
+      <p style="font-size:0.9em;">${rewardLines}<br>Energy: +${delivery.energy}</p>
+      <button class="btn small primary" data-action="clearLastDelivery" style="margin-top:12px;">Collect</button>
+    </div>
+  </div>`;
+}
+
+function renderSpinResult(state) {
+  const result = state.merge.lastSpinResult;
+  if (!result) return '';
+  return `<div class="congratsOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;z-index:200;">
+    <div style="background:#fff;padding:24px;border-radius:16px;text-align:center;max-width:240px;color:#111;">
+      <div style="font-size:2.4em;">🎡</div>
+      <h3 style="margin:8px 0;">Spin!</h3>
+      <p style="font-size:1.2em;font-weight:900;">+${result} ⚡</p>
+      <button class="btn small primary" data-action="clearSpinResult" style="margin-top:12px;">Collect</button>
+    </div>
+  </div>`;
+}
+
+function selectedItemInfo(state) {
+  const idx = state.merge.selectedIndex;
+  const item = idx != null ? state.merge.board[idx] : null;
+  if (!item || item.type === 'cobweb') return '';
+  const name = itemDisplayName(item);
+  let next = 'Top item';
+  if (item.type === 'generator') {
+    next = `Produces L${Math.min(item.level || 1, 3)} items. Merge two to upgrade.`;
+  } else if (item.level < (CHAINS[item.chain]?.items.length || 1)) {
+    next = `Merge to become ${itemDisplayName({ ...item, level: item.level + 1 })}`;
+  }
+  return `<div class="mergeSelectedInfo">
+    <div class="mergeSelectedArt">${renderItem(item)}</div>
+    <div class="mergeSelectedCopy">
+      <b>${name}</b>
+      <span>${next}</span>
+    </div>
+  </div>`;
+}
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function renderShop(state) {
+  const upgrades = state.merge.energyUpgrades || 0;
+  const capCost = 150 + upgrades * 80;
+  const dailyReady = state.merge.lastDailyEnergy !== todayKey();
+  const spinReady = state.merge.lastDailySpin !== todayKey();
+  return `<div class="mergeShopPanel">
+    <div class="mergeShopTitle">Energy Shop</div>
+    <div class="mergeShopGrid">
+      <button class="btn small gold" data-action="buyEnergyPack" data-size="small">Small<br>+10 ⚡<br>50 coins</button>
+      <button class="btn small gold" data-action="buyEnergyPack" data-size="medium">Medium<br>+30 ⚡<br>120 coins</button>
+      <button class="btn small gold" data-action="buyEnergyPack" data-size="large">Large<br>+75 ⚡<br>250 coins</button>
+    </div>
+    <div class="mergeShopExtras">
+      <button class="btn small" data-action="upgradeEnergyCap" ${upgrades >= 5 ? 'disabled' : ''}>Raise Cap +10 (${capCost})</button>
+      <button class="btn small primary" data-action="freeEnergyRefill" ${dailyReady ? '' : 'disabled'}>Daily +25 ⚡</button>
+      <button class="btn small gold" data-action="dailySpin" ${spinReady ? '' : 'disabled'}>Spin Wheel</button>
+    </div>
+  </div>`;
+}
+
 export function renderMergeScreen(state) {
   normalizeMergeState(state);
   const active = activeBoardCount(state);
@@ -27,67 +100,97 @@ export function renderMergeScreen(state) {
   const firstPair = firstMatchingPairIndexes(state);
   const pairSet = new Set(firstPair);
   const guideNeedsPair = !state.objectives?.firstMerge;
-  const drawerTab = ['recipes', 'chains', 'tips'].includes(state.merge.activeTab) ? state.merge.activeTab : 'recipes';
-  const selectedChain = selectedMergeChainKey(state);
-  const shelfGuideTarget = guideNeedsPair && !pairSet.size ? ' data-guide-target="placeAll"' : '';
+  const energy = Math.floor(state.merge.energy || 0);
+  const maxEnergy = state.merge.maxEnergy || 50;
+  const hint = getTutorialHint(state);
+  const delivery = state.merge.lastDelivery;
+  const visualSlots = 42;
 
   return `
-    <section class="card gamePanel RewardPanel mergeUnifiedPanel mergePlayArea" data-component="RewardPanel">
-      <div class="gamePanelField">
-        <div class="mergeUnifiedHeader">
-          <span class="gameIconBadge">${renderDataIcon('parts', 'Parts icon', 'gameIconBadgeImg')}</span>
-          <div class="mergeUnifiedTitle">
-            <h2>Parts</h2>
-            <p>Merge pairs.</p>
-          </div>
-          <div class="mergeBayDock" aria-label="Merge Bay supplier slots">
-            <div class="mergeBayDockMeta">
-              <b>${Math.ceil(state.merge.supplierTimer)}s</b>
-              <span>${active}/${limit}</span>
-            </div>
-            <div class="miniShelf"${shelfGuideTarget}>
-              ${state.merge.supplierSlots.map((item, index) => renderMiniShelfSlot(item, index)).join('')}
-            </div>
-          </div>
-        </div>
+    ${renderCongrats(delivery)}
+    ${renderSpinResult(state)}
+    <section class="mergeLazadaScreen">
+      <div class="mergeTopBar">
+        <div class="mergeEnergyPill">⚡ ${energy}/${maxEnergy}</div>
+        <div class="mergeBoardMeta">${active}/${limit} open</div>
+      </div>
 
-        <div class="mergeBoardActions">
-          <button class="btn small primary" data-action="placeAll" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="placeAll"' : ''}>Place All</button>
-          <button class="btn small" data-action="autoMerge" ${guideNeedsPair && pairSet.size ? 'data-guide-target="mergePair"' : ''}>Auto Merge</button>
-          <button class="btn small red" data-action="sellSelected">Sell</button>
-        </div>
+      ${renderCustomers(state)}
 
-        <div class="mergeBoardArea">
-          <div class="board mergeBoardGrid" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>${state.merge.board.map((item, index) => index >= limit ? `<button class="cell locked" type="button" disabled aria-label="Locked slot"><span class="emptyText">🔒</span></button>` : renderBoardCell(state, item, index, pairSet)).join('')}</div>
-        </div>
+      ${hint ? `<div class="mergeHint">${hint}</div>` : ''}
 
-        <div class="mergeRecipeDrawer">
-          <div class="mergeBoardTabs mergeDrawerTabs" role="tablist" aria-label="Parts guide sections">
-            <button class="mergeBoardTab ${drawerTab === 'recipes' ? 'active' : ''}" type="button" role="tab" data-action="mergeTab" data-tab="recipes" aria-selected="${drawerTab === 'recipes'}">Recipes</button>
-            <button class="mergeBoardTab ${drawerTab === 'chains' ? 'active' : ''}" type="button" role="tab" data-action="mergeTab" data-tab="chains" aria-selected="${drawerTab === 'chains'}">Chains</button>
-            <button class="mergeBoardTab ${drawerTab === 'tips' ? 'active' : ''}" type="button" role="tab" data-action="mergeTab" data-tab="tips" aria-selected="${drawerTab === 'tips'}">Tips</button>
-          </div>
+      ${selectedItemInfo(state)}
 
-          <div class="mergeDrawerPane ${drawerTab === 'recipes' ? 'active' : ''}" data-merge-pane="recipes">
-            <div class="mergeChainCompactList">
-              ${Object.entries(CHAINS).map(([key, chain]) => renderMergeChainCompact(state, key, chain, selectedChain)).join('')}
-            </div>
-            ${renderMergeChainDetail(state, selectedChain, CHAINS[selectedChain])}
-          </div>
-
-          <div class="mergeDrawerPane ${drawerTab === 'chains' ? 'active' : ''}" data-merge-pane="chains">
-            <div class="mergeRecipesPane mergeChainsPane">
-              ${Object.entries(CHAINS).map(([key, chain]) => renderMergeChainSummary(state, key, chain)).join('')}
-            </div>
-          </div>
-
-          <div class="mergeDrawerPane ${drawerTab === 'tips' ? 'active' : ''}" data-merge-pane="tips">
-            ${renderMergeTips(state, active, limit)}
-          </div>
+      <div class="mergeBoardArea">
+        <div class="board mergeBoardGrid lazadaBoard" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>
+          ${Array.from({ length: visualSlots }, (_, index) => {
+            if (index >= limit) {
+              return `<button class="cell locked crate" type="button" disabled aria-label="Locked crate"><span class="crateIcon">📦</span></button>`;
+            }
+            const item = state.merge.board[index] || null;
+            return renderBoardCell(state, item, index, pairSet);
+          }).join('')}
         </div>
       </div>
+
+      <div class="mergeBottomActions">
+        <button class="btn small primary" data-action="placeAll">Place</button>
+        <button class="btn small" data-action="autoMerge">Merge</button>
+        <button class="btn small red" data-action="sellSelected">Sell</button>
+      </div>
+
+      ${renderShop(state)}
+
+      <details class="mergeRecipeDrawer">
+        <summary>Recipes & tips</summary>
+        ${renderMergeTips(state, active, limit)}
+        <div class="mergeChainCompactList">
+          ${Object.entries(CHAINS).map(([key, chain]) => renderMergeChainCompact(state, key, chain, selectedMergeChainKey(state))).join('')}
+        </div>
+      </details>
     </section>
   `;
+}
+
+function formatRemain(ms) {
+  if (!ms || ms <= 0) return '0:00';
+  const s = Math.ceil(ms / 1000);
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+function hasMatchingItem(state, customer) {
+  return (state.merge.board || []).some(item =>
+    item && item.type === 'product' && item.chain === customer.chain && item.level >= customer.level
+  );
+}
+
+function renderCustomers(state) {
+  const customers = state.merge.customers || [];
+  if (!customers.length) return '<div class="mergeCustomersEmpty">Waiting for customers…</div>';
+  const now = Date.now();
+  return `<div class="mergeCustomerStrip">
+    ${customers.map(c => {
+      const chain = CHAINS[c.chain];
+      const needName = chain?.items[(c.level || 1) - 1] || 'Item';
+      const asset = mergeAssetForName(needName);
+      const art = asset ? `<img class="customerNeedArt" src="${asset}" alt="${needName}">` : renderChainIcon(c.chain, chain?.label || needName, 'customerNeedArt');
+      const coins = c.reward?.coins || 0;
+      const remain = formatRemain((c.expires || 0) - now);
+      const ready = hasMatchingItem(state, c);
+      return `<div class="customerCard ${ready ? 'ready' : ''}">
+        <div class="customerHead">
+          <div class="customerAvatar">👤</div>
+          <div class="customerReward">💰 ${coins}</div>
+        </div>
+        <div class="customerNeed">${art}</div>
+        <div class="customerTitle">${c.title}</div>
+        <div class="customerMeta">Need L${c.level || 1} · ${remain}</div>
+        <button class="btn small primary" data-action="deliverCustomer" data-customer="${c.id}"${ready ? '' : ' disabled'}>Deliver</button>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 function selectedMergeChainKey(state) {
@@ -102,30 +205,25 @@ function firstMatchingPairIndexes(state) {
   const board = state.merge.board || [];
   for (let i = 0; i < board.length; i += 1) {
     const source = board[i];
-    if (!source) continue;
+    if (!source || source.type === 'cobweb') continue;
     for (let j = i + 1; j < board.length; j += 1) {
       const target = board[j];
-      if (target && source.chain === target.chain && source.level === target.level) return [i, j];
+      if (target && target.type !== 'cobweb' && source.chain === target.chain && source.level === target.level) return [i, j];
     }
   }
   return [];
 }
 
-function renderShelfSlot(item, index) {
-  if (!item) return `<button class="shelfSlot"><span class="emptyText">Empty<br>slot</span></button>`;
-  return `<button class="shelfSlot ready" data-action="placeShelf" data-index="${index}" data-guide-target="supplierReady">${renderItem(item)}</button>`;
-}
-
-function renderMiniShelfSlot(item, index) {
-  if (!item) return `<button class="miniShelfSlot" type="button" disabled><span class="emptyText">+</span></button>`;
-  return `<button class="miniShelfSlot ready" type="button" data-action="placeShelf" data-index="${index}" data-guide-target="supplierReady">${renderItem(item)}</button>`;
-}
-
 function renderBoardCell(state, item, index, pairSet = new Set()) {
   if (!item) return `<button class="cell" data-action="cell" data-index="${index}" aria-label="Empty slot"></button>`;
+  if (item.type === 'cobweb') {
+    return `<button class="cell cobweb" data-action="clearCobweb" data-index="${index}" aria-label="Clear cobweb"><span class="cobwebIcon">🕸</span></button>`;
+  }
   const selected = state.merge.selectedIndex === index ? 'selected' : '';
   const guideTarget = !state.objectives?.firstMerge && pairSet.has(index) ? 'data-guide-target="mergePair"' : '';
-  return `<button class="cell ${selected}" data-action="cell" data-index="${index}" ${guideTarget}>${renderItem(item)}</button>`;
+  const isGen = item.type === 'generator';
+  const action = isGen ? 'tapGenerator' : 'cell';
+  return `<button class="cell ${selected} ${isGen ? 'generator' : ''}" data-action="${action}" data-index="${index}" ${guideTarget}>${renderItem(item)}</button>`;
 }
 
 function renderItem(item) {
@@ -134,140 +232,32 @@ function renderItem(item) {
   const asset = mergeAssetForName(name);
   const icon = asset
     ? `<img class="mergeItemArt" src="${asset}" alt="${name}" draggable="false">`
-    : renderChainIcon(item.chain, chain.label, 'mergeItemArt chainFallbackArt');
-  return `<div><span class="lvl">L${item.level}</span><div class="itemIcon">${icon}</div><div class="itemName">${name}</div><span class="chainTag">${chain.short}</span></div>`;
-}
-
-function renderMergeChainPreview(key, chain, unlocked) {
-  const preview = chain.items.slice(0, 4).map((name) => {
-    const asset = mergeAssetForName(name);
-    return asset
-      ? `<span class="mergeChainAsset"><img class="mergeItemArt" src="${asset}" alt="${name}" loading="eager" draggable="false"></span>`
-      : `<span class="mergeChainAsset">${renderChainIcon(key, chain.label, 'mergeItemArt chainFallbackArt')}</span>`;
-  }).join('');
-  return `<div class="mergeChainPreview ${unlocked ? '' : 'locked'}" aria-label="${chain.label} asset preview">${preview}</div>`;
+    : renderChainIcon(item.chain, chain?.label || name, 'mergeItemArt chainFallbackArt');
+  const tag = item.type === 'generator' ? 'GEN' : '';
+  return `<div class="itemInner"><span class="lvl">L${item.level}</span><div class="itemIcon">${icon}</div>${tag ? `<span class="chainTag">${tag}</span>` : ''}</div>`;
 }
 
 function mergeChainRequirement(state, key) {
   if (key === 'performance') {
     const level = state.buildings?.tuningCorner || 0;
-    return {
-      met: level > 0,
-      text: `Build Tuning Corner Lv 1 (${level}/1)`,
-      actionScreen: 'garage'
-    };
+    return { met: level > 0, text: `Build Tuning Corner (${level}/1)` };
   }
   if (key === 'racing') {
     const level = state.buildings?.testTrack || 0;
-    return {
-      met: level > 0,
-      text: `Build 2D Test Track Lv 1 (${level}/1)`,
-      actionScreen: 'garage'
-    };
+    return { met: level > 0, text: `Build Test Track (${level}/1)` };
   }
-  return { met: true, text: 'Unlocked from start', actionScreen: null };
+  return { met: true, text: 'Unlocked' };
 }
 
 function renderMergeChainCompact(state, key, chain, selectedChain) {
   const unlocked = unlockedChainKeys(state).includes(key);
   const req = mergeChainRequirement(state, key);
-  return `
-    <button class="mergeChainCompact ${unlocked ? 'unlocked' : 'locked'} ${selectedChain === key ? 'selected' : ''}" type="button" data-action="mergeChain" data-chain="${key}">
-      <div class="mergeRecipeHead">
-        <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
-        <span class="pill">${unlocked ? 'Open' : 'Locked'}</span>
-      </div>
-      <span class="mergeChainRequirement">${unlocked ? '2 matching items make next level.' : req.text}</span>
-      ${renderMergeChainPreview(key, chain, unlocked)}
-    </button>
-  `;
-}
-
-function renderMergeChainDetail(state, key, chain) {
-  if (!chain) return '';
-  const unlocked = unlockedChainKeys(state).includes(key);
-  const req = mergeChainRequirement(state, key);
-  if (!unlocked) {
-    return `
-      <div class="mergeRecipe mergeChainDetail locked">
-        <div class="mergeRecipeHead">
-          <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
-          <span class="pill">Locked</span>
-        </div>
-        <div class="notice">Requirement: ${req.text}</div>
-        ${renderMergeChainPreview(key, chain, false)}
-        ${req.actionScreen ? `<button class="btn small gold mergeRecipeAction" data-action="screen" data-screen="${req.actionScreen}">Open Build Requirements</button>` : ''}
-      </div>
-    `;
-  }
-
-  return `
-    <div class="mergeRecipe mergeChainDetail good">
-      <div class="mergeRecipeHead">
-        <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
-        <span class="pill">Unlocked</span>
-      </div>
-      <div class="mergeRecipeRule">Recipe rule: <b>2 matching items</b> make the next level.</div>
-      <div class="mergeChainLadder" aria-label="${chain.label} merge progression">
-        ${chain.items.map((name, index) => renderMergeChainStep(key, chain, name, index)).join('')}
-      </div>
-    </div>
-  `;
-}
-
-function renderMergeChainSummary(state, key, chain) {
-  const unlocked = unlockedChainKeys(state).includes(key);
-  const req = mergeChainRequirement(state, key);
-  return `
-    <div class="mergeRecipe mergeCompactRecipe ${unlocked ? 'good' : 'locked'}">
-      <div class="mergeRecipeHead">
-        <div><b>${renderChainLabel(key, chain)}</b><span>${chain.description}</span></div>
-        <span class="pill">${unlocked ? 'Unlocked' : 'Locked'}</span>
-      </div>
-      <div class="${unlocked ? 'mergeRecipeRule' : 'notice'}">${unlocked ? '2 matching items make the next level.' : `Requirement: ${req.text}`}</div>
-      ${renderMergeChainPreview(key, chain, unlocked)}
-      ${!unlocked && req.actionScreen ? `<button class="btn small gold mergeRecipeAction" data-action="screen" data-screen="${req.actionScreen}">Open Build Requirements</button>` : ''}
-    </div>
-  `;
+  return `<div class="mergeChainCompact ${unlocked ? 'unlocked' : 'locked'}">
+    <b>${renderChainLabel(key, chain)}</b>
+    <span>${unlocked ? '2 matching → next' : req.text}</span>
+  </div>`;
 }
 
 function renderMergeTips(state, active, limit) {
-  const selected = selectedMergeChainKey(state);
-  const selectedLabel = CHAINS[selected]?.label || 'Original Parts';
-  return `
-    <div class="mergeTipsGrid">
-      <div class="mergeTipCard">
-        <b>Board Space</b>
-        <span>${active}/${limit} filled</span>
-      </div>
-      <div class="mergeTipCard">
-        <b>Supplier Bay</b>
-        <span>${shelfCapacity(state)} slots ready</span>
-      </div>
-      <div class="mergeTipCard">
-        <b>Selected Chain</b>
-        <span>${selectedLabel}</span>
-      </div>
-      <div class="mergeTipCard">
-        <b>Fast Rule</b>
-        <span>Tap two matching levels or use Auto Merge.</span>
-      </div>
-    </div>
-  `;
-}
-
-function renderMergeChainStep(key, chain, name, index) {
-  const asset = mergeAssetForName(name);
-  const next = chain.items[index + 1];
-  const art = asset
-    ? `<img class="mergeItemArt" src="${asset}" alt="${name}" loading="eager" draggable="false">`
-    : renderChainIcon(key, chain.label, 'mergeItemArt chainFallbackArt');
-  return `
-    <div class="mergeChainStep">
-      <div class="mergeChainLevel">L${index + 1}</div>
-      <div class="mergeChainNode">${art}</div>
-      <b>${name}</b>
-      ${next ? `<span class="mergeChainArrow">2x -> ${next}</span>` : `<span class="mergeChainArrow final">Top item</span>`}
-    </div>
-  `;
+  return `<div class="mergeTips">Board ${active}/${limit} · Merge generators · Fill customer orders · Daily energy & spin</div>`;
 }

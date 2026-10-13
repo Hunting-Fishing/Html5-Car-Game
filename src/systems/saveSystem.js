@@ -1,12 +1,13 @@
 import { defaultState } from '../state/defaultState.js';
 
-const SAVE_KEY = 'autoMergeGarageV10LocalOnly';
-const OLD_SAVE_KEY = 'autoMergeGarageV9LocalOnly';
+const SAVE_KEY = 'autoMergeGarageV11LocalOnly';
+const OLD_SAVE_KEY = 'autoMergeGarageV10LocalOnly';
+const OLDER_SAVE_KEY = 'autoMergeGarageV9LocalOnly';
 const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
 
 export function loadState() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem(OLD_SAVE_KEY);
+    const raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem(OLD_SAVE_KEY) || localStorage.getItem(OLDER_SAVE_KEY);
     if (!raw) return defaultState();
     const state = reconcile(defaultState(), JSON.parse(raw));
     repairInflatedWallet(state);
@@ -27,6 +28,7 @@ export function saveState(state) {
 export function resetState() {
   localStorage.removeItem(SAVE_KEY);
   localStorage.removeItem(OLD_SAVE_KEY);
+  localStorage.removeItem(OLDER_SAVE_KEY);
   return defaultState();
 }
 
@@ -37,7 +39,7 @@ function repairInflatedWallet(state) {
 }
 
 function reconcile(base, saved) {
-  return {
+  const merged = {
     ...base,
     ...saved,
     version: base.version,
@@ -55,7 +57,14 @@ function reconcile(base, saved) {
     },
     upgrades: { ...base.upgrades, ...(saved.upgrades || {}) },
     buildings: { ...base.buildings, ...(saved.buildings || {}) },
-    merge: { ...base.merge, ...(saved.merge || {}) },
+    merge: {
+      ...base.merge,
+      ...(saved.merge || {}),
+      energy: Number.isFinite(saved.merge?.energy) ? saved.merge.energy : base.merge.energy,
+      maxEnergy: Number.isFinite(saved.merge?.maxEnergy) ? saved.merge.maxEnergy : base.merge.maxEnergy,
+      energyRegen: Number.isFinite(saved.merge?.energyRegen) ? saved.merge.energyRegen : base.merge.energyRegen,
+      customers: Array.isArray(saved.merge?.customers) ? saved.merge.customers : []
+    },
     daily: { ...base.daily, ...(saved.daily || {}) },
     objectives: { ...base.objectives, ...(saved.objectives || {}) },
     relationships: { ...(base.relationships || {}), ...(saved.relationships || {}) },
@@ -68,6 +77,7 @@ function reconcile(base, saved) {
     repairs: { ...(base.repairs || {}), ...(saved.repairs || {}) },
     tips: { ...base.tips, ...(saved.tips || {}) }
   };
+  return merged;
 }
 
 export function rollDaily(state) {
@@ -97,6 +107,11 @@ function applyOfflineProgress(state) {
   state.race.fuel = Math.min(100 + (state.upgrades?.fuelPlan || 0) * 10, (state.race.fuel || 0) + Math.floor(seconds / 90));
   state.race.condition = Math.min(100 + (state.upgrades?.pitKit || 0) * 8, (state.race.condition || 0) + Math.floor(seconds / 120));
   state.race.heat = Math.max(0, (state.race.heat || 0) - Math.floor(seconds / 100));
+  // Partial energy regen offline
+  if (state.merge) {
+    const energyGain = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + seconds * (state.merge.energyRegen || 0.08));
+    state.merge.energy = energyGain;
+  }
   state.pendingOffline = { seconds, coins, parts, meters };
   state.lastTickAt = now;
 }
