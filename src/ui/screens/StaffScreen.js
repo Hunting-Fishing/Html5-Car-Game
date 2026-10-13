@@ -3,7 +3,7 @@ import { personAssetForKey } from '../../data/worldAssetMap.js';
 import { CHARACTERS, characterById } from '../../data/characterRoster.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { costToText, canAfford } from '../../systems/economySystem.js';
-import { characterView, ensureCrewEmployment, taskInfo, perkList, courseList } from '../../systems/characterSystem.js';
+import { characterView, ensureCrewEmployment, taskInfo, perkList, courseList, treeFor } from '../../systems/characterSystem.js';
 import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
@@ -215,6 +215,23 @@ function renderTraining(state, view) {
   return `<div class="taskRow"><span>Training · ${view.trains} done</span>${buttons}${rest}</div>`;
 }
 
+function renderTrees(state, view) {
+  if (!view?.hired || !view.skills.length) return '';
+  const lines = view.skills.map((skill) => {
+    const owned = view.trees?.[skill.key] || [];
+    const nodes = treeFor(skill.key);
+    const buttons = nodes.map((node, index) => {
+      const has = owned.includes(node.id);
+      const previous = index === 0 || owned.includes(nodes[index - 1].id);
+      const ready = !has && previous && skill.value >= node.need && canAfford(state, node.cost);
+      const note = has ? 'Owned' : !previous ? `Needs ${nodes[index - 1].label}` : skill.value < node.need ? `Needs ${node.need}%` : costToText(node.cost);
+      return `<button type="button" class="taskBtn treeNode ${has ? 'on' : ''}" data-action="buyTree" data-staff="${view.id}" data-stat="${skill.key}" data-node="${node.id}" ${has || !ready ? 'disabled' : ''}>${node.label}<small>${node.blurb} · ${note}</small></button>`;
+    }).join('');
+    return `<div class="treeLine"><b>${skill.label} ${formatPct(skill.value)}</b><div class="treeNodes">${buttons}</div></div>`;
+  }).join('');
+  return `<div class="taskRow"><span>Skill trees</span>${lines}</div>`;
+}
+
 function renderCourses(state, view) {
   if (!view?.hired) return '';
   const open = view.skills.length < view.slots;
@@ -305,6 +322,7 @@ function renderDock(state, view, managerId) {
       ${renderTraining(state, view)}
       ${renderPerks(view)}
       ${renderCourses(state, view)}
+      ${renderTrees(state, view)}
       <div class="assignDockActions">${hire}${fire}${makeManager}${upgrade}${promote}${jobButton}</div>
     </div>
   </div>`;

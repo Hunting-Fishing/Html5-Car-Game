@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=74';
+import './ui/roadRunnerRuntime.js?v=75';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -38,7 +38,7 @@ import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
 import { ensureIdleLineState, tickIdleLines, collectIdleLine, buyLineUpgrade, buyLineManager, fireLineManager, toggleLineAutoCollect, getLineState } from './systems/idleLineSystem.js';
 import { characterForLine } from './data/characterRoster.js';
-import { trainCharacter, useCharacter, upgradeCharacter, promoteCharacter, tickPayroll, hireCharacter, fireCharacter, setCrewPayRate, equipCrewTask, trainCrewSkill, restCrew, equipCrewPerk, sendToCourse } from './systems/characterSystem.js';
+import { trainCharacter, useCharacter, upgradeCharacter, promoteCharacter, tickPayroll, hireCharacter, fireCharacter, setCrewPayRate, equipCrewTask, trainCrewSkill, restCrew, equipCrewPerk, sendToCourse, buyTreeNode } from './systems/characterSystem.js';
 import { mountRaceCanvas, updateRaceCanvas, pulseCar } from './ui/racePixi.js';
 
 const WEBSITE_URL = 'https://www.365motorsales.com';
@@ -468,6 +468,7 @@ function handleClick(event) {
   if (action === 'restCrew') result = restCrew(state, target.dataset.staff);
   if (action === 'equipPerk') result = equipCrewPerk(state, target.dataset.staff, target.dataset.perk || '');
   if (action === 'sendCourse') result = sendToCourse(state, target.dataset.staff, target.dataset.course);
+  if (action === 'buyTree') result = buyTreeNode(state, target.dataset.staff, target.dataset.stat, target.dataset.node);
   if (action === 'fireCrew') {
     result = fireCharacter(state, target.dataset.staff);
     clearStaffFire();

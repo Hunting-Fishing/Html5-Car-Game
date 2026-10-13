@@ -92,6 +92,7 @@ function rowFor(state, character) {
   if (typeof row.perk !== 'string') row.perk = '';
   if (!Array.isArray(row.extraSkills)) row.extraSkills = [];
   if (!row.bases) row.bases = {};
+  if (!row.trees || typeof row.trees !== 'object') row.trees = {};
   if (typeof row.promotions !== 'number') row.promotions = 0;
   if (typeof row.lastChange !== 'string') row.lastChange = '';
   return row;
@@ -132,6 +133,39 @@ const COURSES = [
 
 export function courseList() {
   return COURSES.map((course) => ({ ...course, cost: { ...course.cost } }));
+}
+
+const TREE_COST = {
+  race: 'tune',
+  grip: 'tune',
+  fuel: 'fuelCans',
+  repair: 'tools',
+  parts: 'parts',
+  route: 'scrap',
+  tow: 'scrap',
+  sales: 'rep'
+};
+
+const TREE_NODES = [
+  { id: 'spark', label: 'Spark', power: 0.04, need: 0.5, blurb: '+4% from this stat' },
+  { id: 'edge', label: 'Edge', power: 0.07, need: 3, blurb: '+7% from this stat' },
+  { id: 'mastery', label: 'Mastery', power: 0.1, need: 6, blurb: '+10% from this stat' }
+];
+
+function treeCost(stat, rank) {
+  const resource = TREE_COST[stat] || 'scrap';
+  if (rank === 1) return { coins: 40 };
+  if (rank === 2) return { coins: 90, [resource]: stat === 'fuel' ? 1 : 4 };
+  return { coins: 160, [resource]: stat === 'fuel' ? 2 : 8 };
+}
+
+export function treeFor(stat) {
+  return TREE_NODES.map((node, index) => ({
+    ...node,
+    stat,
+    rank: index + 1,
+    cost: treeCost(stat, index + 1)
+  }));
 }
 
 function benefitFor(character) {
@@ -212,7 +246,8 @@ export function characterView(state, character) {
     upgradeCost: { coins: 30 + level * 15 },
     promoCost: promotions >= 5 ? null : { coins: 100 + (promotions + 1) * 90 },
     trainCost: { coins: 30 + level * 15 },
-    slots: maxSlots(level, character.skills.length)
+    slots: maxSlots(level, character.skills.length),
+    trees: row.trees || {}
   };
 }
 
@@ -354,6 +389,7 @@ export function crewTaskBonus(state, key) {
   for (const [id, row] of Object.entries(rows)) {
     if (!row?.hired || row.task !== key || (row.energy || 0) <= 0) continue;
     const character = characterById(id);
+    if (!character) continue;
     const skill = knownSkills(character, row).find((item) => item.key === key);
     if (!skill) continue;
     let share = skillValue(skill, row.boosts?.[key]) / 100 * 0.35;
@@ -361,7 +397,17 @@ export function crewTaskBonus(state, key) {
     if (row.perk === 'hustle') share += 0.08;
     total += share;
   }
-  return Math.min(0.75, total);
+  let tree = 0;
+  for (const [id, row] of Object.entries(rows)) {
+    if (!row?.hired || (row.energy || 0) <= 0) continue;
+    const character = characterById(id);
+    if (!character || !knownSkills(character, row).some((skill) => skill.key === key)) continue;
+    const owned = row.trees?.[key] || [];
+    for (const node of treeFor(key)) {
+      if (owned.includes(node.id)) tree += node.power;
+    }
+  }
+  return Math.min(1, total + tree);
 }
 
 export function sendToCourse(state, id, courseId) {
@@ -400,6 +446,28 @@ export function sendToCourse(state, id, courseId) {
   row.bases[key] = start;
   row.lastChange = `Learned ${SKILL_LABELS[key] || key} ${start.toFixed(2)}%`;
   return { ok: true, message: `${character.name} finished ${course.label}. Learned ${SKILL_LABELS[key]} ${start.toFixed(2)}%.` };
+}
+
+export function buyTreeNode(state, id, stat, nodeId) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const row = rowFor(state, character);
+  const view = characterView(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} first.` };
+  const skill = view.skills.find((item) => item.key === stat);
+  if (!skill) return { ok: false, message: 'They do not have that stat yet.' };
+  const nodes = treeFor(stat);
+  const node = nodes.find((item) => item.id === nodeId);
+  if (!node) return { ok: false, message: 'Unknown skill node.' };
+  const owned = row.trees[stat] || [];
+  if (owned.includes(node.id)) return { ok: false, message: `${node.label} is already unlocked.` };
+  const previous = nodes[node.rank - 2];
+  if (previous && !owned.includes(previous.id)) return { ok: false, message: `Unlock ${previous.label} first.` };
+  if (skill.value < node.need) return { ok: false, message: `${skill.label} needs ${node.need}% before ${node.label}.` };
+  if (!canAfford(state, node.cost)) return { ok: false, message: `Not enough for ${node.label}.` };
+  spendCost(state, node.cost);
+  row.trees[stat] = [...owned, node.id];
+  return { ok: true, message: `${character.name} unlocked ${skill.label} ${node.label}. ${node.blurb}.` };
 }
 
 export function setCrewPayRate(state, id, percent) {
