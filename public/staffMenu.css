@@ -309,7 +309,10 @@
 #screen-staff .paneBody .assignDockActions,
 #screen-staff .paneBody .staffPay,
 #screen-staff .paneBody .staffDelta,
-#screen-staff .paneBody .salarySlide { grid-column: auto; }
+#screen-staff .staffPopCard .salarySlide span { color: #fff3c4; }
+#screen-staff .staffPopCard .salarySlide b { color: #ffe14a; }
+#screen-staff .staffPopCard .salarySlide small { color: #fff6d8; }
+#screen-staff .staffPopCard .salarySlide input { accent-color: #f5a623; }
 #screen-staff .paneBody .taskRow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-content: start; }
 #screen-staff .paneBody .taskRow > span,
 #screen-staff .paneBody .taskRow > small,

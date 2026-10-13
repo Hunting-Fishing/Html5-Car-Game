@@ -1,10 +1,8 @@
-import { IDLE_LINES } from '../../data/gameData.js';
 import { personAssetForKey } from '../../data/worldAssetMap.js';
 import { CHARACTERS, characterById } from '../../data/characterRoster.js';
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { costToText, canAfford } from '../../systems/economySystem.js';
 import { characterView, ensureCrewEmployment, taskInfo, perkList, courseList, treeFor } from '../../systems/characterSystem.js';
-import { getLineState, getManagerCost, hasManager, isAutoCollectEnabled, isLineUnlocked } from '../../systems/idleLineSystem.js';
 
 const MANAGERS = [
   { id: 'streetRoute', avatar: 'driver', name: 'Route Driver', role: 'Manager', phone: '365-010', place: 'Bay 1 sidewalk', desk: 'Street Route' },
@@ -150,18 +148,6 @@ function personById(id) {
   return [...MANAGERS, ...EMPLOYEES].find((person) => person.id === id) || MANAGERS[0];
 }
 
-function managerStats(state, person) {
-  const line = IDLE_LINES.find((item) => item.key === person.id);
-  const unlocked = line ? isLineUnlocked(state, line) : false;
-  const level = line ? getLineState(state, line.key).level : 0;
-  const hired = line ? hasManager(state, line.key) : false;
-  const auto = hired && isAutoCollectEnabled(state, line.key);
-  const cost = line ? getManagerCost(state, line) : {};
-  const ready = unlocked && level >= (line?.manager.unlockLevel || 10);
-  const trust = Number(state.relationships?.[person.id] || 0);
-  return { line, unlocked, level, hired, auto, cost, ready, trust, canHire: ready && !hired && canAfford(state, cost) };
-}
-
 function starsFor(level) {
   if (level >= 35) return 5;
   if (level >= 20) return 4;
@@ -257,11 +243,12 @@ function renderTrees(state, view) {
     const buttons = nodes.map((node, index) => {
       const has = owned.includes(node.id);
       const previous = index === 0 || owned.includes(nodes[index - 1].id);
-      const ready = !has && previous && skill.value >= node.need && canAfford(state, node.cost);
-      const note = has ? 'Owned' : !previous ? nodes[index - 1].label : skill.value < node.need ? `${node.need}%` : costToText(node.cost);
+      const ready = !has && previous && (skill.base ?? skill.value) >= node.need && canAfford(state, node.cost);
+      const note = has ? `+${node.power}%` : !previous ? nodes[index - 1].label : (skill.base ?? skill.value) < node.need ? `${node.need}%` : costToText(node.cost);
       return `<button type="button" class="taskBtn treeNode ${has ? 'on' : ''}" data-action="buyTree" data-staff="${view.id}" data-stat="${skill.key}" data-node="${node.id}" ${has || !ready ? 'disabled' : ''}>${node.label}<small>${note}</small></button>`;
     }).join('');
-    return `<div class="treeLine"><b>${skill.label} ${formatPct(skill.value)}</b><div class="treeNodes">${buttons}</div></div>`;
+    const bonus = nodes.reduce((sum, node) => (owned.includes(node.id) ? sum + node.power : sum), 0);
+    return `<div class="treeLine"><b>${skill.label} ${formatPct(skill.base ?? skill.value)} · bonus ${bonus}/50%</b><div class="treeNodes">${buttons}</div></div>`;
   }).join('');
   return `<div class="taskRow"><span>Skill trees</span>${lines}</div>`;
 }
@@ -323,7 +310,7 @@ function renderDock(state, view, managerId) {
     ? ''
     : armed
       ? `<button class="btn small ghost" data-action="fireCrewCancel">Cancel</button><button class="btn small red" data-action="fireCrew" data-staff="${view.id}">Confirm fire</button>`
-      : `<button class="btn small ghost" data-action="fireCrewArm" data-staff="${view.id}">Fire</button>`;
+      : `<button class="btn small red" data-action="fireCrewArm" data-staff="${view.id}">Fire</button>`;
   const makeManager = !view.hired || isLead
     ? ''
     : `<button class="btn small primary" data-action="assignManager" data-staff="${view.id}">Lead</button>`;
@@ -333,22 +320,13 @@ function renderDock(state, view, managerId) {
     : `${view.cardLabel} starts after a promotion`;
   const upgrade = view.hired ? `<button class="btn small primary" data-action="upgradeCrew" data-staff="${view.id}" ${canAfford(state, view.upgradeCost) ? '' : 'disabled'}>Upgrade ${costToText(view.upgradeCost)}</button>` : '';
   const promote = view.hired ? `<button class="btn small primary" data-action="promoteCrew" data-staff="${view.id}" ${view.promoCost && canAfford(state, view.promoCost) ? '' : 'disabled'}>${view.promoCost ? `Promote ${costToText(view.promoCost)}` : 'Partner'}</button>` : '';
-  let jobButton = '';
-  const lineArmed = Boolean(job && fireArmed === line?.key);
-  if (job && !job.hired) {
-    jobButton = `<button class="btn small ghost" data-action="buyManager" data-line="${line.key}" title="${job.ready ? costToText(job.cost) : `Level ${line.manager.unlockLevel}`}" ${job.canHire ? '' : 'disabled'}>${job.ready ? 'Line' : 'Locked'}</button>`;
-  } else if (lineArmed) {
-    jobButton = `<button class="btn small ghost" data-action="fireManagerCancel">Cancel</button><button class="btn small red" data-action="fireManager" data-line="${line.key}">Confirm</button>`;
-  } else if (job) {
-    jobButton = `<button class="btn small ghost" data-action="fireManagerArm" data-line="${line.key}">Release line</button>`;
-  }
   const panes = view.hired ? `<nav class="staffPanes">${renderPaneNav()}</nav>` : '';
   const overview = staffPane === 'overview' || !view.hired
     ? `<div class="paneBody">${renderBars(view)}
       ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
       ${renderSalary(view)}
       <p class="payNote">${card}</p>
-      <div class="assignDockActions">${hire}${fire}${makeManager}${jobButton}</div></div>`
+      <div class="assignDockActions">${hire}${fire}${makeManager}</div></div>`
     : '';
   const work = staffPane === 'work' && view.hired ? `<div class="paneBody">${renderTasks(view)}</div>` : '';
   const growSwitch = ['train', 'perk', 'course', 'tree'].map((pane) => {
