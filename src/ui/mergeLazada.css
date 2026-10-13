@@ -229,7 +229,7 @@
 
 .mergeBottomActions {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
   padding: 4px 0;
 }
@@ -239,6 +239,31 @@
   padding: 4px 2px;
   font-size: 9px;
   border-radius: 10px !important;
+}
+
+.mergeShop {
+  margin-top: 4px;
+  border-radius: 10px;
+  background: rgba(255,209,102,.08);
+  border: 1px solid rgba(255,209,102,.25);
+}
+
+.mergeShop summary {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mergeShopRow {
+  display: grid;
+  gap: 4px;
+  padding: 0 8px 8px;
+}
+
+.mergeShopRow .btn.small {
+  min-height: 32px;
+  font-size: 10px;
 }
 
 .mergeRecipeDrawer {
