@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=88';
+import './ui/roadRunnerRuntime.js?v=89';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -28,7 +28,9 @@ import { renderMergeScreen } from './ui/screens/MergeScreen.js';
 import { renderGarageScreen } from './ui/screens/GarageScreen.js';
 import { renderProfileScreen, setMenuTab, armMenuReset, disarmMenuReset, isMenuResetArmed } from './ui/screens/ProfileScreen.js';
 import { renderCreatorScreen } from './ui/screens/CreatorScreen.js';
+import { renderVipScreen } from './ui/screens/VipScreen.js';
 import { loadState, saveState, resetState } from './systems/saveSystem.js';
+import { buyVipPass } from './systems/vipSystem.js';
 import { fmt, addCurrency, addXp, canAfford, spendCost } from './systems/economySystem.js';
 import { applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { claimDaily } from './systems/objectiveSystem.js';
@@ -183,6 +185,7 @@ function renderActiveScreen() {
       merge: () => renderMergeScreen(state),
       garage: () => renderGarageScreen(state),
       profile: () => renderProfileScreen(state),
+      vip: () => renderVipScreen(state),
       creator: () => renderCreatorScreen(state)
     },
     shouldSkip: (screenId, screenEl) => (
@@ -215,19 +218,28 @@ function closeQuestMenu() {
 function handleClick(event) {
   const target = event.target.closest('[data-action]');
   if (!event.target.closest('.questAnchor')) closeQuestMenu();
-  if (!event.target.closest('.vipBadge') && !event.target.closest('#vipMenu')) {
-    const vip = document.querySelector('#vipMenu');
-    if (vip) vip.hidden = true;
-  }
   if (!target) return;
   const action = target.dataset.action;
   let result = null;
 
-  if (action === 'toggleVip') {
-    const menu = document.querySelector('#vipMenu');
-    if (!menu) return;
-    menu.hidden = !menu.hidden;
-    document.querySelector('.vipBadge')?.setAttribute('aria-expanded', String(!menu.hidden));
+  if (action === 'openVip') {
+    if (state.activeScreen !== 'vip') state.vipReturn = state.activeScreen;
+    state.activeScreen = 'vip';
+    render();
+    return;
+  }
+
+  if (action === 'closeVip') {
+    state.activeScreen = state.vipReturn || 'hub';
+    render();
+    return;
+  }
+
+  if (action === 'buyVip') {
+    result = buyVipPass(state, target.dataset.level);
+    if (result.message) toast(result.message);
+    render();
+    if (result.ok) queueSave();
     return;
   }
 

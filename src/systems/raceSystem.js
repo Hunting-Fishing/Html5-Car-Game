@@ -105,6 +105,7 @@ function completeStage(state, stats) {
   const rewardBase = Math.round((45 + state.stage * 9) * stats.mode.rewardRate * stats.rewardMult);
   addCurrency(state, 'coins', rewardBase);
   addCurrency(state, stats.mode.reward, Math.max(1, Math.round(rewardBase / 14)));
+  if ((state.vipLevel || 0) >= 3) addCurrency(state, 'tools', 5);
   addXp(state, 20 + state.stage * 2);
   state.race.fuel = Math.min(stats.fuelMax, state.race.fuel + 18);
   state.race.condition = Math.min(stats.conditionMax, state.race.condition + 12);

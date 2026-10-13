@@ -573,6 +573,19 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .vipMenu p, .vipMenu li { color: #d7eef8; font-size: 11px; }
 .vipMenu ol { margin: 6px 0 0; padding-left: 16px; }
 :root { --top-hud-safe-area: 74px; }
+.vipFrame .vipBack { margin-bottom: 8px; min-height: 32px; padding: 0 12px; border-radius: 10px; background: #12344a; color: #fff; font-weight: 800; }
+.vipRibbon { margin-bottom: 8px; padding: 6px 10px; border-radius: 10px; background: linear-gradient(180deg, #ff5b6a, #c81e38); color: #fff; font-weight: 900; text-align: center; letter-spacing: .04em; }
+.vipGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.vipCard { display: grid; justify-items: center; gap: 4px; padding: 10px 6px 8px; border-radius: 16px; background: linear-gradient(180deg, #e7f3ff, #b9d4ee); color: #16324a; text-align: center; box-shadow: inset 0 2px 0 #fff, 0 4px 0 #6d8eab; }
+.vipCard h3 { margin: 0; font-size: 12px; }
+.vipCard small, .vipCard p, .vipCard em { font-size: 10px; font-style: normal; line-height: 1.25; }
+.vipCard p { margin: 0; min-height: 28px; }
+.toolbox { position: relative; width: 54px; height: 40px; border-radius: 6px 6px 8px 8px; background: linear-gradient(180deg, #f0b429, #c47a10); box-shadow: 0 4px 0 #7a4a08; }
+.toolbox::before { content: ''; position: absolute; left: 8px; right: 8px; top: -8px; height: 10px; border-radius: 6px 6px 0 0; background: #d18a16; }
+.toolbox::after { content: ''; position: absolute; left: 22px; top: 14px; width: 10px; height: 8px; border-radius: 2px; background: #5b3a08; }
+.toolbox b { position: absolute; right: -6px; top: -10px; min-width: 16px; padding: 1px 4px; border-radius: 6px; background: #fff; color: #8a2a00; font-size: 11px; }
+.vipBuy { width: 100%; min-height: 34px; border-radius: 10px; background: linear-gradient(180deg, #8dff67, #2fbf45); color: #083214; font-weight: 900; box-shadow: 0 3px 0 #178a32; }
+.vipBuy:disabled { background: #9eb4c4; color: #243846; box-shadow: none; }
 .curPlus { display: none !important; }
 .bottomNav {
   height: auto !important;

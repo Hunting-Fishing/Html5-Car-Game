@@ -16,6 +16,7 @@ export const SCREENS = [
   { id: 'merge', label: 'Merge', icon: iconPath(UI_ICON_BASE, 'parts.png'), fallbackIcon: '\u{1F527}' },
   { id: 'garage', label: 'Build', icon: iconPath(UI_ICON_BASE, 'garage.png'), fallbackIcon: '\u{1F3D7}\uFE0F' },
   { id: 'profile', label: 'Profile', icon: iconPath(UI_ICON_BASE, 'profile.png'), fallbackIcon: '\u{1F464}' },
+  { id: 'vip', label: 'VIP', icon: iconPath(UI_ICON_BASE, 'profile.png'), fallbackIcon: '\u{1F451}' },
   { id: 'creator', label: 'Creator', icon: iconPath(UI_ICON_BASE, 'menu.png'), fallbackIcon: '\u{1F4CB}' }
 ];
 
