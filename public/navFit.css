@@ -151,6 +151,22 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-hub .homeTile img { width: 28px; height: 28px; object-fit: contain; }
 #screen-hub .homeTile b { font-size: 15px; }
 #screen-hub .homeTile small { color: #d5e6f0; font-size: 11px; }
+#screen-hub .homeVip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 48px;
+  margin: 8px 0;
+  padding: 8px 14px;
+  border-radius: 14px;
+  border: 2px solid #fff1b0;
+  background: linear-gradient(180deg, #ffe36a, #e39b12);
+  color: #4a2a00;
+  box-shadow: 0 3px 0 #8a5a10;
+}
+#screen-hub .homeVip b { font-size: 18px; }
+#screen-hub .homeVip span { font-size: 12px; font-weight: 800; }
 #screen-hub .homeLink { display: block; text-align: center; color: #d6b87a; font-size: 13px; text-decoration: none; padding: 6px; }
 #screen-hub .adcapIcon img { width: 28px; height: 28px; object-fit: contain; }
 #screen-race .roadRunnerShell {

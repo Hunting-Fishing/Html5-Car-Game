@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=89';
+import './ui/roadRunnerRuntime.js?v=90';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
