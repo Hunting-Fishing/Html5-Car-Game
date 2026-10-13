@@ -59,14 +59,18 @@ function renderShop(state) {
   const upgrades = state.merge.energyUpgrades || 0;
   const capCost = 150 + upgrades * 80;
   const freeReady = Date.now() - (state.merge.lastFreeEnergy || 0) >= 5 * 60 * 1000;
-  return `<details class="mergeShop">
-    <summary>Shop</summary>
-    <div class="mergeShopRow">
-      <button class="btn small gold" data-action="buyEnergyPack">Energy Pack +15 (80 coins)</button>
+  return `<div class="mergeShopPanel">
+    <div class="mergeShopTitle">Energy Shop</div>
+    <div class="mergeShopGrid">
+      <button class="btn small gold" data-action="buyEnergyPack" data-size="small">Small<br>+10 ⚡<br>50 coins</button>
+      <button class="btn small gold" data-action="buyEnergyPack" data-size="medium">Medium<br>+30 ⚡<br>120 coins</button>
+      <button class="btn small gold" data-action="buyEnergyPack" data-size="large">Large<br>+75 ⚡<br>250 coins</button>
+    </div>
+    <div class="mergeShopExtras">
       <button class="btn small" data-action="upgradeEnergyCap" ${upgrades >= 5 ? 'disabled' : ''}>Raise Cap +10 (${capCost})</button>
       <button class="btn small" data-action="freeEnergyRefill" ${freeReady ? '' : 'disabled'}>Free Energy (ad)</button>
     </div>
-  </details>`;
+  </div>`;
 }
 
 export function renderMergeScreen(state) {
@@ -216,5 +220,5 @@ function renderMergeChainCompact(state, key, chain, selectedChain) {
 }
 
 function renderMergeTips(state, active, limit) {
-  return `<div class="mergeTips">Board ${active}/${limit} · Merge generators for better output · Clear cobwebs · Deliver for rewards</div>`;
+  return `<div class="mergeTips">Board ${active}/${limit} · Merge generators · Shop for energy · Deliver for rewards</div>`;
 }
