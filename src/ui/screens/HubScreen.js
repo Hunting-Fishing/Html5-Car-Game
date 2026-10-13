@@ -1,4 +1,5 @@
 import { ScreenFrame } from '../components/ScreenFrame.js';
+import { SubTabBar } from '../components/SubTabBar.js';
 import { getObjectiveList } from '../../systems/objectiveSystem.js';
 import { UI_ICONS } from '../../data/uiIconMap.js';
 
@@ -32,6 +33,12 @@ export function renderHubScreen(state) {
     badge: `Stage ${state.stage || 1}`,
     className: 'hubMobileHome',
     body: `
+      ${SubTabBar({
+        tabs: [
+          { label: 'Today', screen: 'hub', icon: 'home', active: true },
+          { label: 'World Map', screen: 'world', icon: 'home' }
+        ]
+      })}
       ${away}
       <section class="adcapRow">
         <div class="adcapIcon"><img src="${UI_ICONS.race}" alt=""></div>

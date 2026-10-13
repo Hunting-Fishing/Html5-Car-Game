@@ -291,6 +291,7 @@ function handleClick(event) {
     const next = action === 'openVip' ? 'vip' : target.dataset.screen;
     if (target.dataset.rrTab) window.__openRaceTab = target.dataset.rrTab;
     if (next === 'vip' && state.activeScreen !== 'vip') state.vipReturn = state.activeScreen;
+    if (next === 'merge' && state.merge) state.merge.activeTab = 'board';
     state.activeScreen = next;
     render();
     queueSave();
@@ -299,7 +300,7 @@ function handleClick(event) {
 
   if (action === 'mergeTab') {
     const tab = target.dataset.tab;
-    state.merge.activeTab = ['recipes', 'chains', 'tips'].includes(tab) ? tab : 'recipes';
+    state.merge.activeTab = ['board', 'shop', 'recipes'].includes(tab) ? tab : 'board';
     render();
     queueSave();
     return;
