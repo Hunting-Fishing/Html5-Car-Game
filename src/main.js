@@ -406,7 +406,7 @@ function handleClick(event) {
     });
     result = deliverCustomer(state, custId, matchIdx >= 0 ? matchIdx : 0);
   }
-  if (action === 'buyEnergyPack') result = buyEnergyPack(state);
+  if (action === 'buyEnergyPack') result = buyEnergyPack(state, target.dataset.size || 'small');
   if (action === 'upgradeEnergyCap') result = upgradeEnergyCap(state);
   if (action === 'freeEnergyRefill') result = freeEnergyRefill(state);
   if (action === 'clearLastDelivery') {
