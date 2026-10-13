@@ -55,10 +55,15 @@ function selectedItemInfo(state) {
   </div>`;
 }
 
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
 function renderShop(state) {
   const upgrades = state.merge.energyUpgrades || 0;
   const capCost = 150 + upgrades * 80;
-  const freeReady = Date.now() - (state.merge.lastFreeEnergy || 0) >= 5 * 60 * 1000;
+  const dailyReady = state.merge.lastDailyEnergy !== todayKey();
   return `<div class="mergeShopPanel">
     <div class="mergeShopTitle">Energy Shop</div>
     <div class="mergeShopGrid">
@@ -68,7 +73,7 @@ function renderShop(state) {
     </div>
     <div class="mergeShopExtras">
       <button class="btn small" data-action="upgradeEnergyCap" ${upgrades >= 5 ? 'disabled' : ''}>Raise Cap +10 (${capCost})</button>
-      <button class="btn small" data-action="freeEnergyRefill" ${freeReady ? '' : 'disabled'}>Free Energy (ad)</button>
+      <button class="btn small primary" data-action="freeEnergyRefill" ${dailyReady ? '' : 'disabled'}>Daily +25 ⚡</button>
     </div>
   </div>`;
 }
@@ -220,5 +225,5 @@ function renderMergeChainCompact(state, key, chain, selectedChain) {
 }
 
 function renderMergeTips(state, active, limit) {
-  return `<div class="mergeTips">Board ${active}/${limit} · Merge generators · Shop for energy · Deliver for rewards</div>`;
+  return `<div class="mergeTips">Board ${active}/${limit} · Merge generators · Claim daily energy · Deliver for rewards</div>`;
 }
