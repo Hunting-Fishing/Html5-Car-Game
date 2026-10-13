@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Mobile Mechanic">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a78bfa"/><stop offset="1" stop-color="#38bdf8"/></linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="#082033"/>
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="url(#bg)"/>
+  <circle cx="48" cy="43" r="14" fill="#ffd166" stroke="#082033" stroke-width="5"/>
+  <path d="M26 88c4-24 40-24 44 0" fill="#0d2332" stroke="#082033" stroke-width="5"/>
+  <path d="M76 36l18 18M95 35L75 55" stroke="#eaf8ff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M72 78l26-26 13 13-26 26z" fill="#ff9f1c" stroke="#082033" stroke-width="5"/>
+  <text x="64" y="109" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="900" fill="#082033">TOOLS</text>
+</svg>

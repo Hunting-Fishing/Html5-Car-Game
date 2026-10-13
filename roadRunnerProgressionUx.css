@@ -1,0 +1,83 @@
+.roadRunnerVehicleGrid,
+.roadRunnerGarageGrid {
+  gap: 10px !important;
+}
+
+.roadRunnerVehicleCard,
+.roadRunnerUpgradeCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(18, 61, 91, .96), rgba(4, 18, 30, .98)) !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.10), 0 5px 0 rgba(0,0,0,.18) !important;
+}
+
+.roadRunnerVehicleCard.selected {
+  outline: 2px solid #facc15;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 0 0 4px rgba(250,204,21,.18), 0 6px 0 rgba(0,0,0,.22) !important;
+}
+
+.vehicleThumb {
+  min-height: 76px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: linear-gradient(180deg, rgba(125,220,255,.26), rgba(34,197,94,.20));
+  margin-bottom: 8px;
+}
+
+.vehicleThumb img {
+  max-width: 118px;
+  filter: drop-shadow(0 8px 0 rgba(0,0,0,.18));
+}
+
+.vehicleStats,
+.roadRunnerUpgradeMeta {
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: rgba(3,13,24,.55);
+  color: #d7f7ff !important;
+  font-size: 9px !important;
+  font-weight: 900;
+}
+
+.roadRunnerWalletRow {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(3,13,24,.38);
+  backdrop-filter: blur(4px);
+}
+
+.roadRunnerWalletPill {
+  background: rgba(4,17,29,.74) !important;
+  border: 1px solid rgba(255,255,255,.16);
+}
+
+.roadRunnerVehicleCard .btn,
+.roadRunnerUpgradeCard .btn {
+  width: 100%;
+  min-height: 38px;
+  margin-top: 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 1000;
+}
+
+@media (max-width: 430px) {
+  .roadRunnerVehicleGrid,
+  .roadRunnerGarageGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .vehicleThumb {
+    min-height: 62px;
+  }
+
+  .vehicleThumb img {
+    max-width: 104px;
+  }
+}

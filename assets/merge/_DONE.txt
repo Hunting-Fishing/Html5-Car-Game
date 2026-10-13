@@ -1,0 +1,9 @@
+Merge placeholder setup complete.
+
+Folders:
+- original
+- tools
+- performance
+- racing
+
+Use _ALL_ASSET_PATHS.txt as the replacement checklist.

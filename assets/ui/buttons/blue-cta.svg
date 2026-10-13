@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 78" role="img" aria-label="Blue button">
+  <defs>
+    <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#63d4ff"/>
+      <stop offset=".55" stop-color="#1b8fc9"/>
+      <stop offset="1" stop-color="#0a4c78"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="228" height="62" rx="18" fill="url(#blue)" stroke="#b7f4ff" stroke-width="4"/>
+  <path d="M24 16h192" stroke="#fff" stroke-opacity=".34" stroke-width="5" stroke-linecap="round"/>
+  <path d="M9 65h222" stroke="#00243a" stroke-opacity=".5" stroke-width="6" stroke-linecap="round"/>
+</svg>

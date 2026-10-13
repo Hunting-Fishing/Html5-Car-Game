@@ -1,0 +1,793 @@
+#screen-garage {
+  --build-panel-art: url("/assets/Build/ui/panel-frame.svg");
+  --build-room-card-art: url("/assets/Build/ui/room-card.svg");
+  --build-progress-track: url("/assets/Build/ui/progress-track.svg");
+  --build-progress-fill: url("/assets/Build/ui/progress-fill.svg");
+  --build-button-art: url("/assets/Build/ui/build-button.svg");
+  --build-world-button-art: url("/assets/Build/ui/world-button.svg");
+  --build-lines-button-art: url("/assets/Build/ui/lines-button.svg");
+  --build-sync-badge: url("/assets/Build/ui/sync-badge.svg");
+  --ui-garage-room-card: url("/assets/ui/garage/garage-room-card.svg");
+  --ui-card-frame: url("/assets/ui/cards/game-card-frame.svg");
+  --ui-green-cta: url("/assets/ui/buttons/green-cta.svg");
+  --ui-orange-cta: url("/assets/ui/buttons/orange-cta.svg");
+  --ui-meter-track: url("/assets/ui/meters/segmented-meter-track.svg");
+}
+
+#screen-garage .card {
+  position: relative;
+  overflow: hidden;
+}
+
+#screen-garage .card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--build-panel-art);
+  background-size: 100% 100%;
+  opacity: .16;
+  pointer-events: none;
+}
+
+#screen-garage .card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.buildAssetPreload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: .01;
+  pointer-events: none;
+}
+
+.buildHubCard {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,209,102,.22), transparent 34%),
+    linear-gradient(180deg, rgba(20,86,112,.98), rgba(7,26,40,.98)) !important;
+}
+
+.buildCommandCenter {
+  padding: 9px !important;
+  max-height: var(--ui-build-command-max-h, 228px);
+  border-color: rgba(255, 209, 102, .28) !important;
+  display: grid;
+  align-content: start;
+  overflow: hidden !important;
+  contain: layout paint;
+}
+
+.buildCommandHero {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.buildCommandIcon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  align-content: center;
+  place-items: center;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255,255,255,.36), transparent 31%),
+    linear-gradient(180deg, #ffd166, #f59e0b);
+  border: 2px solid rgba(0,0,0,.22);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.36), 0 6px 0 rgba(0,0,0,.18);
+}
+
+.buildCommandIcon b,
+.buildCommandIcon span {
+  display: block;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.buildCommandIcon b {
+  color: #06131d;
+  font-size: 14px;
+  font-weight: 1000;
+}
+
+.buildCommandIcon span {
+  margin-top: 3px;
+  color: rgba(6, 19, 29, .78);
+  font-size: 7px;
+  font-weight: 1000;
+}
+
+.buildCommandCopy {
+  min-width: 0;
+}
+
+.buildCommandCopy span {
+  display: block;
+  color: #ffd166;
+  font-size: 8px;
+  font-weight: 1000;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.buildCommandCopy h2 {
+  margin: 1px 0 2px;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  text-shadow: 0 3px 0 rgba(0,0,0,.28);
+}
+
+.buildCommandCopy p {
+  margin: 0;
+  color: #c6e8f5;
+  font-size: 10px;
+  line-height: 1.25;
+  max-height: 26px;
+  overflow: hidden;
+}
+
+.buildCommandProgress {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin: 6px 0;
+  padding: 5px 7px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.buildCommandProgress div {
+  min-width: 65px;
+}
+
+.buildCommandProgress b {
+  display: block;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.buildCommandProgress span {
+  display: block;
+  color: #aee7f7;
+  font-size: 7px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.buildCommandProgress > i,
+.buildSystemMeter:not(.segMeter) {
+  height: 10px;
+  display: block;
+  overflow: hidden;
+  border-radius: 999px;
+  background-image: var(--build-progress-track);
+  background-size: 100% 100%;
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.buildCommandProgress > i span,
+.buildSystemMeter:not(.segMeter) span {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background-image: var(--build-progress-fill);
+  background-size: 100% 100%;
+}
+
+.buildCommandProgress .buildEfficiencyMeter.segMeter,
+.buildSystemMeter.segMeter {
+  height: 22px;
+}
+
+.buildHubButtons,
+.roomActions,
+.buildActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.buildHubButtons {
+  margin: 7px 0 6px;
+}
+
+.buildCommandActions .btn {
+  min-height: 34px;
+  padding: 6px 7px;
+  border-radius: 12px;
+  font-size: 10px;
+}
+
+.buildBridgeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  min-height: 0;
+}
+
+.buildBridgeStat,
+.buildWorldChip,
+.buildLineChip {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  background: rgba(2,12,20,.34);
+  padding: 8px;
+  min-width: 0;
+}
+
+.buildBridgeStat {
+  min-height: 42px;
+  display: grid;
+  align-content: center;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07), transparent 52%),
+    rgba(2,12,20,.38);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.buildBridgeStat b,
+.buildWorldChip b,
+.buildLineChip b {
+  display: block;
+  color: #f8fbff;
+  font-size: 12px;
+  line-height: 1.05;
+}
+
+.buildBridgeStat span,
+.buildWorldChip span,
+.buildLineChip span {
+  display: block;
+  margin-top: 2px;
+  color: #b7d5e3;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+#screen-garage .shopRoom {
+  background:
+    linear-gradient(180deg, rgba(10,27,40,.18), rgba(2,9,15,.62)),
+    var(--build-room-card-art);
+  background-size: cover, 100% 100%;
+  border-color: rgba(111,220,255,.26);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.08), 0 8px 18px rgba(0,0,0,.22);
+}
+
+#screen-garage .roomArtWrap {
+  position: relative;
+  min-height: 112px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(4,14,21,.2), rgba(4,14,21,.5));
+}
+
+#screen-garage .roomArt {
+  height: 100%;
+  min-height: 112px;
+  object-fit: cover;
+}
+
+.roomLevelBadge,
+.roomStatusBadge {
+  position: absolute;
+  top: 8px;
+  z-index: 2;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #081421;
+  font-size: 9px;
+  font-weight: 1000;
+  background: linear-gradient(180deg, #f8fbff, #a7d7e8);
+  border: 1px solid rgba(0,0,0,.22);
+  box-shadow: 0 4px 0 rgba(0,0,0,.18);
+}
+
+.roomLevelBadge {
+  left: 8px;
+}
+
+.roomStatusBadge {
+  right: 8px;
+  background: linear-gradient(180deg, #86efac, #22c55e);
+}
+
+.lockedRoom .roomStatusBadge {
+  color: #fff;
+  background: linear-gradient(180deg, #64748b, #334155);
+}
+
+#screen-garage .roomProgress:not(.segMeter) {
+  background-image: var(--build-progress-track);
+  background-size: 100% 100%;
+}
+
+#screen-garage .roomProgress:not(.segMeter) div {
+  background-image: var(--build-progress-fill);
+  background-size: 100% 100%;
+}
+
+#screen-garage .roomProgress.segMeter {
+  height: 22px;
+}
+
+.buildAssetIcon,
+.roomButtonAsset,
+.buildButtonAsset,
+.buildSystemAsset {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.buildSystemAsset {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.08);
+  padding: 3px;
+}
+
+.roomActions .btn,
+.buildActions .btn,
+.buildHubButtons .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.roomSyncRow,
+.buildSyncRow,
+.lineBuildBridge {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 7px 0;
+}
+
+.buildWorldChip,
+.buildLineChip {
+  padding: 5px 7px;
+  border-radius: 999px;
+}
+
+.buildSyncBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.buildSyncBadge::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background-image: var(--build-sync-badge);
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+#screen-garage .building {
+  grid-template-columns: auto 1fr;
+  align-items: stretch;
+}
+
+#screen-garage .buildSystemCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01)),
+    rgba(1, 11, 18, .34);
+  border-color: rgba(125,220,255,.18);
+}
+
+#screen-garage .buildSystemCard::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(53,229,138,.8), rgba(255,209,102,.8));
+  opacity: .65;
+}
+
+#screen-garage .buildSystemsCard .gamePanelBody {
+  padding: 9px;
+}
+
+#screen-garage .garageSystemGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+#screen-garage .garageSystemRoomCard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 9px;
+  border-radius: 24px;
+  border: 2px solid rgba(145, 235, 255, .54);
+  background:
+    var(--ui-garage-room-card),
+    radial-gradient(circle at 18% 0%, rgba(255,209,102,.17), transparent 35%),
+    linear-gradient(180deg, rgba(21,108,149,.98), rgba(5,27,43,.98));
+  background-size: 100% 100%, auto, auto;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.16), 0 8px 0 rgba(0,0,0,.18), 0 14px 22px rgba(0,0,0,.28);
+}
+
+#screen-garage .garageSystemRoomCard::after {
+  height: 5px;
+  opacity: .95;
+}
+
+.garageSystemArtWrap {
+  position: relative;
+  overflow: hidden;
+  min-height: 116px;
+  border-radius: 18px;
+  border: 2px solid rgba(126, 226, 255, .44);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.20), transparent 36%),
+    linear-gradient(180deg, rgba(41,151,194,.58), rgba(4,20,33,.92));
+}
+
+.garageSystemArt {
+  width: 100%;
+  height: 132px;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  box-sizing: border-box;
+  padding: 10px;
+  filter: drop-shadow(0 9px 12px rgba(0,0,0,.32));
+}
+
+.garageSystemLevel {
+  position: absolute;
+  top: auto;
+  left: auto;
+  right: 8px;
+  bottom: 8px;
+  box-shadow: 0 4px 0 rgba(0,0,0,.22), 0 8px 16px rgba(0,0,0,.22);
+}
+
+.garageSystemRoomBody {
+  display: grid;
+  gap: 6px;
+  padding: 8px 2px 1px;
+}
+
+.garageSystemRoomHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.garageSystemRoomHead h4 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.05;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0,0,0,.28);
+}
+
+.garageSystemRoomHead p,
+.garageSystemUnlock {
+  margin: 3px 0 0;
+  color: rgba(226, 248, 255, .78);
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.garageSystemRoomHead p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.garageSystemCost {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 9px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 209, 102, .34);
+  background: rgba(255, 209, 102, .08);
+  color: #ffedb0;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+#screen-garage .garageSystemMeta {
+  margin: 0;
+  padding: 6px;
+}
+
+#screen-garage .garageSystemMeta .roomSyncRow,
+#screen-garage .garageSystemMeta .lineBuildBridge {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+}
+
+#screen-garage .garageSystemMeta .roomSyncRow {
+  grid-template-columns: 1fr;
+  margin-bottom: 4px;
+}
+
+#screen-garage .garageSystemMeta .buildWorldChip,
+#screen-garage .garageSystemMeta .buildLineChip {
+  min-width: 0;
+  padding: 4px 5px;
+  border-radius: 10px;
+  line-height: 1.05;
+}
+
+#screen-garage .garageSystemMeta .buildWorldChip b,
+#screen-garage .garageSystemMeta .buildLineChip b,
+#screen-garage .garageSystemMeta .buildWorldChip span,
+#screen-garage .garageSystemMeta .buildLineChip span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 8px;
+}
+
+.garageSystemActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr) minmax(0, .8fr);
+  gap: 7px;
+  align-items: stretch;
+}
+
+.garageSystemActions .btn {
+  min-height: 38px !important;
+  padding: 5px 6px !important;
+  font-size: 9px;
+}
+
+.garageSystemActions .buildButtonAsset {
+  width: 16px;
+  height: 16px;
+}
+
+.garagePrimaryBuildAction {
+  background:
+    var(--ui-green-cta),
+    linear-gradient(180deg, #64f39b, #23c868 60%, #13864a) !important;
+  background-size: 100% 100%, auto !important;
+}
+
+#screen-garage .garageSystemRoomCard .btn.gold {
+  background:
+    var(--ui-orange-cta),
+    linear-gradient(180deg, #ffe178, #ffad28 60%, #d46b0c) !important;
+  background-size: 100% 100%, auto !important;
+}
+
+#screen-garage .garageSystemRoomCard .buildSystemMeter.segMeter {
+  height: 22px;
+  background:
+    var(--ui-meter-track),
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 42%),
+    linear-gradient(180deg, #102c3d, #030b12) !important;
+  background-size: 100% 100%, auto, auto !important;
+}
+
+@media (min-width: 455px) {
+  #screen-garage .garageSystemGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #screen-garage .garageSystemRoomCard {
+    padding: 7px;
+    border-radius: 20px;
+  }
+
+  .garageSystemArtWrap {
+    min-height: 62px;
+    border-radius: 14px;
+  }
+
+  .garageSystemArt {
+    height: 68px;
+    padding: 6px;
+  }
+
+  .garageSystemRoomBody {
+    gap: 4px;
+    padding-top: 6px;
+  }
+
+  .garageSystemRoomHead {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .garageSystemRoomHead h4 {
+    font-size: 14px;
+  }
+
+  .garageSystemRoomHead p {
+    -webkit-line-clamp: 1;
+    font-size: 9px;
+  }
+
+  .garageSystemRoomHead .pill {
+    display: none;
+  }
+
+  .garageSystemCost {
+    min-height: 28px;
+    padding: 5px 7px;
+    font-size: 9px;
+  }
+
+  .garageSystemUnlock {
+    font-size: 9px;
+  }
+
+  #screen-garage .garageSystemMeta {
+    max-height: 52px;
+    padding: 4px;
+    overflow: hidden;
+  }
+
+  #screen-garage .garageSystemMeta .buildWorldChip,
+  #screen-garage .garageSystemMeta .buildLineChip {
+    padding: 3px 4px;
+  }
+
+  #screen-garage .garageSystemMeta .buildWorldChip b,
+  #screen-garage .garageSystemMeta .buildLineChip b,
+  #screen-garage .garageSystemMeta .buildWorldChip span,
+  #screen-garage .garageSystemMeta .buildLineChip span {
+    font-size: 7px;
+  }
+
+  .garageSystemActions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .garageSystemActions .btn {
+    min-height: 34px !important;
+    padding: 4px !important;
+  }
+
+  .garageSystemActions .buildButtonAsset {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+#screen-garage .building .buildIcon {
+  display: none;
+}
+
+.buildingMain {
+  min-width: 0;
+}
+
+.buildingHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.buildingHeader h4 {
+  margin: 0;
+}
+
+.buildingHeader p {
+  margin: 2px 0 0;
+}
+
+.buildCommMeta {
+  margin: 7px 0;
+  padding: 7px;
+  border-radius: 13px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+
+.buildSystemMeter {
+  margin: 6px 0 7px;
+}
+
+.buildLineBridgeCard {
+  border-color: rgba(53,229,138,.24);
+}
+
+#screen-lines .buildLineBridgeCard {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(53,229,138,.18), transparent 34%),
+    linear-gradient(180deg, rgba(19,73,102,.98), rgba(7,26,42,.98)) !important;
+}
+
+#screen-lines .buildLineBridgeCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/assets/Build/ui/panel-frame.svg");
+  background-size: 100% 100%;
+  opacity: .18;
+  pointer-events: none;
+}
+
+#screen-lines .buildLineBridgeCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+#screen-lines .buildLineBridgeCard .buildLineChip {
+  background: rgba(2, 12, 20, .58);
+  border-color: rgba(125, 220, 255, .18);
+}
+
+#screen-lines .buildLineBridgeCard .buildLineChip b {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.buildLineBridgeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.lockedLineActions {
+  margin-top: 8px;
+}
+
+@media (max-width: 390px) {
+  .buildBridgeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .buildLineBridgeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .buildCommandHero {
+    grid-template-columns: 46px minmax(0, 1fr);
+  }
+
+  .buildCommandHero .buildSyncBadge {
+    grid-column: 1 / -1;
+    width: max-content;
+  }
+
+  .buildCommandIcon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .buildHubButtons,
+  .roomActions,
+  .buildActions {
+    grid-template-columns: 1fr;
+  }
+}

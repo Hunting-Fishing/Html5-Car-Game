@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/Html5-Car-Game/sw.js', { scope: '/Html5-Car-Game/' })})}

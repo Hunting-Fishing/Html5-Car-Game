@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fed7aa"/><stop offset="1" stop-color="#c2410c"/></linearGradient></defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#g)" stroke="#08131c" stroke-width="3"/>
+  <rect x="30" y="26" width="4" height="18" fill="#111"/><circle cx="32" cy="22" r="7" fill="#7c2d12"/>
+  <text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#08131c">SHIFT</text>
+</svg>

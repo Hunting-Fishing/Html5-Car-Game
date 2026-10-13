@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 72" preserveAspectRatio="none" role="img" aria-label="Auto badge">
+  <rect x="4" y="4" width="172" height="58" rx="28" fill="#35e58a" stroke="#caffdf" stroke-width="5"/>
+  <path d="M18 54h144" stroke="#0f8c55" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="40" cy="33" r="13" fill="#082033"/>
+  <path d="M40 18v8M40 40v8M25 33h8M47 33h8" stroke="#caffdf" stroke-width="4" stroke-linecap="round"/>
+</svg>

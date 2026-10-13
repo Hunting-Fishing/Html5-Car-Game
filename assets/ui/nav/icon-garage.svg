@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Garage">
+  <path fill="#eaffff" d="M10 28 32 10l22 18v26H10V28Z"/>
+  <path fill="#073044" d="M18 35h28v19H18V35Z"/>
+  <path fill="#38bdf8" d="M21 39h22v4H21v-4Zm0 7h22v4H21v-4Z"/>
+  <path fill="#67e8f9" d="m32 18 16 13H16l16-13Z"/>
+</svg>

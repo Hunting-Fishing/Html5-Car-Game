@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" preserveAspectRatio="none" role="img" aria-label="Build pad">
+  <rect x="6" y="8" width="148" height="104" rx="18" fill="#17483d" stroke="#8fffc2" stroke-width="5"/>
+  <path d="M24 24h112v72H24z" fill="none" stroke="#d9ffe8" stroke-width="4" stroke-dasharray="14 9" opacity=".75"/>
+</svg>

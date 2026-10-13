@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 32" preserveAspectRatio="none" role="img" aria-label="Sidewalk">
+  <rect width="128" height="32" fill="#cbd5e1"/>
+  <path d="M0 16h128M32 0v32M64 0v32M96 0v32" stroke="#94a3b8" stroke-width="2" opacity=".65"/>
+</svg>

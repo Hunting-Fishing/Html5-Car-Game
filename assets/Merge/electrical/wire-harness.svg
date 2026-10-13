@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fed7aa"/><stop offset="1" stop-color="#c2410c"/></linearGradient></defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#g)" stroke="#08131c" stroke-width="3"/>
+  <path d="M14 20c10 0 8 24 18 24s8-24 18-24" fill="none" stroke="#7c2d12" stroke-width="4"/>
+  <text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#08131c">HARN</text>
+</svg>

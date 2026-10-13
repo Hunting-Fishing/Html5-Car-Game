@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#35e58a"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#06131d"/>
+  <path d="M74 335h364v56H74z" fill="#10283a"/>
+  <path d="M102 278l45-82h218l45 82v68H102z" fill="url(#g)"/>
+  <path d="M169 212h64v52h-93zM274 212h70l31 52H274z" fill="#dff9ff" opacity=".9"/>
+  <circle cx="170" cy="352" r="38" fill="#071017" stroke="#8da6b8" stroke-width="15"/>
+  <circle cx="342" cy="352" r="38" fill="#071017" stroke="#8da6b8" stroke-width="15"/>
+  <text x="256" y="156" fill="#eaf8ff" font-size="78" font-family="Arial Black, Arial" text-anchor="middle">365</text>
+  <text x="256" y="438" fill="#92b3c5" font-size="30" font-family="Arial Black, Arial" text-anchor="middle">MICRO GARAGE</text>
+</svg>

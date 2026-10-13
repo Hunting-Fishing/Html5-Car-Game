@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb4c0"/><stop offset="1" stop-color="#c2415a"/></linearGradient></defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#g)" stroke="#08131c" stroke-width="3"/>
+  <circle cx="32" cy="30" r="12" fill="#7f1d1d"/><rect x="28" y="16" width="8" height="8" rx="2" fill="#111"/>
+  <text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#08131c">BRK</text>
+</svg>

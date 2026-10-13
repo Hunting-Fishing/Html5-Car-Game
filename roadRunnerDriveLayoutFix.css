@@ -1,0 +1,195 @@
+.roadRunnerOverlay {
+  left: 12px !important;
+  right: auto !important;
+  top: 9px !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  max-width: calc(100% - 132px);
+  z-index: 31;
+}
+
+.roadRunnerBadge {
+  min-width: auto !important;
+  max-width: 142px;
+  padding: 5px 9px !important;
+  font-size: 9px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rrGaugeDash {
+  top: 6px !important;
+  right: 8px !important;
+  width: 118px !important;
+  z-index: 34 !important;
+}
+
+.rrGaugeDashGrid {
+  gap: 4px !important;
+}
+
+.rrDialValue b {
+  font-size: 10px !important;
+}
+
+.rrDialValue span {
+  font-size: 5px !important;
+}
+
+.rrNeedleHub {
+  width: 7px !important;
+  height: 7px !important;
+}
+
+.rrGasGearBadge {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  min-width: 34px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(4, 17, 29, .72);
+  border: 1px solid rgba(255,255,255,.24);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 1000;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  pointer-events: none;
+}
+
+.roadRunnerPedal.gas {
+  position: relative;
+}
+
+.roadRunnerEndPanel.rrPostRunPanel[hidden] {
+  display: none !important;
+}
+
+.rrCollectionHud {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 76px;
+  z-index: 33;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  pointer-events: none;
+}
+
+.rrCollectionItem {
+  min-width: 0;
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr);
+  gap: 4px;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: rgba(4, 17, 29, .78);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 3px 8px rgba(0,0,0,.2);
+  color: #fff;
+}
+
+.rrCollectionItem img {
+  width: 23px;
+  height: 23px;
+  object-fit: contain;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.32));
+}
+
+.rrCollectionItem span {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 3px;
+  align-items: baseline;
+}
+
+.rrCollectionItem small {
+  grid-column: 1 / -1;
+  color: #c7f9ff;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.rrCollectionItem b {
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.rrCollectionItem em {
+  min-width: 0;
+  overflow: hidden;
+  color: #fff3c4;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 430px) {
+  .rrGaugeDash {
+    width: 106px !important;
+    top: 6px !important;
+    right: 7px !important;
+  }
+
+  .roadRunnerOverlay {
+    max-width: calc(100% - 118px);
+    left: 10px !important;
+    top: 8px !important;
+  }
+
+  .roadRunnerBadge {
+    max-width: 112px;
+    font-size: 8px !important;
+    padding: 4px 8px !important;
+  }
+
+  .rrCollectionHud {
+    left: 9px;
+    right: 9px;
+    top: 70px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .rrCollectionItem {
+    min-height: 35px;
+    grid-template-columns: 23px minmax(0, 1fr);
+    padding: 3px 6px;
+  }
+
+  .rrCollectionItem img {
+    width: 21px;
+    height: 21px;
+  }
+
+  .rrCollectionItem b {
+    font-size: 11px;
+  }
+
+  .rrCollectionItem small {
+    font-size: 7px;
+  }
+
+  .rrCollectionItem em {
+    font-size: 8px;
+  }
+}
