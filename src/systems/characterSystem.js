@@ -1,5 +1,55 @@
-import { CHARACTERS, characterById } from '../data/characterRoster.js';
-import { canAfford, spendCost } from './economySystem.js';
+import { CHARACTERS, SKILL_LABELS, characterById } from '../data/characterRoster.js';
+import { canAfford, spendCost, costToText } from './economySystem.js';
+
+const STAT_MAX = 100;
+const PROMO_TITLES = ['', 'Associate', 'Senior', 'Principal', 'Director', 'Partner'];
+const PAY_EVERY = 90;
+const CARDS = {
+  fuel: ['fuelCans', 'Fuel card'],
+  parts: ['parts', 'Parts card'],
+  repair: ['tools', 'Tool card'],
+  sales: ['rep', 'Rep card'],
+  race: ['tune', 'Tune card'],
+  grip: ['tune', 'Tune card'],
+  route: ['scrap', 'Route card'],
+  tow: ['scrap', 'Tow card']
+};
+const TASKS = {
+  race: { label: 'Race crew', where: 'Race', blurb: 'More speed and coins while racing.' },
+  grip: { label: 'Grip coach', where: 'Race · Tune', blurb: 'Less wear while racing. Extra tune from Performance Bay.' },
+  fuel: { label: 'Fuel tech', where: 'Race · Fuel', blurb: 'Less fuel used while racing. Extra fuel from Fuel Run.' },
+  repair: { label: 'Pit crew', where: 'Race · Tools', blurb: 'Less damage while racing. Extra tools from Mobile Mechanic.' },
+  parts: { label: 'Parts bench', where: 'Parts', blurb: 'Extra parts from Parts Delivery and merges.' },
+  route: { label: 'Route lead', where: 'Business', blurb: 'Extra coins from Street Route and idle driving.' },
+  tow: { label: 'Tow desk', where: 'Towing', blurb: 'Extra scrap from Towing Job.' },
+  sales: { label: 'Sales floor', where: 'Showcase', blurb: 'Extra reputation from Dealer Showcase.' }
+};
+
+export function taskInfo(key) {
+  return TASKS[key] || null;
+}
+
+const PERKS = {
+  focus: { label: 'Focus', blurb: 'Task bonus is 50% stronger.' },
+  hustle: { label: 'Hustle', blurb: 'Task adds an extra 8%.' },
+  stamina: { label: 'Stamina', blurb: 'Payday restores 8 energy.' },
+  thrift: { label: 'Thrift', blurb: 'Payday salary costs 20% less.' }
+};
+
+export function perkInfo(key) {
+  return PERKS[key] || null;
+}
+
+export function perkList() {
+  return Object.entries(PERKS).map(([key, perk]) => ({ key, ...perk }));
+}
+
+const DESKS = [
+  { id: 'sales', roles: ['Sales'] },
+  { id: 'service', roles: ['Mechanic', 'Tuner', 'Pit Crew'] },
+  { id: 'parts', roles: ['Courier', 'Fuel Hand'] },
+  { id: 'drive', roles: ['Driver', 'Tow Hand'] }
+];
 
 export function rankFor(level) {
   if (level >= 35) return 'Chief';
@@ -9,24 +59,200 @@ export function rankFor(level) {
   return 'Rookie';
 }
 
+function skillValue(skill, extra) {
+  return Math.min(STAT_MAX, Math.round((skill.start + (extra || 0)) * 100) / 100);
+}
+
 function rowFor(state, character) {
   if (!state.characters) state.characters = {};
-  const saved = state.characters[character.id];
-  if (!saved) {
+  if (!state.characters[character.id]) {
     state.characters[character.id] = { level: character.startLevel, xp: 0, uses: 0 };
   }
   const row = state.characters[character.id];
   if (typeof row.level !== 'number') row.level = character.startLevel;
   if (typeof row.xp !== 'number') row.xp = 0;
   if (typeof row.uses !== 'number') row.uses = 0;
+  if (!row.boosts) row.boosts = {};
+  if (typeof row.energy !== 'number') row.energy = character.energy;
+  if (!row.boostReady) {
+    const times = Math.max(0, row.level - 1);
+    character.skills.forEach((skill, index) => {
+      let extra = 0;
+      for (let step = index; step < times; step += character.skills.length) {
+        extra = Math.min(STAT_MAX - skill.start, extra + character.step);
+      }
+      if (extra > 0) row.boosts[skill.key] = Math.round(extra * 100) / 100;
+    });
+    row.boostReady = true;
+  }
+  if (typeof row.payRate !== 'number') row.payRate = 1;
+  if (typeof row.hired !== 'boolean') row.hired = false;
+  if (typeof row.task !== 'string') row.task = '';
+  if (typeof row.trains !== 'number') row.trains = 0;
+  if (typeof row.perk !== 'string') row.perk = '';
+  if (!Array.isArray(row.extraSkills)) row.extraSkills = [];
+  if (!row.bases) row.bases = {};
+  if (!row.trees || typeof row.trees !== 'object') row.trees = {};
+  if (typeof row.promotions !== 'number') row.promotions = 0;
+  if (typeof row.lastChange !== 'string') row.lastChange = '';
   return row;
+}
+
+function skillBase(skill, row) {
+  return typeof row.bases?.[skill.key] === 'number' ? row.bases[skill.key] : skill.start;
+}
+
+function knownSkills(character, row) {
+  const skills = character.skills.map((skill) => ({ key: skill.key, start: skillBase(skill, row) }));
+  for (const extra of row.extraSkills || []) {
+    if (skills.length >= 4) break;
+    if (!skills.some((skill) => skill.key === extra.key)) skills.push({ key: extra.key, start: skillBase(extra, row) });
+  }
+  return skills;
+}
+
+function maxSlots(level, startCount) {
+  let cap = startCount;
+  if (level >= 2) cap = Math.max(cap, 2);
+  if (level >= 5) cap = Math.max(cap, 3);
+  if (level >= 8) cap = Math.max(cap, 4);
+  return Math.min(4, cap);
+}
+
+function rollStat(maxSteps) {
+  return (2 + Math.floor(Math.random() * maxSteps)) * 0.25;
+}
+
+const COURSES = [
+  { id: 'retrain', label: 'Re-Training', blurb: 'Reroll the % on every current stat.', cost: { coins: 80, scrap: 12 }, kind: 'reroll' },
+  { id: 'shop', label: 'Shop Course', blurb: 'Learn repair, parts, or grip.', cost: { coins: 140, parts: 8, tools: 4 }, kind: 'learn', pool: ['repair', 'parts', 'grip'] },
+  { id: 'road', label: 'Road Course', blurb: 'Learn race, route, or fuel.', cost: { coins: 160, fuelCans: 2, scrap: 8 }, kind: 'learn', pool: ['race', 'route', 'fuel'] },
+  { id: 'floor', label: 'Floor Course', blurb: 'Learn sales or tow.', cost: { coins: 180, rep: 6 }, kind: 'learn', pool: ['sales', 'tow'] },
+  { id: 'master', label: 'Master Course', blurb: 'Learn any missing stat for the 4th slot.', cost: { coins: 320, tune: 8, parts: 12 }, kind: 'learn', pool: ['race', 'grip', 'fuel', 'repair', 'parts', 'route', 'tow', 'sales'], needs: 3 }
+];
+
+export function courseList() {
+  return COURSES.map((course) => ({ ...course, cost: { ...course.cost } }));
+}
+
+const TREE_COST = {
+  race: 'tune',
+  grip: 'tune',
+  fuel: 'fuelCans',
+  repair: 'tools',
+  parts: 'parts',
+  route: 'scrap',
+  tow: 'scrap',
+  sales: 'rep'
+};
+
+const TREE_STEPS = [
+  { id: 'spark', power: 10, need: 0.5 },
+  { id: 'edge', power: 15, need: 3 },
+  { id: 'mastery', power: 25, need: 6 }
+];
+const TREE_NAMES = {
+  race: ['Launch', 'Pace', 'Finish'],
+  grip: ['Plant', 'Corner', 'Hold'],
+  fuel: ['Sip', 'Mix', 'Reserve'],
+  repair: ['Patch', 'Wrench', 'Pit'],
+  parts: ['Shelf', 'Crate', 'Stock'],
+  route: ['Block', 'Avenue', 'Highway'],
+  tow: ['Hook', 'Haul', 'Yard'],
+  sales: ['Pitch', 'Close', 'Lot']
+};
+const TREE_WHERE = {
+  race: 'race speed and race coins',
+  grip: 'grip and Performance Bay tune',
+  fuel: 'fuel use and Fuel Run',
+  repair: 'repairs and Mobile Mechanic tools',
+  parts: 'Parts Delivery and merge parts',
+  route: 'Street Route and idle coins',
+  tow: 'Towing Job scrap',
+  sales: 'Dealer Showcase reputation'
+};
+
+function treeCost(stat, rank) {
+  const resource = TREE_COST[stat] || 'scrap';
+  if (rank === 1) return { coins: 40 };
+  if (rank === 2) return { coins: 90, [resource]: stat === 'fuel' ? 1 : 4 };
+  return { coins: 160, [resource]: stat === 'fuel' ? 2 : 8 };
+}
+
+export function treeFor(stat) {
+  const names = TREE_NAMES[stat] || ['Start', 'Push', 'Master'];
+  const where = TREE_WHERE[stat] || 'this job';
+  return TREE_STEPS.map((node, index) => ({
+    ...node,
+    stat,
+    rank: index + 1,
+    label: names[index],
+    blurb: `+${node.power}% ${where}`,
+    cost: treeCost(stat, index + 1)
+  }));
+}
+
+function treeBonusPercent(row, key) {
+  const owned = row?.trees?.[key] || [];
+  return treeFor(key).reduce((sum, node) => (owned.includes(node.id) ? sum + node.power : sum), 0);
+}
+
+function benefitFor(character) {
+  return CARDS[character.skills[0]?.key] || ['scrap', 'Supply card'];
+}
+
+function raiseSkill(character, row, gain) {
+  const skills = knownSkills(character, row).map((skill) => ({
+    key: skill.key,
+    label: SKILL_LABELS[skill.key] || skill.key,
+    value: skillValue(skill, row.boosts?.[skill.key]),
+    start: skill.start
+  }));
+  const open = skills.filter((skill) => skill.value < STAT_MAX).sort((a, b) => a.value - b.value);
+  if (!open.length) return null;
+  const target = open[0];
+  const add = Math.min(gain, Math.round((STAT_MAX - target.value) * 100) / 100);
+  if (add <= 0) return null;
+  row.boosts[target.key] = Math.round(((row.boosts[target.key] || 0) + add) * 100) / 100;
+  const next = skillValue({ key: target.key, start: target.start }, row.boosts[target.key]);
+  row.lastChange = `${target.label} ${target.value.toFixed(2)}% → ${next.toFixed(2)}%`;
+  return row.lastChange;
+}
+
+function raiseNamedSkill(character, row, key, gain) {
+  const skill = knownSkills(character, row).find((item) => item.key === key);
+  if (!skill) return null;
+  const before = skillValue(skill, row.boosts?.[key]);
+  if (before >= STAT_MAX) return null;
+  const add = Math.min(gain, Math.round((STAT_MAX - before) * 100) / 100);
+  if (add <= 0) return null;
+  row.boosts[key] = Math.round(((row.boosts[key] || 0) + add) * 100) / 100;
+  const next = skillValue(skill, row.boosts[key]);
+  const label = SKILL_LABELS[key] || key;
+  row.lastChange = `${label} ${before.toFixed(2)}% → ${next.toFixed(2)}%`;
+  return row.lastChange;
 }
 
 export function characterView(state, character) {
   const row = rowFor(state, character);
   const level = Math.max(character.startLevel, row.level || character.startLevel);
-  const grown = level - 1;
-  const score = (key) => character.base[key] + grown * character.growth[key];
+  const skills = knownSkills(character, row).map((skill) => {
+    const base = skillValue(skill, row.boosts?.[skill.key]);
+    const tree = treeBonusPercent(row, skill.key);
+    return {
+      key: skill.key,
+      label: SKILL_LABELS[skill.key] || skill.key,
+      base,
+      tree,
+      value: Math.min(STAT_MAX, Math.round((base + tree) * 100) / 100)
+    };
+  });
+  const promotions = row.promotions || 0;
+  const [cardKey, cardLabel] = benefitFor(character);
+  const basePay = 5 + level * 2 + promotions * 6;
+  const payRate = Math.max(0.5, Math.min(2, row.payRate || 1));
+  const pay = { coins: Math.max(1, Math.round(basePay * payRate)) };
+  if (promotions > 0) pay[cardKey] = 1;
   return {
     ...character,
     level,
@@ -34,11 +260,29 @@ export function characterView(state, character) {
     uses: row.uses || 0,
     nextXp: level * 25,
     rank: rankFor(level),
-    drive: score('drive'),
-    grip: score('grip'),
-    fuel: score('fuel'),
-    repair: score('repair'),
-    trainCost: { coins: 40 + level * 20 }
+    promotions,
+    promoTitle: PROMO_TITLES[Math.min(promotions, PROMO_TITLES.length - 1)] || '',
+    energy: Math.max(0, Math.min(character.energy, row.energy)),
+    energyMax: character.energy,
+    skills,
+    lastChange: row.lastChange || '',
+    basePay,
+    payRate,
+    pay,
+    cardKey,
+    cardLabel,
+    cardActive: promotions > 0,
+    hired: Boolean(row.hired),
+    task: TASKS[row.task] ? row.task : '',
+    trains: row.trains || 0,
+    perk: PERKS[row.perk] ? row.perk : '',
+    trainEnergy: 8,
+    hireCost: { coins: 40 + level * 20 },
+    upgradeCost: { coins: 30 + level * 15 },
+    promoCost: promotions >= 5 ? null : { coins: 100 + (promotions + 1) * 90 },
+    trainCost: { coins: 30 + level * 15 },
+    slots: maxSlots(level, character.skills.length),
+    trees: row.trees || {}
   };
 }
 
@@ -55,6 +299,7 @@ export function useCharacter(state, id, amount = 8) {
   const before = rankFor(row.level);
   row.uses = (row.uses || 0) + 1;
   row.xp = (row.xp || 0) + amount;
+  row.energy = Math.min(character.energy, (row.energy || 0) + 6);
   while (row.xp >= row.level * 25 && row.level < 50) {
     row.xp -= row.level * 25;
     row.level += 1;
@@ -66,14 +311,288 @@ export function useCharacter(state, id, amount = 8) {
   };
 }
 
-export function trainCharacter(state, id) {
+export function upgradeCharacter(state, id) {
   const character = characterById(id);
   if (!character) return { ok: false, message: 'Unknown crew.' };
   const view = characterView(state, character);
-  if (view.level >= 50) return { ok: false, message: `${character.name} is maxed.` };
-  if (!canAfford(state, view.trainCost)) return { ok: false, message: 'Not enough coins to train.' };
-  spendCost(state, view.trainCost);
   const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} before upgrading.` };
+  if (!canAfford(state, view.upgradeCost)) return { ok: false, message: 'Not enough coins to upgrade.' };
+  const change = raiseSkill(character, row, character.step);
+  const beforeSlots = maxSlots(view.level, character.skills.length);
+  const nextSlots = maxSlots(view.level + 1, character.skills.length);
+  if (!change && nextSlots <= beforeSlots) return { ok: false, message: `${character.name} is already at 100% on every stat.` };
+  if (!canAfford(state, view.upgradeCost)) return { ok: false, message: 'Not enough coins to upgrade.' };
+  spendCost(state, view.upgradeCost);
   row.level += 1;
-  return { ok: true, message: `${character.name} trained to Lv ${row.level} ${rankFor(row.level)}.` };
+  const afterSlots = maxSlots(row.level, character.skills.length);
+  const opened = afterSlots > beforeSlots && knownSkills(character, row).length < afterSlots
+    ? ` Stat slot ${knownSkills(character, row).length + 1} is open. Send them to a course.`
+    : '';
+  return { ok: true, message: change ? `${character.name} upgraded. ${change}.${opened}` : `${character.name} upgraded.${opened}` };
+}
+
+export function trainCharacter(state, id) {
+  return upgradeCharacter(state, id);
+}
+
+export function trainCrewSkill(state, id, skillKey) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const view = characterView(state, character);
+  const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} before training.` };
+  if (!knownSkills(character, row).some((skill) => skill.key === skillKey)) return { ok: false, message: 'That is not one of their talents.' };
+  if (view.energy < view.trainEnergy) return { ok: false, message: `${character.name} needs ${view.trainEnergy} energy to train.` };
+  if (!canAfford(state, view.trainCost)) return { ok: false, message: 'Not enough coins to train.' };
+  const change = raiseNamedSkill(character, row, skillKey, Math.max(0.5, character.step));
+  if (!change) return { ok: false, message: `${SKILL_LABELS[skillKey] || skillKey} is already at 100%.` };
+  spendCost(state, view.trainCost);
+  row.energy = Math.max(0, view.energy - view.trainEnergy);
+  row.trains += 1;
+  return { ok: true, message: `${character.name} trained. ${change}.` };
+}
+
+export function restCrew(state, id) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} first.` };
+  if (row.energy >= character.energy) return { ok: false, message: `${character.name} is already rested.` };
+  const cost = { coins: 10 };
+  if (!canAfford(state, cost)) return { ok: false, message: 'Need 10 coins to rest.' };
+  spendCost(state, cost);
+  row.energy = Math.min(character.energy, (row.energy || 0) + 20);
+  return { ok: true, message: `${character.name} rested. Energy ${Math.round(row.energy)}/${character.energy}.` };
+}
+
+export function equipCrewPerk(state, id, perk) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} first.` };
+  if ((row.trains || 0) < 1) return { ok: false, message: 'Train them once to unlock perks.' };
+  if (!perk) {
+    row.perk = '';
+    return { ok: true, message: `${character.name} has no perk equipped.` };
+  }
+  if (!PERKS[perk]) return { ok: false, message: 'Unknown perk.' };
+  row.perk = perk;
+  return { ok: true, message: `${character.name} equipped ${PERKS[perk].label}. ${PERKS[perk].blurb}` };
+}
+
+export function promoteCharacter(state, id) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const view = characterView(state, character);
+  const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} before promoting.` };
+  if (!view.promoCost) return { ok: false, message: `${character.name} is already a Partner.` };
+  if (!canAfford(state, view.promoCost)) return { ok: false, message: 'Not enough coins to promote.' };
+  const change = raiseSkill(character, row, Math.max(0.5, Math.min(1, character.step)));
+  if (!change) return { ok: false, message: `${character.name} is already at 100% on every stat.` };
+  spendCost(state, view.promoCost);
+  row.promotions += 1;
+  const title = PROMO_TITLES[row.promotions] || 'Partner';
+  const next = characterView(state, character);
+  const cardNote = row.promotions === 1 ? ` ${next.cardLabel} now costs 1 each payday.` : '';
+  return { ok: true, message: `${character.name} promoted to ${title}. Bonus ${change}. Pay is now ${next.pay.coins} coins.${cardNote}` };
+}
+
+export function equipCrewTask(state, id, task) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} before assigning a task.` };
+  if (!task) {
+    row.task = '';
+    return { ok: true, message: `${character.name} is off task.` };
+  }
+  if (!TASKS[task] || !knownSkills(character, row).some((skill) => skill.key === task)) {
+    return { ok: false, message: `${character.name} does not have that talent.` };
+  }
+  if ((row.energy || 0) <= 0) return { ok: false, message: `${character.name} is too tired to take a task.` };
+  row.task = task;
+  const info = TASKS[task];
+  return { ok: true, message: `${character.name} equipped ${info.label}. Helps ${info.where}.` };
+}
+
+export function crewTaskBonus(state, key) {
+  if (!TASKS[key]) return 0;
+  const rows = state.characters || {};
+  let total = 0;
+  for (const [id, row] of Object.entries(rows)) {
+    if (!row?.hired || row.task !== key || (row.energy || 0) <= 0) continue;
+    const character = characterById(id);
+    if (!character) continue;
+    const skill = knownSkills(character, row).find((item) => item.key === key);
+    if (!skill) continue;
+    let share = skillValue(skill, row.boosts?.[key]) / 100 * 0.35;
+    if (row.perk === 'focus') share *= 1.5;
+    if (row.perk === 'hustle') share += 0.08;
+    share += treeBonusPercent(row, key) / 100;
+    total += share;
+  }
+  return Math.min(1, total);
+}
+
+export function sendToCourse(state, id, courseId) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const course = COURSES.find((item) => item.id === courseId);
+  if (!course) return { ok: false, message: 'Unknown course.' };
+  const view = characterView(state, character);
+  const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} before sending them to class.` };
+  if (course.kind === 'reroll') {
+    if (!canAfford(state, course.cost)) return { ok: false, message: `Not enough for ${course.label}.` };
+    const notes = knownSkills(character, row).map((skill) => {
+      const before = skillValue(skill, row.boosts?.[skill.key]);
+      const next = rollStat(22);
+      row.bases[skill.key] = next;
+      row.boosts[skill.key] = 0;
+      return `${SKILL_LABELS[skill.key] || skill.key} ${before.toFixed(2)}% → ${next.toFixed(2)}%`;
+    });
+    spendCost(state, course.cost);
+    row.lastChange = notes.join(' · ');
+    return { ok: true, message: `${character.name} finished Re-Training. ${row.lastChange}.` };
+  }
+  const owned = knownSkills(character, row);
+  if (course.needs && owned.length < course.needs) return { ok: false, message: `${course.label} needs ${course.needs} stats first.` };
+  if (owned.length >= view.slots) {
+    return { ok: false, message: owned.length >= 4 ? 'All 4 stats are filled.' : `Upgrade them to open stat slot ${owned.length + 1}.` };
+  }
+  const choices = course.pool.filter((key) => !owned.some((skill) => skill.key === key));
+  if (!choices.length) return { ok: false, message: `They already know every stat from ${course.label}.` };
+  if (!canAfford(state, course.cost)) return { ok: false, message: `Not enough for ${course.label}.` };
+  const key = choices[Math.floor(Math.random() * choices.length)];
+  const start = rollStat(8);
+  spendCost(state, course.cost);
+  row.extraSkills.push({ key, start });
+  row.bases[key] = start;
+  row.lastChange = `Learned ${SKILL_LABELS[key] || key} ${start.toFixed(2)}%`;
+  return { ok: true, message: `${character.name} finished ${course.label}. Learned ${SKILL_LABELS[key]} ${start.toFixed(2)}%.` };
+}
+
+export function buyTreeNode(state, id, stat, nodeId) {
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const row = rowFor(state, character);
+  const view = characterView(state, character);
+  if (!row.hired) return { ok: false, message: `Hire ${character.name} first.` };
+  const skill = view.skills.find((item) => item.key === stat);
+  if (!skill) return { ok: false, message: 'They do not have that stat yet.' };
+  const nodes = treeFor(stat);
+  const node = nodes.find((item) => item.id === nodeId);
+  if (!node) return { ok: false, message: 'Unknown skill node.' };
+  const owned = row.trees[stat] || [];
+  if (owned.includes(node.id)) return { ok: false, message: `${node.label} is already unlocked.` };
+  const previous = nodes[node.rank - 2];
+  if (previous && !owned.includes(previous.id)) return { ok: false, message: `Unlock ${previous.label} first.` };
+  if ((skill.base ?? skill.value) < node.need) return { ok: false, message: `${skill.label} needs ${node.need}% before ${node.label}.` };
+  if (!canAfford(state, node.cost)) return { ok: false, message: `Not enough for ${node.label}.` };
+  spendCost(state, node.cost);
+  row.trees[stat] = [...owned, node.id];
+  return { ok: true, message: `${character.name} unlocked ${skill.label} ${node.label}. ${node.blurb}.` };
+}
+
+export function setCrewPayRate(state, id, percent) {
+  const character = characterById(id);
+  if (!character) return { ok: false };
+  const row = rowFor(state, character);
+  const rate = Math.max(0.5, Math.min(2, Math.round(Number(percent) || 100) / 100));
+  row.payRate = Math.round(rate * 20) / 20;
+  const view = characterView(state, character);
+  return { ok: true, coins: view.pay.coins, rate: view.payRate };
+}
+
+function deskForRole(role) {
+  return DESKS.find((desk) => desk.roles.includes(role)) || null;
+}
+
+export function ensureCrewEmployment(state) {
+  if (!state.payroll) state.payroll = { elapsed: 0 };
+  if (state.payroll.seeded) return;
+  for (const desk of DESKS) {
+    const roster = CHARACTERS.filter((character) => desk.roles.includes(character.role));
+    const saved = state.assignments?.[desk.id];
+    const id = saved && roster.some((character) => character.id === saved) ? saved : roster[0]?.id;
+    const character = id ? characterById(id) : null;
+    if (!character) continue;
+    rowFor(state, character).hired = true;
+    if (!state.assignments) state.assignments = {};
+    state.assignments[desk.id] = character.id;
+  }
+  state.payroll.seeded = true;
+}
+
+export function hireCharacter(state, id) {
+  ensureCrewEmployment(state);
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const view = characterView(state, character);
+  const row = rowFor(state, character);
+  if (row.hired) return { ok: false, message: `${character.name} is already hired.` };
+  if (!canAfford(state, view.hireCost)) return { ok: false, message: 'Not enough coins to hire.' };
+  spendCost(state, view.hireCost);
+  row.hired = true;
+  const desk = deskForRole(character.role);
+  if (desk) {
+    if (!state.assignments) state.assignments = {};
+    const current = state.assignments[desk.id];
+    const currentCrew = current ? characterById(current) : null;
+    const currentHired = currentCrew ? rowFor(state, currentCrew).hired : false;
+    if (!currentHired) state.assignments[desk.id] = character.id;
+  }
+  return { ok: true, message: `${character.name} hired. Salary ${view.pay.coins} coins.` };
+}
+
+export function fireCharacter(state, id) {
+  ensureCrewEmployment(state);
+  const character = characterById(id);
+  if (!character) return { ok: false, message: 'Unknown crew.' };
+  const row = rowFor(state, character);
+  if (!row.hired) return { ok: false, message: `${character.name} is not on staff.` };
+  row.hired = false;
+  const desk = deskForRole(character.role);
+  if (desk && state.assignments?.[desk.id] === character.id) {
+    const next = CHARACTERS.find((item) => desk.roles.includes(item.role) && item.id !== character.id && rowFor(state, item).hired);
+    state.assignments[desk.id] = next?.id || '';
+  }
+  return { ok: true, message: `${character.name} was fired. Their salary stops.` };
+}
+
+function employedIds(state) {
+  ensureCrewEmployment(state);
+  return CHARACTERS.filter((character) => rowFor(state, character).hired).map((character) => character.id);
+}
+
+export function tickPayroll(state, dt) {
+  if (!state.payroll) state.payroll = { elapsed: 0 };
+  state.payroll.elapsed += dt;
+  if (state.payroll.elapsed < PAY_EVERY) return '';
+  state.payroll.elapsed = 0;
+  const spent = {};
+  let people = 0;
+  for (const id of employedIds(state)) {
+    const character = characterById(id);
+    if (!character) continue;
+    const view = characterView(state, character);
+    const row = rowFor(state, character);
+    const due = { ...view.pay };
+    if (row.perk === 'thrift') due.coins = Math.max(1, Math.round(due.coins * 0.8));
+    const bill = {};
+    for (const [key, amount] of Object.entries(due)) {
+      if ((state.currencies[key] || 0) >= amount) bill[key] = amount;
+    }
+    if (!bill.coins) continue;
+    spendCost(state, bill);
+    if (view.payRate < 1) row.energy = Math.max(0, view.energy - 6);
+    else if (view.payRate > 1) row.energy = Math.min(character.energy, view.energy + 4);
+    if (row.perk === 'stamina') row.energy = Math.min(character.energy, row.energy + 8);
+    people += 1;
+    for (const [key, amount] of Object.entries(bill)) spent[key] = (spent[key] || 0) + amount;
+  }
+  if (!people) return '';
+  return `Payday for ${people} employees. -${costToText(spent)}.`;
 }

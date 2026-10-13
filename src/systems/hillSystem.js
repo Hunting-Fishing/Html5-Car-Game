@@ -1,4 +1,5 @@
 import { addCurrency, addXp } from './economySystem.js';
+import { crewTaskBonus } from './characterSystem.js';
 
 export function startHill(state) {
   if (state.race.problem) return { ok: false, message: 'Fix the route problem first.' };
@@ -26,11 +27,11 @@ export function setHillGas(state, held) {
 
 export function tickHill(state, dt) {
   if (!state.hill.running) return;
-  const grip = 1 + (state.upgrades.pitKit || 0) * 0.06 + (state.buildings.testTrack || 0) * 0.08;
-  const power = 18 + (state.upgrades.tapCrew || 0) * 2.2;
+  const grip = 1 + (state.upgrades.pitKit || 0) * 0.06 + (state.buildings.testTrack || 0) * 0.08 + crewTaskBonus(state, 'grip');
+  const power = (18 + (state.upgrades.tapCrew || 0) * 2.2) * (1 + crewTaskBonus(state, 'race'));
   if (state.hill.gasHeld) {
     state.hill.speed = Math.min(42, state.hill.speed + power * dt);
-    state.hill.fuel -= (12 + state.hill.speed * 0.15) * dt * Math.max(0.55, 1 - (state.upgrades.fuelPlan || 0) * 0.04);
+    state.hill.fuel -= (12 + state.hill.speed * 0.15) * dt * Math.max(0.45, 1 - (state.upgrades.fuelPlan || 0) * 0.04 - crewTaskBonus(state, 'fuel'));
     state.hill.tilt += (0.35 + state.hill.speed * 0.02) * dt;
   } else {
     state.hill.speed = Math.max(0, state.hill.speed - 16 * dt);

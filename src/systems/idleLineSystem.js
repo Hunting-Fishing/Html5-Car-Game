@@ -1,5 +1,17 @@
 import { IDLE_LINES } from '../data/gameData.js';
 import { addCurrency, addXp, canAfford, spendCost } from './economySystem.js';
+import { crewTaskBonus } from './characterSystem.js';
+
+const LINE_TASK = {
+  streetRoute: 'route',
+  partsDelivery: 'parts',
+  mobileMechanic: 'repair',
+  fuelRun: 'fuel',
+  towingJob: 'tow',
+  dealerShowcase: 'sales',
+  performanceBay: 'grip',
+  raceEvent: 'race'
+};
 
 export function ensureIdleLineState(state) {
   if (!state.idleLines) state.idleLines = {};
@@ -224,7 +236,9 @@ export function getTotalIdlePerMinute(state) {
 }
 
 function collectLineReward(state, line, automatic) {
-  const amount = getLineIncome(state, line);
+  let amount = getLineIncome(state, line);
+  const bonus = crewTaskBonus(state, LINE_TASK[line.key]);
+  if (bonus > 0) amount += Math.max(1, Math.round(amount * bonus));
   addCurrency(state, line.output, amount);
   addXp(state, Math.max(1, Math.floor(amount / 12)));
   const current = getLineState(state, line.key);

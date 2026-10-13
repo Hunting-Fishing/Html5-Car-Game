@@ -10,6 +10,7 @@ export function loadState() {
     const raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem(OLD_SAVE_KEY) || localStorage.getItem(OLDER_SAVE_KEY);
     if (!raw) return defaultState();
     const state = reconcile(defaultState(), JSON.parse(raw));
+    repairInflatedWallet(state);
     rollDaily(state);
     applyOfflineProgress(state);
     return state;
@@ -31,11 +32,18 @@ export function resetState() {
   return defaultState();
 }
 
+function repairInflatedWallet(state) {
+  if (state.repairs?.wallet84) return;
+  if ((state.currencies?.coins || 0) > 250000) state.currencies.coins = 5000;
+  state.repairs = { ...(state.repairs || {}), wallet84: true };
+}
+
 function reconcile(base, saved) {
   const merged = {
     ...base,
     ...saved,
     version: base.version,
+    vipLevel: Number.isFinite(saved.vipLevel) ? saved.vipLevel : (base.vipLevel || 0),
     currencies: { ...base.currencies, ...(saved.currencies || {}) },
     race: { ...base.race, ...(saved.race || {}) },
     idleLines: {
@@ -64,6 +72,9 @@ function reconcile(base, saved) {
     npcTrade: { ...(base.npcTrade || {}), ...(saved.npcTrade || {}) },
     reputation: Number.isFinite(saved.reputation) ? saved.reputation : (base.reputation || 0),
     characters: { ...(base.characters || {}), ...(saved.characters || {}) },
+    assignments: { ...(base.assignments || {}), ...(saved.assignments || {}) },
+    payroll: { ...(base.payroll || { elapsed: 0 }), ...(saved.payroll || {}) },
+    repairs: { ...(base.repairs || {}), ...(saved.repairs || {}) },
     tips: { ...base.tips, ...(saved.tips || {}) }
   };
   return merged;

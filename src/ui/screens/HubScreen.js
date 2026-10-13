@@ -39,6 +39,10 @@ export function renderHubScreen(state) {
         <div class="adcapTrack"><em>${next ? 'Next job' : 'Ready'}</em></div>
         <button class="adcapManager" data-action="screen" data-screen="${recommended.screen}"><b>Go</b></button>
       </section>
+      <button class="homeVip" type="button" data-action="screen" data-screen="vip">
+        <b>VIP ${state.vipLevel || 0}</b>
+        <span>Open the toolbox shop</span>
+      </button>
       <div class="homeGrid">
         ${tile('race', UI_ICONS.race, 'Race', 'Stage map')}
         ${tile('lines', UI_ICONS.garage, 'Supplies', 'Stock the shop')}

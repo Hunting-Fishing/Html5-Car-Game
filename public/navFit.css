@@ -151,6 +151,27 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 #screen-hub .homeTile img { width: 28px; height: 28px; object-fit: contain; }
 #screen-hub .homeTile b { font-size: 15px; }
 #screen-hub .homeTile small { color: #d5e6f0; font-size: 11px; }
+#screen-hub .homeVip {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 56px;
+  margin: 8px 0;
+  padding: 8px 14px;
+  border-radius: 14px;
+  border: 2px solid #fff1b0;
+  background: linear-gradient(180deg, #ffe36a, #e39b12);
+  color: #4a2a00;
+  box-shadow: 0 3px 0 #8a5a10;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+#screen-hub .homeVip b { font-size: 18px; }
+#screen-hub .homeVip span { font-size: 12px; font-weight: 800; }
 #screen-hub .homeLink { display: block; text-align: center; color: #d6b87a; font-size: 13px; text-decoration: none; padding: 6px; }
 #screen-hub .adcapIcon img { width: 28px; height: 28px; object-fit: contain; }
 #screen-race .roadRunnerShell {
@@ -514,6 +535,82 @@ html.rrRaceViewport .currencyGrid { grid-template-columns: repeat(3, minmax(0, 1
 html.rrRaceViewport .cur { min-height: 40px !important; }
 html.rrRaceViewport .cur b { font-size: 16px !important; }
 html.rrRaceViewport .cur span { font-size: 10px !important; }
+.brandLogo { width: 32px !important; height: 32px !important; border-radius: 10px !important; box-shadow: none !important; }
+.brandText span { display: none !important; }
+.brandText b { font-size: 12px !important; }
+.topBar { padding: 4px 6px 5px !important; }
+.topLine { margin-bottom: 3px !important; }
+.topBar .cur,
+.topBar .currencyGridExtra .cur,
+.cur {
+  min-height: 22px !important;
+  height: 22px !important;
+  padding: 0 4px !important;
+  gap: 3px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+.topBar .cur span,
+.cur span { display: none !important; }
+.topBar .cur b,
+.cur b,
+.topBar .currencyGridExtra .cur b { font-size: 11px !important; }
+.topBar .currencyGrid,
+.topBar .currencyGridExtra,
+.currencyGrid { gap: 3px !important; margin-top: 0 !important; }
+.topBar .currencyGridExtra { margin-top: 3px !important; }
+.curIcon { width: 12px !important; height: 12px !important; }
+.stagePill { min-height: 26px !important; padding: 2px 5px !important; border-radius: 10px !important; }
+.stageCopy b { font-size: 12px !important; }
+.vipBadge {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  min-width: 44px;
+  height: 32px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  border: 2px solid #fff1b0;
+  background: linear-gradient(180deg, #ffe36a, #e39b12);
+  color: #4a2a00;
+  box-shadow: 0 2px 0 #8a5a10;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.vipBadge small { font-size: 8px; font-weight: 900; letter-spacing: .04em; }
+.vipBadge b { font-size: 12px; }
+.hudActions { position: relative; }
+.vipMenu {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  z-index: 30;
+  width: 220px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #10283c;
+  color: #fff;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .25);
+}
+.vipMenu p, .vipMenu li { color: #d7eef8; font-size: 11px; }
+.vipMenu ol { margin: 6px 0 0; padding-left: 16px; }
+:root { --top-hud-safe-area: 74px; }
+.vipFrame .vipBack { margin-bottom: 8px; min-height: 32px; padding: 0 12px; border-radius: 10px; background: #12344a; color: #fff; font-weight: 800; }
+.vipRibbon { margin-bottom: 8px; padding: 6px 10px; border-radius: 10px; background: linear-gradient(180deg, #ff5b6a, #c81e38); color: #fff; font-weight: 900; text-align: center; letter-spacing: .04em; }
+.vipGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.vipCard { display: grid; justify-items: center; gap: 4px; padding: 10px 6px 8px; border-radius: 16px; background: linear-gradient(180deg, #e7f3ff, #b9d4ee); color: #16324a; text-align: center; box-shadow: inset 0 2px 0 #fff, 0 4px 0 #6d8eab; }
+.vipCard h3 { margin: 0; font-size: 12px; }
+.vipCard small, .vipCard p, .vipCard em { font-size: 10px; font-style: normal; line-height: 1.25; }
+.vipCard p { margin: 0; min-height: 28px; }
+.toolbox { position: relative; width: 54px; height: 40px; border-radius: 6px 6px 8px 8px; background: linear-gradient(180deg, #f0b429, #c47a10); box-shadow: 0 4px 0 #7a4a08; }
+.toolbox::before { content: ''; position: absolute; left: 8px; right: 8px; top: -8px; height: 10px; border-radius: 6px 6px 0 0; background: #d18a16; }
+.toolbox::after { content: ''; position: absolute; left: 22px; top: 14px; width: 10px; height: 8px; border-radius: 2px; background: #5b3a08; }
+.toolbox b { position: absolute; right: -6px; top: -10px; min-width: 16px; padding: 1px 4px; border-radius: 6px; background: #fff; color: #8a2a00; font-size: 11px; }
+.vipBuy { width: 100%; min-height: 34px; border-radius: 10px; background: linear-gradient(180deg, #8dff67, #2fbf45); color: #083214; font-weight: 900; box-shadow: 0 3px 0 #178a32; }
+.vipBuy:disabled { background: #9eb4c4; color: #243846; box-shadow: none; }
 .curPlus { display: none !important; }
 .bottomNav {
   height: auto !important;
@@ -866,3 +963,18 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 #screen-lines .adcapTrack.ready { background: #35e58a !important; color: #08331a !important; }
 #screen-lines .adcapTrack.auto { box-shadow: inset 0 0 0 2px #49b4f5; }
 #screen-lines .adcapManager.hired { background: #166534 !important; color: #ecfdf5 !important; }
+
+.btn.primary,
+.gamePanel .btn.primary,
+.gameRowCard .btn.primary {
+  background: linear-gradient(180deg, #ffe36a 0%, #f5a623 100%) !important;
+  color: #6a3208 !important;
+  border: 3px solid #fff6d2 !important;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .75), 0 4px 0 #c47a10 !important;
+  text-shadow: none !important;
+}
+.subTab.active {
+  background: linear-gradient(180deg, #ffe36a, #f5a623) !important;
+  color: #6a3208 !important;
+  border-color: #fff6d2 !important;
+}

@@ -1,5 +1,6 @@
 import { CHAINS, GENERATORS, CUSTOMER_TEMPLATES } from '../data/gameData.js';
 import { addCurrency, addXp, canAfford, spendCost } from './economySystem.js';
+import { crewTaskBonus } from './characterSystem.js';
 
 function uid() {
   return Math.random().toString(36).slice(2, 9);
@@ -360,10 +361,15 @@ export function itemDisplayName(item) {
 export function awardMerge(state, item) {
   const chain = CHAINS[item.chain];
   const level = item.level;
-  const coins = Math.round(8 * level + Math.pow(level, 1.45) * 4);
+  const partsBonus = crewTaskBonus(state, 'parts');
+  const salesBonus = crewTaskBonus(state, 'sales');
+  let coins = Math.round(8 * level + Math.pow(level, 1.45) * 4);
+  let resource = Math.ceil(level * 2);
+  if (salesBonus > 0) coins += Math.max(1, Math.round(coins * salesBonus));
+  if (partsBonus > 0 && chain.resource === 'parts') resource += Math.max(1, Math.round(resource * partsBonus));
   addCurrency(state, 'coins', coins);
   addCurrency(state, 'scrap', Math.max(1, Math.floor(level / 2)));
-  addCurrency(state, chain.resource, Math.ceil(level * 2));
+  addCurrency(state, chain.resource, resource);
   addXp(state, level * 7);
   state.merge.totalMerges += 1;
   state.merge.highestItemLevel = Math.max(state.merge.highestItemLevel, level);
