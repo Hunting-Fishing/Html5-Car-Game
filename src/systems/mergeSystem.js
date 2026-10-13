@@ -279,14 +279,20 @@ export function clearLastDelivery(state) {
   if (state.merge) state.merge.lastDelivery = null;
 }
 
-export function buyEnergyPack(state) {
+const ENERGY_PACKS = {
+  small: { coins: 50, gain: 10, label: 'Small Pack' },
+  medium: { coins: 120, gain: 30, label: 'Medium Pack' },
+  large: { coins: 250, gain: 75, label: 'Large Pack' }
+};
+
+export function buyEnergyPack(state, size = 'small') {
   normalizeMergeState(state);
-  const cost = { coins: 80 };
-  if (!canAfford(state, cost)) return { ok: false, message: 'Need 80 coins for an energy pack.' };
+  const pack = ENERGY_PACKS[size] || ENERGY_PACKS.small;
+  const cost = { coins: pack.coins };
+  if (!canAfford(state, cost)) return { ok: false, message: `Need ${pack.coins} coins for ${pack.label}.` };
   spendCost(state, cost);
-  const gain = 15;
-  state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + gain);
-  return { ok: true, message: `Energy pack: +${gain} energy.` };
+  state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + pack.gain);
+  return { ok: true, message: `${pack.label}: +${pack.gain} energy.` };
 }
 
 export function upgradeEnergyCap(state) {
@@ -319,7 +325,7 @@ export function getTutorialHint(state) {
   if (!state.objectives?.firstGeneratorTap) return 'Tap a highlighted generator to produce items.';
   if (!state.objectives?.firstMerge) return 'Tap two matching items to merge. Merge generators for better output.';
   if (!state.objectives?.firstDelivery) return 'Fill a customer order and tap Deliver for rewards.';
-  return 'Merge two generators to make a stronger one.';
+  return 'Open the Shop for energy packs.';
 }
 
 export function itemDisplayName(item) {
