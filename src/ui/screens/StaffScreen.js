@@ -289,12 +289,12 @@ function renderAssignCard(view, managerId) {
   const lead = view.id === managerId ? 'manager' : '';
   const first = view.name.split(' ')[0];
   const badge = lead ? '<span class="assignRole">MGR</span>' : view.hired ? '<span class="assignRole hired">Hired</span>' : '';
-  return `<button type="button" class="assignCard ${rarityFor(view.level)} ${selected} ${lead} ${view.hired ? '' : 'open'}" data-action="selectStaff" data-staff="${view.id}">
+  return `<div class="assignCard ${rarityFor(view.level)} ${selected} ${lead} ${view.hired ? '' : 'open'}" role="button" tabindex="0" data-action="selectStaff" data-staff="${view.id}">
     ${renderAvatar(view, 'assignFace')}
     <span class="assignName">${first}</span>
     ${badge}
     <span class="assignFoot">${renderBars(view, true)}</span>
-  </button>`;
+  </div>`;
 }
 
 function renderDock(state, view, managerId) {
@@ -364,10 +364,10 @@ function renderDesk(state, desk) {
   const open = pickingManager && staffDesk === desk.id;
   const grid = open ? `<div class="assignGrid">${roster.map((item) => renderAssignCard(item, managerId)).join('')}</div>` : '';
   const head = lead
-    ? `<button type="button" class="assignLead ${lead.id === selectedStaff ? 'selected' : ''}" data-action="selectStaff" data-staff="${lead.id}" data-desk="${desk.id}">
+    ? `<div class="assignLead ${lead.id === selectedStaff ? 'selected' : ''}" role="button" tabindex="0" data-action="selectStaff" data-staff="${lead.id}" data-desk="${desk.id}">
       ${renderAvatar(lead, 'assignDockFace')}
       <span><b>${desk.label}</b><small>${lead.name}</small>${renderBars(lead)}</span>
-    </button>`
+    </div>`
     : `<button type="button" class="assignLead vacant" data-action="beginChangeManager" data-desk="${desk.id}">
       <span><b>${desk.label}</b><small>Open seat</small></span>
     </button>`;
