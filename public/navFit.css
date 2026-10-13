@@ -866,3 +866,18 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 #screen-lines .adcapTrack.ready { background: #35e58a !important; color: #08331a !important; }
 #screen-lines .adcapTrack.auto { box-shadow: inset 0 0 0 2px #49b4f5; }
 #screen-lines .adcapManager.hired { background: #166534 !important; color: #ecfdf5 !important; }
+
+.btn.primary,
+.gamePanel .btn.primary,
+.gameRowCard .btn.primary {
+  background: linear-gradient(180deg, #ffe36a 0%, #f5a623 100%) !important;
+  color: #6a3208 !important;
+  border: 3px solid #fff6d2 !important;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .75), 0 4px 0 #c47a10 !important;
+  text-shadow: none !important;
+}
+.subTab.active {
+  background: linear-gradient(180deg, #ffe36a, #f5a623) !important;
+  color: #6a3208 !important;
+  border-color: #fff6d2 !important;
+}
