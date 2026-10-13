@@ -2,12 +2,12 @@ html, body, .appShell { height: 100dvh; max-height: 100dvh; overflow: hidden; }
 .appShell { display: grid !important; grid-template-rows: auto minmax(0, 1fr) auto !important; }
 .screenHost { min-height: 0; overflow: hidden; }
 .bottomNav {
-  height: 64px !important;
-  min-height: 0 !important;
-  max-height: 64px !important;
+  height: auto !important;
+  min-height: 68px !important;
+  max-height: none !important;
   box-sizing: border-box;
-  overflow: hidden;
-  padding: 4px 6px !important;
+  overflow: visible !important;
+  padding: 8px 8px calc(6px + env(safe-area-inset-bottom)) !important;
 }
 .capitalistList { display: grid; gap: 12px; }
 .adcapRow { display: grid !important; grid-template-columns: 46px minmax(0, 1.25fr) minmax(68px, .7fr) 58px; gap: 10px; align-items: center; padding: 10px; border-radius: 18px; background: linear-gradient(180deg, rgba(16, 40, 58, .88), rgba(8, 22, 34, .92)); border: 1px solid rgba(214, 184, 122, .28); }
@@ -615,76 +615,82 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .bottomNav {
   height: auto !important;
   max-height: none !important;
-  min-height: 72px !important;
+  min-height: 68px !important;
   display: grid !important;
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   align-items: end !important;
-  gap: 2px !important;
+  gap: 0 !important;
   overflow: visible !important;
-  background: linear-gradient(180deg, #16365a, #0b1e33) !important;
+  background: #0d1b29 !important;
   background-image: none !important;
-  border-top: 3px solid #071422 !important;
-  padding: 16px 4px calc(4px + env(safe-area-inset-bottom)) !important;
+  border-top: 1px solid rgba(255,255,255,.1) !important;
+  box-shadow: 0 -10px 24px rgba(0,0,0,.28) !important;
+  padding: 12px 6px calc(6px + env(safe-area-inset-bottom)) !important;
 }
 .bottomNav .tab {
-  min-height: 46px !important;
+  min-height: 44px !important;
   height: auto !important;
   overflow: visible !important;
   background: transparent !important;
   background-image: none !important;
-  color: #d7eef8 !important;
+  color: #9fb4c6 !important;
   border: 0 !important;
-  border-radius: 14px 14px 8px 8px !important;
+  border-radius: 14px !important;
   box-shadow: none !important;
+  opacity: .78;
   transform: none;
+  transition: opacity .16s ease, margin .16s ease, background .16s ease;
 }
 .bottomNav .tab span { display: none !important; }
 .bottomNav .tab .tabIcon {
-  width: 32px !important;
-  height: 32px !important;
+  width: 28px !important;
+  height: 28px !important;
   border-radius: 8px !important;
   object-fit: cover !important;
   box-shadow: none !important;
 }
 .bottomNav .tab.active {
-  min-height: 74px !important;
-  margin-top: -14px !important;
-  padding-top: 4px !important;
-  background: linear-gradient(180deg, #ffe56a, #f0a51a) !important;
-  color: #3a2404 !important;
-  border: 2px solid #fff6c2 !important;
-  box-shadow: inset 0 2px 0 #fff, 0 4px 0 #8a5a10 !important;
-  transform: scale(1.04);
+  opacity: 1;
+  min-height: 64px !important;
+  margin: -10px 3px 0 !important;
+  padding: 6px 2px 5px !important;
+  background: linear-gradient(180deg, #fffaf0, #f2c56a) !important;
+  color: #24180c !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 18px rgba(0,0,0,.28) !important;
+  transform: none;
   z-index: 2;
 }
 .bottomNav .tab.active span {
   display: block !important;
-  margin-top: 1px;
-  color: #3a2404 !important;
-  font-size: 11px !important;
-  font-weight: 900 !important;
+  margin-top: 2px;
+  color: #24180c !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .01em;
   line-height: 1 !important;
 }
 .bottomNav .tab.active .tabIcon {
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 10px !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 9px !important;
 }
 .bottomNav .tab.questReady {
   position: relative;
-  animation: menuQuestGlow 1.35s ease-in-out infinite;
-  color: #ffe27a !important;
+  animation: none;
 }
 .bottomNav .tab.questReady::after {
-  content: '✦';
+  content: '';
   position: absolute;
-  top: 1px;
+  top: 6px;
   right: 8px;
-  color: #ffe27a;
-  font-size: 13px;
-  line-height: 1;
-  text-shadow: 0 0 8px #f6c445;
-  animation: menuSpark 1.1s ease-in-out infinite;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f0b429;
+  box-shadow: 0 0 0 2px #0d1b29;
+  animation: none;
   pointer-events: none;
 }
 .questButton.questReady {
