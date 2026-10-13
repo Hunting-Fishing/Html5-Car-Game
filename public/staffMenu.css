@@ -290,15 +290,26 @@
 #screen-staff .staffPopCard .taskRow > small,
 #screen-staff .staffPopCard .taskNote { color: #f3fbff; }
 #screen-staff .staffPopCard .taskBtn {
-  min-height: 46px;
-  border: 3px solid #fff6d8;
+  min-height: 42px;
+  padding: 8px 8px;
+  border: 3px solid #fff;
   border-radius: 14px;
-  background: linear-gradient(180deg, #fff3c9, #f0c56a);
-  color: #6a3e0c;
-  box-shadow: 0 3px 0 #d0973a;
+  background: linear-gradient(180deg, #ffe14a, #f5a623);
+  color: #5a2d08;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.15;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .75), 0 4px 0 #c47a10;
 }
-#screen-staff .staffPopCard .taskBtn small { color: #8a5a16; }
-#screen-staff .staffPopCard .taskBtn.on { background: linear-gradient(180deg, #c8ff9a, #3dce62); border-color: #fff; color: #0d4a22; box-shadow: 0 3px 0 #1e9a42; }
+#screen-staff .staffPopCard .taskBtn small { display: inline; color: #5a2d08; font-size: 13px; font-weight: 900; }
+#screen-staff .staffPopCard .taskBtn small::before { content: ' · '; }
+#screen-staff .staffPopCard .taskBtn.on { background: linear-gradient(180deg, #8dff67, #2fbf45); border-color: #fff; color: #083214; box-shadow: inset 0 2px 0 rgba(255,255,255,.7), 0 4px 0 #178a32; }
+#screen-staff .paneBody .btn.promote {
+  background: linear-gradient(180deg, #8fd0ff, #1d7fe0) !important;
+  color: #04284a !important;
+  border-color: #fff !important;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .75), 0 4px 0 #0c4f96 !important;
+}
 #screen-staff .staffPopX {
   top: 10px;
   right: 10px;
@@ -323,8 +334,8 @@
 #screen-staff .paneBody .taskRow > span,
 #screen-staff .paneBody .taskRow > small,
 #screen-staff .paneBody .treeLine { grid-column: 1 / -1; }
-#screen-staff .paneBody .taskBtn { min-height: 40px; }
-#screen-staff .paneBody .taskBtn small { font-size: 9px; line-height: 1.2; }
+#screen-staff .paneBody .taskBtn { min-height: 42px; font-size: 13px; font-weight: 900; color: #5a2d08; }
+#screen-staff .paneBody .taskBtn small { font-size: 13px; line-height: 1.15; color: #5a2d08; }
 #screen-staff .growSwitch { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
 #screen-staff .growSwitch button.on { background: linear-gradient(180deg, #ffe57a, #f0a31a); color: #6a3b08; border-color: #fff6d0; }
 #screen-staff .treeNodes { grid-template-columns: repeat(3, minmax(0, 1fr)); }

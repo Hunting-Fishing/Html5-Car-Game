@@ -230,8 +230,8 @@ function renderTasks(view) {
 function renderTraining(state, view) {
   if (!view?.hired) return '';
   const ready = canAfford(state, view.trainCost) && view.energy >= view.trainEnergy;
-  const buttons = view.skills.map((skill) => `<button type="button" class="taskBtn" data-action="trainSkill" data-staff="${view.id}" data-skill="${skill.key}" ${ready ? '' : 'disabled'}>Train ${skill.label}<small>${costToText(view.trainCost)} · ${view.trainEnergy} energy</small></button>`).join('');
-  const rest = `<button type="button" class="taskBtn" data-action="restCrew" data-staff="${view.id}" ${canAfford(state, { coins: 10 }) ? '' : 'disabled'}>Rest<small>20 energy · 10 coins</small></button>`;
+  const buttons = view.skills.map((skill) => `<button type="button" class="taskBtn" data-action="trainSkill" data-staff="${view.id}" data-skill="${skill.key}" ${ready ? '' : 'disabled'}>Train ${skill.label} · ${costToText(view.trainCost)}</button>`).join('');
+  const rest = `<button type="button" class="taskBtn" data-action="restCrew" data-staff="${view.id}" ${canAfford(state, { coins: 10 }) ? '' : 'disabled'}>Rest · 10 coins</button>`;
   return `<div class="taskRow"><span>Training · ${view.trains} done</span>${buttons}${rest}</div>`;
 }
 
@@ -317,7 +317,7 @@ function renderDock(state, view, managerId) {
     ? `${view.cardLabel}: ${costToText({ [view.cardKey]: view.pay[view.cardKey] })} each payday`
     : `${view.cardLabel} starts after a promotion`;
   const upgrade = view.hired ? `<button class="btn small primary" data-action="upgradeCrew" data-staff="${view.id}" ${canAfford(state, view.upgradeCost) ? '' : 'disabled'}>Upgrade ${costToText(view.upgradeCost)}</button>` : '';
-  const promote = view.hired ? `<button class="btn small primary" data-action="promoteCrew" data-staff="${view.id}" ${view.promoCost && canAfford(state, view.promoCost) ? '' : 'disabled'}>${view.promoCost ? `Promote ${costToText(view.promoCost)}` : 'Partner'}</button>` : '';
+  const promote = view.hired ? `<button class="btn small promote" data-action="promoteCrew" data-staff="${view.id}" ${view.promoCost && canAfford(state, view.promoCost) ? '' : 'disabled'}>${view.promoCost ? `Promote ${costToText(view.promoCost)}` : 'Partner'}</button>` : '';
   const panes = view.hired ? `<nav class="staffPanes">${renderPaneNav()}</nav>` : '';
   const overview = staffPane === 'overview' || !view.hired
     ? `<div class="paneBody">${renderBars(view)}
