@@ -42,22 +42,22 @@ export const CHAINS = {
     items: ['Tire Gauge','Sport Tire','Coilovers','Strut Bar','Race Seat','Harness','Helmet','Roll Cage','Splitter','Wing','Rally Lamps','Drag Slicks']
   },
   fluids: {
-    label: 'Shop Fluids', short: 'FLD', icon: iconPath(MERGE_ICON_BASE, 'fluids/motor-oil.svg'), fallbackIcon: '\u{1F6E2}', resource: 'parts', unlockStage: 1,
+    label: 'Shop Fluids', short: 'FLD', icon: iconPath(MERGE_ICON_BASE, 'fluids/motor-oil.png'), fallbackIcon: '\u{1F6E2}', resource: 'parts', unlockStage: 1,
     description: 'Oils and fluids. Open from the start.',
     items: ['Motor Oil','Coolant','Brake Fluid','Power Steering','Gear Oil','Diff Fluid','Washer Fluid','Race Fuel','Additive','Flush Kit','Sealant','Shop Barrel']
   },
   electrical: {
-    label: 'Electrical', short: 'ELC', icon: iconPath(MERGE_ICON_BASE, 'electrical/car-battery.svg'), fallbackIcon: '\u26A1', resource: 'tools', unlockStage: 1,
+    label: 'Electrical', short: 'ELC', icon: iconPath(MERGE_ICON_BASE, 'electrical/car-battery.png'), fallbackIcon: '\u26A1', resource: 'tools', unlockStage: 1,
     description: 'Wiring and electrical parts. Open from the start.',
     items: ['Fuse Wire','Relay','Car Battery','Alternator','Starter','Coil Pack','Wire Harness','Control Module','Sensor Pack','Amp','Inverter','Wiring Loom']
   },
   body: {
-    label: 'Body Shop', short: 'BDY', icon: iconPath(MERGE_ICON_BASE, 'body/hood.svg'), fallbackIcon: '\u{1F697}', resource: 'parts', unlockStage: 1,
+    label: 'Body Shop', short: 'BDY', icon: iconPath(MERGE_ICON_BASE, 'body/hood.png'), fallbackIcon: '\u{1F697}', resource: 'parts', unlockStage: 1,
     description: 'Body and glass parts. Open from the start.',
     items: ['Mirror','Headlamp','Grille','Bumper','Fender','Door Skin','Hood','Windshield']
   },
   interior: {
-    label: 'Cabin', short: 'CAB', icon: iconPath(MERGE_ICON_BASE, 'interior/seat.svg'), fallbackIcon: '\u{1FA91}', resource: 'rep', unlockStage: 1,
+    label: 'Cabin', short: 'CAB', icon: iconPath(MERGE_ICON_BASE, 'interior/seat.png'), fallbackIcon: '\u{1FA91}', resource: 'rep', unlockStage: 1,
     description: 'Interior parts. Open from the start.',
     items: ['Floor Mat','Shift Knob','Radio','Steering Wheel','Seat','Dash','Door Panel','Cabin Kit']
   }
