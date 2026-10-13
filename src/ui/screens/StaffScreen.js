@@ -299,8 +299,6 @@ function renderAssignCard(view, managerId) {
 
 function renderDock(state, view, managerId) {
   if (!view) return '';
-  const line = view.lineKey ? IDLE_LINES.find((item) => item.key === view.lineKey) : null;
-  const job = line ? managerStats(state, { id: line.key }) : null;
   const armed = fireArmed === view.id;
   const isLead = view.id === managerId;
   const hire = view.hired
