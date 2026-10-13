@@ -324,11 +324,26 @@ export function freeEnergyRefill(state) {
   return { ok: true, message: `Daily energy: +${gain}.` };
 }
 
+const SPIN_REWARDS = [5, 8, 10, 15, 20, 25, 30, 40];
+
+export function dailySpin(state) {
+  normalizeMergeState(state);
+  const today = todayKey();
+  if (state.merge.lastDailySpin === today) {
+    return { ok: false, message: 'Daily spin already used. Come back tomorrow.' };
+  }
+  const gain = SPIN_REWARDS[Math.floor(Math.random() * SPIN_REWARDS.length)];
+  state.merge.energy = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + gain);
+  state.merge.lastDailySpin = today;
+  state.merge.lastSpinResult = gain;
+  return { ok: true, message: `Spin! +${gain} energy.` };
+}
+
 export function getTutorialHint(state) {
   if (!state.objectives?.firstGeneratorTap) return 'Tap a highlighted generator to produce items.';
   if (!state.objectives?.firstMerge) return 'Tap two matching items to merge. Merge generators for better output.';
   if (!state.objectives?.firstDelivery) return 'Fill a customer order and tap Deliver for rewards.';
-  return 'Claim your daily energy in the shop.';
+  return 'Claim daily energy or spin the wheel.';
 }
 
 export function itemDisplayName(item) {
