@@ -93,6 +93,15 @@ function renderShop(state) {
   </div>`;
 }
 
+function renderRecipes(state, active, limit) {
+  return `<div class="mergeRecipePanel">
+    ${renderMergeTips(state, active, limit)}
+    <div class="mergeChainCompactList">
+      ${Object.entries(CHAINS).map(([key, chain]) => renderMergeChainCompact(state, key, chain, selectedMergeChainKey(state))).join('')}
+    </div>
+  </div>`;
+}
+
 export function renderMergeScreen(state) {
   normalizeMergeState(state);
   const active = activeBoardCount(state);
@@ -105,49 +114,53 @@ export function renderMergeScreen(state) {
   const hint = getTutorialHint(state);
   const delivery = state.merge.lastDelivery;
   const visualSlots = 42;
+  const tab = state.merge.activeTab === 'shop' || state.merge.activeTab === 'recipes' ? state.merge.activeTab : 'board';
 
   return `
     ${renderCongrats(delivery)}
     ${renderSpinResult(state)}
     <section class="mergeLazadaScreen">
-      <div class="mergeTopBar">
-        <div class="mergeEnergyPill">⚡ ${energy}/${maxEnergy}</div>
-        <div class="mergeBoardMeta">${active}/${limit} open</div>
+      <div class="mergeTabs">
+        <button class="${tab === 'board' ? 'active' : ''}" data-action="mergeTab" data-tab="board">Board</button>
+        <button class="${tab === 'shop' ? 'active' : ''}" data-action="mergeTab" data-tab="shop">Shop</button>
+        <button class="${tab === 'recipes' ? 'active' : ''}" data-action="mergeTab" data-tab="recipes">Recipes</button>
       </div>
 
-      ${renderCustomers(state)}
+      ${tab === 'shop' ? `<div class="mergePanel">${renderShop(state)}</div>` : ''}
+      ${tab === 'recipes' ? `<div class="mergePanel">${renderRecipes(state, active, limit)}</div>` : ''}
 
-      ${hint ? `<div class="mergeHint">${hint}</div>` : ''}
+      ${tab === 'board' ? `
+      <div class="mergePanel">
+        <div class="mergeTopBar">
+          <div class="mergeEnergyPill">⚡ ${energy}/${maxEnergy}</div>
+          <div class="mergeBoardMeta">${active}/${limit} open</div>
+        </div>
 
-      ${selectedItemInfo(state)}
+        ${renderCustomers(state)}
 
-      <div class="mergeBoardArea">
-        <div class="board mergeBoardGrid lazadaBoard" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>
-          ${Array.from({ length: visualSlots }, (_, index) => {
-            if (index >= limit) {
-              return `<button class="cell locked crate" type="button" disabled aria-label="Locked crate"><span class="crateIcon">📦</span></button>`;
-            }
-            const item = state.merge.board[index] || null;
-            return renderBoardCell(state, item, index, pairSet);
-          }).join('')}
+        ${hint ? `<div class="mergeHint">${hint}</div>` : ''}
+
+        ${selectedItemInfo(state)}
+
+        <div class="mergeBoardArea">
+          <div class="board mergeBoardGrid lazadaBoard" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>
+            ${Array.from({ length: visualSlots }, (_, index) => {
+              if (index >= limit) {
+                return `<button class="cell locked crate" type="button" disabled aria-label="Locked crate"><span class="crateIcon">📦</span></button>`;
+              }
+              const item = state.merge.board[index] || null;
+              return renderBoardCell(state, item, index, pairSet);
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="mergeBottomActions">
+          <button class="btn small primary" data-action="placeAll">Place</button>
+          <button class="btn small" data-action="autoMerge">Merge</button>
+          <button class="btn small red" data-action="sellSelected">Sell</button>
         </div>
       </div>
-
-      <div class="mergeBottomActions">
-        <button class="btn small primary" data-action="placeAll">Place</button>
-        <button class="btn small" data-action="autoMerge">Merge</button>
-        <button class="btn small red" data-action="sellSelected">Sell</button>
-      </div>
-
-      ${renderShop(state)}
-
-      <details class="mergeRecipeDrawer">
-        <summary>Recipes & tips</summary>
-        ${renderMergeTips(state, active, limit)}
-        <div class="mergeChainCompactList">
-          ${Object.entries(CHAINS).map(([key, chain]) => renderMergeChainCompact(state, key, chain, selectedMergeChainKey(state))).join('')}
-        </div>
-      </details>
+      ` : ''}
     </section>
   `;
 }
@@ -167,7 +180,7 @@ function hasMatchingItem(state, customer) {
 }
 
 function renderCustomers(state) {
-  const customers = state.merge.customers || [];
+  const customers = (state.merge.customers || []).slice(0, 2);
   if (!customers.length) return '<div class="mergeCustomersEmpty">Waiting for customers…</div>';
   const now = Date.now();
   return `<div class="mergeCustomerStrip">
@@ -186,7 +199,7 @@ function renderCustomers(state) {
         </div>
         <div class="customerNeed">${art}</div>
         <div class="customerTitle">${c.title}</div>
-        <div class="customerMeta">Need L${c.level || 1} · ${remain}</div>
+        <div class="customerMeta">L${c.level || 1} · ${remain}</div>
         <button class="btn small primary" data-action="deliverCustomer" data-customer="${c.id}"${ready ? '' : ' disabled'}>Deliver</button>
       </div>`;
     }).join('')}
