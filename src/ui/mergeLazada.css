@@ -52,6 +52,11 @@
   color: #123;
 }
 
+.customerCard.ready {
+  border-color: #1a7a3a;
+  box-shadow: 0 0 0 2px rgba(26,122,58,.35);
+}
+
 .customerHead {
   display: flex;
   align-items: center;
@@ -91,10 +96,16 @@
 .customerTitle {
   font-size: 9px;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.customerMeta {
+  font-size: 8px;
+  color: #456;
+  margin-bottom: 4px;
 }
 
 .mergeCustomersEmpty {
@@ -273,7 +284,7 @@
 
 .mergeShopExtras {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 4px;
 }
 
