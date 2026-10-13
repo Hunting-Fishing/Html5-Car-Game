@@ -22,11 +22,12 @@ export const UI_ICONS = {
 };
 
 export const UI_NAV_ICONS = {
-  home: `${UI_NAV_BASE}/icon-home.svg`,
-  race: `${UI_NAV_BASE}/icon-race.svg`,
-  parts: `${UI_NAV_BASE}/icon-parts.svg`,
-  garage: `${UI_NAV_BASE}/icon-garage.svg`,
-  menu: `${UI_NAV_BASE}/icon-menu.svg`,
+  home: `${UI_NAV_BASE}/nav-home.jpg?v=93`,
+  race: `${UI_NAV_BASE}/nav-race.jpg?v=93`,
+  parts: `${UI_NAV_BASE}/nav-parts.jpg?v=93`,
+  garage: `${UI_NAV_BASE}/nav-garage.jpg?v=93`,
+  staff: `${UI_NAV_BASE}/nav-staff.jpg?v=93`,
+  menu: `${UI_NAV_BASE}/nav-menu.jpg?v=93`,
   tools: `${UI_NAV_BASE}/icon-tools.svg`,
   tune: `${UI_NAV_BASE}/icon-tune.svg`,
   rep: `${UI_NAV_BASE}/icon-rep.svg`,

@@ -615,26 +615,43 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 .bottomNav {
   height: auto !important;
   max-height: none !important;
-  min-height: 72px !important;
+  min-height: 78px !important;
   display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   gap: 4px !important;
   overflow: visible !important;
-  background: #061018 !important;
+  background: linear-gradient(180deg, #0c2436, #061018) !important;
   background-image: none !important;
-  padding: 6px 6px calc(8px + env(safe-area-inset-bottom)) !important;
+  border-top: 2px solid #f6c445 !important;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom)) !important;
 }
 .bottomNav .tab {
-  min-height: 58px !important;
+  min-height: 66px !important;
   height: auto !important;
-  overflow: visible !important;
-  background: #123044 !important;
+  overflow: hidden !important;
+  background: linear-gradient(180deg, #1b4d72, #10283c) !important;
   background-image: none !important;
   color: #e7f6ff !important;
-  font-size: 11px !important;
-  border-radius: 14px !important;
+  font-size: 9px !important;
+  font-weight: 900 !important;
+  border-radius: 16px !important;
+  border: 2px solid rgba(255,255,255,.16) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.18), 0 3px 0 #061018 !important;
 }
-.bottomNav .tab span { display: block !important; font-size: 11px !important; line-height: 1.1 !important; }
+.bottomNav .tab.active {
+  background: linear-gradient(180deg, #ffe36a, #e39b12) !important;
+  color: #3a2404 !important;
+  border-color: #fff6c8 !important;
+  box-shadow: inset 0 2px 0 #fff, 0 3px 0 #8a5a10 !important;
+}
+.bottomNav .tab span { display: block !important; font-size: 9px !important; line-height: 1.05 !important; letter-spacing: .01em; }
+.bottomNav .tabIcon {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  object-fit: cover !important;
+  box-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
 .bottomNav .tab.questReady {
   position: relative;
   animation: menuQuestGlow 1.35s ease-in-out infinite;
@@ -663,7 +680,7 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
   0%, 100% { opacity: .45; transform: scale(.85); }
   50% { opacity: 1; transform: scale(1.2); }
 }
-.bottomNav .tabIcon { width: 22px !important; height: 22px !important; }
+.bottomNav .tabIcon { width: 36px !important; height: 36px !important; border-radius: 10px !important; object-fit: cover !important; }
 #screen-profile .menuActionDock .actionDock { grid-template-columns: 1fr 1fr !important; }
 #screen-profile .menuActionDock .actionDockButton {
   min-height: 48px !important;
@@ -680,6 +697,27 @@ html.rrRaceViewport .cur span { font-size: 10px !important; }
 #screen-profile .menuObjectiveRow { width: 100%; text-align: left; grid-template-columns: auto minmax(0, 1fr) auto; }
 #screen-profile .menuSettingsStrip { grid-template-columns: 1fr 1fr !important; }
 #screen-profile .menuSettingsStrip button { min-width: 0; padding: 10px 8px; border-radius: 13px; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.18); color: inherit; text-align: center; }
+
+:root { --bottom-nav-safe-area: calc(92px + env(safe-area-inset-bottom)); }
+.btn.primary, .adcapBuy, .assignChange {
+  background: linear-gradient(180deg, #ffe36a, #e39b12) !important;
+  color: #3a2404 !important;
+  border: 2px solid #fff6c8 !important;
+  box-shadow: inset 0 2px 0 #fff, 0 3px 0 #8a5a10 !important;
+}
+#screen-hub .homeTile,
+#screen-profile .gamePanel,
+#screen-garage .gamePanel,
+#screen-merge .gamePanel,
+#screen-lines .gamePanel {
+  background: #10283c !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-left: 4px solid #f6c445 !important;
+  border-radius: 16px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+#screen-hub .homeTile b,
+#screen-profile .gamePanelTitle h2 { color: #fff !important; }
 #screen-profile .menuSettingsStrip button.danger { border-color: rgba(255,93,115,.32); background: rgba(255,93,115,.08); }
 #screen-profile .menuSettingsStrip b { font-size: 13px !important; white-space: normal !important; }
 #screen-profile .menuSettingsStrip span { font-size: 11px !important; white-space: normal !important; }
