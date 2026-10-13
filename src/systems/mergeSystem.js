@@ -38,7 +38,6 @@ export function normalizeMergeState(state) {
   if (state.merge.board.every(cell => !cell) && state.merge.totalMerges === 0) {
     state.merge.board[0] = makeItem('original', 1, 'generator');
     state.merge.board[1] = makeItem('tools', 1, 'generator');
-    // Seed a few cobwebs on early open slots
     for (let i = 2; i < 6; i += 1) {
       if (!state.merge.board[i]) state.merge.board[i] = makeCobweb();
     }
@@ -54,7 +53,7 @@ export function makeItem(chain, level = 1, type = 'product') {
   if (type === 'generator') {
     const gen = Object.values(GENERATORS).find(g => g.produces === chain) || GENERATORS.partsBin;
     item.generatorKey = gen.key;
-    item.energyCost = gen.energyCost;
+    item.energyCost = Math.max(1, (gen.energyCost || 1) + Math.floor((level - 1) / 2));
   }
   return item;
 }
@@ -211,10 +210,11 @@ export function tapGenerator(state, index) {
   const empty = state.merge.board.findIndex((cell, i) => i < boardLimit(state) && !cell);
   if (empty < 0) return { ok: false, message: 'No empty slot.' };
   state.merge.energy -= cost;
-  const product = makeItem(item.chain, 1, 'product');
+  const produceLevel = Math.max(1, Math.min(item.level || 1, 3));
+  const product = makeItem(item.chain, produceLevel, 'product');
   state.merge.board[empty] = product;
   state.objectives.firstGeneratorTap = true;
-  return { ok: true, message: `Produced ${itemDisplayName(product)}.` };
+  return { ok: true, message: `Produced ${itemDisplayName(product)} (L${produceLevel}).` };
 }
 
 export function spawnCustomer(state) {
@@ -317,9 +317,9 @@ export function freeEnergyRefill(state) {
 
 export function getTutorialHint(state) {
   if (!state.objectives?.firstGeneratorTap) return 'Tap a highlighted generator to produce items.';
-  if (!state.objectives?.firstMerge) return 'Tap two matching items to merge.';
+  if (!state.objectives?.firstMerge) return 'Tap two matching items to merge. Merge generators for better output.';
   if (!state.objectives?.firstDelivery) return 'Fill a customer order and tap Deliver for rewards.';
-  return 'Tap cobwebs to clear them (costs 1 energy).';
+  return 'Merge two generators to make a stronger one.';
 }
 
 export function itemDisplayName(item) {
