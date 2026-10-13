@@ -34,6 +34,11 @@ export function normalizeMergeState(state) {
   if (typeof state.merge.maxEnergy !== 'number') state.merge.maxEnergy = 50;
   if (typeof state.merge.energyRegen !== 'number') state.merge.energyRegen = 0.08;
   if (!Array.isArray(state.merge.customers)) state.merge.customers = [];
+  while (state.merge.customers.length < 4) {
+    const before = state.merge.customers.length;
+    spawnCustomer(state);
+    if (state.merge.customers.length === before) break;
+  }
   if (typeof state.merge.energyUpgrades !== 'number') state.merge.energyUpgrades = 0;
   if (typeof state.merge.lastFreeEnergy !== 'number') state.merge.lastFreeEnergy = 0;
   if (state.merge.board.every(cell => !cell) && state.merge.totalMerges === 0) {
@@ -103,7 +108,7 @@ export function tickSupplier(state, dt) {
   }
   const now = Date.now();
   state.merge.customers = state.merge.customers.filter(c => !c.expires || c.expires > now);
-  if (state.merge.customers.length < 2 && Math.random() < 0.015) {
+  if (state.merge.customers.length < 6 && Math.random() < 0.04) {
     spawnCustomer(state);
   }
 }

@@ -70,85 +70,71 @@
 
 #screen-merge .mergeCustomerStrip {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
   padding: 0;
   flex: 0 0 auto;
   width: 100%;
 }
 
+@media (min-width: 560px) {
+  #screen-merge .mergeCustomerStrip {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
 #screen-merge .customerCard {
   width: auto;
   max-width: none;
+  min-width: 0;
   background: #e8f4ff;
-  border: 2px solid #4a90d9;
-  border-radius: 12px;
-  padding: 4px 6px;
+  border: 1px solid #4a90d9;
+  border-radius: 8px;
+  padding: 2px 2px 3px;
   text-align: center;
   color: #123;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 #screen-merge .customerCard.ready {
   border-color: #1a7a3a;
-  box-shadow: 0 0 0 2px rgba(26,122,58,.35);
-}
-
-#screen-merge .customerHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1px;
-}
-
-#screen-merge .customerAvatar {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #cfe3ff;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-}
-
-#screen-merge .customerReward {
-  font-size: 10px;
-  font-weight: 900;
-  color: #1a7a3a;
+  box-shadow: 0 0 0 1px rgba(26,122,58,.35);
 }
 
 #screen-merge .customerNeed {
-  height: 52px;
+  height: 28px;
   display: grid;
   place-items: center;
 }
 
 #screen-merge .customerNeedArt {
-  width: 50px;
-  height: 50px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 0 rgba(0,0,0,.25));
 }
 
 #screen-merge .customerTitle {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
+  line-height: 1.05;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 #screen-merge .customerMeta {
-  font-size: 8px;
+  font-size: 7px;
   color: #456;
   margin: 0;
+  line-height: 1;
 }
 
 #screen-merge .customerCard .btn.small {
-  min-height: 22px;
-  font-size: 9px;
-  padding: 2px 4px;
+  min-height: 16px;
+  font-size: 8px;
+  padding: 0 2px;
   margin-top: 2px;
+  border-radius: 6px !important;
 }
 
 #screen-merge .mergeCustomersEmpty {
@@ -239,19 +225,27 @@
   height: 100% !important;
   min-width: 0 !important;
   min-height: 0 !important;
-  border-radius: 10px !important;
+  border-radius: 8px !important;
   padding: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  border: 1px solid rgba(125, 220, 255, .22) !important;
+  box-shadow: none !important;
 }
 
 #screen-merge .lazadaBoard .cell.locked.crate {
-  background: linear-gradient(180deg, #e7c48a, #b88955 55%, #8d6238) !important;
-  border: 2px solid #6b4524 !important;
+  background: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
   opacity: 1;
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.35);
 }
 
 #screen-merge .lazadaBoard .crateIcon {
-  font-size: clamp(22px, 6vw, 36px);
+  width: 96%;
+  height: 96%;
+  display: block;
+  background: url("/Html5-Car-Game/assets/ui/merge/crate-tile.svg") center / contain no-repeat;
 }
 
 #screen-merge .lazadaBoard .cell.cobweb {
@@ -265,8 +259,20 @@
 }
 
 #screen-merge .lazadaBoard .cell.generator {
-  box-shadow: inset 0 0 0 2px #35e58a, 0 0 8px rgba(53,229,138,.45);
-  background: linear-gradient(180deg, rgba(53,229,138,.22), rgba(5,27,43,.92)) !important;
+  border: 2px solid #35e58a !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+#screen-merge .lazadaBoard .mergeItemArt {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain;
+  filter: none;
+  pointer-events: none;
 }
 
 #screen-merge .lazadaBoard .itemInner {
@@ -299,12 +305,12 @@
 }
 
 #screen-merge .lazadaBoard .mergeItemArt {
-  width: 94% !important;
-  height: 94% !important;
+  width: 100% !important;
+  height: 100% !important;
   max-width: none !important;
   max-height: none !important;
   object-fit: contain;
-  filter: drop-shadow(0 3px 0 rgba(0,0,0,.28));
+  filter: none;
   pointer-events: none;
 }
 
@@ -408,20 +414,16 @@
   background: rgba(255,255,255,.06);
 }
 
-#screen-merge .lazadaBoard .cell.chain-original { box-shadow: inset 0 0 0 2px #5ab7ff; }
-#screen-merge .lazadaBoard .cell.chain-tools { box-shadow: inset 0 0 0 2px #ff9f1c; }
-#screen-merge .lazadaBoard .cell.chain-fluids { box-shadow: inset 0 0 0 2px #2dd4bf; }
-#screen-merge .lazadaBoard .cell.chain-electrical { box-shadow: inset 0 0 0 2px #facc15; }
-#screen-merge .lazadaBoard .cell.chain-body { box-shadow: inset 0 0 0 2px #38bdf8; }
-#screen-merge .lazadaBoard .cell.chain-interior { box-shadow: inset 0 0 0 2px #c084fc; }
-#screen-merge .lazadaBoard .cell.chain-performance { box-shadow: inset 0 0 0 2px #e879f9; }
-#screen-merge .lazadaBoard .cell.chain-racing { box-shadow: inset 0 0 0 2px #fb7185; }
-#screen-merge .lazadaBoard .cell.generator { box-shadow: inset 0 0 0 3px #35e58a, 0 0 10px rgba(53,229,138,.55); }
-#screen-merge .lazadaBoard .cell:empty,
-#screen-merge .lazadaBoard .cell:not(.crate):not(.cobweb):not(.generator):not([class*="chain-"]) {
-  background: radial-gradient(circle at 50% 40%, rgba(90,183,255,.12), rgba(0,0,0,.45)) !important;
-  border: 2px solid rgba(125,220,255,.28) !important;
-}
+#screen-merge .lazadaBoard .cell.chain-original { border-color: #5ab7ff !important; }
+#screen-merge .lazadaBoard .cell.chain-tools { border-color: #ff9f1c !important; }
+#screen-merge .lazadaBoard .cell.chain-fluids { border-color: #2dd4bf !important; }
+#screen-merge .lazadaBoard .cell.chain-electrical { border-color: #facc15 !important; }
+#screen-merge .lazadaBoard .cell.chain-body { border-color: #38bdf8 !important; }
+#screen-merge .lazadaBoard .cell.chain-interior { border-color: #c084fc !important; }
+#screen-merge .lazadaBoard .cell.chain-performance { border-color: #e879f9 !important; }
+#screen-merge .lazadaBoard .cell.chain-racing { border-color: #fb7185 !important; }
+#screen-merge .lazadaBoard .cell.generator { border: 2px solid #35e58a !important; }
+#screen-merge .lazadaBoard .cell.selected { border: 2px solid #ffd166 !important; }
 #screen-merge .mergeChainCompact em {
   display: block;
   margin-top: 2px;

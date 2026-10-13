@@ -146,7 +146,7 @@ export function renderMergeScreen(state) {
           <div class="board mergeBoardGrid lazadaBoard" ${guideNeedsPair && !pairSet.size ? 'data-guide-target="mergeBoard"' : ''}>
             ${Array.from({ length: visualSlots }, (_, index) => {
               if (index >= limit) {
-                return `<button class="cell locked crate" type="button" disabled aria-label="Locked crate"><span class="crateIcon">📦</span></button>`;
+                return `<button class="cell locked crate" type="button" disabled aria-label="Locked crate"><span class="crateIcon"></span></button>`;
               }
               const item = state.merge.board[index] || null;
               return renderBoardCell(state, item, index, pairSet);
@@ -165,14 +165,6 @@ export function renderMergeScreen(state) {
   `;
 }
 
-function formatRemain(ms) {
-  if (!ms || ms <= 0) return '0:00';
-  const s = Math.ceil(ms / 1000);
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${sec.toString().padStart(2, '0')}`;
-}
-
 function hasMatchingItem(state, customer) {
   return (state.merge.board || []).some(item =>
     item && item.type === 'product' && item.chain === customer.chain && item.level >= customer.level
@@ -180,9 +172,8 @@ function hasMatchingItem(state, customer) {
 }
 
 function renderCustomers(state) {
-  const customers = (state.merge.customers || []).slice(0, 2);
+  const customers = (state.merge.customers || []).slice(0, 6);
   if (!customers.length) return '<div class="mergeCustomersEmpty">Waiting for customers…</div>';
-  const now = Date.now();
   return `<div class="mergeCustomerStrip">
     ${customers.map(c => {
       const chain = CHAINS[c.chain];
@@ -190,16 +181,11 @@ function renderCustomers(state) {
       const asset = mergeAssetForName(needName);
       const art = asset ? `<img class="customerNeedArt" src="${asset}" alt="${needName}">` : renderChainIcon(c.chain, chain?.label || needName, 'customerNeedArt');
       const coins = c.reward?.coins || 0;
-      const remain = formatRemain((c.expires || 0) - now);
       const ready = hasMatchingItem(state, c);
       return `<div class="customerCard ${ready ? 'ready' : ''}">
-        <div class="customerHead">
-          <div class="customerAvatar">👤</div>
-          <div class="customerReward">💰 ${coins}</div>
-        </div>
         <div class="customerNeed">${art}</div>
         <div class="customerTitle">${c.title}</div>
-        <div class="customerMeta">L${c.level || 1} · ${remain}</div>
+        <div class="customerMeta">L${c.level || 1} · ${coins}</div>
         <button class="btn small primary" data-action="deliverCustomer" data-customer="${c.id}"${ready ? '' : ' disabled'}>Deliver</button>
       </div>`;
     }).join('')}
