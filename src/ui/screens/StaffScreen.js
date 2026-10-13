@@ -31,6 +31,7 @@ let staffDesk = 'sales';
 let fireArmed = '';
 let pickingManager = false;
 let personOpen = false;
+let staffPane = 'overview';
 
 const DESKS = [
   { id: 'sales', label: 'Sales Floor', short: 'Sales', roles: ['Sales'] },
@@ -43,6 +44,11 @@ export function setSelectedStaff(id) {
   const known = [...MANAGERS, ...EMPLOYEES].some((person) => person.id === id) || Boolean(characterById(id));
   if (known) selectedStaff = id;
   personOpen = Boolean(characterById(id));
+  staffPane = 'overview';
+}
+
+export function setStaffPane(pane) {
+  if (pane === 'work' || pane === 'grow' || pane === 'overview') staffPane = pane;
 }
 
 export function closeStaffSheet() {
@@ -314,22 +320,34 @@ function renderDock(state, view, managerId) {
   } else if (job) {
     jobButton = `<button class="btn small ghost" data-action="fireManagerArm" data-line="${line.key}">Release line</button>`;
   }
+  const panes = view.hired
+    ? `<nav class="staffPanes">
+        <button type="button" data-action="staffPane" data-pane="overview" class="${staffPane === 'overview' ? 'on' : ''}">Overview</button>
+        <button type="button" data-action="staffPane" data-pane="work" class="${staffPane === 'work' ? 'on' : ''}">Work</button>
+        <button type="button" data-action="staffPane" data-pane="grow" class="${staffPane === 'grow' ? 'on' : ''}">Grow</button>
+      </nav>`
+    : '';
+  const overview = staffPane === 'overview' || !view.hired
+    ? `${renderBars(view)}
+      ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
+      <div class="staffPay"><span>Salary</span><b>${costToText({ coins: view.pay.coins })}</b><small>${card}</small></div>
+      ${renderSalary(view)}
+      <div class="assignDockActions">${hire}${fire}${makeManager}${jobButton}</div>`
+    : '';
+  const work = staffPane === 'work' && view.hired ? renderTasks(view) : '';
+  const grow = staffPane === 'grow' && view.hired
+    ? `${renderTraining(state, view)}${renderPerks(view)}${renderCourses(state, view)}${renderTrees(state, view)}<div class="assignDockActions">${upgrade}${promote}</div>`
+    : '';
   return `<div class="staffPop">
     <button type="button" class="staffPopBack" data-action="closeStaffSheet" aria-label="Close"></button>
     <div class="staffPopCard">
       <button type="button" class="staffPopX" data-action="closeStaffSheet" aria-label="Close">×</button>
       ${renderAvatar(view, 'assignDockFace')}
       <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${view.promotions ? ` · ${grade}` : ''}${view.hired ? '' : ' · Not hired'}${isLead ? ' · Manager' : ''}</span></div>
-      ${renderBars(view)}
-      ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
-      <div class="staffPay"><span>Salary</span><b>${costToText({ coins: view.pay.coins })}</b><small>${card}</small></div>
-      ${renderSalary(view)}
-      ${renderTasks(view)}
-      ${renderTraining(state, view)}
-      ${renderPerks(view)}
-      ${renderCourses(state, view)}
-      ${renderTrees(state, view)}
-      <div class="assignDockActions">${hire}${fire}${makeManager}${upgrade}${promote}${jobButton}</div>
+      ${panes}
+      ${overview}
+      ${work}
+      ${grow}
     </div>
   </div>`;
 }

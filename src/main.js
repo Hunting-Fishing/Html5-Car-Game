@@ -5,7 +5,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=77';
+import './ui/roadRunnerRuntime.js?v=78';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -23,7 +23,7 @@ import { renderHubScreen } from './ui/screens/HubScreen.js';
 import { renderWorldScreen } from './ui/screens/WorldScreen.js';
 import { renderRaceScreen } from './ui/screens/RaceScreen.js';
 import { renderLinesScreen, updateLineBars, updateReadyBadge } from './ui/screens/LinesScreen.js';
-import { renderStaffScreen, setSelectedStaff, setStaffTab, setCrewFilter, armStaffFire, clearStaffFire, beginManagerChange, cancelManagerChange, assignDeskManager, closeStaffSheet } from './ui/screens/StaffScreen.js';
+import { renderStaffScreen, setSelectedStaff, setStaffTab, setCrewFilter, armStaffFire, clearStaffFire, beginManagerChange, cancelManagerChange, assignDeskManager, closeStaffSheet, setStaffPane } from './ui/screens/StaffScreen.js';
 import { renderMergeScreen } from './ui/screens/MergeScreen.js';
 import { renderGarageScreen } from './ui/screens/GarageScreen.js';
 import { renderProfileScreen, setMenuTab, armMenuReset, disarmMenuReset, isMenuResetArmed } from './ui/screens/ProfileScreen.js';
@@ -302,6 +302,12 @@ function handleClick(event) {
 
   if (action === 'closeStaffSheet') {
     closeStaffSheet();
+    render();
+    return;
+  }
+
+  if (action === 'staffPane') {
+    setStaffPane(target.dataset.pane);
     render();
     return;
   }
