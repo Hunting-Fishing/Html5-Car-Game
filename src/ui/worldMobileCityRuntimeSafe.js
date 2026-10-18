@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js';
-import { WORLD_ASSET_LIST, WORLD_ASSETS, buildingAssetForKey, personAssetForKey, vehicleAssetForKey } from '../data/worldAssetMap.js';
+import { WORLD_ASSET_LIST, WORLD_ASSETS, buildingAssetForKey, personAnimationFramesForKey, personAssetForKey, vehicleAssetForKey } from '../data/worldAssetMap.js';
 import { BUILD_COMMUNICATION_STORAGE_KEY, readBuildCommunicationState } from '../systems/buildCommunicationSystem.js';
 
-const WORLD = { width: 960, height: 1720, startX: -220, startY: -300 };
+const WORLD = { width: 960, height: 1720, startX: -175, startY: -20 };
 const GRID = {
   size: 40,
   storageKey: '365_mobile_city_safe_buildings_v1',
@@ -36,28 +36,29 @@ const BUILDING_CATALOG = [
 ];
 
 const FIXED_BUILDINGS = [
-  { x: 60, y: 90, w: 2, h: 2, type: 'dealerShowroom', label: 'Dealer Showcase', action: 'lines', lineKey: 'dealerShowcase' },
-  { x: 465, y: 84, w: 3, h: 2, type: 'partsWarehouse', label: '365 Garage', action: 'garage', lineKey: 'streetRoute' },
-  { x: 70, y: 395, w: 2, h: 2, type: 'streetKiosk', label: 'Parts Delivery', action: 'lines', lineKey: 'partsDelivery' },
-  { x: 710, y: 395, w: 2, h: 2, type: 'privateShop', label: 'Mobile Mechanic', action: 'lines', lineKey: 'mobileMechanic' },
-  { x: 70, y: 740, w: 3, h: 2, type: 'salvageBlock', label: 'Towing Yard', action: 'lines', lineKey: 'towingJob' },
-  { x: 710, y: 740, w: 2, h: 2, type: 'towDispatch', label: 'Tow Dispatch', action: 'lines', lineKey: 'towingJob' },
-  { x: 70, y: 1070, w: 3, h: 2, type: 'dealerShowroom', label: 'Sales Lot', action: 'lines', lineKey: 'dealerShowcase' },
-  { x: 700, y: 1070, w: 3, h: 2, type: 'testTrack', label: 'Fuel Run', action: 'lines', lineKey: 'fuelRun' }
+  { x: 60, y: 84, w: 3, h: 3, type: 'dealerShowroom', label: 'Dealer Showcase', action: 'lines', lineKey: 'dealerShowcase' },
+  { x: 430, y: 78, w: 4, h: 3, type: 'garage', label: '365 Garage', action: 'garage', lineKey: 'streetRoute' },
+  { x: 60, y: 385, w: 3, h: 3, type: 'streetKiosk', label: 'Parts Delivery', action: 'lines', lineKey: 'partsDelivery' },
+  { x: 430, y: 385, w: 4, h: 3, type: 'partsHub', label: 'Parts Hub', action: 'merge', lineKey: 'partsDelivery' },
+  { x: 775, y: 385, w: 3, h: 3, type: 'privateShop', label: 'Mobile Mechanic', action: 'lines', lineKey: 'mobileMechanic' },
+  { x: 60, y: 710, w: 3, h: 3, type: 'salvageBlock', label: 'Towing Yard', action: 'lines', lineKey: 'towingJob' },
+  { x: 775, y: 710, w: 3, h: 3, type: 'towDispatch', label: 'Tow Dispatch', action: 'lines', lineKey: 'towingJob' },
+  { x: 60, y: 1040, w: 3, h: 3, type: 'partsWarehouse', label: 'Parts Warehouse', action: 'lines', lineKey: 'partsDelivery' },
+  { x: 770, y: 1040, w: 3, h: 3, type: 'testTrack', label: 'Fuel Run', action: 'lines', lineKey: 'fuelRun' }
 ];
 
 const CITY_BUILDINGS = [
   ...FIXED_BUILDINGS,
-  { x: 410, y: 710, w: 3, h: 2, type: 'tireRepair', label: 'Fuel Stop', action: 'lines', lineKey: 'fuelRun' }
+  { x: 430, y: 710, w: 3, h: 3, type: 'tireRepair', label: 'Fuel Stop', action: 'lines', lineKey: 'fuelRun' }
 ];
 
 const SUPPLY_MANAGERS = [
   { key: 'driver', lineKey: 'streetRoute', name: 'Route Driver', business: 'Street Route', shirt: 0xf6c445 },
-  { key: 'residentGreen', lineKey: 'partsDelivery', name: 'Parts Courier', business: 'Parts Delivery', shirt: 0x16a34a },
+  { key: 'courier', lineKey: 'partsDelivery', name: 'Parts Courier', business: 'Parts Delivery', shirt: 0x16a34a },
   { key: 'mechanic', lineKey: 'mobileMechanic', name: 'Mobile Tech', business: 'Mobile Mechanic', shirt: 0x38bdf8 },
-  { key: 'residentBlue', lineKey: 'fuelRun', name: 'Fuel Runner', business: 'Fuel Run', shirt: 0xf59e0b },
-  { key: 'residentOrange', lineKey: 'towingJob', name: 'Tow Operator', business: 'Towing Job', shirt: 0xf97316 },
-  { key: 'residentPurple', lineKey: 'dealerShowcase', name: 'Sales Rep', business: 'Dealer Showcase', shirt: 0x7c3aed }
+  { key: 'racer', lineKey: 'fuelRun', name: 'Fuel Runner', business: 'Fuel Run', shirt: 0xf59e0b },
+  { key: 'towOperator', lineKey: 'towingJob', name: 'Tow Operator', business: 'Towing Job', shirt: 0xf97316 },
+  { key: 'salesRep', lineKey: 'dealerShowcase', name: 'Sales Rep', business: 'Dealer Showcase', shirt: 0x7c3aed }
 ];
 
 const RESIDENT_WANTS = [
@@ -887,68 +888,153 @@ function drawRoads() {
 function drawCrosswalks() {
   for (const h of ROADS.horizontal) {
     for (const v of ROADS.vertical) {
-      for (let i = 0; i < 5; i++) {
-        world.addChild(rect(v.x + 10 + i * 14, h.y + 8, 8, ROADS.width - 16, { color: 0xf8fafc, alpha: 0.78 }));
-        world.addChild(rect(v.x + 8, h.y + 10 + i * 14, ROADS.width - 16, 8, { color: 0xf8fafc, alpha: 0.78 }));
+      const cx = v.x + ROADS.width / 2;
+      const cy = h.y + ROADS.width / 2;
+      const intersection = assetSprite(WORLD_ASSETS.terrain.roadIntersection, cx, cy, ROADS.width + ROADS.sidewalk * 2.2, ROADS.width + ROADS.sidewalk * 2.2, 0.96);
+      if (intersection) {
+        intersection.zIndex = 4;
+        world.addChild(intersection);
+      } else {
+        for (let i = 0; i < 5; i++) {
+          world.addChild(rect(v.x + 10 + i * 14, h.y + 8, 8, ROADS.width - 16, { color: 0xf8fafc, alpha: 0.78 }));
+          world.addChild(rect(v.x + 8, h.y + 10 + i * 14, ROADS.width - 16, 8, { color: 0xf8fafc, alpha: 0.78 }));
+        }
       }
     }
   }
 }
+
+let animatedBuildings = [];
+let incidentAnims = [];
+let activePotholePositions = [];
+let worldAnimClock = 0;
 
 function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation = 0, buildingState = null, onCollect = null }) {
   const def = defByKey(type);
   const w = wCells * GRID.size;
   const h = hCells * GRID.size;
   const c = new PIXI.Container();
+  c.sortableChildren = true;
   c.x = x;
   c.y = y;
   c.zIndex = y + 100;
   c.alpha = alpha;
-  c.addChild(roundRect(0, h - 10, w, 16, 8, { color: 0x000000, alpha: 0.20 }));
-  c.addChild(roundRect(6, 14, w - 12, h - 18, 9, def.colorA, { width: 2, color: 0x142033 }));
-  c.addChild(roundRect(14, 0, w - 28, 28, 7, 0xe2e8f0, { width: 2, color: 0x142033 }));
-  c.addChild(roundRect(14, h - 30, Math.max(16, w * 0.22), 30, 5, def.colorB, { width: 2, color: 0x142033 }));
-  for (let yy = 0; yy < Math.min(2, hCells); yy++) {
-    for (let xx = 0; xx < Math.min(4, wCells + 1); xx++) {
-      c.addChild(roundRect(28 + xx * 18, 34 + yy * 16, 10, 8, 2, 0xfde68a));
-    }
-  }
-  const art = assetSprite(buildingAssetForKey(type, name, buildingState?.level || 1), w / 2, h / 2 + 5, Math.max(58, w * 1.08), Math.max(58, h * 1.05), 0.98);
+
+  const status = buildingState ? collectStatus(buildingState, def) : { ready: false };
+  c.addChild(roundRect(-6, h - 18, w + 12, 24, 12, { color: 0x020617, alpha: 0.42 }));
+
+  const glowRing = roundRect(
+    -4,
+    2,
+    w + 8,
+    h + 2,
+    18,
+    { color: status.ready ? 0x35e58a : 0x38bdf8, alpha: status.ready ? 0.16 : 0.06 },
+    { width: status.ready ? 2.5 : 1.5, color: status.ready ? 0x35e58a : 0x38bdf8, alpha: status.ready ? 0.65 : 0.28 }
+  );
+  glowRing.zIndex = 5;
+  c.addChild(glowRing);
+
+  const spriteSize = Math.max(134, w * 1.18, h * 1.18);
+  const art = assetSprite(buildingAssetForKey(type, name, buildingState?.level || 1), w / 2, h / 2 - 4, spriteSize, spriteSize, 1);
   if (art) {
+    art.zIndex = 10;
     art.rotation = (Math.abs(Number(rotation) || 0) % 4) * Math.PI / 2;
     c.addChild(art);
   }
-  c.addChild(roundRect(0, h + 4, w, 20, 10, { color: 0x04111d, alpha: 0.88 }));
-  c.addChild(textLabel(name || def.shortName, w / 2, h + 15, 9));
+
+  const labelPlate = new PIXI.Container();
+  labelPlate.zIndex = 30;
+  labelPlate.addChild(roundRect(4, h - 2, w - 8, 22, 11, { color: 0x04111d, alpha: 0.92 }, { width: 1.5, color: status.ready ? 0x35e58a : 0x334155, alpha: 0.85 }));
+  labelPlate.addChild(textLabel(name || def.shortName, w / 2, h + 9, 10, 0xf8fafc));
+  c.addChild(labelPlate);
+
   addBuildingStatusBadges(c, w, h, buildingState, def, onCollect);
+  animatedBuildings.push({ container: c, art, glowRing, ready: status.ready, phase: (x * 0.013 + y * 0.017) % (Math.PI * 2) });
   return c;
 }
 
-function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', truck = false, assetKey = 'compactCar' }) {
-  const bodyW = truck ? 58 : 48;
-  const bodyH = truck ? 25 : 23;
+const VEHICLE_WHEEL_LAYOUT = {
+  compactCar: { wheelKey: 'wheelSport', rearX: -19, frontX: 19, wheelY: 9.5, size: 14.5 },
+  blueCar: { wheelKey: 'wheelGold', rearX: -20, frontX: 20, wheelY: 9.5, size: 15 },
+  yellowCar: { wheelKey: 'wheelSport', rearX: -20, frontX: 20, wheelY: 9.5, size: 14.5 },
+  rallyCar: { wheelKey: 'wheelGold', rearX: -20, frontX: 20, wheelY: 9.5, size: 15 },
+  jdmGtCoupe: { wheelKey: 'wheelGold', rearX: -20, frontX: 20, wheelY: 9.5, size: 15 },
+  greenTruck: { wheelKey: 'wheelTruck', rearX: -23, frontX: 24, wheelY: 11, size: 18 },
+  naMuscle: { wheelKey: 'wheelSport', rearX: -20, frontX: 21, wheelY: 9.5, size: 15.5 },
+  bajaSuv: { wheelKey: 'wheelTruck', rearX: -22, frontX: 23, wheelY: 11, size: 18 },
+  towTruck: { wheelKey: 'wheelTruck', rearX: -22, frontX: 24, wheelY: 10.5, size: 17 },
+  deliveryVan: { wheelKey: 'wheelTruck', rearX: -21, frontX: 22, wheelY: 10, size: 16 },
+  superCar: { wheelKey: 'wheelGold', rearX: -21, frontX: 21, wheelY: 10, size: 15.5 }
+};
+
+function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', truck = false, assetKey = 'compactCar', towTargetKey = '' }) {
+  const bodyW = truck ? 60 : 52;
+  const bodyH = truck ? 27 : 24;
   const car = new PIXI.Container();
+  car.sortableChildren = true;
   const wheels = [];
-  car.addChild(roundRect(-bodyW / 2, -bodyH / 2 + 3, bodyW, bodyH, 8, { color: 0x000000, alpha: 0.22 }));
-  car.addChild(roundRect(-bodyW / 2, -bodyH / 2, bodyW, bodyH, 8, color, { width: 2, color: 0x172033 }));
-  car.addChild(roundRect(-bodyW / 2 + 8, -bodyH / 2 + 4, bodyW - 24, bodyH - 8, 5, accent, { width: 2, color: 0x172033 }));
-  car.addChild(rect(bodyW / 2 - 11, -5, 12, 10, { color: 0xffffff, alpha: 0.40 }));
-  [[-bodyW / 2 + 10, -bodyH / 2 - 2], [bodyW / 2 - 12, -bodyH / 2 - 2], [-bodyW / 2 + 10, bodyH / 2 + 2], [bodyW / 2 - 12, bodyH / 2 + 2]].forEach(([x, y]) => {
-    const wheel = new PIXI.Container();
-    wheel.x = x;
-    wheel.y = y;
-    wheel.addChild(circle(0, 0, 5, 0x111827));
-    wheel.addChild(rect(-1, -4, 2, 8, 0xcbd5e1));
-    wheel.addChild(rect(-4, -1, 8, 2, 0xcbd5e1));
-    car.addChild(wheel);
-    wheels.push(wheel);
+  const chassis = new PIXI.Container();
+  chassis.sortableChildren = true;
+  car.addChild(chassis);
+
+  const art = assetSprite(vehicleAssetForKey(assetKey), 0, 0, bodyW * 1.92, bodyH * 2.55, 1);
+  if (art) {
+    art.zIndex = 10;
+    chassis.addChild(art);
+  } else {
+    chassis.addChild(roundRect(-bodyW / 2, -bodyH / 2 + 3, bodyW, bodyH, 8, { color: 0x000000, alpha: 0.22 }));
+    chassis.addChild(roundRect(-bodyW / 2, -bodyH / 2, bodyW, bodyH, 8, color, { width: 2, color: 0x172033 }));
+    chassis.addChild(roundRect(-bodyW / 2 + 8, -bodyH / 2 + 4, bodyW - 24, bodyH - 8, 5, accent, { width: 2, color: 0x172033 }));
+  }
+
+  const wheelSpec = VEHICLE_WHEEL_LAYOUT[assetKey] || VEHICLE_WHEEL_LAYOUT.compactCar;
+  const wheelSrc = WORLD_ASSETS.vehicles[wheelSpec.wheelKey] || WORLD_ASSETS.vehicles.wheelSport;
+  [wheelSpec.rearX, wheelSpec.frontX].forEach((wx) => {
+    const wheelSprite = assetSprite(wheelSrc, wx, wheelSpec.wheelY, wheelSpec.size, wheelSpec.size, 1);
+    if (wheelSprite) {
+      wheelSprite.zIndex = 20;
+      chassis.addChild(wheelSprite);
+      wheels.push(wheelSprite);
+    }
   });
+
+  if (assetKey === 'towTruck') {
+    const strobeRed = circle(6, -15, 4.5, { color: 0xef4444, alpha: 0.85 });
+    const strobeAmber = circle(11, -15, 4.5, { color: 0xfacc15, alpha: 0.85 });
+    strobeRed.zIndex = 28;
+    strobeAmber.zIndex = 28;
+    chassis.addChild(strobeRed);
+    chassis.addChild(strobeAmber);
+    car._strobes = [strobeRed, strobeAmber];
+
+    if (towTargetKey) {
+      const towCable = new PIXI.Graphics();
+      towCable.moveTo(-28, -4).lineTo(-56, 3).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.95 });
+      towCable.zIndex = 8;
+      chassis.addChild(towCable);
+
+      const towed = new PIXI.Container();
+      towed.x = -76;
+      towed.y = -2;
+      towed.rotation = 0.14;
+      towed.zIndex = 9;
+      const towedArt = assetSprite(vehicleAssetForKey(towTargetKey), 0, 0, 84, 52, 0.98);
+      if (towedArt) towed.addChild(towedArt);
+      const towedWheelRear = assetSprite(WORLD_ASSETS.vehicles.wheelSport, -17, 8, 12.5, 12.5, 1);
+      if (towedWheelRear) {
+        towed.addChild(towedWheelRear);
+        wheels.push(towedWheelRear);
+      }
+      chassis.addChild(towed);
+    }
+  }
+
   if (direction === 'west') car.scale.set(-1, 1);
   if (direction === 'north') car.rotation = -Math.PI / 2;
   if (direction === 'south') car.rotation = Math.PI / 2;
-  const art = assetSprite(vehicleAssetForKey(assetKey), 0, 2, bodyW * 1.9, bodyH * 2.9, 1);
-  if (art) car.addChild(art);
   car._wheels = wheels;
+  car._chassis = chassis;
   return car;
 }
 
@@ -1404,20 +1490,68 @@ window.replyToNpc = (id, choiceId) => {
   else if (selectedResidentKey) refreshOpenResidentSheet();
 };
 
+function createAnimatedPersonSprite(personKey, width = 44, height = 58) {
+  const frameSources = personAnimationFramesForKey(personKey);
+  const firstSrc = frameSources[0] || personAssetForKey(personKey);
+  if (!firstSrc) return { sprite: null, frameTextures: [] };
+  const sprite = PIXI.Sprite.from(firstSrc);
+  sprite.anchor.set(0.5, 0.94);
+  sprite.x = 0;
+  sprite.y = 4;
+  sprite.width = width;
+  sprite.height = height;
+  const frameTextures = frameSources.map((src) => PIXI.Texture.from(src)).filter(Boolean);
+  return { sprite, frameTextures };
+}
+
+function updatePersonWalkVisual(item, point) {
+  if (!item?.sprite) return;
+  const facing = point?.facing || 1;
+  if (item.art) {
+    const baseWidth = item.artBaseWidth || 44;
+    const baseHeight = item.artBaseHeight || 58;
+    const strideCycle = (item.d || 0) * 0.14;
+    const bounceY = Math.abs(Math.sin(strideCycle)) * 2.6;
+    const lean = Math.sin(strideCycle) * 0.045 * facing;
+    item.art.width = baseWidth;
+    item.art.height = baseHeight;
+    item.art.y = 4 - bounceY;
+    item.art.rotation = lean;
+    item.art.scale.x = Math.abs(item.art.scale.x) * facing;
+    if (item.frameTextures?.length) {
+      const frameIndex = Math.floor((item.d || 0) / 11) % item.frameTextures.length;
+      if (item.walkFrame !== frameIndex) {
+        item.walkFrame = frameIndex;
+        item.art.texture = item.frameTextures[frameIndex];
+      }
+    }
+  } else {
+    item.sprite.scale.x = Math.abs(item.sprite.scale.x) * facing;
+  }
+}
+
 function addSupplyWalker(path, staff) {
   const p = new PIXI.Container();
-  p.addChild(roundRect(-8, -11, 16, 22, 7, staff.shirt, { width: 2, color: 0x1e293b }));
-  p.addChild(roundRect(-7, -27, 14, 14, 7, 0xfed7aa, { width: 2, color: 0x1e293b }));
-  const art = assetSprite(personAssetForKey(staff.key), 0, -30, 36, 48, 1);
-  if (art) p.addChild(art);
-  const tag = textLabel(staff.name, 0, -62, 11, 0x1b1408);
-  const backing = roundRect(-34, -72, 68, 16, 8, 0xf6c445);
+  p.sortableChildren = true;
+  p.addChild(roundRect(-12, -2, 24, 8, 4, { color: 0x04111d, alpha: 0.34 }));
+  const { sprite: art, frameTextures } = createAnimatedPersonSprite(staff.key, 44, 58);
+  if (art) {
+    art.zIndex = 10;
+    p.addChild(art);
+  }
+  const tag = textLabel(staff.name, 0, -64, 10, 0x1b1408);
+  const backing = roundRect(-36, -74, 72, 17, 8.5, 0xf6c445, { width: 1.5, color: 0x0f172a });
+  backing.zIndex = 20;
+  tag.zIndex = 21;
   p.addChild(backing);
   p.addChild(tag);
-  p.scale.set(0.82);
+  p.scale.set(0.84);
   makeClickable(p, () => openSupplyManager(staff));
   world.addChild(p);
-  walkers.push({ sprite: p, path, d: Math.random() * 800, speed: 38, staff });
+  const startD = Math.random() * 800;
+  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 44, artBaseHeight: 58, walkFrame: 0, path, d: startD, speed: 40, staff };
+  updatePersonWalkVisual(walkerItem, pathPoint(path, startD));
+  walkers.push(walkerItem);
 }
 
 function renderSupplyManagerSheet(staff) {
@@ -1467,16 +1601,27 @@ function refreshSupplyManagerSheet() {
 
 function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb) {
   const p = new PIXI.Container();
-  p.addChild(roundRect(-8, -11, 16, 22, 7, shirt, { width: 2, color: 0x1e293b }));
-  p.addChild(roundRect(-7, -27, 14, 14, 7, 0xfed7aa, { width: 2, color: 0x1e293b }));
-  const art = assetSprite(personAssetForKey(resident.key), 0, -30, 36, 48, 1);
-  if (art) p.addChild(art);
+  p.sortableChildren = true;
+  p.addChild(roundRect(-12, -2, 24, 8, 4, { color: 0x04111d, alpha: 0.34 }));
+  const { sprite: art, frameTextures } = createAnimatedPersonSprite(resident.key, 42, 56);
+  if (art) {
+    art.zIndex = 10;
+    p.addChild(art);
+  } else {
+    p.addChild(roundRect(-8, -11, 16, 22, 7, shirt, { width: 2, color: 0x1e293b }));
+  }
   const bubble = assetSprite(WORLD_ASSETS.ui.wantBubble, 16, -58, 28, 16, 0.92);
-  if (bubble) p.addChild(bubble);
-  p.scale.set(0.78);
+  if (bubble) {
+    bubble.zIndex = 20;
+    p.addChild(bubble);
+  }
+  p.scale.set(0.82);
   makeClickable(p, () => openResidentSheet(resident));
   world.addChild(p);
-  walkers.push({ sprite: p, path, d: Math.random() * 800, speed: 46, resident });
+  const startD = Math.random() * 800;
+  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 42, artBaseHeight: 56, walkFrame: 0, path, d: startD, speed: 46, resident };
+  updatePersonWalkVisual(walkerItem, pathPoint(path, startD));
+  walkers.push(walkerItem);
 }
 
 function roadRects() {
@@ -1659,6 +1804,7 @@ function drawGhost() {
 
 function rebuildFixedBuildings() {
   if (!world) return;
+  animatedBuildings = [];
   if (fixedLayer) fixedLayer.destroy({ children: true });
   fixedLayer = new PIXI.Container();
   fixedLayer.zIndex = 3500;
@@ -1699,10 +1845,10 @@ function rebuildPlacements() {
 
 const CITY_ISSUE_MARKERS = {
   potholes: [
-    { x: 385, y: 592 }, { x: 535, y: 909 }, { x: 210, y: 1240 }, { x: 755, y: 589 }
+    { x: 350, y: 279 }, { x: 525, y: 589 }, { x: 355, y: 909 }, { x: 755, y: 589 }
   ],
   vehicleBreakdowns: [
-    { x: 565, y: 238 }, { x: 205, y: 868 }, { x: 755, y: 1198 }, { x: 315, y: 548 }
+    { x: 565, y: 242 }, { x: 205, y: 868 }, { x: 755, y: 1198 }, { x: 345, y: 552 }
   ],
   stuckVehicles: [
     { x: 650, y: 545 }, { x: 247, y: 1038 }, { x: 695, y: 318 }, { x: 300, y: 1195 }
@@ -1717,8 +1863,8 @@ const CITY_ISSUE_MARKERS = {
 
 function issueShortLabel(key) {
   return {
-    potholes: 'POT',
-    vehicleBreakdowns: 'TOW',
+    potholes: 'POTHOLE',
+    vehicleBreakdowns: 'TOW OPS',
     stuckVehicles: 'STUCK',
     trafficJams: 'JAM',
     trafficLights: 'LIGHT'
@@ -1739,8 +1885,12 @@ function rebuildIncidents() {
   if (!world) return;
   if (incidentLayer) incidentLayer.destroy({ children: true });
   incidentLayer = new PIXI.Container();
+  incidentLayer.sortableChildren = true;
   incidentLayer.zIndex = 4300;
   world.addChild(incidentLayer);
+  incidentAnims = [];
+  activePotholePositions = [];
+
   const conditions = cityConditionStats();
   for (const [key, positions] of Object.entries(CITY_ISSUE_MARKERS)) {
     const condition = conditions[key];
@@ -1748,13 +1898,94 @@ function rebuildIncidents() {
     for (let i = 0; i < count; i++) {
       const pos = positions[i];
       const marker = new PIXI.Container();
+      marker.sortableChildren = true;
       marker.x = pos.x;
       marker.y = pos.y;
       marker.zIndex = pos.y + 900;
-      marker.addChild(circle(0, 0, 19, { color: issueColor(key), alpha: 0.88 }, { width: 3, color: 0xffffff, alpha: 0.55 }));
-      marker.addChild(textLabel(issueShortLabel(key), 0, -1, key === 'stuckVehicles' ? 7 : 8, 0xffffff));
-      marker.addChild(roundRect(-25, 21, 50, 15, 7, { color: 0x04111d, alpha: 0.80 }, { width: 1, color: 0x9fe8ff, alpha: 0.55 }));
-      marker.addChild(textLabel(`${condition.score}%`, 0, 29, 7, 0xffffff));
+
+      if (key === 'potholes') {
+        activePotholePositions.push({ x: pos.x, y: pos.y });
+        const ring = circle(0, 2, 26, { color: 0xf97316, alpha: 0.14 }, { width: 2, color: 0xf97316, alpha: 0.72 });
+        marker.addChild(ring);
+        const crater = assetSprite(WORLD_ASSETS.props.potholeCrater, 0, 2, 58, 36, 0.98);
+        if (crater) marker.addChild(crater);
+        const coneLeft = assetSprite(WORLD_ASSETS.props.roadCone, -24, -6, 18, 22, 0.96);
+        const coneRight = assetSprite(WORLD_ASSETS.props.roadCone, 24, 6, 18, 22, 0.96);
+        if (coneLeft) marker.addChild(coneLeft);
+        if (coneRight) marker.addChild(coneRight);
+
+        const badge = new PIXI.Container();
+        badge.y = -24;
+        badge.addChild(roundRect(-34, -9, 68, 18, 9, { color: 0x04111d, alpha: 0.90 }, { width: 1.5, color: 0xf97316, alpha: 0.9 }));
+        badge.addChild(textLabel(`POTHOLE ${condition.score}%`, 0, 0, 7.5, 0xfed7aa));
+        marker.addChild(badge);
+        incidentAnims.push({ type: 'pothole', marker, ring, phase: i * 1.4 });
+      } else if (key === 'vehicleBreakdowns' || key === 'stuckVehicles') {
+        const ring = circle(0, 0, 38, { color: 0xef4444, alpha: 0.12 }, { width: 2, color: 0xfacc15, alpha: 0.75 });
+        marker.addChild(ring);
+
+        const towRig = new PIXI.Container();
+        towRig.x = -26;
+        towRig.y = -2;
+        const towArt = assetSprite(WORLD_ASSETS.vehicles.towTruck, 0, 0, 74, 46, 1);
+        if (towArt) towRig.addChild(towArt);
+        const towW1 = assetSprite(WORLD_ASSETS.vehicles.wheelTruck, -15, 7.5, 12, 12, 1);
+        const towW2 = assetSprite(WORLD_ASSETS.vehicles.wheelTruck, 16, 7.5, 12, 12, 1);
+        if (towW1) towRig.addChild(towW1);
+        if (towW2) towRig.addChild(towW2);
+        const strobe = circle(6, -12, 5, { color: 0xfacc15, alpha: 0.9 });
+        towRig.addChild(strobe);
+        marker.addChild(towRig);
+
+        const winchCable = new PIXI.Graphics();
+        winchCable.moveTo(-4, -6).lineTo(16, 2).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.95 });
+        marker.addChild(winchCable);
+
+        const broken = new PIXI.Container();
+        broken.x = 28;
+        broken.y = 2;
+        broken.rotation = -0.12;
+        const brokenArt = assetSprite(WORLD_ASSETS.props.brokenCar, 0, 0, 68, 42, 1);
+        if (brokenArt) broken.addChild(brokenArt);
+        const hazardLight = circle(-22, 2, 4, { color: 0xf97316, alpha: 0.95 });
+        broken.addChild(hazardLight);
+        marker.addChild(broken);
+
+        const smokeA = circle(16, -12, 6, { color: 0xcbd5e1, alpha: 0.65 });
+        const smokeB = circle(22, -20, 8, { color: 0x94a3b8, alpha: 0.45 });
+        marker.addChild(smokeA);
+        marker.addChild(smokeB);
+
+        const badge = new PIXI.Container();
+        badge.y = -28;
+        badge.addChild(roundRect(-38, -9, 76, 18, 9, { color: 0x04111d, alpha: 0.92 }, { width: 1.5, color: 0xfacc15, alpha: 0.92 }));
+        badge.addChild(textLabel(`TOW OPS · ${condition.score}%`, 0, 0, 7.5, 0xfef08a));
+        marker.addChild(badge);
+
+        incidentAnims.push({
+          type: 'towRecovery',
+          marker,
+          ring,
+          broken,
+          winchCable,
+          strobe,
+          hazardLight,
+          smokeA,
+          smokeB,
+          phase: i * 1.9
+        });
+      } else {
+        const ring = circle(0, 0, 22, { color: issueColor(key), alpha: 0.22 }, { width: 2, color: issueColor(key), alpha: 0.72 });
+        marker.addChild(ring);
+        const cone = assetSprite(WORLD_ASSETS.props.roadCone, -16, 4, 20, 24, 0.95);
+        if (cone) marker.addChild(cone);
+        marker.addChild(circle(0, 0, 17, { color: issueColor(key), alpha: 0.88 }, { width: 2.5, color: 0xffffff, alpha: 0.65 }));
+        marker.addChild(textLabel(issueShortLabel(key), 0, -1, 7.5, 0xffffff));
+        marker.addChild(roundRect(-25, 20, 50, 15, 7, { color: 0x04111d, alpha: 0.86 }, { width: 1, color: 0x9fe8ff, alpha: 0.55 }));
+        marker.addChild(textLabel(`${condition.score}%`, 0, 27.5, 7, 0xffffff));
+        incidentAnims.push({ type: 'signal', marker, ring, phase: i * 1.1 });
+      }
+
       makeClickable(marker, () => window.openCityIssueMenuSafe?.(key));
       incidentLayer.addChild(marker);
     }
@@ -2434,6 +2665,13 @@ window.centerMobileCitySafe = () => {
   clamp();
 };
 
+window.panMobileCitySafe = (x = 0, y = 0) => {
+  if (!world) return;
+  world.x = Number(x) || 0;
+  world.y = Number(y) || 0;
+  clamp();
+};
+
 function buildWorld() {
   world = new PIXI.Container();
   world.sortableChildren = true;
@@ -2449,22 +2687,26 @@ function buildWorld() {
   drawRoads();
   rebuildFixedBuildings();
 
-  addTraffic(pathH(0, 'east'), { color: 0xf97316, accent: 0xfef3c7, direction: 'east', speed: 92, scale: 0.72, assetKey: 'compactCar' });
-  addTraffic(pathH(0, 'west'), { color: 0x60a5fa, accent: 0xdbeafe, direction: 'west', speed: 78, scale: 0.72, assetKey: 'blueCar' });
-  addTraffic(pathH(1, 'east'), { color: 0xfacc15, accent: 0xfffbeb, direction: 'east', speed: 86, scale: 0.72, assetKey: 'yellowCar' });
-  addTraffic(pathH(1, 'west'), { color: 0x35e58a, accent: 0xe0f2fe, direction: 'west', truck: true, speed: 68, scale: 0.78, assetKey: 'greenTruck' });
-  addTraffic(pathH(2, 'east'), { color: 0x22c55e, accent: 0xdcfce7, direction: 'east', speed: 76, scale: 0.72, assetKey: 'deliveryVan' });
-  addTraffic(pathH(2, 'west'), { color: 0xfb7185, accent: 0xffe4e6, direction: 'west', speed: 70, scale: 0.7, assetKey: 'compactCar' });
-  addTraffic(pathH(3, 'west'), { color: 0x2dd4bf, accent: 0xecfeff, direction: 'west', truck: true, speed: 64, scale: 0.78, assetKey: 'towTruck' });
-  addTraffic(pathH(3, 'east'), { color: 0xa78bfa, accent: 0xede9fe, direction: 'east', speed: 74, scale: 0.7, assetKey: 'blueCar' });
-  addTraffic(pathV(1, 'north'), { color: 0xfacc15, accent: 0xfffbeb, direction: 'north', truck: true, speed: 58, scale: 0.76, assetKey: 'deliveryVan' });
-  addTraffic(pathV(1, 'south'), { color: 0xf97316, accent: 0xffedd5, direction: 'south', speed: 62, scale: 0.7, assetKey: 'yellowCar' });
-  addTraffic(pathV(0, 'south'), { color: 0x38bdf8, accent: 0xe0f2fe, direction: 'south', truck: true, speed: 54, scale: 0.76, assetKey: 'towTruck' });
-  addTraffic(pathV(0, 'north'), { color: 0x4ade80, accent: 0xdcfce7, direction: 'north', speed: 66, scale: 0.7, assetKey: 'compactCar' });
+  // Top Asian Market & Top North American Market Fleet with Real Spinning Tires
+  addTraffic(pathH(0, 'east'), { color: 0x60a5fa, accent: 0xdbeafe, direction: 'east', speed: 88, scale: 0.78, assetKey: 'blueCar' }); // Asian Bayside Blue GT-Apex
+  addTraffic(pathH(0, 'west'), { color: 0x4ade80, accent: 0xe0f2fe, direction: 'west', truck: true, speed: 74, scale: 0.80, assetKey: 'greenTruck' }); // NA 4x4 Baja Raptor Pickup
+  addTraffic(pathH(0, 'east'), { color: 0xf43f5e, accent: 0xfef3c7, direction: 'east', speed: 94, scale: 0.78, assetKey: 'naMuscle' }); // NA Crimson V8 Muscle
+  addTraffic(pathH(1, 'east'), { color: 0xfde047, accent: 0xfffbeb, direction: 'east', speed: 84, scale: 0.76, assetKey: 'yellowCar' }); // Asian Crown Hybrid Taxi
+  addTraffic(pathH(1, 'west'), { color: 0xa855f7, accent: 0xe0f2fe, direction: 'west', speed: 96, scale: 0.78, assetKey: 'jdmGtCoupe' }); // JDM Midnight Purple Touge GT
+  addTraffic(pathH(2, 'east'), { color: 0x38bdf8, accent: 0xdcfce7, direction: 'east', speed: 82, scale: 0.78, assetKey: 'rallyCar' }); // JDM World Rally Blue AWD
+  addTraffic(pathH(2, 'west'), { color: 0xfb923c, accent: 0xfef3c7, direction: 'west', truck: true, speed: 76, scale: 0.80, assetKey: 'bajaSuv' }); // NA Bronco Trophy 4x4 SUV
+  addTraffic(pathH(3, 'west'), { color: 0x22d3ee, accent: 0xecfeff, direction: 'west', speed: 98, scale: 0.78, assetKey: 'superCar' }); // NA Mid-Engine V8 Supercar
+  addTraffic(pathH(3, 'east'), { color: 0x60a5fa, accent: 0xede9fe, direction: 'east', speed: 82, scale: 0.76, assetKey: 'blueCar' });
+  addTraffic(pathV(0, 'south'), { color: 0xfacc15, accent: 0xe0f2fe, direction: 'south', truck: true, speed: 62, scale: 0.80, assetKey: 'towTruck', towTargetKey: 'compactCar' }); // Active Wrecker Tow Truck towing a JDM Hatch
+  addTraffic(pathV(0, 'north'), { color: 0xf8fafc, accent: 0xfef3c7, direction: 'north', speed: 80, scale: 0.76, assetKey: 'compactCar' }); // JDM Kei RS Turbo Hatch
+  addTraffic(pathV(1, 'north'), { color: 0x38bdf8, accent: 0xfffbeb, direction: 'north', truck: true, speed: 68, scale: 0.78, assetKey: 'deliveryVan' }); // NA 365 Fleet Transit Van
+  addTraffic(pathV(1, 'south'), { color: 0xfacc15, accent: 0xe0f2fe, direction: 'south', truck: true, speed: 64, scale: 0.78, assetKey: 'towTruck' });
 
   [
     { key: 'tree', x: 390, y: 175, w: 58, h: 72 },
+    { key: 'tree', x: 605, y: 175, w: 56, h: 70 },
     { key: 'streetlight', x: 590, y: 330, w: 34, h: 64 },
+    { key: 'streetlight', x: 220, y: 330, w: 34, h: 64 },
     { key: 'parkingSign', x: 370, y: 1010, w: 38, h: 60 },
     { key: 'roadCone', x: 505, y: 725, w: 34, h: 44 }
   ].forEach((prop) => {
@@ -2531,7 +2773,7 @@ function setupCamera(host) {
 async function createApp(host) {
   if (app) try { app.destroy(true); } catch {}
   app = new PIXI.Application();
-  await app.init({ resizeTo: host, backgroundColor: 0x153a50, antialias: true, preference: 'webgl', resolution: Math.min(devicePixelRatio || 1, 2), autoDensity: true });
+  await app.init({ resizeTo: host, backgroundColor: 0x153a50, antialias: true, preference: 'webgl', resolution: Math.min(devicePixelRatio || 1, 2), autoDensity: true, preserveDrawingBuffer: true });
   host.innerHTML = '';
   host.appendChild(app.canvas);
 }
@@ -2559,22 +2801,100 @@ async function mount(host) {
   setupCamera(host);
   app.ticker.add((ticker) => {
     const dt = Math.min((ticker.deltaMS || 16.67) / 1000, 0.05);
+    worldAnimClock += dt;
+
     for (const item of traffic) {
       item.d += item.speed * dt;
       const p = pathPoint(item.path, item.d);
+
+      let potholeJoltY = 0;
+      let potholeTilt = 0;
+      for (const pot of activePotholePositions) {
+        const dist = Math.hypot(p.x - pot.x, p.y - pot.y);
+        if (dist < 46) {
+          const intensity = (1 - dist / 46);
+          potholeJoltY = Math.sin(item.d * 0.95) * 4.2 * intensity;
+          potholeTilt = Math.cos(item.d * 0.85) * 0.09 * intensity;
+          break;
+        }
+      }
+
       item.sprite.x = p.x;
-      item.sprite.y = p.y;
+      item.sprite.y = p.y + potholeJoltY;
       item.sprite.zIndex = p.y + 40;
-      if (item.sprite._wheels) for (const wheel of item.sprite._wheels) wheel.rotation += item.wheelSpeed * dt;
+
+      if (item.sprite._chassis) {
+        item.sprite._chassis.y = Math.sin(item.d * 0.24) * 0.85;
+        item.sprite._chassis.rotation = potholeTilt;
+      }
+      if (item.sprite._wheels) {
+        for (const wheel of item.sprite._wheels) {
+          wheel.rotation += item.speed * dt * 0.14;
+        }
+      }
+      if (item.sprite._strobes) {
+        const flash = Math.sin(worldAnimClock * 14) > 0;
+        if (item.sprite._strobes[0]) item.sprite._strobes[0].alpha = flash ? 1 : 0.2;
+        if (item.sprite._strobes[1]) item.sprite._strobes[1].alpha = flash ? 0.2 : 1;
+      }
     }
+
     for (const item of walkers) {
       item.d += item.speed * dt;
       const p = pathPoint(item.path, item.d);
       item.sprite.x = p.x;
       item.sprite.y = p.y;
-      item.sprite.scale.x = Math.abs(item.sprite.scale.x) * (p.facing || 1);
+      updatePersonWalkVisual(item, p);
       item.sprite.zIndex = p.y + 45;
     }
+
+    for (const bItem of animatedBuildings) {
+      if (bItem.glowRing) {
+        bItem.glowRing.alpha = bItem.ready
+          ? 0.55 + Math.sin(worldAnimClock * 4.2 + bItem.phase) * 0.35
+          : 0.22 + Math.sin(worldAnimClock * 2.1 + bItem.phase) * 0.08;
+      }
+    }
+
+    for (const inc of incidentAnims) {
+      const t = worldAnimClock * 3.5 + inc.phase;
+      if (inc.ring) {
+        const pulse = 1 + Math.sin(t) * 0.12;
+        inc.ring.scale.set(pulse);
+        inc.ring.alpha = 0.55 + Math.cos(t) * 0.28;
+      }
+      if (inc.type === 'towRecovery') {
+        const liftCycle = Math.sin(worldAnimClock * 2.6 + inc.phase);
+        if (inc.broken) {
+          inc.broken.y = 2 - (liftCycle + 1) * 1.8;
+          inc.broken.rotation = -0.10 - (liftCycle + 1) * 0.04;
+        }
+        if (inc.winchCable && inc.broken) {
+          inc.winchCable.clear();
+          inc.winchCable.moveTo(-4, -6).lineTo(inc.broken.x - 14, inc.broken.y).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.95 });
+        }
+        if (inc.strobe) {
+          inc.strobe.alpha = Math.sin(worldAnimClock * 15 + inc.phase) > 0 ? 1 : 0.15;
+        }
+        if (inc.hazardLight) {
+          inc.hazardLight.alpha = Math.sin(worldAnimClock * 8 + inc.phase) > 0 ? 1 : 0.1;
+        }
+        if (inc.smokeA && inc.smokeB) {
+          const sPhaseA = (worldAnimClock * 1.4 + inc.phase) % 1;
+          const sPhaseB = (worldAnimClock * 1.4 + inc.phase + 0.5) % 1;
+          inc.smokeA.y = -8 - sPhaseA * 22;
+          inc.smokeA.x = 16 + Math.sin(sPhaseA * 6) * 4;
+          inc.smokeA.alpha = (1 - sPhaseA) * 0.65;
+          inc.smokeA.scale.set(0.7 + sPhaseA * 0.8);
+
+          inc.smokeB.y = -8 - sPhaseB * 22;
+          inc.smokeB.x = 20 + Math.cos(sPhaseB * 6) * 4;
+          inc.smokeB.alpha = (1 - sPhaseB) * 0.55;
+          inc.smokeB.scale.set(0.7 + sPhaseB * 0.9);
+        }
+      }
+    }
+
     statusRefreshTimer += dt;
     if (statusRefreshTimer >= 2) {
       statusRefreshTimer = 0;

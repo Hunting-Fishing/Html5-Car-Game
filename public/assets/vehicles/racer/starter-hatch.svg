@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="124" viewBox="0 0 240 124" role="img" aria-label="JDM Kei RS Turbo Hatch (Asian Market)">
+  <defs>
+    <linearGradient id="body_kei_hatch" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+  </defs>
+  <!-- Ground Contact Shadow -->
+  <ellipse cx="118" cy="108" rx="98" ry="11" fill="#020810" opacity="0.40"/>
+  
+      <!-- Rear Roof Spoiler -->
+      <path d="M30 40 L18 34 L24 30 L42 38 Z" fill="#ef4444" stroke="#06131d" stroke-width="3"/>
+      <!-- Boxy-Sporty JDM Kei Turbo Body -->
+      <path d="M24 88 L22 58 Q22 40 42 36 L118 36 Q138 36 158 56 L194 64 Q206 68 206 80 L204 90 H24 Z" fill="url(#body_kei_hatch)" stroke="#06131d" stroke-width="4.5" stroke-linejoin="round"/>
+      <!-- Black Contrast Roof Canopy -->
+      <path d="M36 42 Q44 35 60 35 H118 Q134 35 148 48 H34 Z" fill="#0f172a"/>
+      <!-- Wrap-around JDM Greenhouse Windows -->
+      <polygon points="40,42 84,42 84,58 34,58" fill="#0f293d" stroke="#7dd3fc" stroke-width="1.5"/>
+      <polygon points="90,42 128,42 150,58 90,58" fill="#0f293d" stroke="#7dd3fc" stroke-width="1.5"/>
+      <!-- RS Red Side Aero Rocker Stripe & Intercooler -->
+      <rect x="34" y="76" width="154" height="5" rx="2.5" fill="#ef4444"/>
+      <rect x="190" y="74" width="12" height="10" rx="2" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5"/>
+      <!-- JDM Projector Headlight & LED Tail -->
+      <polygon points="186,62 203,67 202,73 184,69" fill="#fef08a" stroke="#06131d" stroke-width="1.5"/>
+      <rect x="21" y="56" width="7" height="14" rx="3" fill="#fb7185" stroke="#06131d" stroke-width="1.5"/>
+    
+  <!-- Recessed Wheel Arches & Brake Calipers (for real rotating wheels) -->
+  
+    <g transform="translate(64, 92)">
+      <circle r="20" fill="#020617"/>
+      <circle r="13" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <!-- Glowing Brake Caliper -->
+      <path d="M-12 -6 A 13 13 0 0 1 -12 6" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      
+        <circle r="17" fill="#0f172a" stroke="#020617" stroke-width="2"/>
+        <circle r="12" fill="none" stroke="#94a3b8" stroke-width="2.2"/>
+        <g stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round">
+          <line x1="0" y1="-12" x2="0" y2="12"/>
+          <line x1="-10.32" y1="-6" x2="10.32" y2="6"/>
+          <line x1="10.32" y1="-6" x2="-10.32" y2="6"/>
+        </g>
+        <circle r="4" fill="#0f172a" stroke="#ef4444" stroke-width="1.5"/>
+      
+    </g>
+  
+    <g transform="translate(174, 92)">
+      <circle r="20" fill="#020617"/>
+      <circle r="13" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <!-- Glowing Brake Caliper -->
+      <path d="M-12 -6 A 13 13 0 0 1 -12 6" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      
+        <circle r="17" fill="#0f172a" stroke="#020617" stroke-width="2"/>
+        <circle r="12" fill="none" stroke="#94a3b8" stroke-width="2.2"/>
+        <g stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round">
+          <line x1="0" y1="-12" x2="0" y2="12"/>
+          <line x1="-10.32" y1="-6" x2="10.32" y2="6"/>
+          <line x1="10.32" y1="-6" x2="-10.32" y2="6"/>
+        </g>
+        <circle r="4" fill="#0f172a" stroke="#ef4444" stroke-width="1.5"/>
+      
+    </g>
+  
+</svg>

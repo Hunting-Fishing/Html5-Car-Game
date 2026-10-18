@@ -7,7 +7,9 @@ export const WORLD_ASSETS = {
     grassTile: `${WORLD_ASSET_BASE}/terrain/grass-tile.svg`,
     roadHorizontal: `${WORLD_ASSET_BASE}/terrain/road-horizontal.svg`,
     roadVertical: `${WORLD_ASSET_BASE}/terrain/road-vertical.svg`,
+    roadIntersection: `${WORLD_ASSET_BASE}/terrain/road-intersection.svg`,
     sidewalk: `${WORLD_ASSET_BASE}/terrain/sidewalk.svg`,
+    crosswalk: `${WORLD_ASSET_BASE}/terrain/crosswalk.svg`,
     buildPad: `${WORLD_ASSET_BASE}/terrain/build-pad.svg`
   },
   buildings: {
@@ -28,15 +30,29 @@ export const WORLD_ASSETS = {
     residentOrange: `${WORLD_ASSET_BASE}/people/resident-orange.svg`,
     residentPurple: `${WORLD_ASSET_BASE}/people/resident-purple.svg`,
     mechanic: `${WORLD_ASSET_BASE}/people/mechanic.svg`,
-    driver: `${WORLD_ASSET_BASE}/people/driver.svg`
+    driver: `${WORLD_ASSET_BASE}/people/driver.svg`,
+    courier: `${WORLD_ASSET_BASE}/people/courier.svg`,
+    towOperator: `${WORLD_ASSET_BASE}/people/tow-operator.svg`,
+    salesRep: `${WORLD_ASSET_BASE}/people/sales-rep.svg`,
+    tuner: `${WORLD_ASSET_BASE}/people/tuner.svg`,
+    racer: `${WORLD_ASSET_BASE}/people/racer.svg`,
+    customer: `${WORLD_ASSET_BASE}/people/customer.svg`
   },
   vehicles: {
     compactCar: `${WORLD_ASSET_BASE}/vehicles/compact-car.svg`,
     blueCar: `${WORLD_ASSET_BASE}/vehicles/blue-car.svg`,
     yellowCar: `${WORLD_ASSET_BASE}/vehicles/yellow-car.svg`,
+    rallyCar: `${WORLD_ASSET_BASE}/vehicles/rally-car.svg`,
+    jdmGtCoupe: `${WORLD_ASSET_BASE}/vehicles/jdm-gt-coupe.svg`,
     greenTruck: `${WORLD_ASSET_BASE}/vehicles/green-truck.svg`,
+    naMuscle: `${WORLD_ASSET_BASE}/vehicles/na-muscle.svg`,
+    bajaSuv: `${WORLD_ASSET_BASE}/vehicles/baja-suv.svg`,
     towTruck: `${WORLD_ASSET_BASE}/vehicles/tow-truck.svg`,
-    deliveryVan: `${WORLD_ASSET_BASE}/vehicles/delivery-van.svg`
+    deliveryVan: `${WORLD_ASSET_BASE}/vehicles/delivery-van.svg`,
+    superCar: `${WORLD_ASSET_BASE}/vehicles/super-car.svg`,
+    wheelSport: `${WORLD_ASSET_BASE}/vehicles/wheel-sport.svg`,
+    wheelGold: `${WORLD_ASSET_BASE}/vehicles/wheel-gold.svg`,
+    wheelTruck: `${WORLD_ASSET_BASE}/vehicles/wheel-truck.svg`
   },
   ui: {
     panelFrame: `${WORLD_ASSET_BASE}/ui/panel-frame.svg`,
@@ -59,9 +75,33 @@ export const WORLD_ASSETS = {
     tree: `${WORLD_ASSET_BASE}/props/tree.svg`,
     streetlight: `${WORLD_ASSET_BASE}/props/streetlight.svg`,
     parkingSign: `${WORLD_ASSET_BASE}/props/parking-sign.svg`,
-    roadCone: `${WORLD_ASSET_BASE}/props/road-cone.svg`
+    roadCone: `${WORLD_ASSET_BASE}/props/road-cone.svg`,
+    potholeCrater: `${WORLD_ASSET_BASE}/props/pothole-crater.svg`,
+    brokenCar: `${WORLD_ASSET_BASE}/props/broken-car.svg`
   }
 };
+
+const PERSON_ANIMATION_SLUGS = {
+  residentBlue: 'resident-blue',
+  residentGreen: 'resident-green',
+  residentOrange: 'resident-orange',
+  residentPurple: 'resident-purple',
+  mechanic: 'mechanic',
+  driver: 'driver',
+  courier: 'courier',
+  towOperator: 'tow-operator',
+  salesRep: 'sales-rep',
+  tuner: 'tuner',
+  racer: 'racer',
+  customer: 'customer'
+};
+
+export const WORLD_PERSON_ANIMATION_FRAMES = Object.fromEntries(
+  Object.entries(PERSON_ANIMATION_SLUGS).map(([key, slug]) => [
+    key,
+    Array.from({ length: 6 }, (_, index) => `${WORLD_ASSET_BASE}/people/animated/${slug}/walk-0${index + 1}.svg`)
+  ])
+);
 
 export const WORLD_BUILDING_LEVEL_ASSETS = {
   streetKiosk: {
@@ -118,26 +158,40 @@ export const WORLD_BUILDING_LEVEL_ASSETS = {
 
 export const WORLD_FIXED_BUILDING_KEYS = {
   'Dealer Row': 'dealerShowroom',
+  'Dealer Showcase': 'dealerShowroom',
+  'Sales Lot': 'dealerShowroom',
   '365 Garage': 'garage',
   'Parts Hub': 'partsHub',
+  'Parts Delivery': 'streetKiosk',
   'Repair Shops': 'privateShop',
+  'Mobile Mechanic': 'privateShop',
   'Salvage Yard': 'salvageBlock',
+  'Towing Yard': 'salvageBlock',
   'Tow Dispatch': 'towDispatch',
   Showcase: 'dealerShowroom',
   'Test Track': 'testTrack',
+  'Fuel Run': 'testTrack',
+  'Fuel Stop': 'tireRepair',
   Breakdown: 'tireRepair',
   'Breakdown Center': 'tireRepair'
 };
 
 export const WORLD_FIXED_BUILDING_ASSETS = {
   'Dealer Row': WORLD_ASSETS.buildings.dealerShowroom,
+  'Dealer Showcase': WORLD_ASSETS.buildings.dealerShowroom,
+  'Sales Lot': WORLD_ASSETS.buildings.dealerShowroom,
   '365 Garage': WORLD_ASSETS.buildings.garage,
   'Parts Hub': WORLD_ASSETS.buildings.partsHub,
+  'Parts Delivery': WORLD_ASSETS.buildings.streetKiosk,
   'Repair Shops': WORLD_ASSETS.buildings.privateShop,
+  'Mobile Mechanic': WORLD_ASSETS.buildings.privateShop,
   'Salvage Yard': WORLD_ASSETS.buildings.salvageBlock,
+  'Towing Yard': WORLD_ASSETS.buildings.salvageBlock,
   'Tow Dispatch': WORLD_ASSETS.buildings.towDispatch,
   Showcase: WORLD_ASSETS.buildings.dealerShowroom,
   'Test Track': WORLD_ASSETS.buildings.testTrack,
+  'Fuel Run': WORLD_ASSETS.buildings.testTrack,
+  'Fuel Stop': WORLD_ASSETS.buildings.tireRepair,
   Breakdown: WORLD_ASSETS.buildings.tireRepair,
   'Breakdown Center': WORLD_ASSETS.buildings.tireRepair
 };
@@ -145,6 +199,9 @@ export const WORLD_FIXED_BUILDING_ASSETS = {
 export const WORLD_ASSET_LIST = [
   ...Object.entries(WORLD_ASSETS).flatMap(([category, entries]) =>
     Object.entries(entries).map(([key, src]) => ({ category, key, src }))
+  ),
+  ...Object.entries(WORLD_PERSON_ANIMATION_FRAMES).flatMap(([personKey, frames]) =>
+    frames.map((src, index) => ({ category: 'peopleWalk', key: `${personKey}:walk-${index + 1}`, src }))
   ),
   ...Object.entries(WORLD_BUILDING_LEVEL_ASSETS).flatMap(([buildingKey, entries]) =>
     Object.entries(entries).map(([levelKey, src]) => ({ category: 'buildingLevels', key: `${buildingKey}:${levelKey}`, src }))
@@ -166,6 +223,10 @@ export function buildingAssetForKey(key, label = '', level = 1) {
 
 export function personAssetForKey(key) {
   return WORLD_ASSETS.people[key] || WORLD_ASSETS.people.residentBlue;
+}
+
+export function personAnimationFramesForKey(key) {
+  return WORLD_PERSON_ANIMATION_FRAMES[key] || WORLD_PERSON_ANIMATION_FRAMES.residentBlue || [personAssetForKey(key)];
 }
 
 export function vehicleAssetForKey(key) {

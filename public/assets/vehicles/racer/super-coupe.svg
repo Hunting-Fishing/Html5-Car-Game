@@ -1,1 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 512"><rect width="1024" height="512" fill="none"/><ellipse cx="510" cy="408" rx="370" ry="44" fill="rgba(0,0,0,.18)"/><path d="M100 333c43-105 154-172 318-178h139c132 5 230 67 331 159l45 8c33 6 50 33 43 63l-10 46H76l-2-26c-4-35 6-60 26-72z" fill="#06b6d4" stroke="#0f172a" stroke-width="18"/><path d="M354 176h183c91 5 157 37 220 84H244c30-51 67-77 110-84z" fill="#cffafe" stroke="#0f172a" stroke-width="14"/><path d="M695 187l154-44" stroke="#0f172a" stroke-width="20" stroke-linecap="round"/><circle cx="258" cy="429" r="58" fill="#111827"/><circle cx="258" cy="429" r="28" fill="#e5e7eb"/><circle cx="782" cy="429" r="58" fill="#111827"/><circle cx="782" cy="429" r="28" fill="#e5e7eb"/><text x="512" y="72" text-anchor="middle" font-family="Arial" font-size="44" font-weight="900" fill="#0f172a">365 Super Coupe</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="124" viewBox="0 0 240 124" role="img" aria-label="North American Velocity Cyan V8 Supercar (North American Market)">
+  <defs>
+    <linearGradient id="body_na_mid_v8_supercar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#0e7490"/>
+    </linearGradient>
+  </defs>
+  <!-- Ground Contact Shadow -->
+  <ellipse cx="118" cy="108" rx="98" ry="11" fill="#020810" opacity="0.40"/>
+  
+      <!-- Low-Profile Carbon Aero Wing -->
+      <path d="M16 58 L10 46 H28 L24 58 Z" fill="#0f172a" stroke="#35e58a" stroke-width="2"/>
+      <!-- Mid-Engine Exotic Wedge Body -->
+      <path d="M16 88 L18 58 L64 52 L96 36 H148 L182 56 L216 68 L214 88 H16 Z" fill="url(#body_na_mid_v8_supercar)" stroke="#06131d" stroke-width="4.5" stroke-linejoin="round"/>
+      <!-- Fighter-Jet Canopy & Carbon Side Scoop Boomerang -->
+      <polygon points="78,50 100,40 144,40 174,55" fill="#0f293d" stroke="#7dd3fc" stroke-width="1.5"/>
+      <polygon points="94,58 134,58 122,78 82,74" fill="#0f172a" stroke="#35e58a" stroke-width="1.5"/>
+      <rect x="26" y="82" width="178" height="4" rx="2" fill="#35e58a"/>
+      <polygon points="192,62 214,69 210,74 190,67" fill="#fef08a"/>
+      <rect x="16" y="62" width="10" height="6" rx="2" fill="#ef4444"/>
+    
+  <!-- Recessed Wheel Arches & Brake Calipers (for real rotating wheels) -->
+  
+    <g transform="translate(64, 92)">
+      <circle r="20" fill="#020617"/>
+      <circle r="13" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <!-- Glowing Brake Caliper -->
+      <path d="M-12 -6 A 13 13 0 0 1 -12 6" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      
+        <circle r="17" fill="#0f172a" stroke="#020617" stroke-width="2"/>
+        <circle r="12" fill="none" stroke="#facc15" stroke-width="2.2"/>
+        <g stroke="#facc15" stroke-width="2.5" stroke-linecap="round">
+          <line x1="0" y1="-12" x2="0" y2="12"/>
+          <line x1="-10.32" y1="-6" x2="10.32" y2="6"/>
+          <line x1="10.32" y1="-6" x2="-10.32" y2="6"/>
+        </g>
+        <circle r="4" fill="#0f172a" stroke="#35e58a" stroke-width="1.5"/>
+      
+    </g>
+  
+    <g transform="translate(174, 92)">
+      <circle r="20" fill="#020617"/>
+      <circle r="13" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <!-- Glowing Brake Caliper -->
+      <path d="M-12 -6 A 13 13 0 0 1 -12 6" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      
+        <circle r="17" fill="#0f172a" stroke="#020617" stroke-width="2"/>
+        <circle r="12" fill="none" stroke="#facc15" stroke-width="2.2"/>
+        <g stroke="#facc15" stroke-width="2.5" stroke-linecap="round">
+          <line x1="0" y1="-12" x2="0" y2="12"/>
+          <line x1="-10.32" y1="-6" x2="10.32" y2="6"/>
+          <line x1="10.32" y1="-6" x2="-10.32" y2="6"/>
+        </g>
+        <circle r="4" fill="#0f172a" stroke="#35e58a" stroke-width="1.5"/>
+      
+    </g>
+  
+</svg>

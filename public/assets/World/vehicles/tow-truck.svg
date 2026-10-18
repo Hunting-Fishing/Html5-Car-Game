@@ -1,8 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 120" role="img" aria-label="Tow truck">
-  <ellipse cx="110" cy="100" rx="86" ry="10" fill="#000" opacity=".22"/>
-  <rect x="28" y="56" width="78" height="34" rx="9" fill="#5ab7ff" stroke="#082033" stroke-width="7"/>
-  <path d="M106 42h58v48h-58z" fill="#facc15" stroke="#082033" stroke-width="7"/>
-  <path d="M158 42L104 20v40" stroke="#082033" stroke-width="8" stroke-linecap="round"/>
-  <path d="M104 20v18h-20" fill="none" stroke="#082033" stroke-width="7" stroke-linecap="round"/>
-  <circle cx="60" cy="92" r="14" fill="#111827"/><circle cx="146" cy="92" r="14" fill="#111827"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="124" viewBox="0 0 240 124" role="img" aria-label="North American Heavy-Duty Wrecker Tow (North American Market)">
+  <defs>
+    <linearGradient id="body_na_wrecker_tow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Ground Contact Shadow -->
+  <ellipse cx="118" cy="108" rx="98" ry="11" fill="#020810" opacity="0.40"/>
+  
+      <!-- Articulated Hydraulic Boom Arm, Winch Cable & Hook -->
+      <path d="M88 60 L26 24 L20 30 L76 64 Z" fill="#f59e0b" stroke="#06131d" stroke-width="3.5" stroke-linejoin="round"/>
+      <line x1="23" y1="28" x2="23" y2="66" stroke="#cbd5e1" stroke-width="3" stroke-dasharray="4 2"/>
+      <path d="M18 66 Q23 76 29 68" fill="none" stroke="#facc15" stroke-width="4" stroke-linecap="round"/>
+      <!-- Rear Wheel-Lift Cradle -->
+      <path d="M8 84 H32 V76" fill="none" stroke="#94a3b8" stroke-width="4.5" stroke-linecap="round"/>
+      <!-- Chrome Vertical Exhaust Stack & Flashing Amber/Red Emergency Lightbar -->
+      <rect x="114" y="24" width="7" height="38" rx="3" fill="#e2e8f0" stroke="#06131d" stroke-width="2"/>
+      <rect x="132" y="24" width="28" height="8" rx="4" fill="#ef4444" stroke="#06131d" stroke-width="2"/>
+      <rect x="146" y="24" width="14" height="8" rx="3" fill="#fef08a"/>
+      <!-- Heavy-Duty American Wrecker Cab & Utility Bed -->
+      <path d="M24 88 V58 H118 V32 H166 L184 56 L212 62 V88 H24 Z" fill="url(#body_na_wrecker_tow)" stroke="#06131d" stroke-width="4.5" stroke-linejoin="round"/>
+      <polygon points="126,38 160,38 176,56 126,56" fill="#0f293d" stroke="#7dd3fc" stroke-width="1.5"/>
+      <!-- Utility Toolboxes & Hazard Chevron Stripe -->
+      <rect x="42" y="64" width="38" height="16" rx="3" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/>
+      <rect x="86" y="64" width="28" height="16" rx="3" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/>
+      <rect x="28" y="81" width="176" height="5" rx="2" fill="#ef4444"/>
+      <rect x="202" y="66" width="9" height="10" rx="2" fill="#fef08a"/>
+    
+  <!-- Recessed Wheel Arches & Brake Calipers (for real rotating wheels) -->
+  
+    <g transform="translate(58, 92)">
+      <circle r="21" fill="#020617"/>
+      <circle r="14" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <!-- Glowing Brake Caliper -->
+      <path d="M-13 -6 A 14 14 0 0 1 -13 6" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      
+        <circle r="18" fill="#0f172a" stroke="#020617" stroke-width="2"/>
+        <circle r="13" fill="none" stroke="#cbd5e1" stroke-width="2.2"/>
+        <g stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round">
+          <line x1="0" y1="-13" x2="0" y2="13"/>
+          <line x1="-11.18" y1="-6.5" x2="11.18" y2="6.5"/>
+          <line x1="11.18" y1="-6.5" x2="-11.18" y2="6.5"/>
+        </g>
+        <circle r="4" fill="#0f172a" stroke="#ef4444" stroke-width="1.5"/>
+      
+    </g>
+  
+    <g transform="translate(172, 92)">
+      <circle r="21" fill="#020617"/>
+      <circle r="14" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <!-- Glowing Brake Caliper -->
+      <path d="M-13 -6 A 14 14 0 0 1 -13 6" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      
+        <circle r="18" fill="#0f172a" stroke="#020617" stroke-width="2"/>
+        <circle r="13" fill="none" stroke="#cbd5e1" stroke-width="2.2"/>
+        <g stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round">
+          <line x1="0" y1="-13" x2="0" y2="13"/>
+          <line x1="-11.18" y1="-6.5" x2="11.18" y2="6.5"/>
+          <line x1="11.18" y1="-6.5" x2="-11.18" y2="6.5"/>
+        </g>
+        <circle r="4" fill="#0f172a" stroke="#ef4444" stroke-width="1.5"/>
+      
+    </g>
+  
 </svg>

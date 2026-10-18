@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="124" viewBox="0 0 240 124" role="img" aria-label="JDM World Rally Blue AWD (Asian Market)">
+  <defs>
+    <linearGradient id="body_jdm_rally_awd" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+  </defs>
+  <!-- Ground Contact Shadow -->
+  <ellipse cx="118" cy="108" rx="98" ry="11" fill="#020810" opacity="0.40"/>
+  
+      <!-- Rally Box Wing & Roof Vent + Hood Scoop -->
+      <path d="M22 58 V40 H38 L34 58 Z" fill="url(#body_jdm_rally_awd)" stroke="#06131d" stroke-width="3"/>
+      <path d="M116 35 L126 31 L132 35 Z" fill="#facc15" stroke="#06131d" stroke-width="2"/>
+      <path d="M168 54 L178 48 H190 L186 55 Z" fill="url(#body_jdm_rally_awd)" stroke="#06131d" stroke-width="2.5"/>
+      <!-- Aggressive AWD Rally Sedan Body -->
+      <path d="M20 88 L22 56 L54 54 L76 35 H140 L168 54 L208 60 L212 88 H20 Z" fill="url(#body_jdm_rally_awd)" stroke="#06131d" stroke-width="4.5" stroke-linejoin="round"/>
+      <polygon points="60,53 80,40 112,40 112,53" fill="#0f293d" stroke="#7dd3fc" stroke-width="1.5"/>
+      <polygon points="117,40 138,40 162,53 117,53" fill="#0f293d" stroke="#7dd3fc" stroke-width="1.5"/>
+      <!-- Gold Rally Livery Graphics -->
+      <path d="M44 72 L96 62 L88 78 L156 68" fill="none" stroke="#facc15" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="198" cy="74" r="5" fill="#fef08a" stroke="#06131d" stroke-width="1.5"/>
+      <rect x="20" y="62" width="8" height="10" rx="2" fill="#ef4444"/>
+    
+  <!-- Recessed Wheel Arches & Brake Calipers (for real rotating wheels) -->
+  
+    <g transform="translate(64, 92)">
+      <circle r="20" fill="#020617"/>
+      <circle r="13" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <!-- Glowing Brake Caliper -->
+      <path d="M-12 -6 A 13 13 0 0 1 -12 6" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      
+        <circle r="17" fill="#0f172a" stroke="#020617" stroke-width="2"/>
+        <circle r="12" fill="none" stroke="#facc15" stroke-width="2.2"/>
+        <g stroke="#facc15" stroke-width="2.5" stroke-linecap="round">
+          <line x1="0" y1="-12" x2="0" y2="12"/>
+          <line x1="-10.32" y1="-6" x2="10.32" y2="6"/>
+          <line x1="10.32" y1="-6" x2="-10.32" y2="6"/>
+        </g>
+        <circle r="4" fill="#0f172a" stroke="#facc15" stroke-width="1.5"/>
+      
+    </g>
+  
+    <g transform="translate(174, 92)">
+      <circle r="20" fill="#020617"/>
+      <circle r="13" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <!-- Glowing Brake Caliper -->
+      <path d="M-12 -6 A 13 13 0 0 1 -12 6" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      
+        <circle r="17" fill="#0f172a" stroke="#020617" stroke-width="2"/>
+        <circle r="12" fill="none" stroke="#facc15" stroke-width="2.2"/>
+        <g stroke="#facc15" stroke-width="2.5" stroke-linecap="round">
+          <line x1="0" y1="-12" x2="0" y2="12"/>
+          <line x1="-10.32" y1="-6" x2="10.32" y2="6"/>
+          <line x1="10.32" y1="-6" x2="-10.32" y2="6"/>
+        </g>
+        <circle r="4" fill="#0f172a" stroke="#facc15" stroke-width="1.5"/>
+      
+    </g>
+  
+</svg>

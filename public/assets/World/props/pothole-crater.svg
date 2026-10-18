@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="96" viewBox="0 0 140 96" role="img" aria-label="Road pothole crater">
+  <!-- Radial Asphalt Stress Cracks -->
+  <g stroke="#090d16" stroke-width="2.5" stroke-linecap="round" fill="none">
+    <path d="M26 48 L8 34 M28 56 L12 72 M112 44 L132 30 M110 58 L128 74 M68 26 L62 10 M74 72 L82 88"/>
+  </g>
+  <!-- Jagged Outer Asphalt Rim -->
+  <polygon points="22,48 34,32 58,26 88,28 112,38 118,54 102,68 74,74 42,70 24,60" fill="#334155" stroke="#0f172a" stroke-width="3.5" stroke-linejoin="round"/>
+  <!-- Deep Crater Cavity & Muddy Water Reflection -->
+  <polygon points="30,50 40,37 60,32 86,34 104,42 108,53 96,63 72,68 46,64" fill="#090d16"/>
+  <ellipse cx="68" cy="52" rx="28" ry="11" fill="#1e293b"/>
+  <ellipse cx="64" cy="50" rx="18" ry="6" fill="#38bdf8" opacity="0.38"/>
+  <!-- Loose Gravel Stones & Hazard Barrier Stripe -->
+  <circle cx="42" cy="48" r="3.5" fill="#64748b"/>
+  <circle cx="88" cy="54" r="4" fill="#475569"/>
+  <circle cx="54" cy="60" r="3" fill="#94a3b8"/>
+  <rect x="38" y="14" width="64" height="10" rx="4" fill="#f97316" stroke="#06131d" stroke-width="2.5"/>
+  <path d="M48 14 L42 24 M62 14 L56 24 M76 14 L70 24 M90 14 L84 24" stroke="#fef08a" stroke-width="3"/>
+</svg>

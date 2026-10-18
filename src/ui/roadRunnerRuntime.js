@@ -383,18 +383,18 @@ const RIVAL_LEADERBOARD_USERS = [
 ];
 
 const VEHICLES = {
-  hatchback: { label: 'Starter Hatchback', asset: 'hatchback', cls: 'starter', unlock: { coins: 0, parts: 0 }, speed: 1, accel: 1, fuel: 1, handling: 1, durability: 1, description: 'Balanced starter car.' },
-  greenCompact: { label: 'Compact Sport', asset: 'greenCompact', cls: 'starter', unlock: { coins: 180, parts: 1 }, speed: 1.08, accel: 1.08, fuel: 0.96, handling: 1.05, durability: 0.95, description: 'Faster compact for early rival runs.' },
-  cityTaxi: { label: 'City Taxi', asset: 'cityTaxi', cls: 'utility', unlock: { coins: 260, parts: 2 }, speed: 1.0, accel: 1.0, fuel: 1.1, handling: 1.1, durability: 1.05, description: 'Nimble all-rounder for city routes.' },
-  pickup: { label: 'Parts Pickup', asset: 'pickup', cls: 'utility', unlock: { coins: 420, parts: 4 }, speed: 0.96, accel: 0.95, fuel: 1.2, handling: 1.08, durability: 1.22, description: 'More fuel and durability.' },
-  rallyLite: { label: 'Rally Lite', asset: 'rallyLite', cls: 'offroad', unlock: { coins: 640, parts: 6 }, speed: 1.05, accel: 1.05, fuel: 1.0, handling: 1.2, durability: 1.05, description: 'Agile handling on loose surfaces.' },
-  serviceVan: { label: 'Service Van', asset: 'serviceVan', cls: 'endurance', unlock: { coins: 820, parts: 8 }, speed: 0.92, accel: 0.90, fuel: 1.35, handling: 1.04, durability: 1.35, description: 'Endurance route vehicle.' },
-  desertRunner: { label: 'Desert Runner', asset: 'desertRunner', cls: 'endurance', unlock: { coins: 1050, parts: 11 }, speed: 1.1, accel: 1.05, fuel: 1.15, handling: 1.25, durability: 1.3, description: 'Built for long hot hauls.' },
-  offroad: { label: 'Off-Road Truck', asset: 'offroad', cls: 'offroad', unlock: { coins: 1300, parts: 14 }, speed: 1, accel: 1, fuel: 1.18, handling: 1.32, durability: 1.45, description: 'Best for rough roads.' },
-  exportVan: { label: 'Export Support Van', asset: 'exportVan', cls: 'endurance', unlock: { coins: 1650, parts: 18 }, speed: 0.98, accel: 0.95, fuel: 1.45, handling: 1.1, durability: 1.5, description: 'Maximum range for port routes.' },
-  race: { label: 'Purple Race Coupe', asset: 'race', cls: 'race', unlock: { coins: 2050, parts: 22 }, speed: 1.24, accel: 1.18, fuel: 0.90, handling: 1.08, durability: 0.85, description: 'Fastest track vehicle.' },
-  mountainCourier: { label: 'Mountain Courier', asset: 'mountainCourier', cls: 'offroad', unlock: { coins: 2600, parts: 28 }, speed: 1.12, accel: 1.1, fuel: 1.25, handling: 1.35, durability: 1.4, description: 'Heavy-duty mountain hauler.' },
-  superCoupe: { label: '365 Super Coupe', asset: 'superCoupe', cls: 'race', unlock: { coins: 3400, parts: 36 }, speed: 1.35, accel: 1.3, fuel: 0.85, handling: 1.15, durability: 0.9, description: 'Top-tier performance flagship.' }
+  hatchback: { label: 'JDM Kei Turbo Hatch', asset: 'hatchback', cls: 'starter', unlock: { coins: 0, parts: 0 }, speed: 1, accel: 1, fuel: 1, handling: 1, durability: 1, description: 'Agile Top Asian Market kei turbo hatchback.' },
+  greenCompact: { label: 'JDM GT-Apex Coupe', asset: 'greenCompact', cls: 'starter', unlock: { coins: 180, parts: 1 }, speed: 1.08, accel: 1.08, fuel: 0.96, handling: 1.05, durability: 0.95, description: 'Tuned Asian street performance coupe.' },
+  cityTaxi: { label: 'Metro Crown Cruiser', asset: 'cityTaxi', cls: 'utility', unlock: { coins: 260, parts: 2 }, speed: 1.0, accel: 1.0, fuel: 1.1, handling: 1.1, durability: 1.05, description: 'Iconic Asian urban fleet sedan.' },
+  pickup: { label: 'NA Crew-Cab 4x4 Pickup', asset: 'pickup', cls: 'utility', unlock: { coins: 420, parts: 4 }, speed: 0.96, accel: 0.95, fuel: 1.2, handling: 1.08, durability: 1.22, description: 'North American V8 utility & parts pickup.' },
+  rallyLite: { label: 'AWD Rally Spec-C', asset: 'rallyLite', cls: 'offroad', unlock: { coins: 640, parts: 6 }, speed: 1.05, accel: 1.05, fuel: 1.0, handling: 1.2, durability: 1.05, description: 'Asian AWD rally champion with gold rims.' },
+  serviceVan: { label: 'Hi-Ace Workshop Van', asset: 'serviceVan', cls: 'endurance', unlock: { coins: 820, parts: 8 }, speed: 0.92, accel: 0.90, fuel: 1.35, handling: 1.04, durability: 1.35, description: 'High-roof Asian mobile service van.' },
+  desertRunner: { label: 'Baja Trophy Pre-Runner', asset: 'desertRunner', cls: 'endurance', unlock: { coins: 1050, parts: 11 }, speed: 1.1, accel: 1.05, fuel: 1.15, handling: 1.25, durability: 1.3, description: 'North American long-travel desert truck.' },
+  offroad: { label: 'Baja Raptor 4x4 Rig', asset: 'offroad', cls: 'offroad', unlock: { coins: 1300, parts: 14 }, speed: 1, accel: 1, fuel: 1.18, handling: 1.32, durability: 1.45, description: 'Heavy North American lifted 4x4 truck.' },
+  exportVan: { label: '365 Heavy Fleet Hauler', asset: 'exportVan', cls: 'endurance', unlock: { coins: 1650, parts: 18 }, speed: 0.98, accel: 0.95, fuel: 1.45, handling: 1.1, durability: 1.5, description: 'Maximum range commercial logistics rig.' },
+  race: { label: 'Touge Drift Fastback', asset: 'race', cls: 'race', unlock: { coins: 2050, parts: 22 }, speed: 1.24, accel: 1.18, fuel: 0.90, handling: 1.08, durability: 0.85, description: 'Widebody Asian twin-turbo track fastback.' },
+  mountainCourier: { label: 'HD Dually Wrecker Rig', asset: 'mountainCourier', cls: 'offroad', unlock: { coins: 2600, parts: 28 }, speed: 1.12, accel: 1.1, fuel: 1.25, handling: 1.35, durability: 1.4, description: 'North American heavy-duty mountain hauler.' },
+  superCoupe: { label: 'NA Mid-Engine V8 Exotic', asset: 'superCoupe', cls: 'race', unlock: { coins: 3400, parts: 36 }, speed: 1.35, accel: 1.3, fuel: 0.85, handling: 1.15, durability: 0.9, description: 'Top-tier North American flagship supercar.' }
 };
 
 const UPGRADES = {
@@ -442,7 +442,8 @@ const WEEKLY_MISSION_POOL = [
 
 const ASSET_PATHS = {
   ...RACER_VEHICLE_ASSETS,
-  hatchback: publicAsset('/assets/race/cars/starter_compact.png'),
+  hatchback: RACER_VEHICLE_ASSETS.hatchback,
+  legacyStarterCompact: publicAsset('/assets/race/cars/starter_compact.png'),
   ghostA: RACER_VEHICLE_ASSETS.greenCompact,
   ghostB: RACER_VEHICLE_ASSETS.pickup,
   ghostC: RACER_VEHICLE_ASSETS.serviceVan,
@@ -2875,31 +2876,34 @@ function drawCar(x, y, angle, img, label, alpha, color) {
     ctx.moveTo(28, 18 - game.suspensionTravel);
     ctx.lineTo(28, 30);
     ctx.stroke();
-    drawWheelSpinOverlay(game.wheelRotation + x * 0.01, alpha);
   }
+  drawWheelSpinOverlay(game.wheelRotation + x * 0.01, alpha, hasSprite);
   ctx.restore();
   drawOutlinedText(label, x, y - (alpha >= 1 ? 58 : 46), '11px', alpha);
 }
 
-function drawWheelSpinOverlay(rotation, alpha = 1) {
-  const wheelY = 22;
+function drawWheelSpinOverlay(rotation, alpha = 1, hasSprite = false) {
+  const wheelY = hasSprite ? 19 : 22;
+  const wheelOffsets = hasSprite ? [-25, 25] : [-30, 29];
+  const radius = hasSprite ? 8.2 : 10;
   const traction = game?.traction ?? 1;
   const stroke = traction < 0.82 ? '#facc15' : '#e0f2fe';
-  for (const wheelX of [-30, 29]) {
+  for (const wheelX of wheelOffsets) {
     ctx.save();
     ctx.translate(wheelX, wheelY);
     ctx.rotate(rotation);
-    ctx.globalAlpha = 0.28 * alpha + (1 - traction) * 0.34;
+    ctx.globalAlpha = (hasSprite ? 0.52 : 0.28) * alpha + (1 - traction) * 0.34;
     ctx.strokeStyle = stroke;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(0, 0, 10, 0.18, Math.PI * 1.25);
+    ctx.arc(0, 0, radius, 0.18, Math.PI * 1.25);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(-8, 0);
-    ctx.lineTo(8, 0);
-    ctx.moveTo(0, -8);
-    ctx.lineTo(0, 8);
+    for (let s = 0; s < 3; s++) {
+      const a = (s * Math.PI) / 3;
+      ctx.moveTo(Math.cos(a) * -(radius - 2), Math.sin(a) * -(radius - 2));
+      ctx.lineTo(Math.cos(a) * (radius - 2), Math.sin(a) * (radius - 2));
+    }
     ctx.stroke();
     ctx.restore();
   }

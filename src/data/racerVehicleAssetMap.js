@@ -1,6 +1,6 @@
 import { publicAsset } from './assetUrl.js';
 export const RACER_VEHICLE_ASSETS = {
-  hatchback: publicAsset('/assets/vehicles/racer/sprite_0000.png'),
+  hatchback: publicAsset('/assets/vehicles/racer/starter-hatch.svg'),
   greenCompact: publicAsset('/assets/vehicles/racer/compact-sport.svg'),
   cityTaxi: publicAsset('/assets/vehicles/racer/city-taxi.svg'),
   pickup: publicAsset('/assets/vehicles/racer/parts-pickup.svg'),

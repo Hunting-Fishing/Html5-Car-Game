@@ -48,7 +48,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,svg,png,ico,webp}'],
+        globPatterns: ['**/*.{js,css,svg,png,jpg,ico,webp}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         skipWaiting: true,
@@ -58,7 +58,7 @@ export default defineConfig({
           {
             urlPattern: ({ request }) => request.mode === 'navigate',
             handler: 'NetworkFirst',
-            options: { cacheName: 'pages-v14', networkTimeoutSeconds: 3 }
+            options: { cacheName: 'pages-v15', networkTimeoutSeconds: 3 }
           }
         ]
       }
