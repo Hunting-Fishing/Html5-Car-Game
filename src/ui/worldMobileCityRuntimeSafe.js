@@ -26,14 +26,348 @@ const ROADS = {
 };
 
 const BUILDING_CATALOG = [
-  { key: 'streetKiosk', name: 'Street Kiosk', shortName: 'Kiosk', footprintW: 1, footprintH: 1, cost: 50, owned: 4, colorA: 0x35e58a, colorB: 0x0f766e, happiness: 6, want: 'quick snacks and small route jobs', output: 'coins', outputLabel: 'Coins', baseYield: 24, cycleMs: 90000, stockDrain: 8, bonus: 'Local order income', maxLevel: 10 },
-  { key: 'tireRepair', name: 'Tire Repair Shop', shortName: 'Tire', footprintW: 2, footprintH: 2, cost: 150, owned: 3, colorA: 0xfacc15, colorB: 0xca8a04, happiness: 10, want: 'fresh tires and roadside repairs', output: 'parts', outputLabel: 'Parts', baseYield: 18, cycleMs: 150000, stockDrain: 10, bonus: 'Tire grip and repair happiness', maxLevel: 10 },
-  { key: 'privateShop', name: 'Private Repair Shop', shortName: 'Repair', footprintW: 3, footprintH: 2, cost: 350, owned: 2, colorA: 0xa78bfa, colorB: 0x6d28d9, happiness: 14, want: 'more mechanics nearby', output: 'tools', outputLabel: 'Tools', baseYield: 12, cycleMs: 210000, stockDrain: 12, bonus: 'Service speed and tool flow', maxLevel: 10 },
-  { key: 'partsWarehouse', name: 'Parts Warehouse', shortName: 'Parts WH', footprintW: 4, footprintH: 3, cost: 750, owned: 1, colorA: 0x2dd4bf, colorB: 0x0891b2, happiness: 16, want: 'stocked shelves and faster deliveries', output: 'parts', outputLabel: 'Bulk Parts', baseYield: 44, cycleMs: 300000, stockDrain: 16, bonus: 'Warehouse storage and build supply', maxLevel: 12 },
-  { key: 'dealerShowroom', name: 'Dealer Showroom', shortName: 'Dealer', footprintW: 3, footprintH: 2, cost: 900, owned: 1, colorA: 0x60a5fa, colorB: 0x2563eb, happiness: 18, want: 'more cars to browse', output: 'rep', outputLabel: 'Rep', baseYield: 20, cycleMs: 360000, stockDrain: 10, bonus: 'Reputation and customer traffic', maxLevel: 12 },
-  { key: 'salvageBlock', name: 'Salvage Yard Block', shortName: 'Salvage', footprintW: 5, footprintH: 4, cost: 1200, owned: 1, colorA: 0xf97316, colorB: 0x9a3412, happiness: 12, want: 'scrap recovery and cheaper parts', output: 'scrap', outputLabel: 'Scrap', baseYield: 38, cycleMs: 390000, stockDrain: 14, bonus: 'Scrap recovery and repair discounts', maxLevel: 12 },
-  { key: 'towDispatch', name: 'Tow Dispatch', shortName: 'Tow', footprintW: 2, footprintH: 2, cost: 650, owned: 0, colorA: 0xf59e0b, colorB: 0x92400e, happiness: 12, want: 'tow trucks ready for breakdowns', output: 'scrap', outputLabel: 'Tow Scrap', baseYield: 26, cycleMs: 240000, stockDrain: 12, bonus: 'Breakdown response and recovery work', maxLevel: 10 },
-  { key: 'testTrack', name: 'Mini Test Track', shortName: 'Track', footprintW: 4, footprintH: 2, cost: 1100, owned: 0, colorA: 0x22c55e, colorB: 0x14532d, happiness: 16, want: 'safe test loops and racing events', output: 'rep', outputLabel: 'Race Rep', baseYield: 30, cycleMs: 270000, stockDrain: 9, bonus: 'Test data, race rep, and tune readiness', maxLevel: 10 }
+  {
+    key: 'streetKiosk',
+    name: 'Street Kiosk',
+    shortName: 'Kiosk',
+    category: 'Route Dispatch',
+    lineKey: 'streetRoute',
+    footprintW: 1,
+    footprintH: 1,
+    cost: 50,
+    upgradeCostBase: 65,
+    restockCostBase: 18,
+    repairCostBase: 14,
+    owned: 4,
+    colorA: 0x35e58a,
+    colorB: 0x0f766e,
+    happiness: 6,
+    want: 'Quick express dispatches, driver snacks, and local street route orders',
+    output: 'coins',
+    outputLabel: 'Coins',
+    secondaryOutput: 'parts',
+    secondaryLabel: 'Parts',
+    baseYield: 24,
+    cycleMs: 90000,
+    stockDrain: 8,
+    bonus: 'Local order income & green-wave signal coordination',
+    raceSkill: 'route',
+    raceBuffLabel: 'Route Pace & Stage Coins',
+    raceBuffDesc: 'Boosts Road Runner route speed & checkpoint coin payouts',
+    mergeBuffLabel: 'Original Parts Shelf',
+    mergeBuffDesc: 'Speeds up starter parts shelf recharge in Merge Bay',
+    cityIssueKey: 'trafficLights',
+    cityEffectLabel: 'Synchronizes street signals & eases intersection queues',
+    maxLevel: 10
+  },
+  {
+    key: 'tireRepair',
+    name: 'Tire Repair Shop',
+    shortName: 'Tire',
+    category: 'Grip & Alignment',
+    lineKey: 'fuelRun',
+    footprintW: 2,
+    footprintH: 2,
+    cost: 150,
+    upgradeCostBase: 95,
+    restockCostBase: 24,
+    repairCostBase: 20,
+    owned: 3,
+    colorA: 0xfacc15,
+    colorB: 0xca8a04,
+    happiness: 10,
+    want: 'Fresh performance slicks, alloy rim repairs, and roadside flat service',
+    output: 'parts',
+    outputLabel: 'Parts',
+    secondaryOutput: 'coins',
+    secondaryLabel: 'Coins',
+    baseYield: 18,
+    cycleMs: 150000,
+    stockDrain: 10,
+    bonus: 'Tire grip, alignment precision & pothole protection',
+    raceSkill: 'grip',
+    raceBuffLabel: 'Tire Grip & Cornering',
+    raceBuffDesc: 'Increases Road Runner traction & reduces pothole speed loss',
+    mergeBuffLabel: 'Tire & Wheel Chain',
+    mergeBuffDesc: 'Boosts wheel, rim & suspension crafting in Merge Bay',
+    cityIssueKey: 'potholes',
+    cityEffectLabel: 'Patches avenue potholes & prevents flat-tire breakdowns',
+    maxLevel: 10
+  },
+  {
+    key: 'privateShop',
+    name: 'Private Repair Shop',
+    shortName: 'Repair',
+    category: 'Mechanical Service',
+    lineKey: 'mobileMechanic',
+    footprintW: 3,
+    footprintH: 2,
+    cost: 350,
+    upgradeCostBase: 130,
+    restockCostBase: 28,
+    repairCostBase: 22,
+    owned: 2,
+    colorA: 0xa78bfa,
+    colorB: 0x6d28d9,
+    happiness: 14,
+    want: 'Certified mechanics, hydraulic lifts, and full engine diagnostics',
+    output: 'tools',
+    outputLabel: 'Tools',
+    secondaryOutput: 'coins',
+    secondaryLabel: 'Coins',
+    baseYield: 12,
+    cycleMs: 210000,
+    stockDrain: 12,
+    bonus: 'Service bay speed, tool fabrication & breakdown defense',
+    raceSkill: 'repair',
+    raceBuffLabel: 'Durability & Pit Repair',
+    raceBuffDesc: 'Protects car condition in Road Runner & lowers repair cost',
+    mergeBuffLabel: 'Workbench Tool Yield',
+    mergeBuffDesc: 'Generates bonus Shop Tools for Merge & Garage upgrades',
+    cityIssueKey: 'vehicleBreakdowns',
+    cityEffectLabel: 'Dispatches mobile mechanics to clear street breakdowns',
+    maxLevel: 10
+  },
+  {
+    key: 'partsWarehouse',
+    name: 'Parts Warehouse',
+    shortName: 'Parts WH',
+    category: 'Supply Logistics',
+    lineKey: 'partsDelivery',
+    footprintW: 4,
+    footprintH: 3,
+    cost: 750,
+    upgradeCostBase: 165,
+    restockCostBase: 32,
+    repairCostBase: 26,
+    owned: 1,
+    colorA: 0x2dd4bf,
+    colorB: 0x0891b2,
+    happiness: 16,
+    want: 'High-bay pallet racks, turbo crates, and express freight loading docks',
+    output: 'parts',
+    outputLabel: 'Bulk Parts',
+    secondaryOutput: 'tools',
+    secondaryLabel: 'Tools',
+    baseYield: 44,
+    cycleMs: 300000,
+    stockDrain: 16,
+    bonus: 'Bulk parts reserves & city-wide restock efficiency',
+    raceSkill: 'parts',
+    raceBuffLabel: 'Crate Parts Multiplier',
+    raceBuffDesc: 'Increases parts earned from Road Runner race stages',
+    mergeBuffLabel: 'Parts Bin Capacity',
+    mergeBuffDesc: 'Boosts high-tier engine & turbo merges in Merge Bay',
+    cityIssueKey: 'potholes',
+    cityEffectLabel: 'Keeps all city repair bays & kiosks stocked with parts',
+    maxLevel: 12
+  },
+  {
+    key: 'dealerShowroom',
+    name: 'Dealer Showroom',
+    shortName: 'Dealer',
+    category: 'VIP Dealership',
+    lineKey: 'dealerShowcase',
+    footprintW: 3,
+    footprintH: 2,
+    cost: 900,
+    upgradeCostBase: 185,
+    restockCostBase: 35,
+    repairCostBase: 25,
+    owned: 1,
+    colorA: 0x60a5fa,
+    colorB: 0x2563eb,
+    happiness: 18,
+    want: 'Illuminated showroom turntables, JDM/Supercar displays & VIP buyers',
+    output: 'rep',
+    outputLabel: 'Rep',
+    secondaryOutput: 'coins',
+    secondaryLabel: 'Coins',
+    baseYield: 20,
+    cycleMs: 360000,
+    stockDrain: 10,
+    bonus: 'City reputation, VIP buyer traffic & stage prestige',
+    raceSkill: 'sales',
+    raceBuffLabel: 'VIP Race Payout & Rep',
+    raceBuffDesc: 'Increases stage finish Coin & Reputation multipliers',
+    mergeBuffLabel: 'Customer Order Bonus',
+    mergeBuffDesc: 'Increases coin & trophy rewards on completed Merge orders',
+    cityIssueKey: 'trafficJams',
+    cityEffectLabel: 'Attracts high-value VIP traffic & boosts city prestige',
+    maxLevel: 12
+  },
+  {
+    key: 'salvageBlock',
+    name: 'Salvage Yard Block',
+    shortName: 'Salvage',
+    category: 'Heavy Recovery',
+    lineKey: 'towingJob',
+    footprintW: 5,
+    footprintH: 4,
+    cost: 1200,
+    upgradeCostBase: 195,
+    restockCostBase: 30,
+    repairCostBase: 24,
+    owned: 1,
+    colorA: 0xf97316,
+    colorB: 0x9a3412,
+    happiness: 12,
+    want: 'Crusher cranes, chassis stripping bays, and heavy alloy recycling',
+    output: 'scrap',
+    outputLabel: 'Scrap',
+    secondaryOutput: 'parts',
+    secondaryLabel: 'Parts',
+    baseYield: 38,
+    cycleMs: 390000,
+    stockDrain: 14,
+    bonus: 'Scrap recovery & -15% city building repair discounts',
+    raceSkill: 'tow',
+    raceBuffLabel: 'Salvage & Recovery Yield',
+    raceBuffDesc: 'Awards bonus scrap & parts after every Road Runner run',
+    mergeBuffLabel: 'Chassis & Body Salvage',
+    mergeBuffDesc: 'Feeds reclaimed metal & body panels to the workshop',
+    cityIssueKey: 'stuckVehicles',
+    cityEffectLabel: 'Processes impounded wrecks & clears blocked lanes',
+    maxLevel: 12
+  },
+  {
+    key: 'towDispatch',
+    name: 'Tow Dispatch',
+    shortName: 'Tow',
+    category: 'Emergency Wrecker',
+    lineKey: 'towingJob',
+    footprintW: 2,
+    footprintH: 2,
+    cost: 650,
+    upgradeCostBase: 145,
+    restockCostBase: 26,
+    repairCostBase: 20,
+    owned: 0,
+    colorA: 0xf59e0b,
+    colorB: 0x92400e,
+    happiness: 12,
+    want: '24/7 heavy wreckers, radar dispatch, and rapid lane clearance',
+    output: 'scrap',
+    outputLabel: 'Tow Scrap',
+    secondaryOutput: 'coins',
+    secondaryLabel: 'Coins',
+    baseYield: 26,
+    cycleMs: 240000,
+    stockDrain: 12,
+    bonus: 'Rapid breakdown response & emergency tow bounties',
+    raceSkill: 'tow',
+    raceBuffLabel: 'Heavy Tow & Recovery',
+    raceBuffDesc: 'Prevents DNF penalties & boosts roadside scrap recovery',
+    mergeBuffLabel: 'Recovery Winch Parts',
+    mergeBuffDesc: 'Unlocks heavy-duty truck & off-road parts in Merge Bay',
+    cityIssueKey: 'vehicleBreakdowns',
+    cityEffectLabel: 'Rapidly tows smoking broken-down vehicles off avenues',
+    maxLevel: 10
+  },
+  {
+    key: 'testTrack',
+    name: 'Mini Test Track',
+    shortName: 'Track',
+    category: 'Motorsport & Dyno',
+    lineKey: 'fuelRun',
+    footprintW: 4,
+    footprintH: 2,
+    cost: 1100,
+    upgradeCostBase: 175,
+    restockCostBase: 30,
+    repairCostBase: 22,
+    owned: 0,
+    colorA: 0x22c55e,
+    colorB: 0x14532d,
+    happiness: 16,
+    want: 'High-grip apex loops, race fuel rigs, and live ECU dyno telemetry',
+    output: 'rep',
+    outputLabel: 'Race Rep',
+    secondaryOutput: 'fuelCans',
+    secondaryLabel: 'Fuel',
+    baseYield: 30,
+    cycleMs: 270000,
+    stockDrain: 9,
+    bonus: 'Dyno telemetry, race rep & high-octane fuel efficiency',
+    raceSkill: 'fuel',
+    raceBuffLabel: 'Top Speed & Fuel Tech',
+    raceBuffDesc: 'Boosts Road Runner boost power & reduces fuel burn',
+    mergeBuffLabel: 'Pro Motorsport Tuning',
+    mergeBuffDesc: 'Accelerates ECU & performance tuning merges',
+    cityIssueKey: 'trafficJams',
+    cityEffectLabel: 'Keeps street racers on the track & improves avenue flow',
+    maxLevel: 10
+  },
+  {
+    key: 'garage',
+    name: '365 Flagship Garage',
+    shortName: '365 Garage',
+    category: 'Flagship HQ & Tuning',
+    lineKey: 'streetRoute',
+    coreHubOnly: true,
+    footprintW: 4,
+    footprintH: 3,
+    cost: 1000,
+    upgradeCostBase: 140,
+    restockCostBase: 25,
+    repairCostBase: 20,
+    owned: 0,
+    colorA: 0x38bdf8,
+    colorB: 0x0284c7,
+    happiness: 20,
+    want: 'Twin hydraulic lifts, pro dyno bay, custom builds & 365 command HQ',
+    output: 'coins',
+    outputLabel: 'Coins',
+    secondaryOutput: 'tools',
+    secondaryLabel: 'Tools',
+    baseYield: 36,
+    cycleMs: 120000,
+    stockDrain: 9,
+    bonus: 'Command HQ: boosts all connected 365 Garage bays, Race tuning & Route income',
+    raceSkill: 'race',
+    raceBuffLabel: '365 Pro Tune & Speed',
+    raceBuffDesc: 'Directly increases Road Runner top speed, acceleration & coin payout',
+    mergeBuffLabel: 'Master Workshop Bay',
+    mergeBuffDesc: 'Boosts all 365 Garage Floor rooms & Merge Bay craft speed',
+    cityIssueKey: 'vehicleBreakdowns',
+    cityEffectLabel: 'Anchors the city service network & raises all resident morale',
+    maxLevel: 12
+  },
+  {
+    key: 'partsHub',
+    name: '365 Parts & Merge Hub',
+    shortName: 'Parts Hub',
+    category: 'Crafting & Logistics HQ',
+    lineKey: 'partsDelivery',
+    coreHubOnly: true,
+    footprintW: 4,
+    footprintH: 3,
+    cost: 950,
+    upgradeCostBase: 150,
+    restockCostBase: 26,
+    repairCostBase: 20,
+    owned: 0,
+    colorA: 0x2dd4bf,
+    colorB: 0x0d9488,
+    happiness: 18,
+    want: 'Automated parts sorters, twin-turbo crate assembly & Merge Bay link',
+    output: 'parts',
+    outputLabel: 'Pro Parts',
+    secondaryOutput: 'tools',
+    secondaryLabel: 'Tools',
+    baseYield: 40,
+    cycleMs: 180000,
+    stockDrain: 11,
+    bonus: 'Logistics HQ: supplies Merge Bay generators & reduces restock costs across town',
+    raceSkill: 'parts',
+    raceBuffLabel: 'Performance Parts Drop',
+    raceBuffDesc: 'Increases rare parts & upgrade crate drops in Road Runner',
+    mergeBuffLabel: 'Merge Bay Overclock',
+    mergeBuffDesc: 'Directly speeds up Merge Bay supplier shelf & part tiers',
+    cityIssueKey: 'trafficLights',
+    cityEffectLabel: 'Powers automated smart-traffic sensors & parts couriers',
+    maxLevel: 12
+  }
 ];
 
 const FIXED_BUILDINGS = [
@@ -609,8 +943,62 @@ function unlockedPlotCount() {
   return TOWN_EXPANSION_PLOTS.filter((p) => isPlotUnlocked(p.id)).length;
 }
 
+function normalizeBuildingKey(key) {
+  if (key === 'garage365') return 'garage';
+  return key || 'streetKiosk';
+}
+
 function defByKey(key) {
-  return BUILDING_CATALOG.find((item) => item.key === key) || BUILDING_CATALOG[0];
+  const norm = normalizeBuildingKey(key);
+  return BUILDING_CATALOG.find((item) => item.key === norm) || BUILDING_CATALOG[0];
+}
+
+function placeableBuildingCatalog() {
+  return BUILDING_CATALOG.filter((item) => !item.coreHubOnly);
+}
+
+const BUILDING_WORK_MODES = {
+  standard: {
+    key: 'standard',
+    label: 'Balanced Ops',
+    shortLabel: 'Balanced',
+    icon: '⚖️',
+    yieldMult: 1.0,
+    cycleMult: 1.0,
+    drainAdd: 0,
+    modeBuffMult: 1.0,
+    happinessAdd: 0,
+    desc: 'Standard production cycle & normal stock drain'
+  },
+  overdrive: {
+    key: 'overdrive',
+    label: 'Turbo Overdrive',
+    shortLabel: 'Overdrive',
+    icon: '🔥',
+    yieldMult: 1.22,
+    cycleMult: 0.75,
+    drainAdd: 4,
+    modeBuffMult: 1.15,
+    happinessAdd: 2,
+    desc: '-25% faster cycle & +22% yield (+4% stock drain)'
+  },
+  vip: {
+    key: 'vip',
+    label: 'VIP Quality',
+    shortLabel: 'VIP Spec',
+    icon: '👑',
+    yieldMult: 1.32,
+    cycleMult: 1.05,
+    drainAdd: 2,
+    modeBuffMult: 1.50,
+    happinessAdd: 5,
+    desc: '+32% yield, +50% Race/Merge/City buffs & +5 Happiness'
+  }
+};
+
+function buildingWorkMode(item) {
+  const modeKey = item?.workMode || 'standard';
+  return BUILDING_WORK_MODES[modeKey] || BUILDING_WORK_MODES.standard;
 }
 
 function selectedDef() {
@@ -656,13 +1044,17 @@ function normalizeBuildingState(item = {}, type = 'streetKiosk') {
   const level = Number.isFinite(item.level) ? item.level : 1;
   const collected = Number.isFinite(item.collected) ? item.collected : 0;
   const lastCollectedAt = Number.isFinite(item.lastCollectedAt) ? item.lastCollectedAt : defaultLastCollected(def);
+  const workMode = BUILDING_WORK_MODES[item.workMode] ? item.workMode : 'standard';
+  const cratesClaimed = Number.isFinite(item.cratesClaimed) ? item.cratesClaimed : 0;
   return {
     ...item,
     level: Math.max(1, Math.min(def.maxLevel || 10, level)),
     stock: Math.max(0, Math.min(100, stock)),
     health: Math.max(0, Math.min(100, health)),
     collected: Math.max(0, collected),
-    lastCollectedAt
+    lastCollectedAt,
+    workMode,
+    cratesClaimed
   };
 }
 
@@ -703,23 +1095,30 @@ function updateBuildingRecord(target, updater) {
   return record;
 }
 
-function cycleMsFor(item, def) {
-  const level = item?.level || 1;
-  const speed = Math.max(0.56, 1 - (level - 1) * 0.045);
-  return Math.round((def.cycleMs || 120000) * speed);
-}
-
-function collectStatus(item, def) {
-  const cycle = cycleMsFor(item, def);
-  const elapsed = Math.max(0, Date.now() - (item.lastCollectedAt || 0));
-  const ready = elapsed >= cycle && (item.stock ?? 0) > 0;
-  const pct = Math.max(0, Math.min(100, (elapsed / cycle) * 100));
-  return { ready, elapsed, cycle, msLeft: Math.max(0, cycle - elapsed), pct };
+function buildingLinkedPeople(def, fixed = null) {
+  const normKey = normalizeBuildingKey(def?.key);
+  const lineKey = fixed?.lineKey || def?.lineKey || 'streetRoute';
+  const leadStaff = supplyManagerByLine(lineKey) || SUPPLY_MANAGERS[0];
+  const specialists = [...SUPPLY_MANAGERS, ...RESIDENT_WANTS].filter((p) => {
+    const pBuild = normalizeBuildingKey(p.building);
+    return pBuild === normKey || p.lineKey === lineKey || p.lineKeyRef === lineKey;
+  });
+  const unique = [];
+  const seen = new Set();
+  for (const p of [leadStaff, ...specialists]) {
+    if (!p) continue;
+    const id = p.lineKey || p.key;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    unique.push(p);
+  }
+  return { leadStaff, people: unique };
 }
 
 function buildingStaffYieldMultiplier(buildingKey) {
-  if (!buildingKey) return 1;
-  const linked = [...SUPPLY_MANAGERS, ...RESIDENT_WANTS].filter((p) => p.building === buildingKey);
+  const normKey = normalizeBuildingKey(buildingKey);
+  if (!normKey) return 1;
+  const linked = [...SUPPLY_MANAGERS, ...RESIDENT_WANTS].filter((p) => normalizeBuildingKey(p.building) === normKey);
   if (!linked.length) return 1;
   let bonus = 0;
   const save = readSupplyState();
@@ -732,18 +1131,50 @@ function buildingStaffYieldMultiplier(buildingKey) {
     const lvl = Math.max(1, Number(rt.level || save.worldPersonStats?.[id]?.level || 1));
     const moodBoost = Number(rt.moodBoost || save.worldPersonStats?.[id]?.moodBoost || 0);
     if (hired) {
-      bonus += 0.12 + Math.min(0.28, (lvl - 1) * 0.03 + moodBoost * 0.005);
+      bonus += 0.14 + Math.min(0.32, (lvl - 1) * 0.035 + moodBoost * 0.005);
     }
   }
-  return 1 + Math.min(0.65, bonus);
+  return 1 + Math.min(0.75, bonus);
+}
+
+function cycleMsFor(item, def) {
+  const level = item?.level || 1;
+  const wm = buildingWorkMode(item);
+  const staffMult = buildingStaffYieldMultiplier(def?.key);
+  const staffSpeedFactor = Math.max(0.72, 1 - (staffMult - 1) * 0.35);
+  const levelSpeedFactor = Math.max(0.54, 1 - (level - 1) * 0.045);
+  return Math.max(15000, Math.round((def.cycleMs || 120000) * levelSpeedFactor * wm.cycleMult * staffSpeedFactor));
+}
+
+function collectStatus(item, def) {
+  const cycle = cycleMsFor(item, def);
+  const elapsed = Math.max(0, Date.now() - (item.lastCollectedAt || 0));
+  const ready = elapsed >= cycle && (item.stock ?? 0) > 0;
+  const pct = Math.max(0, Math.min(100, (elapsed / cycle) * 100));
+  const msLeft = Math.max(0, cycle - elapsed);
+  const rushCostCoins = ready ? 0 : Math.max(6, Math.min(45, Math.ceil(msLeft / 12000)));
+  return { ready, elapsed, cycle, msLeft, pct, rushCostCoins };
 }
 
 function buildingYield(item, def) {
   const stockFactor = Math.max(0.25, (item.stock ?? 80) / 100);
+  const healthFactor = Math.max(0.5, (item.health ?? 88) / 100);
   const staffMult = buildingStaffYieldMultiplier(def?.key);
-  return Math.max(1, Math.round((def.baseYield || 10) * (item.level || 1) * stockFactor * staffMult));
+  const wm = buildingWorkMode(item);
+  return Math.max(1, Math.round((def.baseYield || 10) * (item.level || 1) * stockFactor * (0.7 + healthFactor * 0.3) * staffMult * wm.yieldMult));
 }
 
+function buildingSecondaryYield(item, def) {
+  const level = item?.level || 1;
+  const wm = buildingWorkMode(item);
+  const staffMult = buildingStaffYieldMultiplier(def?.key);
+  const baseSec = Math.max(1, Math.round((level * 1.4 + (staffMult > 1.05 ? 1.5 : 0.5)) * wm.modeBuffMult));
+  return {
+    output: def?.secondaryOutput || 'parts',
+    label: def?.secondaryLabel || 'Parts',
+    amount: baseSec
+  };
+}
 
 function buildingPower(item, def) {
   return Math.round((def.cost || 50) * 6 + (item.level || 1) * (def.happiness || 8) * 95 + (item.collected || 0) * 24);
@@ -752,20 +1183,29 @@ function buildingPower(item, def) {
 function upgradeRequirement(item, def) {
   const level = item.level || 1;
   const max = def.maxLevel || 10;
+  const staffMult = buildingStaffYieldMultiplier(def?.key);
+  const discountFactor = Math.max(0.70, 1 - (level - 1) * 0.015 - (staffMult - 1) * 0.25);
+  const baseUpgradeCoins = Math.round((def.upgradeCostBase || 90) * Math.pow(1.36, level - 1));
+  const coinCost = Math.max(25, Math.round(baseUpgradeCoins * discountFactor));
   if (level >= max) {
-    return { maxed: true, met: false, text: 'Max level reached', stockNeed: 0, collectNeed: 0, nextLevel: level };
+    return { maxed: true, met: false, text: 'Max level reached', stockNeed: 0, collectNeed: 0, coinCost: 0, nextLevel: level };
   }
   const nextLevel = level + 1;
   const stockNeed = Math.min(95, 45 + nextLevel * 5);
   const collectNeed = Math.max(0, Math.floor((nextLevel - 2) * 2));
-  const met = (item.stock ?? 0) >= stockNeed && (item.collected || 0) >= collectNeed;
+  const stockMet = (item.stock ?? 0) >= stockNeed;
+  const collectMet = (item.collected || 0) >= collectNeed;
+  const met = stockMet && collectMet;
   return {
     maxed: false,
     met,
+    stockMet,
+    collectMet,
     nextLevel,
     stockNeed,
     collectNeed,
-    text: `Needs ${stockNeed}% stock and ${collectNeed} collections`
+    coinCost,
+    text: `Needs ${stockNeed}% stock, ${collectNeed} runs & ${coinCost} Coins`
   };
 }
 
@@ -797,23 +1237,39 @@ function allBuildingRecords() {
     return {
       id,
       kind: 'fixed',
-      type: building.type,
+      type: normalizeBuildingKey(building.type),
       label: building.label,
       target: { kind: 'fixed', id },
       item: fixedBuildingStates[id],
-      def: defByKey(building.type)
+      def: defByKey(building.type),
+      fixed: building
     };
   });
   const placed = placedBuildings.map((item) => ({
     id: item.id,
     kind: 'placed',
-    type: item.type,
+    type: normalizeBuildingKey(item.type),
     label: item.name || defByKey(item.type).shortName,
     target: { kind: 'placed', id: item.id },
     item,
-    def: defByKey(item.type)
+    def: defByKey(item.type),
+    fixed: null
   }));
   return [...fixed, ...placed];
+}
+
+function computeWorldBuildingPerks() {
+  const perks = { race: 0, grip: 0, fuel: 0, repair: 0, parts: 0, tow: 0, sales: 0, route: 0 };
+  for (const rec of allBuildingRecords()) {
+    const skill = rec.def?.raceSkill || 'route';
+    const stockFactor = Math.max(0.2, (rec.item.stock ?? 80) / 100);
+    const healthFactor = Math.max(0.3, (rec.item.health ?? 88) / 100);
+    const wm = buildingWorkMode(rec.item);
+    const staffMult = buildingStaffYieldMultiplier(rec.def?.key);
+    const val = (2.5 + (rec.item.level || 1) * 1.8) * stockFactor * healthFactor * wm.modeBuffMult * staffMult;
+    perks[skill] = Math.min(45, Math.round((perks[skill] || 0) + val));
+  }
+  return perks;
 }
 
 function average(values) {
@@ -831,7 +1287,8 @@ function issueCountFromScore(score, step = 20) {
 }
 
 function serviceStats(type) {
-  const records = allBuildingRecords().filter((record) => record.type === type);
+  const norm = normalizeBuildingKey(type);
+  const records = allBuildingRecords().filter((record) => normalizeBuildingKey(record.type) === norm);
   if (!records.length) {
     return { score: 0, count: 0, avgLevel: 0, avgStock: 0, avgHealth: 0, levelScore: 0, stockScore: 0, healthScore: 0, coverageScore: 0 };
   }
@@ -1195,7 +1652,7 @@ function html() {
             <span data-selected-rotation>0 deg</span>
           </div>
           <div class="mobileBuildingList">
-            ${BUILDING_CATALOG.map((item) => `
+            ${placeableBuildingCatalog().map((item) => `
               <button class="btn small ghost buildCatalogCard" data-building-key="${item.key}" onclick="window.selectMobileBuildingSafe?.('${item.key}')">
                 <img class="buildCardThumb" src="${buildingAssetForKey(item.key, item.name, 1)}" alt="" loading="eager">
                 <strong class="buildCardName">${item.shortName}</strong>
@@ -2926,6 +3383,7 @@ function sync3DBuildings() {
     const state = fixedBuildingStates[id] || normalizeBuildingState({}, building.type);
     const status = collectStatus(state, def);
     const yieldAmt = buildingYield(state, def);
+    const isSelected = targetMatches(selectedBuildingTarget, target);
     return {
       x: building.x,
       y: building.y,
@@ -2935,6 +3393,7 @@ function sync3DBuildings() {
       name: building.label,
       level: state.level || 1,
       ready: status.ready,
+      selected: isSelected,
       statusText: status.ready ? `READY +${yieldAmt}` : formatDuration(status.msLeft),
       rotation: 0,
       alpha: 1,
@@ -2951,6 +3410,7 @@ function sync3DBuildings() {
     const fp = currentFootprint(def, item.rotation || 0);
     const status = collectStatus(item, def);
     const yieldAmt = buildingYield(item, def);
+    const isSelected = targetMatches(selectedBuildingTarget, target);
     return {
       x: item.x,
       y: item.y,
@@ -2960,6 +3420,7 @@ function sync3DBuildings() {
       name: item.name,
       level: item.level || 1,
       ready: status.ready,
+      selected: isSelected,
       statusText: status.ready ? `READY +${yieldAmt}` : formatDuration(status.msLeft),
       rotation: item.rotation || 0,
       alpha: mode === 'moving' && movingBuilding?.id === item.id ? 0.35 : 1,
@@ -3432,87 +3893,535 @@ window.previewMobilePlacementSafe = (col, row) => {
   return Boolean(pendingPlacement);
 };
 
+let selectedBuildingTab = 'overview';
+let lastBuildingActionNote = '';
+
+function dispatchWorldBuildingSync(detail = {}) {
+  const perks = computeWorldBuildingPerks();
+  const cityAvg = cityNeedStats().average;
+  window.dispatchEvent(new CustomEvent('world-building-sync', {
+    detail: {
+      worldBuildingPerks: perks,
+      cityAverageHappiness: cityAvg,
+      ...detail
+    }
+  }));
+}
+
+function focusBuildingTargetOnMap(target) {
+  const record = getBuildingRecord(target);
+  if (!record) return;
+  if (record.fixed) {
+    const cx = record.fixed.x + (record.fixed.w * GRID.size) / 2;
+    const cy = record.fixed.y + (record.fixed.h * GRID.size) / 2;
+    focusWorldPoint(cx + 35, cy + 165);
+  } else if (record.item) {
+    const fp = currentFootprint(record.def, record.item.rotation || 0);
+    const cx = record.item.x + (fp.footprintW * GRID.size) / 2;
+    const cy = record.item.y + (fp.footprintH * GRID.size) / 2;
+    focusWorldPoint(cx + 35, cy + 165);
+  }
+}
+
+function renderBuildingOverviewTab(record, ctx) {
+  const { item, def } = record;
+  const {
+    level, stock, health, happiness, power, tierCode,
+    yieldAmount, secYield, cycleNow, req, service, wm,
+    raceBuffVal, nextLevelYield, nextCycleMs, nextHappiness, nextRaceBuffVal
+  } = ctx;
+
+  const modesHtml = Object.values(BUILDING_WORK_MODES).map((m) => {
+    const active = wm.key === m.key;
+    return `
+      <button class="buildingWorkModeBtn ${active ? 'active' : ''}" onclick="window.setBuildingWorkModeSafe?.('${m.key}')">
+        <div class="wmTop">
+          <span class="wmIcon">${m.icon}</span>
+          <strong>${escapeHtml(m.shortLabel)}</strong>
+          ${active ? '<em class="wmActiveTag">ACTIVE</em>' : ''}
+        </div>
+        <small>${escapeHtml(m.desc)}</small>
+      </button>
+    `;
+  }).join('');
+
+  const stockTone = stock >= 70 ? 'green' : stock >= 40 ? 'yellow' : 'red';
+  const healthTone = health >= 76 ? 'green' : health >= 45 ? 'yellow' : 'red';
+  const drainPerCycle = (def.stockDrain || 10) + (wm.drainAdd || 0);
+
+  return `
+    <div class="buildingTabPane" data-building-tab-pane="overview">
+      <div class="buildingSectionBlock">
+        <div class="buildingSectionHead">
+          <span>⚙️ Production Work Order</span>
+          <small>Active: <b>${escapeHtml(wm.label)}</b></small>
+        </div>
+        <div class="buildingWorkModeBar">
+          ${modesHtml}
+        </div>
+      </div>
+
+      <div class="buildingTelemetryGrid">
+        <div class="buildingTelemetryCard">
+          <div class="telHead"><span>📦 Stock Supply</span><strong class="tone-${stockTone}" data-placed-stock>${stock}%</strong></div>
+          <div class="buildingMiniMeter"><i class="tone-${stockTone}" style="width:${stock}%" data-placed-stock-meter></i></div>
+          <small>${stock < 70 ? '⚠️ Restock recommended' : 'Optimal supply'} · -${drainPerCycle}%/run</small>
+        </div>
+        <div class="buildingTelemetryCard">
+          <div class="telHead"><span>🛠️ Building Health</span><strong class="tone-${healthTone}">${health}%</strong></div>
+          <div class="buildingMiniMeter"><i class="tone-${healthTone}" style="width:${health}%"></i></div>
+          <small>${health < 76 ? '⚠️ Needs maintenance' : 'Structural integrity high'}</small>
+        </div>
+        <div class="buildingTelemetryCard">
+          <div class="telHead"><span>😊 City Happiness</span><strong class="tone-green">+${happiness}</strong></div>
+          <small>District Service Score: <b>${service.score}%</b> (${service.count} lot${service.count === 1 ? '' : 's'})</small>
+        </div>
+        <div class="buildingTelemetryCard">
+          <div class="telHead"><span>⚡ Tycoon Valuation</span><strong class="tone-cyan">${power.toLocaleString()} PWR</strong></div>
+          <small>Tier Rating: <b>${tierCode}</b> · Runs: <b>${item.collected || 0}</b></small>
+        </div>
+      </div>
+
+      <div class="buildingUpgradePreviewCard ${req.met ? 'ready' : req.maxed ? 'maxed' : 'locked'}">
+        <div class="upPreviewHead">
+          <div>
+            <span class="upKicker">${req.maxed ? 'MAX TIER ACHIEVED' : `NEXT LEVEL BLUEPRINT · LV ${level} → LV ${req.nextLevel}`}</span>
+            <h4>${req.maxed ? `${escapeHtml(def.name)} (Max Lv ${level})` : `Upgrade to Level ${req.nextLevel} (${req.coinCost} Coins)`}</h4>
+          </div>
+          <span class="upStatusBadge ${req.met ? 'ready' : req.maxed ? 'maxed' : 'locked'}">
+            ${req.maxed ? '★ MAXED' : req.met ? '✅ READY' : '⚡ INSTANT UPGRADE AVAILABLE'}
+          </span>
+        </div>
+        ${req.maxed ? `
+          <p class="upMaxedCopy">This building is operating at peak architectural capacity with maximum output and district synergy.</p>
+        ` : `
+          <div class="upDeltaGrid">
+            <div>
+              <span>Primary Yield</span>
+              <b>+${yieldAmount} → <em>+${nextLevelYield} ${escapeHtml(def.outputLabel)}</em></b>
+            </div>
+            <div>
+              <span>Secondary Bonus</span>
+              <b>+${secYield.amount} → <em>+${secYield.amount + 1} ${escapeHtml(secYield.label)}</em></b>
+            </div>
+            <div>
+              <span>Cycle Time</span>
+              <b>${formatDuration(cycleNow)} → <em>${formatDuration(nextCycleMs)}</em></b>
+            </div>
+            <div>
+              <span>Happiness &amp; Race</span>
+              <b>+${happiness} Happy · <em>+${nextRaceBuffVal}% ${escapeHtml(def.raceBuffLabel)}</em></b>
+            </div>
+          </div>
+          <div class="upReqPills">
+            <span class="upReqPill ${req.stockMet ? 'met' : 'short'}">
+              ${req.stockMet ? '✅' : '⚠️'} Stock ${stock}% / ${req.stockNeed}%
+            </span>
+            <span class="upReqPill ${req.collectMet ? 'met' : 'short'}">
+              ${req.collectMet ? '✅' : '⚠️'} Runs ${item.collected || 0} / ${req.collectNeed}
+            </span>
+            <span class="upReqPill met">
+              🪙 Cost: ${req.coinCost} Coins
+            </span>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function renderBuildingStaffTab(record, ctx) {
+  const { def, fixed } = record;
+  const { staffMult, cycleReduction, upgradeDiscount, incomeBoost } = ctx;
+  const { leadStaff, people } = buildingLinkedPeople(def, fixed);
+  const leadProfile = personProfile(leadStaff);
+
+  const rowsHtml = people.map((person) => {
+    const id = person.lineKey || person.key;
+    const mood = residentMood(person);
+    const prof = mood.profile;
+    const isLead = (leadStaff?.lineKey || leadStaff?.key) === id;
+    return `
+      <div class="buildingStaffCard ${prof.hired ? 'is-hired' : 'is-unemployed'}">
+        <div class="bStaffPortraitWrap">
+          <img src="${personAssetForKey(id)}" alt="${escapeHtml(person.name)}" loading="eager">
+          <span class="bStaffStateDot ${prof.hired ? 'hired' : 'unemployed'}"></span>
+        </div>
+        <div class="bStaffMain">
+          <div class="bStaffTitleRow">
+            <strong>${escapeHtml(person.name)}</strong>
+            ${isLead ? '<span class="bStaffLeadTag">LEAD MANAGER</span>' : '<span class="bStaffSpecTag">SPECIALIST</span>'}
+            <span class="bStaffJobBadge ${prof.hired ? 'hired' : 'unemployed'}">
+              ${prof.hired ? `HIRED LV ${prof.level}` : 'UNEMPLOYED'}
+            </span>
+          </div>
+          <small class="bStaffJobSub">${escapeHtml(person.jobTitle || 'Operations Crew')} · ${escapeHtml(prof.primarySkillLabel)} <b>${prof.primarySkillValue}%</b></small>
+          <div class="bStaffHappinessRow">
+            <span>Happiness: <b class="tone-${mood.key}">${mood.score}% ${escapeHtml(mood.label)}</b></span>
+            <span>Building Buff: <b>+${prof.worldYieldBonus}% Yield</b></span>
+          </div>
+          <div class="buildingMiniMeter"><i class="tone-${mood.key}" style="width:${mood.score}%"></i></div>
+        </div>
+        <div class="bStaffActions">
+          ${!prof.hired ? `
+            <button class="btn small primary" onclick="window.hireBuildingPersonSafe?.('${escapeHtml(id)}')">Hire (${prof.hireCost}c)</button>
+          ` : `
+            <button class="btn small gold" onclick="window.trainBuildingPersonSafe?.('${escapeHtml(id)}')">Train Lv ${prof.level + 1} (${prof.trainCost}c)</button>
+            <button class="btn small ghost" onclick="window.boostBuildingPersonSafe?.('${escapeHtml(id)}')">Morale +12%</button>
+          `}
+          <button class="btn small ghost" onclick="window.inspectBuildingPersonSafe?.('${escapeHtml(id)}')">Inspect</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="buildingTabPane" data-building-tab-pane="staff">
+      <div class="buildingStaffSummaryBanner">
+        <div class="bStaffSumTop">
+          <div>
+            <span class="upKicker">ASSIGNED BUILDING WORKFORCE</span>
+            <h4>Staff Synergy Multiplier: <em>×${staffMult.toFixed(2)}</em></h4>
+          </div>
+          <span class="bAutoBadge ${leadProfile.hired ? 'on' : 'off'}">
+            ${leadProfile.hired ? '⚡ AUTO-COLLECT ACTIVE' : '👤 MANUAL COLLECTION'}
+          </span>
+        </div>
+        <div class="bStaffBuffPills">
+          <div><span>Cycle Speed</span><b>-${cycleReduction}%</b></div>
+          <div><span>Upgrade Discount</span><b>-${upgradeDiscount}%</b></div>
+          <div><span>Output Bonus</span><b>+${incomeBoost}%</b></div>
+        </div>
+      </div>
+
+      <div class="buildingStaffList">
+        ${rowsHtml}
+      </div>
+    </div>
+  `;
+}
+
+function renderBuildingModesTab(record, ctx) {
+  const { item, def, fixed } = record;
+  const { yieldAmount, secYield, raceBuffVal, service } = ctx;
+  const lineKey = fixed?.lineKey || def.lineKey || 'streetRoute';
+  const leadStaff = supplyManagerByLine(lineKey) || SUPPLY_MANAGERS[0];
+  const supStatus = supplyStatus(lineKey);
+  const conditions = cityConditionStats();
+  const issueKey = def.cityIssueKey || 'mapBuild';
+  const issueCond = conditions[issueKey] || conditions.mapBuild || { label: 'City Service', score: 78, count: 0 };
+
+  return `
+    <div class="buildingTabPane" data-building-tab-pane="modes">
+      <div class="buildingModesIntro">
+        <span>🌐 Cross-Mode Tycoon Synergy</span>
+        <small>Upgrading, stocking, and staffing <b>${escapeHtml(def.shortName)}</b> actively powers all 4 game modes.</small>
+      </div>
+
+      <div class="buildingGameModesGrid">
+        <div class="buildingModeCard mode-world">
+          <div class="bModeHead">
+            <span class="bModeIcon">🏙️</span>
+            <div>
+              <strong>World City &amp; Street Care</strong>
+              <small>${escapeHtml(def.cityEffectLabel || 'District Coverage')}</small>
+            </div>
+            <em class="bModeVal">${issueCond.score}%</em>
+          </div>
+          <p>Satisfies resident need: <b>"${escapeHtml(def.want)}"</b>. District coverage is <b>${service.score}%</b> (${issueCond.count || 0} active street alerts).</p>
+          <div class="bModeFoot">
+            <button class="btn small ghost" onclick="window.openCityIssueMenuSafe?.('${escapeHtml(issueKey)}')">Inspect Street Issue</button>
+          </div>
+        </div>
+
+        <div class="buildingModeCard mode-supply">
+          <div class="bModeHead">
+            <span class="bModeIcon">🏭</span>
+            <div>
+              <strong>Supply Line: ${escapeHtml(leadStaff?.business || 'Service Line')}</strong>
+              <small>Line Lv ${supStatus.level || 1} · ${supStatus.hired ? 'Manager Active' : 'Unassigned'}</small>
+            </div>
+            <em class="bModeVal">+${Math.round(service.score * 0.28)}%</em>
+          </div>
+          <p>Feeds stock &amp; automation into your <b>${escapeHtml(leadStaff?.business || 'Supply Line')}</b> idle business empire.</p>
+          <div class="bModeFoot">
+            <button class="btn small primary" onclick="window.syncBuildingSupplyLineSafe?.()">⚡ Boost Supply Line (45c)</button>
+            <button class="btn small ghost" onclick="window.openSupplyFromWorld?.()">Open Supplies</button>
+          </div>
+        </div>
+
+        <div class="buildingModeCard mode-race">
+          <div class="bModeHead">
+            <span class="bModeIcon">🏁</span>
+            <div>
+              <strong>Road Runner Race Perk</strong>
+              <small>${escapeHtml(def.raceBuffLabel || 'Route Pace')}</small>
+            </div>
+            <em class="bModeVal">+${raceBuffVal}%</em>
+          </div>
+          <p>${escapeHtml(def.raceBuffDesc || 'Boosts vehicle performance in Road Runner.')} Synced live to your race crew telemetry.</p>
+          <div class="bModeFoot">
+            <button class="btn small gold" onclick="window.openPersonGameScreenSafe?.('race')">Launch Road Race</button>
+          </div>
+        </div>
+
+        <div class="buildingModeCard mode-merge">
+          <div class="bModeHead">
+            <span class="bModeIcon">🔩</span>
+            <div>
+              <strong>Merge Bay &amp; 365 Workshop</strong>
+              <small>${escapeHtml(def.mergeBuffLabel || 'Workshop Supply')}</small>
+            </div>
+            <em class="bModeVal">+${secYield.amount * 2} ${escapeHtml(secYield.label)}</em>
+          </div>
+          <p>${escapeHtml(def.mergeBuffDesc || 'Supplies bonus parts & toolkits.')} Crates claimed from this building: <b>${item.cratesClaimed || 0}</b>.</p>
+          <div class="bModeFoot">
+            <button class="btn small primary" onclick="window.claimBuildingWorkshopCrateSafe?.()">📦 Claim Crate (+${secYield.amount * 2} ${escapeHtml(secYield.label)})</button>
+            <button class="btn small ghost" onclick="window.openPersonGameScreenSafe?.('merge')">Open Merge Bay</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderBuildingDistrictTab(target) {
+  const allRecords = allBuildingRecords();
+  const readyCount = allRecords.filter((r) => collectStatus(r.item, r.def).ready).length;
+  const lowStockCount = allRecords.filter((r) => (r.item.stock ?? 80) < 95).length;
+  const damagedCount = allRecords.filter((r) => (r.item.health ?? 88) < 95).length;
+
+  const rowsHtml = allRecords.map((rec) => {
+    const isCurrent = targetMatches(target, rec.target);
+    const st = collectStatus(rec.item, rec.def);
+    const yAmt = buildingYield(rec.item, rec.def);
+    const token = targetToken(rec.target);
+    const stock = Math.round(rec.item.stock ?? 80);
+    const health = Math.round(rec.item.health ?? 88);
+    return `
+      <div class="buildingDistrictRow ${isCurrent ? 'is-current' : ''}">
+        <img class="bDistThumb" src="${buildingAssetForKey(rec.def.key, rec.label, rec.item.level || 1)}" alt="" loading="eager">
+        <div class="bDistInfo">
+          <div class="bDistTitleLine">
+            <strong>${escapeHtml(rec.label)}</strong>
+            <span class="bDistLv">Lv ${rec.item.level || 1}</span>
+            <span class="bDistKind ${rec.kind}">${rec.kind === 'fixed' ? 'HUB' : 'LOT'}</span>
+          </div>
+          <small>
+            Stock <b>${stock}%</b> · Health <b>${health}%</b> ·
+            <em class="${st.ready ? 'ready' : ''}">${st.ready ? `Ready +${yAmt} ${rec.def.outputLabel}` : formatDuration(st.msLeft)}</em>
+          </small>
+        </div>
+        <div class="bDistActions">
+          ${st.ready ? `<button class="btn small primary" onclick="window.collectDistrictBuildingSafe?.('${token}')">Collect</button>` : ''}
+          <button class="btn small ${isCurrent ? 'gold' : 'ghost'}" onclick="window.selectBuildingFromDistrictSafe?.('${token}')">
+            ${isCurrent ? 'Selected' : 'Inspect'}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="buildingTabPane" data-building-tab-pane="district">
+      <div class="buildingBatchBar">
+        <button class="btn small primary" onclick="window.batchBuildingActionSafe?.('collect')">
+          💰 Collect All (${readyCount})
+        </button>
+        <button class="btn small gold" onclick="window.batchBuildingActionSafe?.('restock')">
+          📦 Restock All (${lowStockCount})
+        </button>
+        <button class="btn small ghost" onclick="window.batchBuildingActionSafe?.('repair')">
+          🔧 Repair All (${damagedCount})
+        </button>
+      </div>
+      <div class="buildingDistrictList">
+        ${rowsHtml}
+      </div>
+    </div>
+  `;
+}
+
 function renderBuildingSheet(target) {
   const record = getBuildingRecord(target);
   if (!record) return '';
   const { item, def, fixed } = record;
   const title = fixed?.label || item.name || def.name;
+  const level = item.level || 1;
   const status = collectStatus(item, def);
   const req = upgradeRequirement(item, def);
+  const wm = buildingWorkMode(item);
+  const staffMult = buildingStaffYieldMultiplier(def.key);
   const yieldAmount = buildingYield(item, def);
-  const happiness = Math.round(def.happiness * (item.level || 1) * ((item.stock ?? 70) / 100) * ((item.health ?? 88) / 100));
+  const secYield = buildingSecondaryYield(item, def);
+  const stock = Math.round(item.stock ?? 80);
   const health = Math.round(item.health ?? 88);
+  const happiness = Math.round((def.happiness * level * (stock / 100) * (health / 100)) + (wm.happinessAdd || 0));
+  const power = buildingPower(item, def);
   const isPlaced = target.kind === 'placed';
-  const collectLabel = status.ready ? `Collect +${yieldAmount}` : `Ready in ${formatDuration(status.msLeft)}`;
-  const upgradeLabel = req.maxed ? 'Max Level' : `Upgrade to Lv ${req.nextLevel}`;
-  const requirementClass = req.met ? 'ready' : req.maxed ? 'maxed' : 'locked';
-  const stars = buildingStarsForLevel(item.level || 1);
+  const stars = buildingStarsForLevel(level);
   const starStr = `${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}`;
-  const lineKey = fixed?.lineKey || 'streetRoute';
-  const staff = supplyManagerByLine(lineKey) || SUPPLY_MANAGERS[0];
+  const lineKey = fixed?.lineKey || def.lineKey || 'streetRoute';
   const supStatus = supplyStatus(lineKey);
-  const cycleReduction = Math.min(35, +(3.5 + (item.level || 1) * 1.2 + (supStatus.level || 0) * 0.4).toFixed(1));
-  const upgradeDiscount = Math.min(25, +(2.0 + (item.level || 1) * 0.8).toFixed(1));
-  const incomeBoost = Math.min(120, +(10.0 + (item.level || 1) * 4.5 + (supStatus.hired ? 15 : 0)).toFixed(1));
+  const service = serviceStats(def.key);
+
+  const cycleNow = cycleMsFor(item, def);
+  const nextItemPreview = { ...item, level: Math.min(def.maxLevel || 10, level + 1) };
+  const nextLevelYield = buildingYield(nextItemPreview, def);
+  const nextCycleMs = cycleMsFor(nextItemPreview, def);
+  const nextHappiness = Math.round((def.happiness * (level + 1) * (stock / 100) * (health / 100)) + (wm.happinessAdd || 0));
+
+  const raceBuffVal = Math.max(3, Math.round((2.5 + level * 1.8) * (stock / 100) * (health / 100) * wm.modeBuffMult * staffMult));
+  const nextRaceBuffVal = Math.max(raceBuffVal + 2, Math.round((2.5 + (level + 1) * 1.8) * (stock / 100) * (health / 100) * wm.modeBuffMult * staffMult));
+
+  const cycleReduction = Math.min(45, +(3.5 + level * 1.4 + (supStatus.level || 0) * 0.6 + (staffMult - 1) * 28).toFixed(1));
+  const upgradeDiscount = Math.min(30, +(2.0 + level * 0.9 + (staffMult - 1) * 20).toFixed(1));
+  const incomeBoost = Math.min(160, +((staffMult - 1) * 100 + (wm.yieldMult - 1) * 100 + (level - 1) * 6).toFixed(1));
   const tierCode = stars >= 4 ? 'SSR' : stars >= 2 ? 'SR' : 'R';
-  const tierCls = tierCode.toLowerCase();
+
+  const { people } = buildingLinkedPeople(def, fixed);
+  const hiredCount = people.filter((p) => personProfile(p).hired).length;
+  const allRecords = allBuildingRecords();
+
+  const restockCost = stock >= 100 ? 0 : Math.max(10, Math.round(((100 - stock) / 100) * (def.restockCostBase || 32)));
+  const repairCost = health >= 100 ? 0 : Math.max(10, Math.round(((100 - health) / 100) * (def.repairCostBase || 28)));
+
+  let opStateLabel = '🟢 OPERATING';
+  let opStateCls = 'operating';
+  if (status.ready) {
+    opStateLabel = '💰 READY TO COLLECT';
+    opStateCls = 'ready';
+  } else if (health < 65) {
+    opStateLabel = '🔧 NEEDS REPAIR';
+    opStateCls = 'warn';
+  } else if (stock < 50) {
+    opStateLabel = '🟡 LOW STOCK';
+    opStateCls = 'warn';
+  }
+
+  const ctx = {
+    level, stock, health, happiness, power, tierCode,
+    yieldAmount, secYield, cycleNow, req, service, wm,
+    staffMult, cycleReduction, upgradeDiscount, incomeBoost,
+    raceBuffVal, nextLevelYield, nextCycleMs, nextHappiness, nextRaceBuffVal
+  };
+
+  let activeTabContent = '';
+  if (selectedBuildingTab === 'staff') {
+    activeTabContent = renderBuildingStaffTab(record, ctx);
+  } else if (selectedBuildingTab === 'modes') {
+    activeTabContent = renderBuildingModesTab(record, ctx);
+  } else if (selectedBuildingTab === 'district') {
+    activeTabContent = renderBuildingDistrictTab(target);
+  } else {
+    activeTabContent = renderBuildingOverviewTab(record, ctx);
+  }
 
   return `
-    <div class="mobileTrayTitle" data-building-sheet>
-      <span>${escapeHtml(title)}</span>
-      <span class="richdomStarRow">${starStr} · ${isPlaced ? 'Placed' : 'City'}</span>
-    </div>
-    <div class="mobileBuildingHero">
-      <img src="${buildingAssetForKey(def.key, title, item.level || 1)}" alt="" loading="eager">
-      <div>
-        <b>${escapeHtml(def.name)}</b>
-        <small>${escapeHtml(def.want)}</small>
+    <div class="buildingWindow" data-building-sheet>
+      <div class="buildingWindowHeader">
+        <div class="buildingHeroIconBox">
+          <img src="${buildingAssetForKey(def.key, title, level)}" alt="${escapeHtml(title)}" loading="eager">
+          <span class="buildingHeroStars">${starStr}</span>
+        </div>
+        <div class="buildingHeaderMain">
+          <div class="buildingHeaderKickerRow">
+            <span class="buildingCategoryTag">${escapeHtml(def.category || 'City Service')}</span>
+            <span class="buildingLotTag">${isPlaced ? `PLACED · ${def.footprintW}x${def.footprintH}` : `CORE HUB · ${(fixed?.w || def.footprintW)}x${(fixed?.h || def.footprintH)}`}</span>
+            <span class="buildingOpBadge ${opStateCls}">${opStateLabel}</span>
+          </div>
+          <h3 class="buildingWindowTitle">${escapeHtml(title)}</h3>
+          <p class="buildingWindowSub">${escapeHtml(def.bonus)} — <em>${escapeHtml(def.want)}</em></p>
+        </div>
+        <div class="buildingHeaderRight">
+          <div class="buildingLevelOrb">
+            <span>LEVEL</span>
+            <strong data-placed-level>${level}</strong>
+            <small>/ ${def.maxLevel || 10}</small>
+          </div>
+          <button class="buildingCloseX" onclick="window.closeMobileBuildingSheetSafe?.()" title="Close">✕</button>
+        </div>
       </div>
-      <div class="mobileBuildingLevel"><span>Lv</span><strong data-placed-level>${item.level || 1}</strong></div>
-    </div>
-    <div class="richdomBuildingProfitBar">
-      <span class="richdomProfitFill" style="width:${Math.round(status.pct)}%"></span>
-      <div class="richdomProfitLabels">
-        <span>⏱ ${status.ready ? 'READY' : formatDuration(status.msLeft)}</span>
-        <b>+${yieldAmount} ${escapeHtml(def.outputLabel)}</b>
+
+      <div class="buildingProfitCard ${status.ready ? 'is-ready' : 'is-cycling'}">
+        <div class="buildingProfitTop">
+          <div class="bProfitTimerCol">
+            <span class="bProfitTimerLabel">${status.ready ? '💰 PRODUCTION COMPLETE' : `⏱ NEXT PAYOUT IN ${formatDuration(status.msLeft)}`}</span>
+            <small>Cycle: <b>${formatDuration(cycleNow)}</b> · Mode: <b>${wm.icon} ${escapeHtml(wm.shortLabel)}</b> · Staff: <b>×${staffMult.toFixed(2)}</b></small>
+          </div>
+          <div class="bProfitYieldPills">
+            <span class="bYieldPrimary">+${yieldAmount} ${escapeHtml(def.outputLabel)}</span>
+            <span class="bYieldSecondary">+${secYield.amount} ${escapeHtml(secYield.label)}</span>
+          </div>
+        </div>
+        <div class="buildingProfitProgressTrack">
+          <span class="buildingProfitProgressFill" style="width:${Math.round(status.pct)}%"></span>
+        </div>
+        <div class="buildingProfitFoot">
+          <span class="bMultFormula">
+            Base ${def.baseYield} × Lv${level} × Staff ${(staffMult).toFixed(2)}x × Stock ${stock}% × ${escapeHtml(wm.shortLabel)} ${(wm.yieldMult).toFixed(2)}x
+          </span>
+          ${status.ready ? `
+            <button class="btn small primary bInstantCollectBtn" onclick="window.collectSelectedMobileBuildingSafe?.()">
+              💰 Collect +${yieldAmount} ${escapeHtml(def.outputLabel)} &amp; +${secYield.amount} ${escapeHtml(secYield.label)}
+            </button>
+          ` : `
+            <button class="btn small gold bInstantRushBtn" onclick="window.rushSelectedMobileBuildingSafe?.()">
+              ⚡ Rush Cycle Now (${status.rushCostCoins}c) → +${yieldAmount} ${escapeHtml(def.outputLabel)}
+            </button>
+          `}
+        </div>
       </div>
-    </div>
-    <div class="mobileBuildingStatsGrid">
-      <div><strong>${escapeHtml(def.outputLabel)}</strong><span>+${yieldAmount} / collect</span></div>
-      <div><strong>${status.ready ? 'Ready' : formatDuration(status.msLeft)}</strong><span>${Math.round(status.pct)}% timer</span></div>
-      <div><strong data-placed-stock>${Math.round(item.stock ?? 70)}%</strong><span>Stock</span></div>
-      <div><strong>+${happiness}</strong><span>Happiness</span></div>
-      <div><strong>${health}%</strong><span>Health</span></div>
-      <div><strong>${item.collected || 0}</strong><span>Collections</span></div>
-    </div>
-    <div class="mobileCityMeter mobileBuildingMeter"><span style="--meter-value:${Math.round(item.stock ?? 70)}%" data-placed-stock-meter></span></div>
-    <div class="richdomManagerBuffBox worldBuildingMgrBox">
-      <div class="richdomManagerBuffHead">
-        <span class="richdomTierBadge ${tierCls}">${tierCode}</span>
-        <b>${escapeHtml(staff?.name || 'Elite Manager')}</b>
-        <span class="assignRole ${supStatus.hired ? 'workingRibbon' : 'hired'}">${supStatus.hired ? 'Working' : 'Unassigned'}</span>
+
+      ${lastBuildingActionNote ? `
+        <div class="buildingFeedbackBanner">
+          <span>✨ ${escapeHtml(lastBuildingActionNote)}</span>
+        </div>
+      ` : ''}
+
+      <div class="buildingTabBar" role="tablist">
+        <button class="buildingTabBtn ${selectedBuildingTab === 'overview' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('overview')">
+          📊 Ops &amp; Upgrade
+        </button>
+        <button class="buildingTabBtn ${selectedBuildingTab === 'staff' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('staff')">
+          👷 Staff (${hiredCount}/${people.length})
+        </button>
+        <button class="buildingTabBtn ${selectedBuildingTab === 'modes' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('modes')">
+          🌐 Game Links
+        </button>
+        <button class="buildingTabBtn ${selectedBuildingTab === 'district' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('district')">
+          🏢 District (${allRecords.length})
+        </button>
       </div>
-      <div class="richdomBuffRows">
-        <div><span>Income cycle reduced</span><b>-${cycleReduction}%</b></div>
-        <div><span>Building upgrade cost reduced</span><b>-${upgradeDiscount}%</b></div>
-        <div><span>${escapeHtml(def.outputLabel)} income increased</span><b>+${incomeBoost}%</b></div>
+
+      <div class="buildingTabContent">
+        ${activeTabContent}
       </div>
-    </div>
-    <div class="mobileBuildingBonus">
-      <img src="${WORLD_ASSETS.ui.bonusBadge}" alt="" loading="eager">
-      <span><b>Building Bonus</b>${escapeHtml(def.bonus)}. Cycle improves with level: ${formatDuration(cycleMsFor(item, def))}.</span>
-    </div>
-    <div class="mobileBuildingRequirement ${requirementClass}">
-      <img src="${WORLD_ASSETS.ui.requirementBadge}" alt="" loading="eager">
-      <span><b>Upgrade Requirements</b>${escapeHtml(req.text)}${req.maxed ? '' : ` (${req.met ? 'ready' : 'missing'})`}</span>
-    </div>
-    <div class="mobilePlacedActions mobileBuildingActions">
-      <button class="btn primary" onclick="window.collectSelectedMobileBuildingSafe?.()" ${status.ready ? '' : 'disabled'}>${collectLabel}</button>
-      <button class="btn primary" onclick="window.upgradeSelectedMobileBuildingSafe?.()" ${req.met ? '' : 'disabled'}>${upgradeLabel}</button>
-      <button class="btn gold" onclick="window.restockSelectedMobileBuildingSafe?.()">Restock</button>
-      <button class="btn" onclick="window.repairSelectedMobileBuildingSafe?.()" ${health >= 100 ? 'disabled' : ''}>Repair</button>
-      ${isPlaced ? '<button class="btn ghost" onclick="window.moveSelectedMobileBuildingSafe?.()">Move</button>' : '<button class="btn gold" onclick="window.openSupplyFromWorld?.()">Open Supplies</button>'}
-      <button class="btn ghost" onclick="window.closeMobileBuildingSheetSafe?.()">Close</button>
+
+      <div class="mobilePlacedActions mobileBuildingActions buildingCommandDock">
+        ${status.ready ? `
+          <button class="btn primary" onclick="window.collectSelectedMobileBuildingSafe?.()">
+            💰 Collect +${yieldAmount} ${escapeHtml(def.outputLabel)}
+          </button>
+        ` : `
+          <button class="btn gold" onclick="window.rushSelectedMobileBuildingSafe?.()">
+            ⚡ Rush (${status.rushCostCoins}c)
+          </button>
+        `}
+        <button class="btn primary" onclick="window.upgradeSelectedMobileBuildingSafe?.()" ${req.maxed ? 'disabled' : ''}>
+          ${req.maxed ? '★ Max Level' : `⬆️ Upgrade Lv ${req.nextLevel} (${req.coinCost}c)`}
+        </button>
+        <button class="btn gold" onclick="window.restockSelectedMobileBuildingSafe?.()" ${stock >= 100 ? 'disabled' : ''}>
+          ${stock >= 100 ? '📦 Stock 100%' : `📦 Restock (${restockCost}c)`}
+        </button>
+        <button class="btn" onclick="window.repairSelectedMobileBuildingSafe?.()" ${health >= 100 ? 'disabled' : ''}>
+          ${health >= 100 ? '🔧 Health 100%' : `🔧 Repair (${repairCost}c)`}
+        </button>
+        ${isPlaced
+          ? '<button class="btn ghost" onclick="window.moveSelectedMobileBuildingSafe?.()">📐 Move Lot</button>'
+          : '<button class="btn ghost" onclick="window.openSupplyFromWorld?.()">🏭 Supplies</button>'}
+        <button class="btn ghost" onclick="window.closeMobileBuildingSheetSafe?.()">Close</button>
+      </div>
     </div>
   `;
 }
@@ -3521,6 +4430,7 @@ function openBuildingSheet(target, refresh = false) {
   if (mode !== 'normal') return;
   const record = getBuildingRecord(target);
   if (!record) return;
+  const isNewSelection = !targetMatches(selectedBuildingTarget, target);
   const residentSheet = document.querySelector('[data-resident-sheet]');
   if (residentSheet) residentSheet.hidden = true;
   const vehicleSheet = document.querySelector('[data-vehicle-sheet]');
@@ -3532,14 +4442,20 @@ function openBuildingSheet(target, refresh = false) {
   selectedResidentKey = null;
   selectedSupplyKey = null;
   selectedResidentMenu = 'mood';
+  if (isNewSelection && !refresh) {
+    lastBuildingActionNote = '';
+    focusBuildingTargetOnMap(target);
+    sync3DBuildings();
+  }
   const hud = document.querySelector('.mobileCityHud');
   hud?.classList.remove('resident-open', 'vehicle-open');
   hud?.classList.add('building-open');
   const sheet = document.querySelector('[data-placed-sheet]');
   if (sheet) {
+    const prevScroll = sheet.scrollTop;
     sheet.innerHTML = renderBuildingSheet(target);
     sheet.hidden = false;
-    if (!refresh) sheet.scrollTop = 0;
+    sheet.scrollTop = refresh ? prevScroll : 0;
   }
   publishWorldOpenState();
 }
@@ -3598,6 +4514,7 @@ function openVehicleInspector(trafficItem) {
   selectedPlacedId = null;
   selectedResidentKey = null;
   selectedSupplyKey = null;
+  sync3DBuildings();
   const hud = document.querySelector('.mobileCityHud');
   hud?.classList.remove('resident-open', 'building-open', 'build-mode');
   hud?.classList.add('vehicle-open');
@@ -3619,17 +4536,32 @@ function collectBuildingTarget(target, options = {}) {
   const record = getBuildingRecord(target);
   if (!record || mode !== 'normal') return false;
   const status = collectStatus(record.item, record.def);
-  if (!status.ready) return false;
+  if (!status.ready && !options.forceCollect) return false;
+  const wm = buildingWorkMode(record.item);
   const amount = buildingYield(record.item, record.def);
+  const sec = buildingSecondaryYield(record.item, record.def);
+  const drain = (record.def.stockDrain || 10) + (wm.drainAdd || 0);
+  const bTitle = record.fixed?.label || record.item.name || record.def.shortName;
   updateBuildingRecord(target, (item, def) => {
     item.lastCollectedAt = Date.now();
     item.collected = (item.collected || 0) + 1;
-    item.stock = Math.max(0, (item.stock ?? 80) - (def.stockDrain || 10));
-    item.health = Math.max(0, (item.health ?? 88) - Math.max(2, Math.round((def.stockDrain || 10) / 4)));
-    item.lastReward = { output: def.output, label: def.outputLabel, amount, at: Date.now() };
+    item.stock = Math.max(0, (item.stock ?? 80) - drain);
+    item.health = Math.max(0, (item.health ?? 88) - Math.max(2, Math.round(drain / 4)));
+    item.lastReward = { output: def.output, label: def.outputLabel, amount, secondaryOutput: sec.output, secondaryAmount: sec.amount, at: Date.now() };
   });
+  lastBuildingActionNote = `Collected +${amount} ${record.def.outputLabel} & +${sec.amount} ${sec.label} from ${bTitle}!`;
   window.dispatchEvent(new CustomEvent('world-building-collect', {
-    detail: { output: record.def.output, amount, label: record.def.outputLabel }
+    detail: {
+      output: record.def.output,
+      amount,
+      label: record.def.outputLabel,
+      secondaryOutput: sec.output,
+      secondaryAmount: sec.amount,
+      secondaryLabel: sec.label,
+      buildingName: bTitle,
+      worldBuildingPerks: computeWorldBuildingPerks(),
+      cityAverageHappiness: cityNeedStats().average
+    }
   }));
   rebuildFixedBuildings();
   rebuildPlacements();
@@ -4388,9 +5320,12 @@ window.closeMobileBuildingSheetSafe = () => {
   selectedBuildingTarget = null;
   selectedResidentKey = null;
   selectedResidentMenu = 'mood';
+  lastBuildingActionNote = '';
+  sync3DBuildings();
   document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open', 'vehicle-open');
   const sheet = document.querySelector('[data-placed-sheet]');
   if (sheet) sheet.hidden = true;
+  publishWorldOpenState();
 };
 
 window.closeMobileResidentSheetSafe = () => {
@@ -4400,14 +5335,54 @@ window.closeMobileResidentSheetSafe = () => {
   selectedSupplyKey = null;
   selectedResidentMenu = 'mood';
   document.querySelector('.mobileCityHud')?.classList.remove('resident-open');
+  publishWorldOpenState();
 };
 
 window.openSupplyFromWorld = () => {
   document.querySelector('.pixiWorldProxy[data-proxy="lines"]')?.click();
 };
 
+window.openBuildingTabSafe = (tabKey = 'overview') => {
+  selectedBuildingTab = ['overview', 'staff', 'modes', 'district'].includes(tabKey) ? tabKey : 'overview';
+  if (selectedBuildingTarget) openBuildingSheet(selectedBuildingTarget, true);
+  return selectedBuildingTab;
+};
+
+window.setBuildingWorkModeSafe = (modeKey = 'standard') => {
+  const target = selectedBuildingTarget;
+  const record = getBuildingRecord(target);
+  if (!record || !BUILDING_WORK_MODES[modeKey]) return false;
+  const wm = BUILDING_WORK_MODES[modeKey];
+  const bTitle = record.fixed?.label || record.item.name || record.def.shortName;
+  updateBuildingRecord(target, (item) => {
+    item.workMode = modeKey;
+  });
+  lastBuildingActionNote = `${bTitle} switched to ${wm.icon} ${wm.label} (${wm.desc})!`;
+  dispatchWorldBuildingSync({
+    note: `${bTitle} set to ${wm.label}!`
+  });
+  rebuildFixedBuildings();
+  rebuildPlacements();
+  openBuildingSheet(target, true);
+  updateHud();
+  return true;
+};
+
 window.collectSelectedMobileBuildingSafe = () => {
   return collectBuildingTarget(selectedBuildingTarget, { refreshOpenSheet: true });
+};
+
+window.rushSelectedMobileBuildingSafe = () => {
+  const target = selectedBuildingTarget;
+  const record = getBuildingRecord(target);
+  if (!record) return false;
+  const status = collectStatus(record.item, record.def);
+  const rushFee = status.rushCostCoins || 10;
+  const purse = playerPurse();
+  const charge = Math.min(Number(purse.coins ?? rushFee), rushFee);
+  if (typeof purse.coins === 'number') purse.coins = Math.max(0, purse.coins - charge);
+  dispatchWorldBuildingSync({ costCoins: charge });
+  return collectBuildingTarget(target, { refreshOpenSheet: true, forceCollect: true });
 };
 
 window.upgradeSelectedMobileBuildingSafe = () => {
@@ -4415,11 +5390,22 @@ window.upgradeSelectedMobileBuildingSafe = () => {
   const record = getBuildingRecord(target);
   if (!record) return false;
   const req = upgradeRequirement(record.item, record.def);
-  if (!req.met || req.maxed) return false;
+  if (req.maxed) return false;
+  const bTitle = record.fixed?.label || record.item.name || record.def.shortName;
+  const purse = playerPurse();
+  const charge = Math.min(Number(purse.coins ?? req.coinCost), req.coinCost);
+  if (typeof purse.coins === 'number') purse.coins = Math.max(0, purse.coins - charge);
   updateBuildingRecord(target, (item) => {
     item.level = req.nextLevel;
-    item.stock = Math.max(25, (item.stock ?? 80) - 10);
-    item.health = Math.min(100, (item.health ?? 88) + 15);
+    item.stock = Math.max(85, item.stock ?? 80);
+    item.health = 100;
+    item.collected = Math.max(item.collected || 0, req.collectNeed || 0);
+  });
+  const newYield = buildingYield(record.item, record.def);
+  lastBuildingActionNote = `Upgraded ${bTitle} to Level ${req.nextLevel}! Output is now +${newYield} ${record.def.outputLabel}/cycle.`;
+  dispatchWorldBuildingSync({
+    costCoins: charge,
+    note: `${bTitle} upgraded to Lv ${req.nextLevel}! (+${newYield} ${record.def.outputLabel}/run)`
   });
   rebuildFixedBuildings();
   rebuildPlacements();
@@ -4434,7 +5420,18 @@ window.restockSelectedMobileBuildingSafe = () => {
   const target = selectedBuildingTarget;
   const record = getBuildingRecord(target);
   if (!record) return false;
+  const stockNow = Math.round(record.item.stock ?? 80);
+  const restockCost = stockNow >= 100 ? 0 : Math.max(10, Math.round(((100 - stockNow) / 100) * (record.def.restockCostBase || 32)));
+  const bTitle = record.fixed?.label || record.item.name || record.def.shortName;
+  const purse = playerPurse();
+  const charge = Math.min(Number(purse.coins ?? restockCost), restockCost);
+  if (typeof purse.coins === 'number') purse.coins = Math.max(0, purse.coins - charge);
   updateBuildingRecord(target, (item) => { item.stock = 100; });
+  lastBuildingActionNote = `Restocked ${bTitle} to 100% supply capacity!`;
+  dispatchWorldBuildingSync({
+    costCoins: charge,
+    note: `${bTitle} restocked to 100%!`
+  });
   rebuildFixedBuildings();
   rebuildPlacements();
   rebuildIncidents();
@@ -4447,10 +5444,21 @@ window.restockSelectedMobileBuildingSafe = () => {
 function repairBuildingTarget(target, options = {}) {
   const record = getBuildingRecord(target);
   if (!record) return false;
+  const healthNow = Math.round(record.item.health ?? 88);
+  const repairCost = healthNow >= 100 ? 0 : Math.max(10, Math.round(((100 - healthNow) / 100) * (record.def.repairCostBase || 28)));
+  const bTitle = record.fixed?.label || record.item.name || record.def.shortName;
+  const purse = playerPurse();
+  const charge = Math.min(Number(purse.coins ?? repairCost), repairCost);
+  if (typeof purse.coins === 'number') purse.coins = Math.max(0, purse.coins - charge);
   updateBuildingRecord(target, (item) => {
     item.health = 100;
     item.lastRepairedAt = Date.now();
     item.repairs = (item.repairs || 0) + 1;
+  });
+  lastBuildingActionNote = `Repaired ${bTitle} to 100% structural health!`;
+  dispatchWorldBuildingSync({
+    costCoins: charge,
+    note: `${bTitle} repaired to 100% health!`
   });
   rebuildFixedBuildings();
   rebuildPlacements();
@@ -4463,6 +5471,179 @@ function repairBuildingTarget(target, options = {}) {
 
 window.repairSelectedMobileBuildingSafe = () => {
   return repairBuildingTarget(selectedBuildingTarget, { refreshOpenSheet: true });
+};
+
+window.hireBuildingPersonSafe = (personId) => {
+  const ok = window.hireWorldPersonSafe?.(personId);
+  const person = residentByKey(personId);
+  if (person) {
+    lastBuildingActionNote = `Hired ${person.name} (${person.jobTitle})! Building yield & cycle speed boosted.`;
+  }
+  rebuildFixedBuildings();
+  rebuildPlacements();
+  if (selectedBuildingTarget) openBuildingSheet(selectedBuildingTarget, true);
+  return ok;
+};
+
+window.trainBuildingPersonSafe = (personId) => {
+  const ok = window.trainWorldPersonSafe?.(personId);
+  const person = residentByKey(personId);
+  if (person) {
+    const prof = personProfile(person);
+    lastBuildingActionNote = `Trained ${person.name} to Lv ${prof.level}! Building staff multiplier increased.`;
+  }
+  rebuildFixedBuildings();
+  rebuildPlacements();
+  if (selectedBuildingTarget) openBuildingSheet(selectedBuildingTarget, true);
+  return ok;
+};
+
+window.boostBuildingPersonSafe = (personId) => {
+  const ok = window.boostWorldPersonSafe?.(personId);
+  const person = residentByKey(personId);
+  if (person) {
+    const mood = residentMood(person);
+    lastBuildingActionNote = `Boosted ${person.name}'s morale to ${mood.score}% (${mood.label})!`;
+  }
+  rebuildFixedBuildings();
+  rebuildPlacements();
+  if (selectedBuildingTarget) openBuildingSheet(selectedBuildingTarget, true);
+  return ok;
+};
+
+window.inspectBuildingPersonSafe = (personId) => {
+  const person = residentByKey(personId);
+  if (!person) return false;
+  const sheet = document.querySelector('[data-placed-sheet]');
+  if (sheet) sheet.hidden = true;
+  selectedBuildingTarget = null;
+  selectedPlacedId = null;
+  sync3DBuildings();
+  if (person.lineKey) openSupplyManager(person);
+  else openResidentSheet(person);
+  return true;
+};
+
+window.syncBuildingSupplyLineSafe = () => {
+  const target = selectedBuildingTarget;
+  const record = getBuildingRecord(target);
+  if (!record) return false;
+  const lineKey = record.fixed?.lineKey || record.def.lineKey || 'streetRoute';
+  const leadStaff = supplyManagerByLine(lineKey) || SUPPLY_MANAGERS[0];
+  const save = readSupplyState();
+  save.idleLines = save.idleLines || {};
+  save.idleLines.lines = save.idleLines.lines || {};
+  const cur = save.idleLines.lines[lineKey] || { level: 1, cycle: 0, collected: 0 };
+  const nextLv = (cur.level || 1) + 1;
+  cur.level = nextLv;
+  save.idleLines.lines[lineKey] = cur;
+  save.idleLines.managers = { ...(save.idleLines.managers || {}), [lineKey]: true };
+  save.idleLines.autoCollect = { ...(save.idleLines.autoCollect || {}), [lineKey]: true };
+  try {
+    localStorage.setItem('autoMergeGarageV10LocalOnly', JSON.stringify(save));
+  } catch {}
+  lastBuildingActionNote = `Boosted ${leadStaff?.business || 'Supply Line'} to Lv ${nextLv} & synced auto-collect!`;
+  dispatchWorldBuildingSync({
+    costCoins: 45,
+    supplyLineKey: lineKey,
+    supplyLineLevel: nextLv,
+    autoCollect: true,
+    note: `${leadStaff?.business || 'Supply Line'} boosted to Lv ${nextLv}!`
+  });
+  rebuildFixedBuildings();
+  rebuildPlacements();
+  openBuildingSheet(target, true);
+  updateHud();
+  return true;
+};
+
+window.claimBuildingWorkshopCrateSafe = () => {
+  const target = selectedBuildingTarget;
+  const record = getBuildingRecord(target);
+  if (!record) return false;
+  const sec = buildingSecondaryYield(record.item, record.def);
+  const crateAmt = sec.amount * 2;
+  const bonusCoins = Math.max(12, Math.round(buildingYield(record.item, record.def) * 0.6));
+  const bTitle = record.fixed?.label || record.item.name || record.def.shortName;
+  updateBuildingRecord(target, (item) => {
+    item.cratesClaimed = (item.cratesClaimed || 0) + 1;
+  });
+  lastBuildingActionNote = `Claimed Workshop Crate from ${bTitle}: +${crateAmt} ${sec.label} & +${bonusCoins} Coins!`;
+  dispatchWorldBuildingSync({
+    rewardCurrencies: {
+      [sec.output]: crateAmt,
+      coins: bonusCoins
+    },
+    note: `Workshop Crate claimed: +${crateAmt} ${sec.label} & +${bonusCoins} Coins!`
+  });
+  openBuildingSheet(target, true);
+  updateHud();
+  return true;
+};
+
+window.selectBuildingFromDistrictSafe = (token) => {
+  const target = targetFromToken(token);
+  if (!target) return false;
+  selectedBuildingTab = 'overview';
+  openBuildingSheet(target);
+  return true;
+};
+
+window.collectDistrictBuildingSafe = (token) => {
+  const target = targetFromToken(token);
+  if (!target) return false;
+  collectBuildingTarget(target, { refreshOpenSheet: false, forceCollect: true });
+  if (selectedBuildingTarget) openBuildingSheet(selectedBuildingTarget, true);
+  return true;
+};
+
+window.batchBuildingActionSafe = (action = 'collect') => {
+  const records = allBuildingRecords();
+  let count = 0;
+  let totalCoinsEarned = 0;
+  if (action === 'collect') {
+    for (const rec of records) {
+      const st = collectStatus(rec.item, rec.def);
+      if (st.ready) {
+        totalCoinsEarned += buildingYield(rec.item, rec.def);
+        collectBuildingTarget(rec.target, { refreshOpenSheet: false });
+        count += 1;
+      }
+    }
+    lastBuildingActionNote = count > 0
+      ? `Batch collected ${count} ready building${count === 1 ? '' : 's'} (+${totalCoinsEarned} primary output)!`
+      : 'All buildings are currently mid-cycle. Use Rush Cycle for instant collection!';
+  } else if (action === 'restock') {
+    for (const rec of records) {
+      if ((rec.item.stock ?? 80) < 100) {
+        updateBuildingRecord(rec.target, (item) => { item.stock = 100; });
+        count += 1;
+      }
+    }
+    lastBuildingActionNote = `Restocked ${count} city building${count === 1 ? '' : 's'} to 100% supply!`;
+    dispatchWorldBuildingSync({
+      costCoins: count * 18,
+      note: `Restocked ${count} city buildings to 100%!`
+    });
+  } else if (action === 'repair') {
+    for (const rec of records) {
+      if ((rec.item.health ?? 88) < 100) {
+        updateBuildingRecord(rec.target, (item) => { item.health = 100; });
+        count += 1;
+      }
+    }
+    lastBuildingActionNote = `Repaired ${count} city building${count === 1 ? '' : 's'} to 100% health!`;
+    dispatchWorldBuildingSync({
+      costCoins: count * 15,
+      note: `Repaired ${count} city buildings to 100% health!`
+    });
+  }
+  rebuildFixedBuildings();
+  rebuildPlacements();
+  rebuildIncidents();
+  if (selectedBuildingTarget) openBuildingSheet(selectedBuildingTarget, true);
+  updateHud();
+  return count;
 };
 
 window.moveSelectedMobileBuildingSafe = () => {
@@ -4540,17 +5721,18 @@ window.panMobileCitySafe = (x = 0, y = 0) => {
 };
 
 function computeBuildingsStateSig() {
+  const selSig = selectedBuildingTarget ? `${selectedBuildingTarget.kind}:${selectedBuildingTarget.id}` : 'none';
   const fixedSig = CITY_BUILDINGS.map((b) => {
     const id = fixedId(b);
     const st = fixedBuildingStates[id] || normalizeBuildingState({}, b.type);
     const ready = collectStatus(st, defByKey(b.type)).ready ? 1 : 0;
-    return `${id}:${st.level || 1}:${ready}`;
+    return `${id}:${st.level || 1}:${ready}:${st.workMode || 'standard'}`;
   }).join('|');
   const placedSig = placedBuildings.map((b) => {
     const ready = collectStatus(b, defByKey(b.type)).ready ? 1 : 0;
-    return `${b.id}:${b.x},${b.y},${b.rotation || 0}:${b.level || 1}:${ready}`;
+    return `${b.id}:${b.x},${b.y},${b.rotation || 0}:${b.level || 1}:${ready}:${b.workMode || 'standard'}`;
   }).join('|');
-  return `${mode}#${fixedSig}#${placedSig}`;
+  return `${mode}#${selSig}#${fixedSig}#${placedSig}`;
 }
 
 function buildWorld() {
@@ -4646,14 +5828,15 @@ function buildWorld() {
   rebuildIncidents();
   rebuildGrid();
   lastBuildingsStateSig = computeBuildingsStateSig();
+  dispatchWorldBuildingSync();
   updateHud();
 }
 
 function clamp() {
   const viewW = app.renderer.width / app.renderer.resolution;
   const viewH = app.renderer.height / app.renderer.resolution;
-  world.x = Math.max(Math.min(0, viewW - WORLD.width), Math.min(0, world.x));
-  world.y = Math.max(Math.min(0, viewH - WORLD.height), Math.min(0, world.y));
+  world.x = Math.max(Math.min(0, viewW - WORLD.width - 120), Math.min(220, world.x));
+  world.y = Math.max(Math.min(0, viewH - WORLD.height - 120), Math.min(260, world.y));
 }
 
 function setupCamera(host) {

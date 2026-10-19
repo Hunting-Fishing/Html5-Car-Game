@@ -1239,6 +1239,7 @@ export function create3DBuilding({
   h = 120,
   level = 1,
   ready = false,
+  selected = false,
   statusText = 'Collect',
   rotation = 0
 } = {}) {
@@ -1251,7 +1252,8 @@ export function create3DBuilding({
     forklift: null,
     trackCar: null,
     signGroup: null,
-    collectible3D: null
+    collectible3D: null,
+    selectionRing: null
   };
 
   // 1. 3D Beveled Concrete Plaza Base & Dark Asphalt Forecourt with Painted Parking Stalls
@@ -1259,7 +1261,11 @@ export function create3DBuilding({
   const padD = h + 16;
   const concretePad = new THREE.Mesh(
     new THREE.BoxGeometry(padW, 5.2, padD),
-    getMat(0xe2e8f0, { roughness: 0.55 })
+    getMat(selected ? 0xfef08a : 0xe2e8f0, {
+      roughness: 0.45,
+      emissive: selected ? 0xf59e0b : 0x000000,
+      emissiveIntensity: selected ? 0.35 : 0
+    })
   );
   concretePad.position.y = 2.6;
   concretePad.receiveShadow = true;
@@ -1274,15 +1280,23 @@ export function create3DBuilding({
   asphaltLot.receiveShadow = true;
   group.add(asphaltLot);
 
-  const rimMat = getMat(ready ? 0x35e58a : pal.accent, {
-    emissive: ready ? 0x35e58a : pal.accent,
-    emissiveIntensity: ready ? 1.15 : 0.55
+  const rimColor = selected ? 0xfacc15 : ready ? 0x35e58a : pal.accent;
+  const rimMat = getMat(rimColor, {
+    emissive: rimColor,
+    emissiveIntensity: selected ? 1.85 : ready ? 1.15 : 0.55
   });
-  const frontRim = new THREE.Mesh(new THREE.BoxGeometry(w + 6, 1.6, 2.6), rimMat);
+  const frontRim = new THREE.Mesh(new THREE.BoxGeometry(w + 6, selected ? 2.4 : 1.6, selected ? 3.4 : 2.6), rimMat);
   frontRim.position.set(0, 5.7, (h + 4) / 2);
-  const leftRim = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.6, h + 6), rimMat);
+  const leftRim = new THREE.Mesh(new THREE.BoxGeometry(selected ? 3.4 : 2.6, selected ? 2.4 : 1.6, h + 6), rimMat);
   leftRim.position.set(-(w + 4) / 2, 5.7, 0);
   group.add(frontRim, leftRim);
+  if (selected) {
+    const backRim = new THREE.Mesh(new THREE.BoxGeometry(w + 6, 2.4, 3.4), rimMat);
+    backRim.position.set(0, 5.7, -(h + 4) / 2);
+    const rightRim = new THREE.Mesh(new THREE.BoxGeometry(3.4, 2.4, h + 6), rimMat);
+    rightRim.position.set((w + 4) / 2, 5.7, 0);
+    group.add(backRim, rightRim);
+  }
 
   // Yellow safety driveway apron + crisp white forecourt parking stall lines
   const apronF = new THREE.Mesh(
@@ -1667,20 +1681,33 @@ export function create3DBuilding({
     animParts.collectible3D = { node: token3D, baseY: roofY + 26 };
   }
 
+  if (selected) {
+    const selGroup = new THREE.Group();
+    selGroup.position.set(0, roofY + 18, 0);
+    const haloRing = new THREE.Mesh(
+      new THREE.TorusGeometry(Math.max(18, bW * 0.28), 1.6, 10, 28),
+      getMat(0xfacc15, { emissive: 0xfacc15, emissiveIntensity: 1.85 })
+    );
+    haloRing.rotation.x = Math.PI / 2;
+    selGroup.add(haloRing);
+    group.add(selGroup);
+    animParts.selectionRing = selGroup;
+  }
+
   // 6. Floating 3D Status Pill Badge Above Rooftop
   const hudSprite = makeLabelSprite(
     [
-      `${name} · Lv ${level}`,
+      selected ? `★ ${name} · Lv ${level}` : `${name} · Lv ${level}`,
       ready ? `✓ ${statusText}` : statusText
     ],
     {
-      bgColor: ready ? 'rgba(6, 46, 34, 0.95)' : 'rgba(6, 19, 29, 0.92)',
-      borderColor: ready ? '#35e58a' : '#38bdf8',
-      textColor: '#ffffff',
+      bgColor: selected ? 'rgba(69, 26, 3, 0.96)' : ready ? 'rgba(6, 46, 34, 0.95)' : 'rgba(6, 19, 29, 0.92)',
+      borderColor: selected ? '#facc15' : ready ? '#35e58a' : '#38bdf8',
+      textColor: selected ? '#fef08a' : '#ffffff',
       subColor: ready ? '#8fffc2' : '#fef08a',
-      width: 152,
+      width: selected ? 168 : 152,
       height: 36,
-      scale: 0.36
+      scale: selected ? 0.39 : 0.36
     }
   );
   hudSprite.position.set(0, roofY + (ready ? 40 : 28), 0);
@@ -2769,6 +2796,11 @@ export class Three3DCityViewport {
       if (parts.collectible3D) {
         parts.collectible3D.node.rotation.y += dt * 2.8;
         parts.collectible3D.node.position.y = parts.collectible3D.baseY + Math.sin(clock * 3.4 + idx) * 2.2;
+      }
+      if (parts.selectionRing) {
+        parts.selectionRing.rotation.y += dt * 2.2;
+        const pulse = 1 + Math.sin(clock * 4.5) * 0.08;
+        parts.selectionRing.scale.set(pulse, 1, pulse);
       }
     });
 

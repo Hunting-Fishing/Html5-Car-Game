@@ -438,7 +438,9 @@ export function crewTaskBonus(state, key) {
     share += treeBonusPercent(row, key) / 100;
     total += share;
   }
-  return Math.min(1.25, total);
+  const buildingPerkPct = Math.max(0, Number(state.worldBuildingPerks?.[key] || 0));
+  total += buildingPerkPct / 100;
+  return Math.min(1.45, total);
 }
 
 export function sendToCourse(state, id, courseId) {

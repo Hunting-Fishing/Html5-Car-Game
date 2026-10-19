@@ -738,13 +738,61 @@ window.addEventListener('world-person-sync', (event) => {
 });
 
 window.addEventListener('world-building-collect', (event) => {
-  const { output, amount, label } = event.detail || {};
-  if (!output || !amount) return;
-  addCurrency(state, output, amount);
-  addXp(state, Math.max(1, Math.round(amount / 5)));
+  const { output, amount, label, secondaryOutput, secondaryAmount, secondaryLabel, costCoins, note, buildingPerks } = event.detail || {};
+  if (costCoins && costCoins > 0) {
+    state.currencies.coins = Math.max(0, (state.currencies.coins || 0) - costCoins);
+  }
+  if (output && amount) {
+    addCurrency(state, output, amount);
+    addXp(state, Math.max(1, Math.round(amount / 4)));
+  }
+  if (secondaryOutput && secondaryAmount > 0) {
+    addCurrency(state, secondaryOutput, secondaryAmount);
+  }
+  if (buildingPerks && typeof buildingPerks === 'object') {
+    state.worldBuildingPerks = { ...(state.worldBuildingPerks || {}), ...buildingPerks };
+  }
+  if (note) {
+    toast(note);
+    addLog(note);
+  }
   updateTopBar();
-  queueSave();
+  saveState(state);
+});
+
+window.addEventListener('world-building-sync', (event) => {
+  const detail = event.detail || {};
+  const { costCoins, costResource, costResourceAmount, gainResource, gainAmount, lineKey, boostLineLevel, buildingPerks, cityAverageHappiness, note } = detail;
+  if (costCoins && costCoins > 0) {
+    state.currencies.coins = Math.max(0, (state.currencies.coins || 0) - costCoins);
+  }
+  if (costResource && costResourceAmount > 0 && state.currencies?.[costResource] !== undefined) {
+    state.currencies[costResource] = Math.max(0, (state.currencies[costResource] || 0) - costResourceAmount);
+  }
+  if (gainResource && gainAmount > 0) {
+    addCurrency(state, gainResource, gainAmount);
+  }
+  if (lineKey && boostLineLevel) {
+    ensureIdleLineState(state);
+    if (state.idleLines?.lines?.[lineKey]) {
+      state.idleLines.lines[lineKey].level = Math.max(1, (state.idleLines.lines[lineKey].level || 0) + 1);
+    }
+  }
+  if (buildingPerks && typeof buildingPerks === 'object') {
+    state.worldBuildingPerks = { ...(state.worldBuildingPerks || {}), ...buildingPerks };
+  }
+  if (typeof cityAverageHappiness === 'number') {
+    state.worldHappiness = { ...(state.worldHappiness || {}), average: cityAverageHappiness, updatedAt: Date.now() };
+  }
+  if (note) {
+    toast(note);
+    addLog(note);
+  }
+  publishBuildCommunicationState(state);
+  updateTopBar();
+  saveState(state);
 });
 
 setInterval(() => saveState(state), 5000);
+
 

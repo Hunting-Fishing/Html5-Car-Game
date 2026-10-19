@@ -1720,4 +1720,1025 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
   font-size: 8.5px;
 }
 
+/* ==========================================================================
+   TYCOON BUILDING COMMAND INSPECTOR (.mobilePlacedSheet & .buildingWindow)
+   ========================================================================== */
+
+#screen-world .mobilePlacedSheet {
+  max-height: min(62vh, 535px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 8px 9px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(8, 34, 54, 0.98) 0%, rgba(3, 14, 24, 0.99) 100%) !important;
+  border: 2px solid rgba(56, 189, 248, 0.45) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+#screen-world .buildingWindow {
+  display: grid;
+  gap: 5px;
+}
+
+/* 1. Building Header */
+#screen-world .buildingWindowHeader {
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(14, 58, 90, 0.90) 0%, rgba(5, 21, 36, 0.95) 100%);
+  border: 1.5px solid rgba(125, 211, 252, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+#screen-world .buildingHeroIconBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 11px;
+  background: radial-gradient(circle at 50% 35%, rgba(56, 189, 248, 0.28), rgba(2, 12, 23, 0.85));
+  border: 1.5px solid rgba(125, 211, 252, 0.35);
+}
+
+#screen-world .buildingHeroIconBox img {
+  width: 40px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+}
+
+#screen-world .buildingHeroStars {
+  color: #facc15;
+  font-size: 7.5px;
+  letter-spacing: 0.4px;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+#screen-world .buildingHeaderMain {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+#screen-world .buildingHeaderKickerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+}
+
+#screen-world .buildingCategoryTag,
+#screen-world .buildingLotTag,
+#screen-world .buildingOpBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1.5px 5px;
+  border-radius: 999px;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+#screen-world .buildingCategoryTag {
+  background: rgba(56, 189, 248, 0.20);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #bae6fd;
+}
+
+#screen-world .buildingLotTag {
+  background: rgba(148, 163, 184, 0.16);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  color: #cbd5e1;
+}
+
+#screen-world .buildingOpBadge.ready {
+  background: rgba(34, 197, 94, 0.25);
+  border: 1px solid #4ade80;
+  color: #86efac;
+}
+
+#screen-world .buildingOpBadge.operating {
+  background: rgba(56, 189, 248, 0.22);
+  border: 1px solid #38bdf8;
+  color: #e0f2fe;
+}
+
+#screen-world .buildingOpBadge.warn {
+  background: rgba(245, 158, 11, 0.25);
+  border: 1px solid #fbbf24;
+  color: #fde68a;
+}
+
+#screen-world .buildingWindowTitle {
+  margin: 0;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 1000;
+  line-height: 1.08;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#screen-world .buildingWindowSub {
+  margin: 0;
+  color: #bae6fd;
+  font-size: 7.8px;
+  line-height: 1.18;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+#screen-world .buildingWindowSub em {
+  color: #fef08a;
+  font-style: normal;
+  font-weight: 800;
+}
+
+#screen-world .buildingHeaderRight {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+#screen-world .buildingLevelOrb {
+  display: grid;
+  place-items: center;
+  min-width: 42px;
+  padding: 3px 5px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffe066 0%, #f59e0b 100%);
+  border: 1.5px solid #fef08a;
+  color: #1e1100;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), 0 3px 6px rgba(0, 0, 0, 0.35);
+  text-shadow: none;
+}
+
+#screen-world .buildingLevelOrb span {
+  font-size: 6px;
+  font-weight: 1000;
+  letter-spacing: 0.05em;
+}
+
+#screen-world .buildingLevelOrb strong {
+  font-size: 14px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+#screen-world .buildingLevelOrb small {
+  font-size: 6.5px;
+  font-weight: 900;
+  opacity: 0.82;
+}
+
+#screen-world .buildingCloseX {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(15, 23, 42, 0.65);
+  color: #e2e8f0;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+/* 2. Live Production & Profit Cycle Card */
+#screen-world .buildingProfitCard {
+  display: grid;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 13px;
+  background: linear-gradient(180deg, rgba(6, 28, 44, 0.92), rgba(3, 15, 26, 0.96));
+  border: 1.5px solid rgba(56, 189, 248, 0.32);
+}
+
+#screen-world .buildingProfitCard.is-ready {
+  border-color: rgba(53, 229, 138, 0.68);
+  box-shadow: 0 0 12px rgba(53, 229, 138, 0.14);
+}
+
+#screen-world .buildingProfitTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+#screen-world .bProfitTimerCol {
+  display: grid;
+  gap: 1px;
+}
+
+#screen-world .bProfitTimerLabel {
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: 0.02em;
+}
+
+#screen-world .bProfitTimerCol small {
+  color: #93c5fd;
+  font-size: 7.4px;
+}
+
+#screen-world .bProfitTimerCol small b {
+  color: #f8fafc;
+}
+
+#screen-world .bProfitYieldPills {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+#screen-world .bYieldPrimary,
+#screen-world .bYieldSecondary {
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 8.2px;
+  font-weight: 1000;
+}
+
+#screen-world .bYieldPrimary {
+  background: linear-gradient(180deg, #35e58a, #16a34a);
+  color: #032211;
+  text-shadow: none;
+}
+
+#screen-world .bYieldSecondary {
+  background: rgba(56, 189, 248, 0.22);
+  border: 1px solid rgba(56, 189, 248, 0.55);
+  color: #bae6fd;
+}
+
+#screen-world .buildingProfitProgressTrack {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(2, 8, 16, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+#screen-world .buildingProfitProgressFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38bdf8 0%, #35e58a 60%, #facc15 100%);
+  transition: width 0.25s ease;
+}
+
+#screen-world .buildingProfitFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+#screen-world .bMultFormula {
+  color: #cbd5e1;
+  font-size: 7.2px;
+  font-weight: 800;
+}
+
+#screen-world .bInstantCollectBtn,
+#screen-world .bInstantRushBtn {
+  min-height: 23px !important;
+  padding: 2px 8px !important;
+  font-size: 7.8px !important;
+  font-weight: 1000 !important;
+  border-radius: 999px !important;
+}
+
+/* Feedback Banner */
+#screen-world .buildingFeedbackBanner {
+  padding: 3.5px 8px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.24), rgba(56, 189, 248, 0.20));
+  border: 1px solid rgba(74, 222, 128, 0.55);
+  color: #dcfce7;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+/* 3. 4-Tab Bar */
+#screen-world .buildingTabBar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#screen-world .buildingTabBtn {
+  min-height: 26px;
+  padding: 3px 3px;
+  border-radius: 9px;
+  background: rgba(7, 25, 40, 0.85);
+  border: 1.5px solid rgba(125, 211, 252, 0.22);
+  color: #bae6fd;
+  font-family: inherit;
+  font-size: 7.8px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#screen-world .buildingTabBtn.active {
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+  border-color: #bae6fd;
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(2, 132, 199, 0.38);
+}
+
+#screen-world .buildingTabPane {
+  display: grid;
+  gap: 5px;
+}
+
+/* Tab 1: Work Order Mode Selector & Telemetry */
+#screen-world .buildingSectionBlock {
+  display: grid;
+  gap: 3px;
+}
+
+#screen-world .buildingSectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #bae6fd;
+  font-size: 7.8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+#screen-world .buildingSectionHead small {
+  color: #cbd5e1;
+  text-transform: none;
+}
+
+#screen-world .buildingSectionHead small b {
+  color: #fef08a;
+}
+
+#screen-world .buildingWorkModeBar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#screen-world .buildingWorkModeBtn {
+  display: grid;
+  gap: 1.5px;
+  padding: 4px 6px;
+  border-radius: 9px;
+  background: rgba(5, 20, 34, 0.82);
+  border: 1.5px solid rgba(125, 211, 252, 0.22);
+  color: #e2e8f0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+#screen-world .buildingWorkModeBtn.active {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.28), rgba(6, 78, 59, 0.85));
+  border-color: #35e58a;
+  box-shadow: 0 0 8px rgba(53, 229, 138, 0.22);
+}
+
+#screen-world .wmTop {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+#screen-world .wmIcon {
+  font-size: 9px;
+}
+
+#screen-world .wmTop strong {
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 1000;
+}
+
+#screen-world .wmActiveTag {
+  margin-left: auto;
+  padding: 1px 3.5px;
+  border-radius: 999px;
+  background: #35e58a;
+  color: #032211;
+  font-style: normal;
+  font-size: 6px;
+  font-weight: 1000;
+}
+
+#screen-world .buildingWorkModeBtn small {
+  color: #bae6fd;
+  font-size: 6.8px;
+  line-height: 1.1;
+}
+
+#screen-world .buildingTelemetryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+}
+
+#screen-world .buildingTelemetryCard {
+  display: grid;
+  gap: 1.5px;
+  padding: 3px 5px;
+  border-radius: 8px;
+  background: rgba(4, 18, 30, 0.78);
+  border: 1px solid rgba(125, 211, 252, 0.20);
+}
+
+#screen-world .telHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+}
+
+#screen-world .telHead span {
+  color: #bae6fd;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+#screen-world .telHead strong {
+  font-size: 8.8px;
+  font-weight: 1000;
+}
+
+#screen-world .tone-green { color: #4ade80 !important; }
+#screen-world .tone-yellow { color: #facc15 !important; }
+#screen-world .tone-orange { color: #fb923c !important; }
+#screen-world .tone-red { color: #f87171 !important; }
+#screen-world .tone-cyan { color: #38bdf8 !important; }
+
+#screen-world .buildingMiniMeter {
+  height: 3.5px;
+  border-radius: 999px;
+  background: rgba(2, 8, 16, 0.85);
+  overflow: hidden;
+}
+
+#screen-world .buildingMiniMeter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38bdf8, #35e58a);
+}
+
+#screen-world .buildingMiniMeter i.tone-yellow {
+  background: linear-gradient(90deg, #f59e0b, #facc15);
+}
+
+#screen-world .buildingMiniMeter i.tone-red {
+  background: linear-gradient(90deg, #ef4444, #f97316);
+}
+
+#screen-world .buildingTelemetryCard small {
+  color: #cbd5e1;
+  font-size: 6.4px;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Next Level Blueprint Card */
+#screen-world .buildingUpgradePreviewCard {
+  display: grid;
+  gap: 3px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(12, 42, 68, 0.85), rgba(4, 18, 30, 0.92));
+  border: 1.5px solid rgba(56, 189, 248, 0.32);
+}
+
+#screen-world .buildingUpgradePreviewCard.ready {
+  border-color: rgba(53, 229, 138, 0.65);
+}
+
+#screen-world .upPreviewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+#screen-world .upKicker {
+  display: block;
+  color: #93c5fd;
+  font-size: 6px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#screen-world .upPreviewHead h4 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 8.8px;
+  font-weight: 1000;
+}
+
+#screen-world .upStatusBadge {
+  padding: 1.5px 5px;
+  border-radius: 999px;
+  font-size: 6.5px;
+  font-weight: 900;
+  background: rgba(56, 189, 248, 0.22);
+  border: 1px solid rgba(56, 189, 248, 0.48);
+  color: #e0f2fe;
+  white-space: nowrap;
+}
+
+#screen-world .upStatusBadge.ready {
+  background: rgba(34, 197, 94, 0.24);
+  border-color: #4ade80;
+  color: #86efac;
+}
+
+#screen-world .upDeltaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+}
+
+#screen-world .upDeltaGrid div {
+  padding: 2.5px 5px;
+  border-radius: 7px;
+  background: rgba(2, 12, 22, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+#screen-world .upDeltaGrid span {
+  color: #94a3b8;
+  font-size: 6.4px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+#screen-world .upDeltaGrid b {
+  color: #e2e8f0;
+  font-size: 7.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#screen-world .upDeltaGrid b em {
+  color: #4ade80;
+  font-style: normal;
+}
+
+#screen-world .upReqPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+#screen-world .upReqPill {
+  padding: 1px 5px;
+  border-radius: 999px;
+  font-size: 6.5px;
+  font-weight: 900;
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(74, 222, 128, 0.45);
+  color: #bbf7d0;
+}
+
+#screen-world .upReqPill.short {
+  background: rgba(245, 158, 11, 0.20);
+  border-color: rgba(251, 191, 36, 0.5);
+  color: #fde68a;
+}
+
+/* Tab 2: Staff & Crew */
+#screen-world .buildingStaffSummaryBanner {
+  display: grid;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, rgba(16, 62, 92, 0.85), rgba(6, 24, 40, 0.92));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+#screen-world .bStaffSumTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+#screen-world .bStaffSumTop h4 {
+  margin: 1px 0 0;
+  color: #ffffff;
+  font-size: 9.8px;
+}
+
+#screen-world .bStaffSumTop h4 em {
+  color: #4ade80;
+  font-style: normal;
+}
+
+#screen-world .bAutoBadge {
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+#screen-world .bAutoBadge.on {
+  background: rgba(34, 197, 94, 0.24);
+  border: 1px solid #4ade80;
+  color: #86efac;
+}
+
+#screen-world .bAutoBadge.off {
+  background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: #cbd5e1;
+}
+
+#screen-world .bStaffBuffPills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#screen-world .bStaffBuffPills div {
+  padding: 3px 5px;
+  border-radius: 8px;
+  background: rgba(2, 12, 22, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 7.2px;
+}
+
+#screen-world .bStaffBuffPills span {
+  color: #bae6fd;
+}
+
+#screen-world .bStaffBuffPills b {
+  color: #4ade80;
+}
+
+#screen-world .buildingStaffList {
+  display: grid;
+  gap: 5px;
+}
+
+#screen-world .buildingStaffCard {
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 7px;
+  border-radius: 11px;
+  background: rgba(4, 18, 30, 0.84);
+  border: 1.5px solid rgba(125, 211, 252, 0.24);
+}
+
+#screen-world .buildingStaffCard.is-hired {
+  border-color: rgba(53, 229, 138, 0.45);
+}
+
+#screen-world .bStaffPortraitWrap {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.28), rgba(2, 10, 18, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  display: grid;
+  place-items: center;
+}
+
+#screen-world .bStaffPortraitWrap img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+#screen-world .bStaffMain {
+  min-width: 0;
+  display: grid;
+  gap: 1.5px;
+}
+
+#screen-world .bStaffTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+}
+
+#screen-world .bStaffTitleRow strong {
+  color: #ffffff;
+  font-size: 9.2px;
+}
+
+#screen-world .bStaffLeadTag,
+#screen-world .bStaffSpecTag,
+#screen-world .bStaffJobBadge {
+  padding: 1px 4px;
+  border-radius: 999px;
+  font-size: 6.4px;
+  font-weight: 900;
+}
+
+#screen-world .bStaffLeadTag {
+  background: rgba(250, 204, 21, 0.22);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  color: #fef08a;
+}
+
+#screen-world .bStaffSpecTag {
+  background: rgba(56, 189, 248, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #bae6fd;
+}
+
+#screen-world .bStaffJobBadge.hired {
+  background: rgba(34, 197, 94, 0.24);
+  border: 1px solid #4ade80;
+  color: #86efac;
+}
+
+#screen-world .bStaffJobBadge.unemployed {
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid #f87171;
+  color: #fecaca;
+}
+
+#screen-world .bStaffJobSub {
+  color: #cbd5e1;
+  font-size: 7.2px;
+}
+
+#screen-world .bStaffHappinessRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  font-size: 7.2px;
+  color: #93c5fd;
+}
+
+#screen-world .bStaffActions {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+#screen-world .bStaffActions .btn.small {
+  min-height: 22px !important;
+  padding: 2px 7px !important;
+  font-size: 7.4px !important;
+  white-space: nowrap;
+}
+
+/* Tab 3: Connected Game Modes Grid */
+#screen-world .buildingModesIntro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 4px 7px;
+  border-radius: 9px;
+  background: rgba(4, 18, 30, 0.65);
+  border: 1px solid rgba(125, 211, 252, 0.18);
+}
+
+#screen-world .buildingModesIntro span {
+  color: #fef08a;
+  font-size: 7.8px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+#screen-world .buildingModesIntro small {
+  color: #bae6fd;
+  font-size: 7px;
+}
+
+#screen-world .buildingGameModesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#screen-world .buildingModeCard {
+  display: grid;
+  gap: 3px;
+  padding: 5px 6px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(10, 38, 60, 0.85), rgba(4, 16, 28, 0.92));
+  border: 1px solid rgba(56, 189, 248, 0.28);
+}
+
+#screen-world .bModeHead {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: center;
+  gap: 4px;
+}
+
+#screen-world .bModeIcon {
+  font-size: 11px;
+}
+
+#screen-world .bModeHead strong {
+  display: block;
+  color: #ffffff;
+  font-size: 8px;
+  line-height: 1.05;
+}
+
+#screen-world .bModeHead small {
+  display: block;
+  color: #93c5fd;
+  font-size: 6.8px;
+}
+
+#screen-world .bModeVal {
+  padding: 1.5px 4.5px;
+  border-radius: 999px;
+  background: rgba(53, 229, 138, 0.2);
+  border: 1px solid rgba(53, 229, 138, 0.5);
+  color: #86efac;
+  font-style: normal;
+  font-size: 7.2px;
+  font-weight: 1000;
+}
+
+#screen-world .buildingModeCard p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 6.8px;
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+#screen-world .bModeFoot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 1px;
+}
+
+#screen-world .bModeFoot .btn.small {
+  flex: 1 1 auto;
+  min-height: 21px !important;
+  padding: 2px 5px !important;
+  font-size: 7px !important;
+}
+
+/* Tab 4: District & All Buildings */
+#screen-world .buildingBatchBar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#screen-world .buildingBatchBar .btn.small {
+  min-height: 25px !important;
+  padding: 3px 5px !important;
+  font-size: 7.5px !important;
+  font-weight: 900 !important;
+}
+
+#screen-world .buildingDistrictList {
+  display: grid;
+  gap: 4px;
+  max-height: 155px;
+  overflow-y: auto;
+}
+
+#screen-world .buildingDistrictRow {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 9px;
+  background: rgba(4, 18, 30, 0.78);
+  border: 1px solid rgba(125, 211, 252, 0.20);
+}
+
+#screen-world .buildingDistrictRow.is-current {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.12);
+}
+
+#screen-world .bDistThumb {
+  width: 30px;
+  height: 26px;
+  object-fit: contain;
+}
+
+#screen-world .bDistInfo {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+#screen-world .bDistTitleLine {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+#screen-world .bDistTitleLine strong {
+  color: #ffffff;
+  font-size: 8.6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#screen-world .bDistLv,
+#screen-world .bDistKind {
+  padding: 1px 4px;
+  border-radius: 999px;
+  font-size: 6.4px;
+  font-weight: 900;
+}
+
+#screen-world .bDistLv {
+  background: rgba(250, 204, 21, 0.22);
+  color: #fef08a;
+}
+
+#screen-world .bDistKind {
+  background: rgba(56, 189, 248, 0.18);
+  color: #bae6fd;
+}
+
+#screen-world .bDistInfo small {
+  color: #cbd5e1;
+  font-size: 7px;
+}
+
+#screen-world .bDistInfo small em.ready {
+  color: #4ade80;
+  font-style: normal;
+  font-weight: 900;
+}
+
+#screen-world .bDistActions {
+  display: flex;
+  gap: 3px;
+}
+
+#screen-world .bDistActions .btn.small {
+  min-height: 22px !important;
+  padding: 2px 6px !important;
+  font-size: 7.2px !important;
+}
+
+/* Sticky Command Dock */
+#screen-world .buildingCommandDock {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+  margin-top: 1px !important;
+}
+
+#screen-world .buildingCommandDock .btn {
+  min-height: 28px !important;
+  padding: 4px 5px !important;
+  font-size: 7.8px !important;
+  font-weight: 900 !important;
+}
+
+
 
