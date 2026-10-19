@@ -841,60 +841,280 @@ function buildingTargetForFixed(building) {
 }
 
 function drawGround() {
-  world.addChild(rect(0, 0, WORLD.width, WORLD.height, 0x62b652));
-  for (let y = 0; y < WORLD.height; y += 80) {
-    for (let x = 0; x < WORLD.width; x += 80) {
-      world.addChild(rect(x, y, 80, 80, { color: (x / 80 + y / 80) % 2 ? 0x5aa94b : 0x6dc25b, alpha: 0.28 }));
-      const tile = assetSprite(WORLD_ASSETS.terrain.grassTile, x + 40, y + 40, 80, 80, 0.22);
-      if (tile) world.addChild(tile);
-    }
-  }
+  const groundLayer = new PIXI.Container();
+  groundLayer.zIndex = 0;
+  // Base velvety dark-slate asphalt across the entire street grid
+  groundLayer.addChild(rect(0, 0, WORLD.width, WORLD.height, 0x1b2638));
+  world.addChild(groundLayer);
 }
 
 function drawRoads() {
-  const segLen = 240;
+  const roadLayer = new PIXI.Container();
+  roadLayer.zIndex = 1;
+  world.addChild(roadLayer);
+
+  const blockLayer = new PIXI.Container();
+  blockLayer.zIndex = 2;
+  world.addChild(blockLayer);
+
+  const decorLayer = new PIXI.Container();
+  decorLayer.zIndex = 3;
+  world.addChild(decorLayer);
+
+  const vRoads = ROADS.vertical.map((r) => r.x).sort((a, b) => a - b);
+  const hRoads = ROADS.horizontal.map((r) => r.y).sort((a, b) => a - b);
+
+  const xCols = [];
+  let prevX = -24;
+  for (const vx of vRoads) {
+    xCols.push({ x1: prevX, x2: vx });
+    prevX = vx + ROADS.width;
+  }
+  xCols.push({ x1: prevX, x2: WORLD.width + 24 });
+
+  const yRows = [];
+  let prevY = -24;
+  for (const hy of hRoads) {
+    yRows.push({ y1: prevY, y2: hy });
+    prevY = hy + ROADS.width;
+  }
+  yRows.push({ y1: prevY, y2: WORLD.height + 24 });
+
+  // 1. Subtle Crowned Asphalt Texture & Tire Ruts along all Horizontal & Vertical Avenues
   for (const road of ROADS.horizontal) {
-    world.addChild(rect(0, road.y - ROADS.sidewalk, WORLD.width, ROADS.sidewalk, 0x94a3b8));
-    world.addChild(rect(0, road.y + ROADS.width, WORLD.width, ROADS.sidewalk, 0x94a3b8));
-    for (let sx = 0; sx < WORLD.width; sx += segLen) {
-      const wSeg = Math.min(segLen, WORLD.width - sx);
-      const cx = sx + wSeg / 2;
-      const swTop = assetSprite(WORLD_ASSETS.terrain.sidewalk, cx, road.y - ROADS.sidewalk / 2, wSeg, ROADS.sidewalk, 0.72);
-      const swBot = assetSprite(WORLD_ASSETS.terrain.sidewalk, cx, road.y + ROADS.width + ROADS.sidewalk / 2, wSeg, ROADS.sidewalk, 0.72);
-      if (swTop) world.addChild(swTop);
-      if (swBot) world.addChild(swBot);
+    const cy = road.y + ROADS.width / 2;
+    // Crown center highlight & lane wheel ruts
+    roadLayer.addChild(rect(0, road.y + 18, WORLD.width, ROADS.width - 36, { color: 0x24334a, alpha: 0.85 }));
+    roadLayer.addChild(rect(0, road.y + 19, WORLD.width, 3.5, { color: 0x101826, alpha: 0.42 }));
+    roadLayer.addChild(rect(0, road.y + 30, WORLD.width, 3.5, { color: 0x101826, alpha: 0.42 }));
+    roadLayer.addChild(rect(0, road.y + 54.5, WORLD.width, 3.5, { color: 0x101826, alpha: 0.42 }));
+    roadLayer.addChild(rect(0, road.y + 65.5, WORLD.width, 3.5, { color: 0x101826, alpha: 0.42 }));
+
+    // Subtle texture overlay on straight segments only (never crossing intersections!)
+    for (const col of xCols) {
+      const segX1 = Math.max(0, col.x1 + 20);
+      const segX2 = Math.min(WORLD.width, col.x2 - 20);
+      const segW = segX2 - segX1;
+      if (segW <= 20) continue;
+
+      const tex = assetSprite(WORLD_ASSETS.terrain.roadHorizontal, segX1 + segW / 2, cy, segW, ROADS.width, 0.26);
+      if (tex) roadLayer.addChild(tex);
+
+      // Crisp white outer shoulder fog lines
+      roadLayer.addChild(rect(segX1, road.y + 8.5, segW, 1.8, { color: 0xf8fafc, alpha: 0.72 }));
+      roadLayer.addChild(rect(segX1, road.y + ROADS.width - 10.3, segW, 1.8, { color: 0xf8fafc, alpha: 0.72 }));
+
+      // Dark median channel + Double Amber-Gold Center Divider
+      roadLayer.addChild(rect(segX1, cy - 3.8, segW, 7.6, { color: 0x0d1522, alpha: 0.62 }));
+      roadLayer.addChild(rect(segX1, cy - 2.6, segW, 2.1, { color: 0xfbbf24, alpha: 0.96 }));
+      roadLayer.addChild(rect(segX1, cy + 0.6, segW, 2.1, { color: 0xf59e0b, alpha: 0.96 }));
+
+      // Glowing yellow cat's-eye road studs & subtle lane dashes
+      for (let sx = segX1 + 22; sx < segX2 - 18; sx += 48) {
+        roadLayer.addChild(roundRect(sx - 2, cy - 1.1, 4, 2.2, 0.8, 0xfef08a));
+        roadLayer.addChild(roundRect(sx - 8, road.y + 25, 16, 1.8, 0.9, { color: 0xe2e8f0, alpha: 0.16 }));
+        roadLayer.addChild(roundRect(sx + 10, road.y + 61, 16, 1.8, 0.9, { color: 0xe2e8f0, alpha: 0.16 }));
+      }
+
+      // Directional lane arrows at segment midpoint
+      if (segW >= 120) {
+        const midX = (segX1 + segX2) / 2;
+        const arrW = new PIXI.Graphics();
+        // Westbound arrow (y = road.y + 26)
+        arrW.poly([midX - 18, road.y + 26, midX - 10, road.y + 21.5, midX - 10, road.y + 24.2, midX + 2, road.y + 24.2, midX + 2, road.y + 27.8, midX - 10, road.y + 27.8, midX - 10, road.y + 30.5]).fill({ color: 0xf8fafc, alpha: 0.22 });
+        // Eastbound arrow (y = road.y + 62)
+        arrW.poly([midX + 18, road.y + 62, midX + 10, road.y + 57.5, midX + 10, road.y + 60.2, midX - 2, road.y + 60.2, midX - 2, road.y + 63.8, midX + 10, road.y + 63.8, midX + 10, road.y + 66.5]).fill({ color: 0xf8fafc, alpha: 0.22 });
+        roadLayer.addChild(arrW);
+      }
     }
-    world.addChild(rect(0, road.y, WORLD.width, ROADS.width, 0x1e293b, { width: 3, color: 0x0f172a }));
-    for (let sx = 0; sx < WORLD.width; sx += segLen) {
-      const wSeg = Math.min(segLen, WORLD.width - sx);
-      const roadSeg = assetSprite(WORLD_ASSETS.terrain.roadHorizontal, sx + wSeg / 2, road.y + ROADS.width / 2, wSeg, ROADS.width, 0.92);
-      if (roadSeg) world.addChild(roadSeg);
-    }
-    world.addChild(textLabel(road.label, 108, road.y + 16, 9.5, 0xe2e8f0));
   }
+
   for (const road of ROADS.vertical) {
-    world.addChild(rect(road.x - ROADS.sidewalk, 0, ROADS.sidewalk, WORLD.height, 0x94a3b8));
-    world.addChild(rect(road.x + ROADS.width, 0, ROADS.sidewalk, WORLD.height, 0x94a3b8));
-    world.addChild(rect(road.x, 0, ROADS.width, WORLD.height, 0x1e293b, { width: 3, color: 0x0f172a }));
-    for (let sy = 0; sy < WORLD.height; sy += segLen) {
-      const hSeg = Math.min(segLen, WORLD.height - sy);
-      const roadSeg = assetSprite(WORLD_ASSETS.terrain.roadVertical, road.x + ROADS.width / 2, sy + hSeg / 2, ROADS.width, hSeg, 0.92);
-      if (roadSeg) world.addChild(roadSeg);
+    const cx = road.x + ROADS.width / 2;
+    roadLayer.addChild(rect(road.x + 18, 0, ROADS.width - 36, WORLD.height, { color: 0x24334a, alpha: 0.85 }));
+    roadLayer.addChild(rect(road.x + 19, 0, 3.5, WORLD.height, { color: 0x101826, alpha: 0.42 }));
+    roadLayer.addChild(rect(road.x + 30, 0, 3.5, WORLD.height, { color: 0x101826, alpha: 0.42 }));
+    roadLayer.addChild(rect(road.x + 54.5, 0, 3.5, WORLD.height, { color: 0x101826, alpha: 0.42 }));
+    roadLayer.addChild(rect(road.x + 65.5, 0, 3.5, WORLD.height, { color: 0x101826, alpha: 0.42 }));
+
+    for (const row of yRows) {
+      const segY1 = Math.max(0, row.y1 + 20);
+      const segY2 = Math.min(WORLD.height, row.y2 - 20);
+      const segH = segY2 - segY1;
+      if (segH <= 20) continue;
+
+      const tex = assetSprite(WORLD_ASSETS.terrain.roadVertical, cx, segY1 + segH / 2, ROADS.width, segH, 0.26);
+      if (tex) roadLayer.addChild(tex);
+
+      // Crisp white outer shoulder fog lines
+      roadLayer.addChild(rect(road.x + 8.5, segY1, 1.8, segH, { color: 0xf8fafc, alpha: 0.72 }));
+      roadLayer.addChild(rect(road.x + ROADS.width - 10.3, segY1, 1.8, segH, { color: 0xf8fafc, alpha: 0.72 }));
+
+      // Dark median channel + Double Amber-Gold Center Divider
+      roadLayer.addChild(rect(cx - 3.8, segY1, 7.6, segH, { color: 0x0d1522, alpha: 0.62 }));
+      roadLayer.addChild(rect(cx - 2.6, segY1, 2.1, segH, { color: 0xfbbf24, alpha: 0.96 }));
+      roadLayer.addChild(rect(cx + 0.6, segY1, 2.1, segH, { color: 0xf59e0b, alpha: 0.96 }));
+
+      for (let sy = segY1 + 22; sy < segY2 - 18; sy += 48) {
+        roadLayer.addChild(roundRect(cx - 1.1, sy - 2, 2.2, 4, 0.8, 0xfef08a));
+        roadLayer.addChild(roundRect(road.x + 25, sy - 8, 1.8, 16, 0.9, { color: 0xe2e8f0, alpha: 0.16 }));
+        roadLayer.addChild(roundRect(road.x + 61, sy + 10, 1.8, 16, 0.9, { color: 0xe2e8f0, alpha: 0.16 }));
+      }
     }
   }
-  drawCrosswalks();
+
+  // 2. Seamless 15 Raised 3D City Block Islands (Rounded Concrete Curbs, Paver Sidewalks, & Inset Park Lawns)
+  const sw = ROADS.sidewalk;
+  for (const row of yRows) {
+    for (const col of xCols) {
+      const bx = col.x1;
+      const by = row.y1;
+      const bw = col.x2 - col.x1;
+      const bh = row.y2 - row.y1;
+      const curbR = 20;
+
+      // Step A: Deep Recessed Gutter Shadow around the entire block perimeter
+      blockLayer.addChild(roundRect(bx - 3.5, by - 3.5, bw + 7, bh + 7, curbR + 3, { color: 0x090f17, alpha: 0.72 }));
+
+      // Step B: 3D Bevelled Concrete Curb Stone Rim & Sidewalk Surface
+      blockLayer.addChild(roundRect(bx, by, bw, bh, curbR, 0x94a3b8));
+      blockLayer.addChild(roundRect(bx + 2.5, by + 2.5, bw - 5, bh - 5, curbR - 2, 0xdbe4ef, { width: 2, color: 0xf8fafc, alpha: 0.92 }));
+
+      // Subtle architectural concrete sidewalk paver joints around the block perimeter
+      const paverG = new PIXI.Graphics();
+      const pxStart = Math.max(0, bx + 16);
+      const pxEnd = Math.min(WORLD.width, bx + bw - 16);
+      for (let px = pxStart; px <= pxEnd; px += 32) {
+        if (by > 0) paverG.moveTo(px, by + 3).lineTo(px, by + sw);
+        if (by + bh < WORLD.height) paverG.moveTo(px, by + bh - sw).lineTo(px, by + bh - 3);
+      }
+      const pyStart = Math.max(0, by + 16);
+      const pyEnd = Math.min(WORLD.height, by + bh - 16);
+      for (let py = pyStart; py <= pyEnd; py += 32) {
+        if (bx > 0) paverG.moveTo(bx + 3, py).lineTo(bx + sw, py);
+        if (bx + bw < WORLD.width) paverG.moveTo(bx + bw - sw, py).lineTo(bx + bw - 3, py);
+      }
+      paverG.stroke({ width: 1.1, color: 0x94a3b8, alpha: 0.52 });
+      blockLayer.addChild(paverG);
+
+      // Step C: Inset Rounded Lush Emerald Park Lawn inside the 36px Sidewalk
+      const lx1 = bx < 0 ? bx : bx + sw;
+      const lx2 = bx + bw > WORLD.width ? bx + bw : bx + bw - sw;
+      const ly1 = by < 0 ? by : by + sw;
+      const ly2 = by + bh > WORLD.height ? by + bh : by + bh - sw;
+      const lw = lx2 - lx1;
+      const lh = ly2 - ly1;
+      if (lw > 16 && lh > 16) {
+        const lawnR = 11;
+        // 3D Stone Garden Border Lip
+        blockLayer.addChild(roundRect(lx1 - 2.5, ly1 - 2.5, lw + 5, lh + 5, lawnR + 2, 0x64748b));
+        blockLayer.addChild(roundRect(lx1, ly1, lw, lh, lawnR, 0x5cb84d, { width: 2.5, color: 0x3d8b32, alpha: 0.78 }));
+
+        // Clash-of-Clans style alternating sunlit lawn stripes + grassTile texture inside the block
+        const stripeH = 40;
+        for (let sy = Math.max(0, ly1 + 6); sy < Math.min(WORLD.height, ly2 - 12); sy += stripeH * 2) {
+          const sh = Math.min(stripeH, ly2 - 6 - sy);
+          if (sh > 4) {
+            blockLayer.addChild(roundRect(Math.max(0, lx1 + 6), sy, Math.min(WORLD.width, lx2 - 6) - Math.max(0, lx1 + 6), sh, 6, { color: 0x68c558, alpha: 0.38 }));
+          }
+        }
+        const grassTex = assetSprite(WORLD_ASSETS.terrain.grassTile, lx1 + lw / 2, ly1 + lh / 2, Math.max(40, lw - 12), Math.max(40, lh - 12), 0.35);
+        if (grassTex) blockLayer.addChild(grassTex);
+      }
+    }
+  }
+
+  // 3. Building Service Driveway Aprons & Flared Curb Cuts
+  for (const b of CITY_BUILDINGS) {
+    const bw = b.w * GRID.size;
+    const bh = b.h * GRID.size;
+    const bxCenter = b.x + bw / 2;
+    const byBottom = b.y + bh;
+    const nearRoad = ROADS.horizontal.find((r) => Math.abs(r.y - byBottom) < 85);
+    if (nearRoad) {
+      const apronW = Math.min(76, bw * 0.56);
+      const apronTop = nearRoad.y - ROADS.sidewalk - 2;
+      const apronBot = nearRoad.y + 2;
+      const apron = new PIXI.Graphics();
+      apron.poly([
+        bxCenter - apronW * 0.42, apronTop,
+        bxCenter + apronW * 0.42, apronTop,
+        bxCenter + apronW * 0.54, apronBot,
+        bxCenter - apronW * 0.54, apronBot
+      ]).fill({ color: 0x263449, alpha: 0.96 }).stroke({ width: 2, color: 0xe2e8f0, alpha: 0.9 });
+      // Yellow/Amber service entrance curb lip
+      apron.rect(bxCenter - apronW * 0.48, nearRoad.y - 2.5, apronW * 0.96, 3).fill({ color: 0xfacc15, alpha: 0.92 });
+      decorLayer.addChild(apron);
+    }
+  }
+
+  drawCrosswalks(roadLayer);
+
+  // 4. Sleek Highway Street-Name Badges & Warm Streetlight Glow Pools
+  for (const road of ROADS.horizontal) {
+    const signW = Math.max(108, road.label.length * 6.2 + 20);
+    const signX = 112;
+    const signY = road.y - ROADS.sidewalk / 2;
+    const sign = new PIXI.Container();
+    sign.x = signX;
+    sign.y = signY;
+    sign.addChild(roundRect(-signW / 2, -9.5, signW, 19, 9.5, { color: 0x06131d, alpha: 0.92 }, { width: 1.5, color: 0x35e58a, alpha: 0.88 }));
+    sign.addChild(circle(-signW / 2 + 10, 0, 3.2, { color: 0x35e58a, alpha: 0.95 }));
+    sign.addChild(textLabel(road.label, 5, 0, 8.2, 0xe2e8f0));
+    decorLayer.addChild(sign);
+
+    for (const lx of [160, 480, 820]) {
+      decorLayer.addChild(circle(lx, road.y + 10, 26, { color: 0xfef08a, alpha: 0.07 }));
+    }
+  }
 }
 
-function drawCrosswalks() {
+function drawCrosswalks(targetLayer = world) {
   for (const h of ROADS.horizontal) {
     for (const v of ROADS.vertical) {
-      const cx = v.x + ROADS.width / 2;
-      const cy = h.y + ROADS.width / 2;
-      const intersection = assetSprite(WORLD_ASSETS.terrain.roadIntersection, cx, cy, ROADS.width + ROADS.sidewalk * 2.1, ROADS.width + ROADS.sidewalk * 2.1, 0.98);
-      if (intersection) {
-        intersection.zIndex = 4;
-        world.addChild(intersection);
+      const ix = v.x;
+      const iy = h.y;
+      const rw = ROADS.width;
+      const cx = ix + rw / 2;
+      const cy = iy + rw / 2;
+
+      const g = new PIXI.Graphics();
+
+      // Subtle curved intersection turning guide arcs
+      g.moveTo(ix + 16, iy - 4).quadraticCurveTo(ix + 16, iy + 16, ix - 4, iy + 16).stroke({ width: 1.2, color: 0xcbd5e1, alpha: 0.22 });
+      g.moveTo(ix + rw - 16, iy - 4).quadraticCurveTo(ix + rw - 16, iy + 16, ix + rw + 4, iy + 16).stroke({ width: 1.2, color: 0xcbd5e1, alpha: 0.22 });
+      g.moveTo(ix + 16, iy + rw + 4).quadraticCurveTo(ix + 16, iy + rw - 16, ix - 4, iy + rw - 16).stroke({ width: 1.2, color: 0xcbd5e1, alpha: 0.22 });
+      g.moveTo(ix + rw - 16, iy + rw + 4).quadraticCurveTo(ix + rw - 16, iy + rw - 16, ix + rw + 4, iy + rw - 16).stroke({ width: 1.2, color: 0xcbd5e1, alpha: 0.22 });
+
+      // Crisp 5-Bar Continental Zebra Crosswalks on all 4 approaches (with subtle 3D drop shadow)
+      const offsets = [-28, -14, 0, 14, 28];
+      for (const off of offsets) {
+        // North & South Crosswalk Bars
+        g.roundRect(cx + off - 3, iy - 16, 6, 13, 1.5).fill({ color: 0x090f17, alpha: 0.45 });
+        g.roundRect(cx + off - 3, iy - 17, 6, 13, 1.5).fill({ color: 0xf8fafc, alpha: 0.92 });
+
+        g.roundRect(cx + off - 3, iy + rw + 4, 6, 13, 1.5).fill({ color: 0x090f17, alpha: 0.45 });
+        g.roundRect(cx + off - 3, iy + rw + 3, 6, 13, 1.5).fill({ color: 0xf8fafc, alpha: 0.92 });
+
+        // West & East Crosswalk Bars
+        g.roundRect(ix - 16, cy + off - 3, 13, 6, 1.5).fill({ color: 0x090f17, alpha: 0.45 });
+        g.roundRect(ix - 17, cy + off - 3, 13, 6, 1.5).fill({ color: 0xf8fafc, alpha: 0.92 });
+
+        g.roundRect(ix + rw + 4, cy + off - 3, 13, 6, 1.5).fill({ color: 0x090f17, alpha: 0.45 });
+        g.roundRect(ix + rw + 3, cy + off - 3, 13, 6, 1.5).fill({ color: 0xf8fafc, alpha: 0.92 });
       }
+
+      // Stop Bars just outside the crosswalks
+      g.rect(ix + 10, iy - 21, rw - 20, 2.5).fill({ color: 0xf8fafc, alpha: 0.85 });
+      g.rect(ix + 10, iy + rw + 18.5, rw - 20, 2.5).fill({ color: 0xf8fafc, alpha: 0.85 });
+      g.rect(ix - 21, iy + 10, 2.5, rw - 20).fill({ color: 0xf8fafc, alpha: 0.85 });
+      g.rect(ix + rw + 18.5, iy + 10, 2.5, rw - 20).fill({ color: 0xf8fafc, alpha: 0.85 });
+
+      // Center Cast-Iron 365 Manhole Cover
+      g.circle(cx, cy, 9.5).fill({ color: 0x0f172a, alpha: 0.95 }).stroke({ width: 1.8, color: 0x475569, alpha: 0.9 });
+      g.circle(cx, cy, 6).fill({ color: 0x1e293b, alpha: 0.95 }).stroke({ width: 1, color: 0x64748b, alpha: 0.8 });
+
+      targetLayer.addChild(g);
     }
   }
 }
@@ -2098,19 +2318,19 @@ function rebuildPlacements() {
 
 const CITY_ISSUE_MARKERS = {
   potholes: [
-    { x: 350, y: 279 }, { x: 525, y: 589 }, { x: 355, y: 909 }, { x: 755, y: 589 }
+    { x: 420, y: 295 }, { x: 525, y: 589 }, { x: 420, y: 909 }, { x: 825, y: 589 }
   ],
   vehicleBreakdowns: [
-    { x: 565, y: 242 }, { x: 205, y: 868 }, { x: 755, y: 1198 }, { x: 345, y: 552 }
+    { x: 575, y: 262 }, { x: 155, y: 892 }, { x: 825, y: 1222 }, { x: 425, y: 572 }
   ],
   stuckVehicles: [
-    { x: 650, y: 545 }, { x: 247, y: 1038 }, { x: 695, y: 318 }, { x: 300, y: 1195 }
+    { x: 825, y: 572 }, { x: 165, y: 1222 }, { x: 825, y: 262 }, { x: 465, y: 1222 }
   ],
   trafficJams: [
-    { x: 465, y: 235 }, { x: 655, y: 705 }, { x: 245, y: 1000 }, { x: 520, y: 1195 }
+    { x: 145, y: 589 }, { x: 555, y: 909 }, { x: 155, y: 1239 }, { x: 555, y: 1239 }
   ],
   trafficLights: [
-    { x: 245, y: 235 }, { x: 655, y: 545 }, { x: 245, y: 865 }, { x: 655, y: 1195 }
+    { x: 289, y: 279 }, { x: 699, y: 589 }, { x: 289, y: 909 }, { x: 699, y: 1239 }
   ]
 };
 
