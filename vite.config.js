@@ -48,7 +48,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        cacheId: '365-garage-v20',
+        cacheId: '365-garage-v21',
         globPatterns: ['**/*.{js,css,svg,png,jpg,ico,webp}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
@@ -59,7 +59,7 @@ export default defineConfig({
           {
             urlPattern: ({ request }) => request.mode === 'navigate',
             handler: 'NetworkFirst',
-            options: { cacheName: 'pages-v20', networkTimeoutSeconds: 3 }
+            options: { cacheName: 'pages-v21', networkTimeoutSeconds: 3 }
           }
         ]
       }

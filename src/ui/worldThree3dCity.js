@@ -151,158 +151,528 @@ export function create3DStreetlight() {
 }
 
 // ============================================================================
-// 2. TRUE 3D ARTICULATED VEHICLES WITH 4 SPINNING 3D WHEELS & BODY KITS
+// 2. SCULPTED 3D ICONIC VEHICLES (SKYLINE, MUSTANG, PAJERO, SILVIA, 180SX, 300ZX, RX-7, SUPERCAR)
 // ============================================================================
-const VEHICLE_SPECS = {
-  blueCar:      { body: 0x2563eb, roof: 0x3b82f6, trim: 0x1e3a8a, rim: 0xfacc15, type: 'coupe', spoiler: true },
-  jdmGtCoupe:   { body: 0x7e22ce, roof: 0x9333ea, trim: 0x22d3ee, rim: 0x38bdf8, type: 'coupe', spoiler: true, underglow: 0x22d3ee },
-  yellowCar:    { body: 0xfacc15, roof: 0xfde047, trim: 0x0f172a, rim: 0xe2e8f0, type: 'taxi' },
-  naMuscle:     { body: 0xdc2626, roof: 0x991b1b, trim: 0x111827, rim: 0xe2e8f0, type: 'muscle', scoop: true },
-  compactCar:   { body: 0xf8fafc, roof: 0xe2e8f0, trim: 0xef4444, rim: 0x94a3b8, type: 'hatch' },
-  rallyCar:     { body: 0x0284c7, roof: 0x38bdf8, trim: 0xfacc15, rim: 0xfacc15, type: 'coupe', spoiler: true, scoop: true },
-  superCar:     { body: 0x06b6d4, roof: 0x0f172a, trim: 0x22d3ee, rim: 0x38bdf8, type: 'supercar', spoiler: true },
-  greenTruck:   { body: 0x16a34a, roof: 0x22c55e, trim: 0x14532d, rim: 0xfacc15, type: 'pickup' },
-  bajaSuv:      { body: 0xea580c, roof: 0x1e293b, trim: 0xfed7aa, rim: 0xfacc15, type: 'suv' },
-  deliveryVan:  { body: 0x0284c7, roof: 0xf8fafc, trim: 0x38bdf8, rim: 0xcbd5e1, type: 'van' },
-  towTruck:     { body: 0xf59e0b, roof: 0xfbbf24, trim: 0xb45309, rim: 0xe2e8f0, type: 'tow' }
+export const VEHICLE_SPECS = {
+  // Iconic JDM Legends, American Muscle, Off-Road 4x4s & Exotic Supercars
+  skylineR34:      { model: 'skyline',  name: 'R34 Skyline GT-R',     body: 0x0284c7, roof: 0x0369a1, trim: 0xe2e8f0, rim: 0xd97706, spoiler: 'gt',      fmic: true,  stripe: 'side',  afterburners: true },
+  mustangFastback: { model: 'mustang',  name: 'GT500 Fastback V8',    body: 0xdc2626, roof: 0xb91c1c, trim: 0x111827, rim: 0xf8fafc, spoiler: 'duck',    scoop: true, stripe: 'twin' },
+  pajeroEvo:       { model: 'pajero',   name: 'Pajero Evo 4x4',       body: 0xf8fafc, roof: 0xe2e8f0, trim: 0xef4444, rim: 0xfacc15, bullbar: true,      spareTire: true, roofRack: true },
+  silviaS15:       { model: 'silvia',   name: 'Silvia S15 Spec-R',    body: 0x10b981, roof: 0x059669, trim: 0x111827, rim: 0xfacc15, spoiler: 'drift',   carbonHood: true, underglow: 0x22d3ee },
+  sx180:           { model: 'sx180',    name: '180SX Type-X Kouki',   body: 0x7c3aed, roof: 0x111827, trim: 0x22d3ee, rim: 0xe2e8f0, spoiler: 'hoop',    popups: true, underglow: 0xa855f7 },
+  zx300:           { model: 'zx300',    name: '300ZX Twin-Turbo',     body: 0xf97316, roof: 0x0f172a, trim: 0x1e293b, rim: 0xfef08a, spoiler: 'flush',   ttop: true },
+  rx7Spirit:       { model: 'rx7',      name: 'RX-7 FD3S Rotary',     body: 0xfacc15, roof: 0xeab308, trim: 0x111827, rim: 0x334155, spoiler: 'hoop',    rotaryFlame: true, carbonHood: true },
+  supraMk4:        { model: 'supra',    name: 'Aero-Top GT90',        body: 0xf43f5e, roof: 0xe11d48, trim: 0x111827, rim: 0xe2e8f0, spoiler: 'hoop',    fmic: true },
+  superCar:        { model: 'supercar', name: 'Apex V10 Supercar',    body: 0x06b6d4, roof: 0x0f172a, trim: 0x22d3ee, rim: 0x38bdf8, spoiler: 'gt',      louvers: true, underglow: 0x38bdf8 },
+  // Map legacy keys seamlessly to these sculpted 3D iconic models
+  blueCar:         { model: 'skyline',  name: 'R34 Skyline GT-R',     body: 0x0284c7, roof: 0x0369a1, trim: 0xe2e8f0, rim: 0xfacc15, spoiler: 'gt',      fmic: true,  stripe: 'side',  afterburners: true },
+  jdmGtCoupe:      { model: 'sx180',    name: '180SX Type-X Kouki',   body: 0x7c3aed, roof: 0x111827, trim: 0x22d3ee, rim: 0xe2e8f0, spoiler: 'hoop',    popups: true, underglow: 0x22d3ee },
+  naMuscle:        { model: 'mustang',  name: 'GT500 Fastback V8',    body: 0xdc2626, roof: 0xb91c1c, trim: 0x111827, rim: 0xf8fafc, spoiler: 'duck',    scoop: true, stripe: 'twin' },
+  yellowCar:       { model: 'rx7',      name: 'RX-7 FD3S Rotary',     body: 0xfacc15, roof: 0xeab308, trim: 0x111827, rim: 0x1e293b, spoiler: 'hoop',    rotaryFlame: true },
+  compactCar:      { model: 'pajero',   name: 'Pajero Evo 4x4',       body: 0xf8fafc, roof: 0xe2e8f0, trim: 0xef4444, rim: 0xfacc15, bullbar: true,      spareTire: true, roofRack: true },
+  rallyCar:        { model: 'silvia',   name: 'Silvia S15 Spec-R',    body: 0x10b981, roof: 0x059669, trim: 0x111827, rim: 0xfacc15, spoiler: 'drift',   carbonHood: true, fmic: true },
+  greenTruck:      { model: 'pickup',   name: 'Baja Raptor 4x4',      body: 0x16a34a, roof: 0x15803d, trim: 0x111827, rim: 0xfacc15, bullbar: true,      bedSpare: true },
+  bajaSuv:         { model: 'zx300',    name: '300ZX Twin-Turbo',     body: 0xf97316, roof: 0x0f172a, trim: 0x111827, rim: 0xf8fafc, spoiler: 'flush',   ttop: true },
+  deliveryVan:     { model: 'van',      name: '365 Parts Sprinter',   body: 0x0284c7, roof: 0xf8fafc, trim: 0xfacc15, rim: 0xe2e8f0 },
+  towTruck:        { model: 'tow',      name: '365 Heavy Wrecker',    body: 0xf59e0b, roof: 0xd97706, trim: 0x991b1b, rim: 0xe2e8f0 }
 };
 
-function make3DWheel(radius, width, rimColor) {
+function make3DWheel(radius, width, rimColor, offroad = false) {
   const wheelGroup = new THREE.Group();
+
+  // Outer rubber tire with shoulder bevel
   const tire = new THREE.Mesh(
-    new THREE.CylinderGeometry(radius, radius, width, 16),
-    getMat(0x111827, { roughness: 0.72, metalness: 0.1 })
+    new THREE.CylinderGeometry(radius, radius, width, offroad ? 12 : 20),
+    getMat(0x111827, { roughness: 0.78, metalness: 0.08 })
   );
   tire.rotation.x = Math.PI / 2;
   tire.castShadow = true;
   wheelGroup.add(tire);
 
-  const rim = new THREE.Mesh(
-    new THREE.CylinderGeometry(radius * 0.62, radius * 0.62, width + 0.5, 10),
-    getMat(rimColor, { roughness: 0.22, metalness: 0.78 })
+  // Deep-dish alloy barrel
+  const barrel = new THREE.Mesh(
+    new THREE.CylinderGeometry(radius * 0.68, radius * 0.68, width + 0.35, 16),
+    getMat(rimColor, { roughness: 0.18, metalness: 0.82 })
   );
-  rim.rotation.x = Math.PI / 2;
-  wheelGroup.add(rim);
+  barrel.rotation.x = Math.PI / 2;
+  wheelGroup.add(barrel);
 
-  const spokeGeo = new THREE.BoxGeometry(radius * 1.15, radius * 0.22, width + 0.9);
-  const spokeMat = getMat(0xffffff, { roughness: 0.2, metalness: 0.85 });
-  const spoke1 = new THREE.Mesh(spokeGeo, spokeMat);
-  const spoke2 = new THREE.Mesh(spokeGeo, spokeMat);
-  spoke2.rotation.z = Math.PI / 2;
-  wheelGroup.add(spoke1, spoke2);
+  // Recessed dark brake rotor + red Brembo caliper inside wheel
+  const rotor = new THREE.Mesh(
+    new THREE.CylinderGeometry(radius * 0.50, radius * 0.50, width + 0.45, 12),
+    getMat(0x334155, { roughness: 0.35, metalness: 0.75 })
+  );
+  rotor.rotation.x = Math.PI / 2;
+  wheelGroup.add(rotor);
+
+  // 6-Spoke Star Alloy Wheel Face (3 intersecting bars at 0, 60, 120 deg)
+  const spokeGeo = new THREE.BoxGeometry(radius * 1.24, radius * 0.18, width + 0.68);
+  const spokeMat = getMat(rimColor, { roughness: 0.15, metalness: 0.88 });
+  for (let i = 0; i < 3; i++) {
+    const sp = new THREE.Mesh(spokeGeo, spokeMat);
+    sp.rotation.z = (i * Math.PI) / 3;
+    wheelGroup.add(sp);
+  }
+
+  // Center lug cap
+  const cap = new THREE.Mesh(
+    new THREE.CylinderGeometry(radius * 0.18, radius * 0.18, width + 0.85, 8),
+    getMat(0xef4444, { roughness: 0.2, metalness: 0.7 })
+  );
+  cap.rotation.x = Math.PI / 2;
+  wheelGroup.add(cap);
 
   return wheelGroup;
 }
 
-export function create3DVehicle({ assetKey = 'blueCar', direction = 'east', towTargetKey = '' } = {}) {
-  const spec = VEHICLE_SPECS[assetKey] || VEHICLE_SPECS.blueCar;
+const PROFILE_GEO_CACHE = {};
+
+function getExtrudedCarBodyGeometry(model, length, width, baseH, topH) {
+  const key = `${model}_${length}_${width}_${baseH}_${topH}`;
+  if (PROFILE_GEO_CACHE[key]) return PROFILE_GEO_CACHE[key];
+
+  const hl = length / 2;
+  const shape = new THREE.Shape();
+
+  if (model === 'supercar') {
+    // Low-slung wedge mid-engine supercar profile
+    shape.moveTo(-hl, 1.5);
+    shape.lineTo(hl, 1.0);
+    shape.lineTo(hl + 1.2, 3.6);
+    shape.lineTo(hl * 0.45, 6.4);
+    shape.lineTo(hl * 0.10, topH);
+    shape.lineTo(-hl * 0.42, topH - 0.6);
+    shape.lineTo(-hl * 0.92, 6.8);
+    shape.lineTo(-hl, 5.2);
+    shape.closePath();
+  } else if (model === 'mustang' || model === 'sx180' || model === 'rx7' || model === 'supra') {
+    // Sleek Fastback / Sports Liftback profile
+    const noseH = model === 'mustang' ? 6.8 : 5.2;
+    shape.moveTo(-hl, 1.8);
+    shape.lineTo(hl, 1.5);
+    shape.lineTo(hl + 0.8, noseH);
+    shape.lineTo(hl * 0.36, baseH + 0.8);
+    shape.lineTo(hl * 0.06, topH);
+    shape.lineTo(-hl * 0.34, topH - 0.4);
+    shape.lineTo(-hl * 0.92, baseH + 0.9);
+    shape.lineTo(-hl, baseH);
+    shape.closePath();
+  } else if (model === 'pajero') {
+    // Rugged Dakar 4x4 Pajero Evolution SUV profile
+    shape.moveTo(-hl, 2.6);
+    shape.lineTo(hl, 2.4);
+    shape.lineTo(hl + 0.6, baseH);
+    shape.lineTo(hl * 0.42, baseH + 0.9);
+    shape.lineTo(hl * 0.18, topH);
+    shape.lineTo(-hl * 0.82, topH);
+    shape.lineTo(-hl * 0.96, baseH + 1.2);
+    shape.lineTo(-hl, 2.6);
+    shape.closePath();
+  } else if (model === 'pickup') {
+    // Lifted 4x4 Baja Crew-Cab Pickup profile
+    shape.moveTo(-hl, 2.8);
+    shape.lineTo(hl, 2.6);
+    shape.lineTo(hl + 0.6, baseH + 0.5);
+    shape.lineTo(hl * 0.44, baseH + 1.0);
+    shape.lineTo(hl * 0.22, topH);
+    shape.lineTo(-hl * 0.18, topH);
+    shape.lineTo(-hl * 0.24, baseH + 0.6);
+    shape.lineTo(-hl, baseH + 0.4);
+    shape.closePath();
+  } else if (model === 'van') {
+    // High-Roof Commercial Sprinter Van profile
+    shape.moveTo(-hl, 2.2);
+    shape.lineTo(hl, 2.0);
+    shape.lineTo(hl + 0.5, 6.8);
+    shape.lineTo(hl * 0.62, topH);
+    shape.lineTo(-hl * 0.92, topH);
+    shape.lineTo(-hl, 7.5);
+    shape.closePath();
+  } else if (model === 'tow') {
+    // Heavy-Duty Wrecker Cab + Flatbed Utility Deck profile
+    shape.moveTo(-hl, 2.6);
+    shape.lineTo(hl, 2.6);
+    shape.lineTo(hl + 0.6, baseH + 1.2);
+    shape.lineTo(hl * 0.48, baseH + 1.5);
+    shape.lineTo(hl * 0.34, topH);
+    shape.lineTo(-hl * 0.04, topH);
+    shape.lineTo(-hl * 0.08, baseH - 0.5);
+    shape.lineTo(-hl, baseH - 0.5);
+    shape.closePath();
+  } else {
+    // Iconic JDM 3-Box GT Coupe profile (Skyline R34 / Silvia S15 / 300ZX)
+    const noseH = model === 'zx300' ? 5.2 : 6.4;
+    shape.moveTo(-hl, 1.6);
+    shape.lineTo(hl, 1.4);
+    shape.lineTo(hl + 0.8, noseH);
+    shape.lineTo(hl * 0.38, baseH + 0.7);
+    shape.lineTo(hl * 0.12, topH);
+    shape.lineTo(-hl * 0.36, topH - 0.3);
+    shape.lineTo(-hl * 0.62, baseH + 0.8);
+    shape.lineTo(-hl, baseH + 0.4);
+    shape.closePath();
+  }
+
+  const extrudeDepth = width - 2.4;
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth: extrudeDepth,
+    bevelEnabled: true,
+    bevelThickness: 1.15,
+    bevelSize: 0.95,
+    bevelSegments: 3,
+    curveSegments: 8
+  });
+  geo.translate(0, 0, -extrudeDepth / 2);
+  PROFILE_GEO_CACHE[key] = geo;
+  return geo;
+}
+
+export function create3DVehicle({ assetKey = 'skylineR34', direction = 'east', towTargetKey = '', showBadge = false } = {}) {
+  const spec = VEHICLE_SPECS[assetKey] || VEHICLE_SPECS.skylineR34;
+  const model = spec.model || 'skyline';
   const root = new THREE.Group();
   const chassis = new THREE.Group();
   root.add(chassis);
 
-  const isTruck = spec.type === 'pickup' || spec.type === 'suv' || spec.type === 'van' || spec.type === 'tow';
-  const length = isTruck ? 48 : 42;
-  const width = isTruck ? 22 : 20;
-  const wheelR = isTruck ? 5.6 : 4.6;
-  const wheelW = isTruck ? 4.4 : 3.6;
+  const isHeavy = model === 'pickup' || model === 'pajero' || model === 'van' || model === 'tow';
+  const length = model === 'tow' || model === 'pickup' ? 48 : model === 'van' || model === 'pajero' ? 45 : 43;
+  const width = isHeavy ? 21.5 : 19.8;
+  const wheelR = model === 'pickup' || model === 'pajero' || model === 'tow' ? 5.5 : 4.5;
+  const wheelW = isHeavy ? 4.2 : 3.6;
+  const baseH = isHeavy ? 8.8 : 7.0;
+  const topH = model === 'van' ? 17.5 : model === 'pajero' || model === 'pickup' || model === 'tow' ? 15.8 : model === 'supercar' || model === 'zx300' ? 11.8 : 12.8;
 
-  // 1. 4 Independent Spinning 3D Wheels
+  // 1. 4 Independent Spinning 3D Wheels + Flared Widebody Fender Arches
   const wheels = [];
   const wx = length * 0.31;
   const wz = width * 0.48;
+  const archMat = getMat(isHeavy ? 0x111827 : spec.body, { roughness: 0.28, metalness: 0.35 });
   for (const [x, z] of [[-wx, wz], [wx, wz], [-wx, -wz], [wx, -wz]]) {
-    const w = make3DWheel(wheelR, wheelW, spec.rim);
+    const w = make3DWheel(wheelR, wheelW, spec.rim, isHeavy);
     w.position.set(x, wheelR, z);
     root.add(w);
     wheels.push(w);
-  }
 
-  // 2. Sculpted 3D Lower Body & Bumpers (local +X is front)
-  const lowerH = isTruck ? 8.5 : 6.8;
-  const lowerBody = new THREE.Mesh(
-    new THREE.BoxGeometry(length, lowerH, width),
-    getMat(spec.body, { roughness: 0.22, metalness: 0.38 })
-  );
-  lowerBody.position.set(0, wheelR + lowerH * 0.48, 0);
-  lowerBody.castShadow = true;
-  lowerBody.receiveShadow = true;
-  chassis.add(lowerBody);
-
-  const trimStrip = new THREE.Mesh(
-    new THREE.BoxGeometry(length + 0.6, 2.0, width + 0.6),
-    getMat(spec.trim, { roughness: 0.35, metalness: 0.25 })
-  );
-  trimStrip.position.set(0, wheelR + 1.8, 0);
-  chassis.add(trimStrip);
-
-  const grille = new THREE.Mesh(
-    new THREE.BoxGeometry(1.2, lowerH * 0.55, width * 0.56),
-    getMat(0x0f172a, { roughness: 0.6 })
-  );
-  grille.position.set(length / 2 + 0.2, wheelR + lowerH * 0.42, 0);
-  chassis.add(grille);
-
-  const hlMat = getMat(0xfef08a, { emissive: 0xfef08a, emissiveIntensity: 1.4 });
-  const tlMat = getMat(0xef4444, { emissive: 0xef4444, emissiveIntensity: 1.1 });
-  for (const side of [-1, 1]) {
-    const hl = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.2, 4.0), hlMat);
-    hl.position.set(length / 2 + 0.2, wheelR + lowerH * 0.56, side * (width * 0.34));
-    chassis.add(hl);
-
-    const tl = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.2, 4.4), tlMat);
-    tl.position.set(-length / 2 - 0.2, wheelR + lowerH * 0.56, side * (width * 0.33));
-    chassis.add(tl);
-  }
-
-  // 3. 3D Cabin / Greenhouse / Truck Bed / Tow Boom
-  const cabinBaseY = wheelR + lowerH * 0.92;
-  const glassMat = getMat(0x0f172a, { roughness: 0.08, metalness: 0.88, emissive: 0x1e3a8a, emissiveIntensity: 0.28 });
-
-  if (spec.type === 'van') {
-    const vanBox = new THREE.Mesh(
-      new THREE.BoxGeometry(length * 0.86, 11.5, width * 0.92),
-      getMat(spec.roof, { roughness: 0.28, metalness: 0.2 })
+    // Sculpted 3D widebody fender flare over each wheel
+    const arch = new THREE.Mesh(
+      new THREE.CylinderGeometry(wheelR + 1.35, wheelR + 1.35, 3.2, 14, 1, false, 0, Math.PI),
+      archMat
     );
-    vanBox.position.set(-1.5, cabinBaseY + 5.5, 0);
-    vanBox.castShadow = true;
-    chassis.add(vanBox);
+    arch.rotation.x = Math.PI / 2;
+    arch.rotation.y = Math.PI / 2;
+    arch.position.set(x, wheelR + 0.6, z > 0 ? z - 0.8 : z + 0.8);
+    chassis.add(arch);
+  }
 
-    const windshield = new THREE.Mesh(new THREE.BoxGeometry(2.2, 7.5, width * 0.82), glassMat);
-    windshield.position.set(length * 0.36, cabinBaseY + 5.2, 0);
-    windshield.rotation.z = 0.28;
+  // 2. Extruded Beveled 3D Aerodynamic Body Shell
+  const bodyGeo = getExtrudedCarBodyGeometry(model, length, width, baseH, topH);
+  const bodyMesh = new THREE.Mesh(
+    bodyGeo,
+    getMat(spec.body, { roughness: 0.18, metalness: 0.46 })
+  );
+  bodyMesh.position.y = wheelR * 0.48;
+  bodyMesh.castShadow = true;
+  bodyMesh.receiveShadow = true;
+  chassis.add(bodyMesh);
+
+  // 3. Aero Side Skirts, Front Splitter & Rear Diffuser
+  const skirtMat = getMat(spec.trim, { roughness: 0.32, metalness: 0.3 });
+  const skirt = new THREE.Mesh(
+    new THREE.BoxGeometry(length * 0.52, 1.6, width + 1.0),
+    skirtMat
+  );
+  skirt.position.set(0, wheelR * 0.68, 0);
+  chassis.add(skirt);
+
+  const frontLip = new THREE.Mesh(
+    new THREE.BoxGeometry(3.2, 1.4, width + 0.6),
+    getMat(0x0f172a, { roughness: 0.35 })
+  );
+  frontLip.position.set(length / 2 + 0.2, wheelR * 0.62, 0);
+  chassis.add(frontLip);
+
+  // 4. Sloped 3D Tinted Windshield, Side Windows & Fastback Rear Glass
+  const glassMat = getMat(0x091326, { roughness: 0.06, metalness: 0.92, emissive: 0x1e3a8a, emissiveIntensity: 0.32 });
+  const cabY = wheelR * 0.48 + (baseH + topH) * 0.5;
+  const cabW = width - 1.5;
+
+  if (model !== 'van') {
+    const windshield = new THREE.Mesh(
+      new THREE.BoxGeometry(7.2, 1.2, cabW * 0.88),
+      glassMat
+    );
+    windshield.position.set(length * 0.18, cabY + 0.4, 0);
+    windshield.rotation.z = model === 'supercar' ? -0.46 : -0.58;
     chassis.add(windshield);
-  } else if (spec.type === 'pickup') {
-    const cab = new THREE.Mesh(new THREE.BoxGeometry(length * 0.42, 8.8, width * 0.88), getMat(spec.roof, { roughness: 0.26 }));
-    cab.position.set(3, cabinBaseY + 4.2, 0);
-    cab.castShadow = true;
-    chassis.add(cab);
 
-    const cabGlass = new THREE.Mesh(new THREE.BoxGeometry(length * 0.44, 5.6, width * 0.90), glassMat);
-    cabGlass.position.set(3.5, cabinBaseY + 4.0, 0);
-    chassis.add(cabGlass);
+    const sideWinLen = model === 'pajero' ? length * 0.48 : model === 'pickup' || model === 'tow' ? length * 0.28 : length * 0.36;
+    const sideWinX = model === 'pajero' ? -length * 0.14 : model === 'pickup' || model === 'tow' ? length * 0.12 : -length * 0.06;
+    const sideGlass = new THREE.Mesh(
+      new THREE.BoxGeometry(sideWinLen, (topH - baseH) * 0.72, width + 0.25),
+      glassMat
+    );
+    sideGlass.position.set(sideWinX, cabY + 0.3, 0);
+    chassis.add(sideGlass);
 
-    const lightbar = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.8, width * 0.72), hlMat);
-    lightbar.position.set(10, cabinBaseY + 9.2, 0);
-    chassis.add(lightbar);
-  } else if (spec.type === 'tow') {
-    const cab = new THREE.Mesh(new THREE.BoxGeometry(length * 0.38, 9.5, width * 0.90), getMat(spec.roof, { roughness: 0.26 }));
-    cab.position.set(7, cabinBaseY + 4.5, 0);
-    cab.castShadow = true;
-    chassis.add(cab);
+    if (model !== 'pickup' && model !== 'tow' && model !== 'pajero') {
+      const rearGlass = new THREE.Mesh(
+        new THREE.BoxGeometry(8.2, 1.2, cabW * 0.84),
+        glassMat
+      );
+      rearGlass.position.set(-length * 0.25, cabY + 0.2, 0);
+      rearGlass.rotation.z = 0.48;
+      chassis.add(rearGlass);
+    }
+  } else {
+    const vanWindshield = new THREE.Mesh(new THREE.BoxGeometry(5.5, 1.2, cabW * 0.88), glassMat);
+    vanWindshield.position.set(length * 0.39, cabY + 0.8, 0);
+    vanWindshield.rotation.z = -0.85;
+    const vanSideWin = new THREE.Mesh(new THREE.BoxGeometry(length * 0.26, 4.8, width + 0.25), glassMat);
+    vanSideWin.position.set(length * 0.22, cabY + 1.0, 0);
+    chassis.add(vanWindshield, vanSideWin);
+  }
 
-    const cabGlass = new THREE.Mesh(new THREE.BoxGeometry(length * 0.40, 5.8, width * 0.92), glassMat);
-    cabGlass.position.set(7.5, cabinBaseY + 4.4, 0);
-    chassis.add(cabGlass);
+  // 3D Side Wing Mirrors
+  for (const side of [-1, 1]) {
+    const mirror = new THREE.Mesh(
+      new THREE.BoxGeometry(2.0, 1.4, 2.2),
+      getMat(spec.body, { roughness: 0.2, metalness: 0.4 })
+    );
+    mirror.position.set(length * 0.15, wheelR * 0.48 + baseH + 1.2, side * (width * 0.53));
+    chassis.add(mirror);
+  }
 
-    const strobeRed = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.2, 6.5), getMat(0xef4444, { emissive: 0xef4444, emissiveIntensity: 1.5 }));
-    strobeRed.position.set(7, cabinBaseY + 10.2, -3.5);
-    const strobeAmber = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.2, 6.5), getMat(0xfacc15, { emissive: 0xfacc15, emissiveIntensity: 1.5 }));
-    strobeAmber.position.set(7, cabinBaseY + 10.2, 3.5);
+  // 5. Model-Specific Iconic Details (Carbon Hoods, Stripes, Intercoolers, Pop-Ups, Bullbars, Spoilers, Taillights)
+  if (spec.carbonHood) {
+    const cHood = new THREE.Mesh(
+      new THREE.BoxGeometry(length * 0.30, 0.9, width * 0.78),
+      getMat(0x111827, { roughness: 0.28, metalness: 0.45 })
+    );
+    cHood.position.set(length * 0.31, wheelR * 0.48 + baseH + 0.15, 0);
+    cHood.rotation.z = -0.08;
+    chassis.add(cHood);
+  }
+
+  if (spec.stripe === 'twin') {
+    // Mustang Twin Le Mans Racing Stripes across hood & roof
+    const stMat = getMat(0xf8fafc, { roughness: 0.2 });
+    for (const sz of [-2.4, 2.4]) {
+      const stHood = new THREE.Mesh(new THREE.BoxGeometry(length * 0.34, 0.95, 2.6), stMat);
+      stHood.position.set(length * 0.30, wheelR * 0.48 + baseH + 0.2, sz);
+      stHood.rotation.z = -0.05;
+      const stRoof = new THREE.Mesh(new THREE.BoxGeometry(length * 0.34, 0.95, 2.6), stMat);
+      stRoof.position.set(-length * 0.08, wheelR * 0.48 + topH + 0.2, sz);
+      chassis.add(stHood, stRoof);
+    }
+  } else if (spec.stripe === 'side') {
+    const sideStripe = new THREE.Mesh(
+      new THREE.BoxGeometry(length * 0.65, 1.3, width + 0.55),
+      getMat(0xf8fafc, { roughness: 0.2 })
+    );
+    sideStripe.position.set(-1, wheelR * 0.48 + 3.8, 0);
+    chassis.add(sideStripe);
+  }
+
+  if (spec.ttop) {
+    // 300ZX Z32 Black Glass T-Top Roof Panels
+    const ttopGlass = new THREE.Mesh(
+      new THREE.BoxGeometry(length * 0.26, 1.0, width * 0.78),
+      glassMat
+    );
+    ttopGlass.position.set(-length * 0.06, wheelR * 0.48 + topH + 0.15, 0);
+    chassis.add(ttopGlass);
+  }
+
+  if (spec.scoop) {
+    const scoop = new THREE.Mesh(
+      new THREE.BoxGeometry(8.5, 2.2, 7.2),
+      getMat(0x111827, { roughness: 0.35 })
+    );
+    scoop.position.set(length * 0.24, wheelR * 0.48 + baseH + 0.9, 0);
+    chassis.add(scoop);
+  }
+
+  if (spec.fmic) {
+    // Exposed Aluminum Front-Mount Intercooler (Skyline R34 / Silvia S15 / Supra)
+    const fmic = new THREE.Mesh(
+      new THREE.BoxGeometry(1.6, 3.0, width * 0.54),
+      getMat(0xe2e8f0, { roughness: 0.18, metalness: 0.9 })
+    );
+    fmic.position.set(length / 2 + 0.85, wheelR * 0.48 + 2.8, 0);
+    chassis.add(fmic);
+  } else {
+    const grille = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 3.4, width * 0.58),
+      getMat(0x0f172a, { roughness: 0.5 })
+    );
+    grille.position.set(length / 2 + 0.8, wheelR * 0.48 + 3.8, 0);
+    chassis.add(grille);
+  }
+
+  if (spec.bullbar) {
+    // Pajero Evo / Baja Raptor Front Tubular Bullbar + Twin Yellow Rally Fog Lamps
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(2.2, 5.2, width * 0.64), getMat(0x1e293b, { metalness: 0.6 }));
+    bar.position.set(length / 2 + 1.6, wheelR * 0.48 + 4.4, 0);
+    chassis.add(bar);
+    const fogMat = getMat(0xfacc15, { emissive: 0xfacc15, emissiveIntensity: 1.5 });
+    for (const fz of [-3.6, 3.6]) {
+      const fog = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 1.4, 12), fogMat);
+      fog.rotation.z = Math.PI / 2;
+      fog.position.set(length / 2 + 2.4, wheelR * 0.48 + 4.8, fz);
+      chassis.add(fog);
+    }
+  }
+
+  if (spec.spareTire) {
+    // Pajero Evo Rear Tailgate-Mounted Full-Size 3D Spare Tire!
+    const spare = make3DWheel(wheelR * 0.88, wheelW * 0.85, spec.rim, true);
+    spare.rotation.z = Math.PI / 2;
+    spare.rotation.y = Math.PI / 2;
+    spare.position.set(-length / 2 - 2.2, wheelR * 0.48 + baseH + 1.2, 2.0);
+    chassis.add(spare);
+  }
+
+  if (spec.bedSpare) {
+    // Baja Raptor Pickup Bed Rollbar & Angled Bed Spare Tire
+    const bedSpare = make3DWheel(wheelR * 0.88, wheelW * 0.85, spec.rim, true);
+    bedSpare.rotation.x = Math.PI / 2;
+    bedSpare.rotation.y = 0.55;
+    bedSpare.position.set(-length * 0.28, wheelR * 0.48 + baseH + 1.5, 0);
+    chassis.add(bedSpare);
+  }
+
+  if (spec.roofRack) {
+    const rack = new THREE.Mesh(
+      new THREE.BoxGeometry(length * 0.45, 1.4, width * 0.76),
+      getMat(0x1e293b, { metalness: 0.6 })
+    );
+    rack.position.set(-length * 0.16, wheelR * 0.48 + topH + 1.2, 0);
+    const rallyPodBar = new THREE.Mesh(
+      new THREE.BoxGeometry(1.8, 1.8, width * 0.68),
+      getMat(0xfef08a, { emissive: 0xfacc15, emissiveIntensity: 1.4 })
+    );
+    rallyPodBar.position.set(length * 0.05, wheelR * 0.48 + topH + 1.8, 0);
+    chassis.add(rack, rallyPodBar);
+  }
+
+  if (spec.louvers) {
+    // Supercar Mid-Engine Rear Louvers & Side Intakes
+    for (let li = 0; li < 4; li++) {
+      const louver = new THREE.Mesh(
+        new THREE.BoxGeometry(1.8, 0.8, width * 0.56),
+        getMat(0x0f172a, { roughness: 0.3 })
+      );
+      louver.position.set(-length * 0.12 - li * 3.2, wheelR * 0.48 + topH - 0.5 - li * 0.65, 0);
+      chassis.add(louver);
+    }
+  }
+
+  // Spoilers (GT Wing, Hoop Wing, Drift Wing, Ducktail)
+  const deckY = wheelR * 0.48 + baseH + 0.8;
+  if (spec.spoiler === 'gt' || spec.spoiler === 'drift') {
+    const wingH = spec.spoiler === 'drift' ? 4.8 : 3.8;
+    const wing = new THREE.Mesh(
+      new THREE.BoxGeometry(4.2, 1.1, width * 0.96),
+      getMat(spec.spoiler === 'drift' ? 0x111827 : spec.body, { roughness: 0.22, metalness: 0.5 })
+    );
+    wing.position.set(-length * 0.44, deckY + wingH, 0);
+    const endplateGeo = new THREE.BoxGeometry(5.0, 2.8, 0.8);
+    const epL = new THREE.Mesh(endplateGeo, getMat(0x111827));
+    const epR = epL.clone();
+    epL.position.set(-length * 0.44, deckY + wingH, -width * 0.48);
+    epR.position.set(-length * 0.44, deckY + wingH, width * 0.48);
+    const strutGeo = new THREE.BoxGeometry(2.2, wingH, 0.9);
+    const stL = new THREE.Mesh(strutGeo, getMat(0x0f172a));
+    const stR = stL.clone();
+    stL.position.set(-length * 0.43, deckY + wingH / 2, -width * 0.28);
+    stR.position.set(-length * 0.43, deckY + wingH / 2, width * 0.28);
+    chassis.add(wing, epL, epR, stL, stR);
+  } else if (spec.spoiler === 'hoop') {
+    const hoopTop = new THREE.Mesh(
+      new THREE.BoxGeometry(3.8, 1.2, width * 0.88),
+      getMat(spec.body, { roughness: 0.2, metalness: 0.45 })
+    );
+    hoopTop.position.set(-length * 0.44, deckY + 3.4, 0);
+    const postGeo = new THREE.BoxGeometry(3.6, 3.4, 1.4);
+    const pL = new THREE.Mesh(postGeo, getMat(spec.body));
+    const pR = pL.clone();
+    pL.position.set(-length * 0.44, deckY + 1.7, -width * 0.40);
+    pR.position.set(-length * 0.44, deckY + 1.7, width * 0.40);
+    chassis.add(hoopTop, pL, pR);
+  } else if (spec.spoiler === 'duck') {
+    const duck = new THREE.Mesh(
+      new THREE.BoxGeometry(2.6, 2.4, width * 0.88),
+      getMat(0x111827, { roughness: 0.3 })
+    );
+    duck.position.set(-length * 0.47, deckY + 1.0, 0);
+    duck.rotation.z = -0.35;
+    chassis.add(duck);
+  }
+
+  // 6. Headlights (Including Working 3D Pop-Up Headlights on 180SX!) & Dynamic Brake Lights!
+  const hlMat = getMat(0xfef08a, { emissive: 0xfef08a, emissiveIntensity: 1.5 });
+  const brakeLights = [];
+  for (const side of [-1, 1]) {
+    if (spec.popups) {
+      const popupPod = new THREE.Group();
+      popupPod.position.set(length * 0.44, wheelR * 0.48 + 5.2, side * (width * 0.32));
+      const podCover = new THREE.Mesh(new THREE.BoxGeometry(3.4, 2.2, 3.8), getMat(spec.body));
+      const podLens = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 3.2), hlMat);
+      podLens.position.set(1.5, 0, 0);
+      popupPod.add(podCover, podLens);
+      chassis.add(popupPod);
+    } else {
+      const hl = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.0, 4.2), hlMat);
+      hl.position.set(length / 2 + 0.7, wheelR * 0.48 + (isHeavy ? 6.0 : 4.8), side * (width * 0.34));
+      chassis.add(hl);
+    }
+  }
+
+  // Unique Clone Material per Vehicle for Dynamic Brake Light Brightening!
+  const brakeMat = new THREE.MeshStandardMaterial({
+    color: 0xef4444,
+    emissive: 0xef4444,
+    emissiveIntensity: 0.85,
+    roughness: 0.2
+  });
+
+  if (spec.afterburners) {
+    // R34 Skyline Signature Quad Circular Red Afterburner Taillights!
+    for (const side of [-1, 1]) {
+      const outerRing = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.45, 1.2, 12), brakeMat);
+      outerRing.rotation.z = Math.PI / 2;
+      outerRing.position.set(-length / 2 - 0.8, wheelR * 0.48 + 5.4, side * (width * 0.35));
+      const innerRing = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 1.2, 12), brakeMat);
+      innerRing.rotation.z = Math.PI / 2;
+      innerRing.position.set(-length / 2 - 0.8, wheelR * 0.48 + 5.4, side * (width * 0.21));
+      chassis.add(outerRing, innerRing);
+      brakeLights.push(outerRing, innerRing);
+    }
+  } else {
+    for (const side of [-1, 1]) {
+      const tl = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.1, 4.6), brakeMat);
+      tl.position.set(-length / 2 - 0.7, wheelR * 0.48 + (isHeavy ? 5.8 : 5.0), side * (width * 0.33));
+      chassis.add(tl);
+      brakeLights.push(tl);
+    }
+    // Center Kouki / Fastback Garnish Taillight Bar
+    const centerBar = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.1, width * 0.56), brakeMat);
+    centerBar.position.set(-length / 2 - 0.65, wheelR * 0.48 + (isHeavy ? 5.8 : 5.0), 0);
+    chassis.add(centerBar);
+    brakeLights.push(centerBar);
+  }
+
+  // Tow Truck Hydraulic Recovery Boom & Strobe Bar
+  if (model === 'tow') {
+    const strobeRed = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.2, 6.5), getMat(0xef4444, { emissive: 0xef4444, emissiveIntensity: 1.6 }));
+    strobeRed.position.set(8, wheelR * 0.48 + topH + 1.2, -3.6);
+    const strobeAmber = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.2, 6.5), getMat(0xfacc15, { emissive: 0xfacc15, emissiveIntensity: 1.6 }));
+    strobeAmber.position.set(8, wheelR * 0.48 + topH + 1.2, 3.6);
     chassis.add(strobeRed, strobeAmber);
     root._strobes = [strobeRed, strobeAmber];
 
     const boomPivot = new THREE.Group();
-    boomPivot.position.set(-4, cabinBaseY + 1, 0);
+    boomPivot.position.set(-4, wheelR * 0.48 + baseH, 0);
     const boomArm = new THREE.Mesh(
       new THREE.BoxGeometry(24, 3.2, 4.2),
       getMat(0xfacc15, { roughness: 0.3, metalness: 0.5 })
@@ -311,13 +681,6 @@ export function create3DVehicle({ assetKey = 'blueCar', direction = 'east', towT
     boomArm.rotation.z = -0.45;
     boomArm.castShadow = true;
     boomPivot.add(boomArm);
-
-    const winchLine = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.45, 0.45, 11, 6),
-      getMat(0x94a3b8, { metalness: 0.8 })
-    );
-    winchLine.position.set(-20, 6, 0);
-    boomPivot.add(winchLine);
     chassis.add(boomPivot);
     root._towBoom = boomPivot;
 
@@ -327,73 +690,50 @@ export function create3DVehicle({ assetKey = 'blueCar', direction = 'east', towT
       towedCar.rotation.z = -0.14;
       chassis.add(towedCar);
     }
-  } else {
-    const cabLen = spec.type === 'suv' || spec.type === 'hatch' ? length * 0.60 : length * 0.50;
-    const cabH = spec.type === 'suv' ? 8.2 : 6.8;
-    const cabX = spec.type === 'hatch' || spec.type === 'suv' ? -3 : -2;
+  }
 
-    const glassBlock = new THREE.Mesh(
-      new THREE.BoxGeometry(cabLen, cabH * 0.82, width * 0.84),
-      glassMat
+  if (spec.underglow) {
+    const glow = new THREE.Mesh(
+      new THREE.BoxGeometry(length * 0.82, 0.7, width * 0.88),
+      getMat(spec.underglow, { emissive: spec.underglow, emissiveIntensity: 1.6 })
     );
-    glassBlock.position.set(cabX, cabinBaseY + cabH * 0.42, 0);
-    chassis.add(glassBlock);
+    glow.position.set(0, 1.4, 0);
+    chassis.add(glow);
+  }
 
-    const roofCap = new THREE.Mesh(
-      new THREE.BoxGeometry(cabLen * 0.82, 2.0, width * 0.80),
-      getMat(spec.roof, { roughness: 0.22, metalness: 0.38 })
-    );
-    roofCap.position.set(cabX - 0.5, cabinBaseY + cabH * 0.86, 0);
-    roofCap.castShadow = true;
-    chassis.add(roofCap);
-
-    if (spec.spoiler) {
-      const wing = new THREE.Mesh(
-        new THREE.BoxGeometry(3.8, 1.2, width * 0.92),
-        getMat(0x0f172a, { roughness: 0.3, metalness: 0.6 })
-      );
-      wing.position.set(-length * 0.44, cabinBaseY + 3.8, 0);
-      const strutL = new THREE.Mesh(new THREE.BoxGeometry(2.0, 3.6, 1.0), getMat(0x0f172a));
-      const strutR = strutL.clone();
-      strutL.position.set(-length * 0.43, cabinBaseY + 1.8, -width * 0.32);
-      strutR.position.set(-length * 0.43, cabinBaseY + 1.8, width * 0.32);
-      chassis.add(wing, strutL, strutR);
-    }
-
-    if (spec.scoop) {
-      const scoop = new THREE.Mesh(
-        new THREE.BoxGeometry(8, 2.2, 7.5),
-        getMat(0x111827, { roughness: 0.4 })
-      );
-      scoop.position.set(length * 0.22, cabinBaseY + 0.8, 0);
-      chassis.add(scoop);
-    }
-
-    if (spec.type === 'taxi') {
-      const taxiSign = new THREE.Mesh(
-        new THREE.BoxGeometry(6, 3.0, 9),
-        getMat(0xfef08a, { emissive: 0xfacc15, emissiveIntensity: 1.2 })
-      );
-      taxiSign.position.set(cabX, cabinBaseY + cabH + 1.2, 0);
-      chassis.add(taxiSign);
-    }
-
-    if (spec.underglow) {
-      const glow = new THREE.Mesh(
-        new THREE.BoxGeometry(length * 0.88, 0.8, width * 0.94),
-        getMat(spec.underglow, { emissive: spec.underglow, emissiveIntensity: 1.6 })
-      );
-      glow.position.set(0, 1.5, 0);
-      chassis.add(glow);
-    }
+  // Dual Chrome Exhaust Tips + Exhaust / Rotary Backfire Flame
+  const tipGeo = new THREE.CylinderGeometry(1.1, 1.1, 3.2, 10);
+  const tipMat = getMat(0xe2e8f0, { roughness: 0.15, metalness: 0.9 });
+  for (const ez of [-width * 0.26, width * 0.26]) {
+    const tip = new THREE.Mesh(tipGeo, tipMat);
+    tip.rotation.z = Math.PI / 2;
+    tip.position.set(-length / 2 - 1.0, wheelR * 0.55, ez);
+    chassis.add(tip);
   }
 
   const exhaustPuff = new THREE.Mesh(
-    new THREE.SphereGeometry(2.5, 8, 8),
-    new THREE.MeshBasicMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.4 })
+    new THREE.SphereGeometry(2.2, 8, 8),
+    new THREE.MeshBasicMaterial({
+      color: spec.rotaryFlame ? 0x38bdf8 : 0xe2e8f0,
+      transparent: true,
+      opacity: 0.35
+    })
   );
-  exhaustPuff.position.set(-length / 2 - 4, wheelR + 1.5, -width * 0.25);
+  exhaustPuff.position.set(-length / 2 - 3.8, wheelR * 0.65, -width * 0.26);
   chassis.add(exhaustPuff);
+
+  if (showBadge && spec.name) {
+    const modelTag = makeLabelSprite(spec.name, {
+      bgColor: 'rgba(6, 19, 29, 0.90)',
+      borderColor: '#38bdf8',
+      textColor: '#f8fafc',
+      width: 152,
+      height: 24,
+      scale: 0.30
+    });
+    modelTag.position.set(0, 22.5, 0);
+    root.add(modelTag);
+  }
 
   if (direction === 'east') root.rotation.y = 0;
   else if (direction === 'west') root.rotation.y = Math.PI;
@@ -403,6 +743,9 @@ export function create3DVehicle({ assetKey = 'blueCar', direction = 'east', towT
   root._wheels = wheels;
   root._chassis = chassis;
   root._exhaustPuff = exhaustPuff;
+  root._brakeMat = brakeMat;
+  root._brakeLights = brakeLights;
+  root._spec = spec;
   return root;
 }
 
@@ -590,26 +933,28 @@ export function create3DPerson({ personKey = 'residentBlue', label = '', isStaff
   return root;
 }
 
-export function update3DPersonWalk(personGroup, distance, prevPos, nextPos, time) {
+export function update3DPersonWalk(personGroup, distance, prevPos, nextPos, time, isWaiting = false) {
   if (!personGroup) return;
   const phase = distance * 0.22;
-  const swing = Math.sin(phase);
-  const cosSwing = Math.cos(phase);
+  const swing = isWaiting ? 0 : Math.sin(phase);
+  const cosSwing = isWaiting ? 0 : Math.cos(phase);
 
   if (personGroup._leftLeg) personGroup._leftLeg.rotation.x = swing * 0.72;
   if (personGroup._rightLeg) personGroup._rightLeg.rotation.x = -swing * 0.72;
-  if (personGroup._leftArm) personGroup._leftArm.rotation.x = -swing * 0.58;
-  if (personGroup._rightArm) personGroup._rightArm.rotation.x = swing * 0.58;
+  if (personGroup._leftArm) personGroup._leftArm.rotation.x = isWaiting ? Math.sin(time * 2.5) * 0.06 : -swing * 0.58;
+  if (personGroup._rightArm) personGroup._rightArm.rotation.x = isWaiting ? -Math.sin(time * 2.5) * 0.06 : swing * 0.58;
 
   if (personGroup._bodyRoot) {
-    personGroup._bodyRoot.position.y = Math.abs(swing) * 1.9;
+    personGroup._bodyRoot.position.y = isWaiting ? Math.sin(time * 3.0) * 0.35 : Math.abs(swing) * 1.9;
   }
   if (personGroup._torso) {
-    personGroup._torso.rotation.y = swing * 0.16;
+    personGroup._torso.rotation.y = isWaiting ? Math.sin(time * 1.8) * 0.12 : swing * 0.16;
     personGroup._torso.rotation.z = cosSwing * 0.06;
   }
   if (personGroup._head) {
-    personGroup._head.rotation.y = Math.sin(time * 2.2 + distance * 0.03) * 0.22;
+    personGroup._head.rotation.y = isWaiting
+      ? Math.sin(time * 3.2 + distance * 0.05) * 0.42
+      : Math.sin(time * 2.2 + distance * 0.03) * 0.22;
     personGroup._head.rotation.x = Math.abs(swing) * 0.08;
   }
 
@@ -1205,27 +1550,6 @@ export function create3DIncident({ key, score }) {
     badge.position.set(0, 28, 0);
     group.add(badge);
   } else if (key === 'trafficLights') {
-    // Real 3D Intersection Traffic Signal Gantry Pole with Red/Yellow/Green 3D Signal Box!
-    const poleMat = getMat(0x334155, { metalness: 0.7, roughness: 0.3 });
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.8, 28, 8), poleMat);
-    pole.position.set(-26, 14, -26);
-    pole.castShadow = true;
-
-    const mastArm = new THREE.Mesh(new THREE.BoxGeometry(24, 1.4, 1.4), poleMat);
-    mastArm.position.set(-14, 26, -26);
-
-    const signalHead = new THREE.Mesh(new THREE.BoxGeometry(4.2, 9.5, 3.2), getMat(0xfacc15, { roughness: 0.3 }));
-    signalHead.position.set(-5, 24, -26);
-
-    const redLamp = new THREE.Mesh(new THREE.SphereGeometry(1.1, 8, 8), getMat(0xef4444, { emissive: 0xef4444, emissiveIntensity: 1.2 }));
-    redLamp.position.set(-5, 26.8, -24.2);
-    const ambLamp = new THREE.Mesh(new THREE.SphereGeometry(1.1, 8, 8), getMat(0xfacc15, { emissive: 0xfacc15, emissiveIntensity: 1.0 }));
-    ambLamp.position.set(-5, 24.0, -24.2);
-    const grnLamp = new THREE.Mesh(new THREE.SphereGeometry(1.1, 8, 8), getMat(0x22c55e, { emissive: 0x22c55e, emissiveIntensity: 1.2 }));
-    grnLamp.position.set(-5, 21.2, -24.2);
-
-    group.add(pole, mastArm, signalHead, redLamp, ambLamp, grnLamp);
-
     const badge = makeLabelSprite(`SIGNAL ${score}%`, {
       borderColor: '#38bdf8',
       textColor: '#e0f2fe',
@@ -1233,7 +1557,7 @@ export function create3DIncident({ key, score }) {
       height: 26,
       scale: 0.32
     });
-    badge.position.set(-14, 34, -26);
+    badge.position.set(-38, 35, -42);
     group.add(badge);
   } else {
     // 3D Road Hazard Barricade & Cones for Traffic Jams
@@ -1260,11 +1584,164 @@ export function create3DIncident({ key, score }) {
 }
 
 // ============================================================================
+// 6B. 3D INTERSECTION TRAFFIC LIGHT GANTRIES & SIMPSONS TAPPED OUT / SIMCITY PROPS
+// ============================================================================
+export function getIntersectionLightState(hIndex, vIndex, clock) {
+  const offset = (hIndex * 3.7 + vIndex * 5.3) % 16;
+  const phase = (clock + offset) % 16;
+  if (phase < 6.4) {
+    return { ew: 'green', ns: 'red' };
+  }
+  if (phase < 8.0) {
+    return { ew: 'yellow', ns: 'red' };
+  }
+  if (phase < 14.4) {
+    return { ew: 'red', ns: 'green' };
+  }
+  return { ew: 'red', ns: 'yellow' };
+}
+
+function createSignalBox(rotationY = 0) {
+  const boxGroup = new THREE.Group();
+  const housing = new THREE.Mesh(
+    new THREE.BoxGeometry(4.4, 10.6, 3.6),
+    getMat(0xfacc15, { roughness: 0.32, metalness: 0.18 })
+  );
+  housing.castShadow = true;
+  boxGroup.add(housing);
+
+  const backing = new THREE.Mesh(
+    new THREE.BoxGeometry(3.6, 9.8, 0.6),
+    getMat(0x0f172a, { roughness: 0.7 })
+  );
+  backing.position.z = 1.65;
+  boxGroup.add(backing);
+
+  const redMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 2.2, roughness: 0.2 });
+  const yellowMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xfacc15, emissiveIntensity: 0.1, roughness: 0.2 });
+  const greenMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 0.1, roughness: 0.2 });
+
+  const redBulb = new THREE.Mesh(new THREE.SphereGeometry(1.25, 10, 10), redMat);
+  redBulb.position.set(0, 3.1, 1.9);
+  const yellowBulb = new THREE.Mesh(new THREE.SphereGeometry(1.25, 10, 10), yellowMat);
+  yellowBulb.position.set(0, 0, 1.9);
+  const greenBulb = new THREE.Mesh(new THREE.SphereGeometry(1.25, 10, 10), greenMat);
+  greenBulb.position.set(0, -3.1, 1.9);
+
+  boxGroup.add(redBulb, yellowBulb, greenBulb);
+  boxGroup.rotation.y = rotationY;
+  boxGroup._mats = { redMat, yellowMat, greenMat };
+  return boxGroup;
+}
+
+function create3DIntersectionTrafficSignal(ix, iz, rw) {
+  const group = new THREE.Group();
+  const poleMat = getMat(0x334155, { metalness: 0.68, roughness: 0.28 });
+
+  // NW Corner Gantry (controls Southbound & Eastbound)
+  const poleNW = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.7, 29, 10), poleMat);
+  poleNW.position.set(ix - 8, 14.5, iz - 8);
+  poleNW.castShadow = true;
+
+  const armNW_E = new THREE.Mesh(new THREE.BoxGeometry(28, 1.3, 1.3), poleMat);
+  armNW_E.position.set(ix + 6, 27.5, iz - 8);
+  const sigNS = createSignalBox(0);
+  sigNS.position.set(ix + 15, 24.5, iz - 8);
+
+  // SE Corner Gantry (controls Northbound & Westbound)
+  const poleSE = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.7, 29, 10), poleMat);
+  poleSE.position.set(ix + rw + 8, 14.5, iz + rw + 8);
+  poleSE.castShadow = true;
+
+  const armSE_N = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.3, 28), poleMat);
+  armSE_N.position.set(ix + rw + 8, 27.5, iz + rw - 6);
+  const sigEW = createSignalBox(Math.PI * 0.5);
+  sigEW.position.set(ix + rw + 8, 24.5, iz + rw - 15);
+
+  group.add(poleNW, armNW_E, sigNS, poleSE, armSE_N, sigEW);
+  group._sigEW = sigEW;
+  group._sigNS = sigNS;
+  return group;
+}
+
+function create3DParkFountain() {
+  const group = new THREE.Group();
+  const stoneMat = getMat(0xe2e8f0, { roughness: 0.5 });
+  const waterMat = getMat(0x38bdf8, { emissive: 0x0284c7, emissiveIntensity: 0.45, roughness: 0.15, metalness: 0.2 });
+
+  const outerBasin = new THREE.Mesh(new THREE.CylinderGeometry(18, 20, 4.2, 20), stoneMat);
+  outerBasin.position.y = 2.1;
+  outerBasin.castShadow = true;
+  outerBasin.receiveShadow = true;
+
+  const poolWater = new THREE.Mesh(new THREE.CylinderGeometry(16, 16, 3.6, 20), waterMat);
+  poolWater.position.y = 2.4;
+
+  const midPillar = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 4.8, 11, 14), stoneMat);
+  midPillar.position.y = 6.5;
+  midPillar.castShadow = true;
+
+  const upperBowl = new THREE.Mesh(new THREE.CylinderGeometry(9.5, 6.0, 2.6, 16), stoneMat);
+  upperBowl.position.y = 11.5;
+  upperBowl.castShadow = true;
+
+  const waterPlume = new THREE.Mesh(
+    new THREE.ConeGeometry(4.2, 8.5, 12),
+    getMat(0x7dd3fc, { emissive: 0x38bdf8, emissiveIntensity: 0.65, transparent: true, opacity: 0.82 })
+  );
+  waterPlume.position.y = 16.2;
+
+  group.add(outerBasin, poolWater, midPillar, upperBowl, waterPlume);
+  group._plume = waterPlume;
+  return group;
+}
+
+function create3DParkBench(rotationY = 0) {
+  const group = new THREE.Group();
+  const woodMat = getMat(0xd97706, { roughness: 0.55 });
+  const ironMat = getMat(0x1e293b, { metalness: 0.7, roughness: 0.35 });
+
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(14, 1.2, 4.6), woodMat);
+  seat.position.y = 3.2;
+  seat.castShadow = true;
+  const back = new THREE.Mesh(new THREE.BoxGeometry(14, 4.2, 1.0), woodMat);
+  back.position.set(0, 5.4, -1.8);
+  back.rotation.x = -0.15;
+  back.castShadow = true;
+
+  const legL = new THREE.Mesh(new THREE.BoxGeometry(1.4, 3.2, 4.4), ironMat);
+  legL.position.set(-5.5, 1.6, 0);
+  const legR = legL.clone();
+  legR.position.x = 5.5;
+
+  group.add(seat, back, legL, legR);
+  group.rotation.y = rotationY;
+  return group;
+}
+
+function create3DFireHydrant() {
+  const group = new THREE.Group();
+  const redMat = getMat(0xef4444, { roughness: 0.35, metalness: 0.25 });
+  const capMat = getMat(0xf8fafc, { roughness: 0.3, metalness: 0.5 });
+
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.3, 6.5, 10), redMat);
+  body.position.y = 3.25;
+  body.castShadow = true;
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(2.0, 10, 8), capMat);
+  dome.position.y = 6.5;
+  const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 5.2, 8), capMat);
+  nozzle.rotation.z = Math.PI * 0.5;
+  nozzle.position.y = 4.4;
+  group.add(body, dome, nozzle);
+  return group;
+}
+
+// ============================================================================
 // 7. COMPLETE THREE.JS 3D WEBGL TOON CITY SCENE CONTROLLER
 // ============================================================================
 const CAMERA_PRESETS = [
   { id: 'toon3d',   label: '3D City',   fov: 42, offset: { x: -155, y: 315, z: 345 } },
-  { id: 'street3d', label: '3D Street', fov: 40, offset: { x: -85,  y: 150, z: 245 } },
+  { id: 'street3d', label: '3D Street', fov: 40, offset: { x: -75,  y: 128, z: 210 } },
   { id: 'iso3d',    label: '3D High',   fov: 45, offset: { x: -190, y: 445, z: 395 } }
 ];
 
@@ -1278,13 +1755,14 @@ export class Three3DCityViewport {
     this.zoom = 1.0;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0c2135);
-    this.scene.fog = new THREE.FogExp2(0x0c2135, 0.00068);
+    // Sunlit Simpsons Tapped Out / SimCity BuildIt vibrant emerald-sky atmosphere
+    this.scene.background = new THREE.Color(0x1b4332);
+    this.scene.fog = new THREE.FogExp2(0x1b4332, 0.00042);
 
     const w = Math.max(320, host.clientWidth || 420);
     const h = Math.max(320, host.clientHeight || 420);
 
-    this.camera = new THREE.PerspectiveCamera(CAMERA_PRESETS[0].fov, w / h, 10, 2600);
+    this.camera = new THREE.PerspectiveCamera(CAMERA_PRESETS[0].fov, w / h, 10, 2900);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -1296,7 +1774,7 @@ export class Three3DCityViewport {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.15;
+    this.renderer.toneMappingExposure = 1.18;
 
     this.canvas = this.renderer.domElement;
     this.canvas.className = 'three3dWorldCanvas';
@@ -1304,17 +1782,17 @@ export class Three3DCityViewport {
     host.appendChild(this.canvas);
 
     // 1. Golden-Hour 3D Lighting & Crisp Cast Shadows
-    const hemi = new THREE.HemisphereLight(0xe0f2fe, 0x1e293b, 1.15);
+    const hemi = new THREE.HemisphereLight(0xf0f9ff, 0x14532d, 1.22);
     this.scene.add(hemi);
 
-    this.sunLight = new THREE.DirectionalLight(0xfffbeb, 2.15);
+    this.sunLight = new THREE.DirectionalLight(0xfffbeb, 2.25);
     this.sunLight.position.set(480, 460, 420);
     this.sunLight.castShadow = true;
     this.sunLight.shadow.mapSize.width = 2048;
     this.sunLight.shadow.mapSize.height = 2048;
     this.sunLight.shadow.camera.near = 60;
-    this.sunLight.shadow.camera.far = 1200;
-    const d = 390;
+    this.sunLight.shadow.camera.far = 1300;
+    const d = 410;
     this.sunLight.shadow.camera.left = -d;
     this.sunLight.shadow.camera.right = d;
     this.sunLight.shadow.camera.top = d;
@@ -1323,7 +1801,7 @@ export class Three3DCityViewport {
     this.scene.add(this.sunLight);
     this.scene.add(this.sunLight.target);
 
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.72);
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.75);
     rimLight.position.set(-320, 240, -280);
     this.scene.add(rimLight);
 
@@ -1355,6 +1833,8 @@ export class Three3DCityViewport {
     this.expansionRecords3D = [];
     this.incidentRecords3D = [];
     this.treeRecords3D = [];
+    this.trafficLightRecords3D = [];
+    this.fountainRecords3D = [];
     this.trafficMeshes = new Map();
     this.walkerMeshes = new Map();
 
@@ -1384,6 +1864,19 @@ export class Three3DCityViewport {
 
   currentPreset() {
     return CAMERA_PRESETS[this.presetIndex] || CAMERA_PRESETS[0];
+  }
+
+  setZoom(nextZoom) {
+    this.zoom = Math.max(0.42, Math.min(1.85, Number(nextZoom) || 1.0));
+    return this.zoom;
+  }
+
+  zoomIn(step = 0.18) {
+    return this.setZoom(this.zoom - step);
+  }
+
+  zoomOut(step = 0.18) {
+    return this.setZoom(this.zoom + step);
   }
 
   registerClickable(object3D, callback) {
@@ -1416,10 +1909,34 @@ export class Three3DCityViewport {
   buildStatic3DCity() {
     const { WORLD, ROADS } = this;
 
+    // 0. Lush Simpsons Tapped Out / SimCity BuildIt Outer Suburban Meadow & East Harbor Water Canal
+    const outerMeadow = new THREE.Mesh(
+      new THREE.BoxGeometry(WORLD.width + 2200, 4, WORLD.height + 2200),
+      getMat(0x2d6a4f, { roughness: 0.85 })
+    );
+    outerMeadow.position.set(WORLD.width / 2, -3.2, WORLD.height / 2);
+    outerMeadow.receiveShadow = true;
+    this.staticLayer.add(outerMeadow);
+
+    // East Harbor Sparkling Blue Water Canal along the right edge
+    const harborWater = new THREE.Mesh(
+      new THREE.BoxGeometry(420, 4.5, WORLD.height + 1600),
+      getMat(0x0284c7, { emissive: 0x0369a1, emissiveIntensity: 0.28, roughness: 0.18, metalness: 0.25 })
+    );
+    harborWater.position.set(WORLD.width + 245, -1.5, WORLD.height / 2);
+    this.staticLayer.add(harborWater);
+
+    const seawall = new THREE.Mesh(
+      new THREE.BoxGeometry(18, 7.5, WORLD.height + 600),
+      getMat(0x94a3b8, { roughness: 0.6 })
+    );
+    seawall.position.set(WORLD.width + 32, 1.5, WORLD.height / 2);
+    this.staticLayer.add(seawall);
+
     // 1. Base 3D Asphalt Ground Plane
     const baseAsphalt = new THREE.Mesh(
-      new THREE.BoxGeometry(WORLD.width + 600, 4, WORLD.height + 600),
-      getMat(0x162030, { roughness: 0.85 })
+      new THREE.BoxGeometry(WORLD.width + 80, 4, WORLD.height + 80),
+      getMat(0x1e293b, { roughness: 0.82 })
     );
     baseAsphalt.position.set(WORLD.width / 2, -2, WORLD.height / 2);
     baseAsphalt.receiveShadow = true;
@@ -1456,7 +1973,7 @@ export class Three3DCityViewport {
         // 3D Raised Concrete Sidewalk Slab (height = 4.5)
         const curbSlab = new THREE.Mesh(
           new THREE.BoxGeometry(bw, 4.5, bd),
-          getMat(0xcbd5e1, { roughness: 0.6 })
+          getMat(0xdbe4ee, { roughness: 0.55 })
         );
         curbSlab.position.set(bx + bw / 2, 2.25, bz + bd / 2);
         curbSlab.receiveShadow = true;
@@ -1493,7 +2010,7 @@ export class Three3DCityViewport {
       }
     }
 
-    // 3. 3D Road Markings: Double Amber-Gold Center Dividers, White Lane Dashes, & 3D Zebra Crosswalks
+    // 3. 3D Road Markings: Double Amber-Gold Center Dividers, White Stop Bars, & 3D Zebra Crosswalks
     const yellowMat = getMat(0xfacc15, { emissive: 0xf59e0b, emissiveIntensity: 0.35 });
     const whiteMat = getMat(0xf8fafc, { roughness: 0.4 });
 
@@ -1541,9 +2058,9 @@ export class Three3DCityViewport {
       }
     }
 
-    // 3D Raised Zebra Crosswalks at every Intersection
-    for (const h of ROADS.horizontal) {
-      for (const v of ROADS.vertical) {
+    // 3D Raised Zebra Crosswalks, White Stop Bars, & 8 Live 3D Traffic Signal Gantries at every Intersection
+    ROADS.horizontal.forEach((h, hIndex) => {
+      ROADS.vertical.forEach((v, vIndex) => {
         const ix = v.x;
         const iz = h.y;
         const rw = ROADS.width;
@@ -1561,12 +2078,62 @@ export class Three3DCityViewport {
           barE.position.set(ix + rw + 10, 0.35, cz + off);
           this.staticLayer.add(barN, barS, barW, barE);
         }
-      }
+
+        // Crisp White Stop Lines before each crosswalk
+        const stopW = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.65, 38), whiteMat);
+        stopW.position.set(ix - 19, 0.36, cz + 20);
+        const stopE = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.65, 38), whiteMat);
+        stopE.position.set(ix + rw + 19, 0.36, cz - 20);
+        const stopN = new THREE.Mesh(new THREE.BoxGeometry(38, 0.65, 3.2), whiteMat);
+        stopN.position.set(cx - 20, 0.36, iz - 19);
+        const stopS = new THREE.Mesh(new THREE.BoxGeometry(38, 0.65, 3.2), whiteMat);
+        stopS.position.set(cx + 20, 0.36, iz + rw + 19);
+        this.staticLayer.add(stopW, stopE, stopN, stopS);
+
+        // 3D Intersection Traffic Signal Gantry
+        const sigNode = create3DIntersectionTrafficSignal(ix, iz, rw);
+        this.staticLayer.add(sigNode);
+        this.trafficLightRecords3D.push({ hIndex, vIndex, node: sigNode });
+      });
+    });
+
+    // 4. Simpsons Tapped Out / SimCity BuildIt Town Plaza Fountains, Benches, Hydrants, & Swaying Park Trees
+    const fountainCoords = [
+      [384, 134],
+      [384, 442],
+      [598, 765]
+    ];
+    for (const [fx, fz] of fountainCoords) {
+      const ftn = create3DParkFountain();
+      ftn.position.set(fx, 5.2, fz);
+      this.staticLayer.add(ftn);
+      this.fountainRecords3D.push(ftn);
     }
 
-    // 4. 3D Swaying Park Trees & 3D Streetlights
+    const benchCoords = [
+      [384, 162, 0],
+      [384, 470, 0],
+      [598, 792, 0]
+    ];
+    for (const [bx, bz, rot] of benchCoords) {
+      const bench = create3DParkBench(rot);
+      bench.position.set(bx, 5.2, bz);
+      this.staticLayer.add(bench);
+    }
+
+    const hydrantCoords = [
+      [230, 222], [642, 222], [230, 532], [642, 532], [230, 852], [642, 852]
+    ];
+    for (const [hx, hz] of hydrantCoords) {
+      const hyd = create3DFireHydrant();
+      hyd.position.set(hx, 4.5, hz);
+      this.staticLayer.add(hyd);
+    }
+
     const treePositions = [
-      [390, 170], [608, 170], [390, 478], [608, 478], [390, 798], [608, 798]
+      [390, 192], [608, 170], [390, 502], [608, 478], [390, 798], [608, 725],
+      [60, 175], [195, 175], [60, 485], [195, 485], [60, 805], [195, 805],
+      [785, 175], [915, 175], [785, 485], [915, 485]
     ];
     treePositions.forEach(([tx, tz], idx) => {
       const tree = create3DTree(idx);
@@ -1682,7 +2249,7 @@ export class Three3DCityViewport {
     const viewW = Math.max(320, this.host.clientWidth || 420);
     const viewH = Math.max(320, this.host.clientHeight || 420);
 
-    // 1. Sync 3D Camera & Directional Sun Shadow Frustum with Pan Position
+    // 1. Sync 3D Camera & Directional Sun Shadow Frustum with Pan Position & Zoom
     const focusX = -worldPanX + viewW * 0.5;
     const focusZ = -worldPanY + viewH * 0.5;
     const preset = this.currentPreset();
@@ -1692,22 +2259,44 @@ export class Three3DCityViewport {
       preset.offset.y * this.zoom,
       focusZ + preset.offset.z * this.zoom
     );
-    this.camera.lookAt(focusX, 14, focusZ - 12);
+    this.camera.lookAt(focusX, 12, focusZ - 10);
 
     this.sunLight.position.set(focusX + 210, 440, focusZ + 250);
     this.sunLight.target.position.set(focusX, 0, focusZ);
     this.sunLight.target.updateMatrixWorld();
 
-    // 2. Update 3D Traffic Vehicles (4 Spinning 3D Wheels, 3D Heading, Suspension Bounce, Strobe Lights)
+    // 1B. Update Live 3D Traffic Signal Gantries at all 8 Intersections
+    for (const rec of this.trafficLightRecords3D) {
+      const state = getIntersectionLightState(rec.hIndex, rec.vIndex, clock);
+      const applySignalState = (sigGroup, colorState) => {
+        if (!sigGroup || !sigGroup._mats) return;
+        sigGroup._mats.redMat.emissiveIntensity = colorState === 'red' ? 2.6 : 0.08;
+        sigGroup._mats.yellowMat.emissiveIntensity = colorState === 'yellow' ? 2.4 : 0.08;
+        sigGroup._mats.greenMat.emissiveIntensity = colorState === 'green' ? 2.5 : 0.08;
+      };
+      applySignalState(rec.node._sigEW, state.ew);
+      applySignalState(rec.node._sigNS, state.ns);
+    }
+
+    // 1C. Animate Park Fountains
+    for (const ftn of this.fountainRecords3D) {
+      if (ftn._plume) {
+        ftn._plume.scale.y = 0.88 + Math.sin(clock * 6.5) * 0.16;
+        ftn._plume.rotation.y += dt * 2.4;
+      }
+    }
+
+    // 2. Update 3D Traffic Vehicles (Real Speed-Synchronized Wheel Spin, Braking Nose-Dive, Brake Lights, Zero Fake Bounce)
     for (const item of traffic) {
       let mesh3d = this.trafficMeshes.get(item);
       if (!mesh3d) {
         mesh3d = create3DVehicle({
-          assetKey: item.assetKey || 'blueCar',
+          assetKey: item.assetKey || 'skylineR34',
           direction: item.direction || 'east',
-          towTargetKey: item.towTargetKey || ''
+          towTargetKey: item.towTargetKey || '',
+          showBadge: true
         });
-        const sc = (item.scale || 0.78) * 1.05;
+        const sc = (item.scale || 0.80) * 1.08;
         mesh3d.scale.set(sc, sc, sc);
         this.trafficLayer.add(mesh3d);
         this.trafficMeshes.set(item, mesh3d);
@@ -1721,38 +2310,52 @@ export class Three3DCityViewport {
         mesh3d.rotation.y = Math.atan2(-dz, dx);
       }
 
+      const actualSpeed = item.currentSpeed !== undefined ? item.currentSpeed : (item.speed || 80);
+
       let potholeJoltY = 0;
       let potholePitch = 0;
-      for (const pot of potholes) {
-        const dist = Math.hypot(pNow.x - pot.x, pNow.y - pot.y);
-        if (dist < 46) {
-          const intensity = 1 - dist / 46;
-          potholeJoltY = Math.abs(Math.sin(item.d * 0.9)) * 4.5 * intensity;
-          potholePitch = Math.cos(item.d * 0.85) * 0.14 * intensity;
-          break;
+      if (actualSpeed > 3) {
+        for (const pot of potholes) {
+          const dist = Math.hypot(pNow.x - pot.x, pNow.y - pot.y);
+          if (dist < 44) {
+            const intensity = 1 - dist / 44;
+            potholeJoltY = Math.abs(Math.sin(item.d * 0.9)) * 3.2 * intensity;
+            potholePitch = Math.cos(item.d * 0.85) * 0.11 * intensity;
+            break;
+          }
         }
       }
 
       mesh3d.position.set(pNow.x, 0.2 + potholeJoltY, pNow.y);
 
-      // Spin all 4 3D cylindrical tires around their axle!
+      // Spin all 4 3D cylindrical tires strictly by actual vehicle speed (0 when stopped at red light or behind a car!)
       if (mesh3d._wheels) {
-        const spinDelta = (item.speed || 80) * dt * 0.26;
+        const spinDelta = actualSpeed * dt * 0.28;
         for (const w of mesh3d._wheels) {
           w.rotation.z -= spinDelta;
         }
       }
 
-      // 3D Chassis suspension & engine vibration
+      // Smooth 3D Chassis suspension: NO fake vertical sine bounce! Only real braking nose-dive / acceleration squat + pothole jolt
       if (mesh3d._chassis) {
-        mesh3d._chassis.position.y = Math.sin(item.d * 0.35) * 0.65;
-        mesh3d._chassis.rotation.z = potholePitch;
+        mesh3d._chassis.position.y = 0;
+        mesh3d._chassis.rotation.z = (item.pitchAngle || 0) + potholePitch;
+      }
+
+      // Dynamic glowing 3D red brake lamps when slowing down or stopped at a red light / pedestrian crosswalk
+      if (mesh3d._brakeMat) {
+        mesh3d._brakeMat.emissiveIntensity = item.isBraking ? 3.2 : 0.72;
       }
 
       if (mesh3d._exhaustPuff) {
-        const puffPhase = (item.d * 0.06) % 1;
-        mesh3d._exhaustPuff.scale.setScalar(0.6 + puffPhase * 1.1);
-        mesh3d._exhaustPuff.material.opacity = (1 - puffPhase) * 0.45;
+        if (actualSpeed > 8) {
+          mesh3d._exhaustPuff.visible = true;
+          const puffPhase = (item.d * 0.06) % 1;
+          mesh3d._exhaustPuff.scale.setScalar(0.6 + puffPhase * 1.1);
+          mesh3d._exhaustPuff.material.opacity = (1 - puffPhase) * 0.45;
+        } else {
+          mesh3d._exhaustPuff.visible = false;
+        }
       }
 
       if (mesh3d._strobes) {
@@ -1762,7 +2365,7 @@ export class Three3DCityViewport {
       }
     }
 
-    // 3. Update 3D Articulated Walking People (Swinging 3D Arms & Legs, Torso Twist, Head Look, Corner Turning)
+    // 3. Update 3D Articulated Walking People (Swinging 3D Arms & Legs, Torso Twist, Head Look, Crosswalk Yielding)
     for (const item of walkers) {
       let person3d = this.walkerMeshes.get(item);
       if (!person3d) {
@@ -1778,7 +2381,7 @@ export class Three3DCityViewport {
       const pNow = pathPointFn(item.path, item.d);
       const pNext = pathPointFn(item.path, item.d + 5);
       person3d.position.set(pNow.x, 4.8, pNow.y);
-      update3DPersonWalk(person3d, item.d, pNow, pNext, clock);
+      update3DPersonWalk(person3d, item.d, pNow, pNext, clock, Boolean(item.isWaiting));
     }
 
     // 4. Animate 3D Building Mechanical Rigs (3D Hydraulic Lifts, 3D Rooftop Fans, 3D Turntables, 3D Forklifts, 3D Race Track)

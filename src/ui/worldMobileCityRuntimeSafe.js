@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { WORLD_ASSET_LIST, WORLD_ASSETS, buildingAssetForKey, personAnimationFramesForKey, personAssetForKey, vehicleAssetForKey } from '../data/worldAssetMap.js';
 import { BUILD_COMMUNICATION_STORAGE_KEY, readBuildCommunicationState } from '../systems/buildCommunicationSystem.js';
-import { Three3DCityViewport } from './worldThree3dCity.js';
+import { Three3DCityViewport, getIntersectionLightState } from './worldThree3dCity.js';
 
 const WORLD = { width: 960, height: 1720, startX: -210, startY: -75 };
 const GRID = {
@@ -725,6 +725,8 @@ function html() {
             <button class="btn small primary" onclick="window.openMobileBuildTraySafe?.()">Build</button>
             <button class="btn small gold" data-expand-town-btn onclick="window.unlockNextTownPlotSafe?.()">Expand (<span data-town-expansion-count>${unlockedPlotCount()}/${TOWN_EXPANSION_PLOTS.length}</span>)</button>
             <button class="btn small ghost" data-camera-angle-btn onclick="window.toggleCityCameraAngleSafe?.()">3D City</button>
+            <button class="btn small ghost" data-zoom-in-btn onclick="window.zoomMobileCityInSafe?.()">Zoom +</button>
+            <button class="btn small ghost" data-zoom-out-btn onclick="window.zoomMobileCityOutSafe?.()">Zoom -</button>
             <button class="btn small ghost" onclick="window.centerMobileCitySafe?.()">Center</button>
           </div>
         </div>
@@ -1658,12 +1660,22 @@ function laneX(index, lane) {
 
 function pathH(index, lane) {
   const y = laneY(index, lane);
-  return lane === 'east' ? [{ x: -80, y }, { x: WORLD.width + 80, y }] : [{ x: WORLD.width + 80, y }, { x: -80, y }];
+  const pts = lane === 'east' ? [{ x: -80, y }, { x: WORLD.width + 80, y }] : [{ x: WORLD.width + 80, y }, { x: -80, y }];
+  pts._axis = 'h';
+  pts._index = index;
+  pts._lane = lane;
+  pts._len = WORLD.width + 160;
+  return pts;
 }
 
 function pathV(index, lane) {
   const x = laneX(index, lane);
-  return lane === 'south' ? [{ x, y: -80 }, { x, y: WORLD.height + 80 }] : [{ x, y: WORLD.height + 80 }, { x, y: -80 }];
+  const pts = lane === 'south' ? [{ x, y: -80 }, { x, y: WORLD.height + 80 }] : [{ x, y: WORLD.height + 80 }, { x, y: -80 }];
+  pts._axis = 'v';
+  pts._index = index;
+  pts._lane = lane;
+  pts._len = WORLD.height + 160;
+  return pts;
 }
 
 function addTraffic(path, options) {
@@ -1672,16 +1684,25 @@ function addTraffic(path, options) {
   vehicle.scale.y *= options.scale || 0.72;
   vehicle.zIndex = 100;
   world.addChild(vehicle);
+  const baseSpeed = options.speed || 80;
+  const pathLen = path._len || 1120;
+  const startD = typeof options.startD === 'number' ? options.startD : Math.random() * 600;
   traffic.push({
     sprite: vehicle,
     path,
-    speed: options.speed || 80,
-    d: Math.random() * 600,
-    wheelSpeed: (options.speed || 80) / 10,
-    assetKey: options.assetKey || 'blueCar',
-    direction: options.direction || 'east',
+    pathLen,
+    roadAxis: path._axis || 'h',
+    roadIndex: path._index ?? 0,
+    speed: baseSpeed,
+    currentSpeed: baseSpeed,
+    isBraking: false,
+    pitchAngle: 0,
+    d: ((startD % pathLen) + pathLen) % pathLen,
+    wheelSpeed: baseSpeed / 10,
+    assetKey: options.assetKey || 'skylineR34',
+    direction: options.direction || path._lane || 'east',
     towTargetKey: options.towTargetKey || '',
-    scale: options.scale || 0.78
+    scale: options.scale || 0.80
   });
 }
 
@@ -3502,8 +3523,23 @@ window.centerMobileCitySafe = () => {
   if (!world) return;
   world.x = WORLD.startX;
   world.y = WORLD.startY;
-  if (threeViewport) threeViewport.zoom = 1.0;
+  if (threeViewport) threeViewport.setZoom(1.0);
   clamp();
+};
+
+window.zoomMobileCityInSafe = () => {
+  if (!threeViewport) return 1.0;
+  return threeViewport.zoomIn(0.18);
+};
+
+window.zoomMobileCityOutSafe = () => {
+  if (!threeViewport) return 1.0;
+  return threeViewport.zoomOut(0.18);
+};
+
+window.setMobileCityZoomSafe = (z = 1.0) => {
+  if (!threeViewport) return 1.0;
+  return threeViewport.setZoom(z);
 };
 
 window.toggleCityCameraAngleSafe = () => {
@@ -3553,20 +3589,33 @@ function buildWorld() {
   drawRoads();
   rebuildFixedBuildings();
 
-  // Top Asian Market & Top North American Market 3D Isometric Fleet
-  addTraffic(pathH(0, 'east'), { color: 0x60a5fa, accent: 0xdbeafe, direction: 'east', speed: 88, scale: 0.78, assetKey: 'blueCar' }); // Asian Bayside Blue GT-Apex
-  addTraffic(pathH(0, 'west'), { color: 0x4ade80, accent: 0xe0f2fe, direction: 'west', truck: true, speed: 74, scale: 0.80, assetKey: 'greenTruck' }); // NA 4x4 Baja Raptor Pickup
-  addTraffic(pathH(0, 'east'), { color: 0xf43f5e, accent: 0xfef3c7, direction: 'east', speed: 94, scale: 0.78, assetKey: 'naMuscle' }); // NA Crimson V8 Muscle
-  addTraffic(pathH(1, 'east'), { color: 0xfde047, accent: 0xfffbeb, direction: 'east', speed: 84, scale: 0.76, assetKey: 'yellowCar' }); // Asian Crown Hybrid Taxi
-  addTraffic(pathH(1, 'west'), { color: 0xa855f7, accent: 0xe0f2fe, direction: 'west', speed: 96, scale: 0.78, assetKey: 'jdmGtCoupe' }); // JDM Midnight Purple Touge GT
-  addTraffic(pathH(2, 'east'), { color: 0x38bdf8, accent: 0xdcfce7, direction: 'east', speed: 82, scale: 0.78, assetKey: 'rallyCar' }); // JDM World Rally Blue AWD
-  addTraffic(pathH(2, 'west'), { color: 0xfb923c, accent: 0xfef3c7, direction: 'west', truck: true, speed: 76, scale: 0.80, assetKey: 'bajaSuv' }); // NA Bronco Trophy 4x4 SUV
-  addTraffic(pathH(3, 'west'), { color: 0x22d3ee, accent: 0xecfeff, direction: 'west', speed: 98, scale: 0.78, assetKey: 'superCar' }); // NA Mid-Engine V8 Supercar
-  addTraffic(pathH(3, 'east'), { color: 0x60a5fa, accent: 0xede9fe, direction: 'east', speed: 82, scale: 0.76, assetKey: 'blueCar' });
-  addTraffic(pathH(1, 'east'), { color: 0xfacc15, accent: 0xe0f2fe, direction: 'east', truck: true, speed: 62, scale: 0.80, assetKey: 'towTruck', towTargetKey: 'compactCar' }); // Active Wrecker Tow Truck towing a JDM Hatch
-  addTraffic(pathH(0, 'west'), { color: 0xf8fafc, accent: 0xfef3c7, direction: 'west', speed: 80, scale: 0.76, assetKey: 'compactCar' }); // JDM Kei RS Turbo Hatch
-  addTraffic(pathH(2, 'east'), { color: 0x38bdf8, accent: 0xfffbeb, direction: 'east', truck: true, speed: 68, scale: 0.78, assetKey: 'deliveryVan' }); // NA 365 Fleet Transit Van
-  addTraffic(pathH(3, 'east'), { color: 0xfacc15, accent: 0xe0f2fe, direction: 'east', truck: true, speed: 64, scale: 0.78, assetKey: 'towTruck' });
+  // Iconic JDM, Muscle, 4x4 & Supercar 3D Sculpted Fleet across Horizontal (East/West) & Vertical (North/South) Avenues
+  // Avenue 0 (Dealer / Factory Ave): Skyline R34, Mustang Fastback V8, 180SX Type-X, Pajero Evo 4x4
+  addTraffic(pathH(0, 'east'), { direction: 'east', speed: 88, scale: 0.84, startD: 210, assetKey: 'skylineR34' });
+  addTraffic(pathH(0, 'east'), { direction: 'east', speed: 84, scale: 0.84, startD: 490, assetKey: 'mustangFastback' });
+  addTraffic(pathH(0, 'west'), { direction: 'west', speed: 82, scale: 0.82, startD: 470, assetKey: 'sx180' });
+  addTraffic(pathH(0, 'west'), { direction: 'west', truck: true, speed: 76, scale: 0.84, startD: 675, assetKey: 'pajeroEvo' });
+
+  // Avenue 1 (Parts / Repair Row): RX-7 FD3S Rotary, Silvia S15 Spec-R, 300ZX Twin-Turbo, 365 Heavy Wrecker
+  addTraffic(pathH(1, 'east'), { direction: 'east', speed: 90, scale: 0.84, startD: 390, assetKey: 'rx7Spirit' });
+  addTraffic(pathH(1, 'east'), { direction: 'east', truck: true, speed: 68, scale: 0.82, startD: 690, assetKey: 'towTruck', towTargetKey: 'sx180' });
+  addTraffic(pathH(1, 'west'), { direction: 'west', speed: 86, scale: 0.84, startD: 450, assetKey: 'silviaS15' });
+  addTraffic(pathH(1, 'west'), { direction: 'west', speed: 84, scale: 0.84, startD: 660, assetKey: 'zx300' });
+
+  // Avenue 2 (Salvage Way): Aero-Top GT90, Baja Raptor 4x4, 365 Parts Sprinter Van
+  addTraffic(pathH(2, 'east'), { direction: 'east', speed: 88, scale: 0.84, startD: 360, assetKey: 'supraMk4' });
+  addTraffic(pathH(2, 'east'), { direction: 'east', truck: true, speed: 72, scale: 0.82, startD: 690, assetKey: 'deliveryVan' });
+  addTraffic(pathH(2, 'west'), { direction: 'west', truck: true, speed: 76, scale: 0.84, startD: 490, assetKey: 'greenTruck' });
+
+  // Avenue 3 (Showcase Loop): Apex V10 Supercar, Skyline R34
+  addTraffic(pathH(3, 'west'), { direction: 'west', speed: 94, scale: 0.84, startD: 420, assetKey: 'superCar' });
+  addTraffic(pathH(3, 'east'), { direction: 'east', speed: 86, scale: 0.84, startD: 460, assetKey: 'skylineR34' });
+
+  // Vertical Avenues (West Service & East Service): North/South Cross-Traffic obeying 3D Intersection Signals!
+  addTraffic(pathV(0, 'south'), { direction: 'south', speed: 84, scale: 0.84, startD: 190, assetKey: 'mustangFastback' });
+  addTraffic(pathV(0, 'north'), { direction: 'north', speed: 86, scale: 0.84, startD: 1320, assetKey: 'silviaS15' });
+  addTraffic(pathV(1, 'south'), { direction: 'south', truck: true, speed: 78, scale: 0.84, startD: 390, assetKey: 'pajeroEvo' });
+  addTraffic(pathV(1, 'north'), { direction: 'north', speed: 90, scale: 0.84, startD: 1180, assetKey: 'rx7Spirit' });
 
   [
     { key: 'tree', x: 390, y: 170, w: 66, h: 78 },
@@ -3631,12 +3680,36 @@ function setupCamera(host) {
   clamp();
   let dragging = false;
   let last = null;
+  const activeTouches = new Map();
+  let lastPinchDist = null;
+
   host.addEventListener('pointerdown', (event) => {
-    dragging = true;
-    dragMoved = false;
-    last = { x: event.clientX, y: event.clientY };
+    activeTouches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (activeTouches.size === 1) {
+      dragging = true;
+      dragMoved = false;
+      last = { x: event.clientX, y: event.clientY };
+    } else if (activeTouches.size === 2) {
+      const pts = [...activeTouches.values()];
+      lastPinchDist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      dragMoved = true;
+    }
   });
   window.addEventListener('pointermove', (event) => {
+    if (activeTouches.has(event.pointerId)) {
+      activeTouches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+    if (activeTouches.size === 2 && threeViewport) {
+      const pts = [...activeTouches.values()];
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      if (lastPinchDist && Math.abs(dist - lastPinchDist) > 1) {
+        const zoomDelta = (lastPinchDist - dist) * 0.0035;
+        threeViewport.setZoom(threeViewport.zoom + zoomDelta);
+      }
+      lastPinchDist = dist;
+      dragMoved = true;
+      return;
+    }
     if (!dragging || !last) return;
     const dx = event.clientX - last.x;
     const dy = event.clientY - last.y;
@@ -3646,19 +3719,25 @@ function setupCamera(host) {
     last = { x: event.clientX, y: event.clientY };
     clamp();
   });
-  window.addEventListener('pointerup', (event) => {
-    if (dragging && !dragMoved && threeViewport) {
+  const endPointer = (event) => {
+    activeTouches.delete(event.pointerId);
+    if (activeTouches.size < 2) lastPinchDist = null;
+    if (dragging && !dragMoved && threeViewport && activeTouches.size === 0) {
       threeViewport.handleTap(event.clientX, event.clientY);
     }
-    dragging = false;
-    last = null;
-    setTimeout(() => { dragMoved = false; }, 90);
-  });
+    if (activeTouches.size === 0) {
+      dragging = false;
+      last = null;
+      setTimeout(() => { dragMoved = false; }, 90);
+    }
+  };
+  window.addEventListener('pointerup', endPointer);
+  window.addEventListener('pointercancel', endPointer);
   host.addEventListener('wheel', (event) => {
     if (!threeViewport) return;
     event.preventDefault();
-    const delta = event.deltaY > 0 ? 0.08 : -0.08;
-    threeViewport.zoom = Math.max(0.62, Math.min(1.45, threeViewport.zoom + delta));
+    const delta = event.deltaY > 0 ? 0.10 : -0.10;
+    threeViewport.setZoom(threeViewport.zoom + delta);
   }, { passive: false });
 }
 
@@ -3701,34 +3780,155 @@ async function mount(host) {
     const dt = Math.min((ticker.deltaMS || 16.67) / 1000, 0.05);
     worldAnimClock += dt;
 
-    for (const item of traffic) {
-      item.d += item.speed * dt;
-      const p = pathPoint(item.path, item.d);
+    // Pre-calculate current world positions for all vehicles and pedestrians
+    const vehiclePositions = traffic.map((item) => pathPoint(item.path, item.d));
+    const walkerPositions = walkers.map((w) => pathPoint(w.path, w.d));
 
-      let potholeJoltY = 0;
-      let potholeTilt = 0;
-      for (const pot of activePotholePositions) {
-        const dist = Math.hypot(p.x - pot.x, p.y - pot.y);
-        if (dist < 46) {
-          const intensity = (1 - dist / 46);
-          potholeJoltY = Math.sin(item.d * 0.95) * 4.2 * intensity;
-          potholeTilt = Math.cos(item.d * 0.85) * 0.09 * intensity;
-          break;
+    // 1. Update Vehicles with Traffic Signal Stop Lines + Vehicle-to-Vehicle Queueing + Pedestrian Crosswalk Yielding
+    for (let i = 0; i < traffic.length; i++) {
+      const item = traffic[i];
+      const p = vehiclePositions[i];
+      const dir = item.direction || 'east';
+      const ux = dir === 'east' ? 1 : dir === 'west' ? -1 : 0;
+      const uy = dir === 'south' ? 1 : dir === 'north' ? -1 : 0;
+
+      let targetSpeed = item.speed;
+
+      // (A) 3D Intersection Traffic Light Stop Lines
+      if (item.roadAxis === 'h') {
+        const hIndex = item.roadIndex;
+        for (let vIndex = 0; vIndex < ROADS.vertical.length; vIndex++) {
+          const vx = ROADS.vertical[vIndex].x;
+          const stopX = dir === 'east' ? vx - 24 : vx + ROADS.width + 24;
+          const distToStop = (stopX - p.x) * ux;
+          if (distToStop > -4 && distToStop < 78) {
+            const sig = getIntersectionLightState(hIndex, vIndex, worldAnimClock);
+            if (sig.ew !== 'green') {
+              if (distToStop <= 14) {
+                targetSpeed = 0;
+              } else {
+                targetSpeed = Math.min(targetSpeed, item.speed * ((distToStop - 12) / 66));
+              }
+            }
+          }
+        }
+      } else if (item.roadAxis === 'v') {
+        const vIndex = item.roadIndex;
+        for (let hIndex = 0; hIndex < ROADS.horizontal.length; hIndex++) {
+          const hy = ROADS.horizontal[hIndex].y;
+          const stopY = dir === 'south' ? hy - 24 : hy + ROADS.width + 24;
+          const distToStop = (stopY - p.y) * uy;
+          if (distToStop > -4 && distToStop < 78) {
+            const sig = getIntersectionLightState(hIndex, vIndex, worldAnimClock);
+            if (sig.ns !== 'green') {
+              if (distToStop <= 14) {
+                targetSpeed = 0;
+              } else {
+                targetSpeed = Math.min(targetSpeed, item.speed * ((distToStop - 12) / 66));
+              }
+            }
+          }
         }
       }
 
-      item.sprite.x = p.x;
-      item.sprite.y = p.y + potholeJoltY;
-      item.sprite.zIndex = p.y + 40;
+      // (B) Vehicle-to-Vehicle Collision Avoidance (Same-lane bumper queueing + Intersection cross-traffic yielding)
+      const safeGap = item.towTargetKey ? 86 : 62;
+      for (let j = 0; j < traffic.length; j++) {
+        if (i === j) continue;
+        const other = traffic[j];
+        const op = vehiclePositions[j];
+        const dx = op.x - p.x;
+        const dy = op.y - p.y;
+        const fwdDist = dx * ux + dy * uy;
+        const latDist = Math.abs(-dx * uy + dy * ux);
+
+        if (other.direction === dir && latDist < 20) {
+          // Same lane ahead
+          let gap = fwdDist;
+          if (gap < 0 && other.roadAxis === item.roadAxis && other.roadIndex === item.roadIndex) {
+            gap += item.pathLen || 1120;
+          }
+          if (gap > 0 && gap < 120) {
+            if (gap <= safeGap) {
+              targetSpeed = 0;
+            } else {
+              const followSpeed = (other.currentSpeed ?? other.speed) * ((gap - safeGap) / (120 - safeGap));
+              targetSpeed = Math.min(targetSpeed, followSpeed);
+            }
+          }
+        } else if (other.direction !== dir) {
+          // Cross-traffic vehicle inside intersection box ahead of us
+          if (fwdDist > 12 && fwdDist < 76 && latDist < 42) {
+            targetSpeed = 0;
+          }
+        }
+      }
+
+      // (C) Vehicle-to-Pedestrian Crosswalk Yielding (Never drive through walking people!)
+      for (let wIdx = 0; wIdx < walkers.length; wIdx++) {
+        const wp = walkerPositions[wIdx];
+        const dx = wp.x - p.x;
+        const dy = wp.y - p.y;
+        const fwdDist = dx * ux + dy * uy;
+        const latDist = Math.abs(-dx * uy + dy * ux);
+        if (fwdDist > 6 && fwdDist < 70 && latDist < 32) {
+          if (fwdDist <= 42) {
+            targetSpeed = 0;
+          } else {
+            targetSpeed = Math.min(targetSpeed, item.speed * ((fwdDist - 40) / 30));
+          }
+        }
+      }
+
+      // Smoothly accelerate or brake toward targetSpeed + compute realistic nose-dive / squat pitch
+      const prevSpeed = item.currentSpeed ?? item.speed;
+      const maxDelta = (targetSpeed < prevSpeed ? 240 : 125) * dt;
+      if (Math.abs(targetSpeed - prevSpeed) <= maxDelta) {
+        item.currentSpeed = Math.max(0, targetSpeed);
+      } else {
+        item.currentSpeed = Math.max(0, prevSpeed + Math.sign(targetSpeed - prevSpeed) * maxDelta);
+      }
+
+      const accel = (item.currentSpeed - prevSpeed) / Math.max(dt, 0.001);
+      item.isBraking = accel < -12 || item.currentSpeed < item.speed * 0.22;
+      const desiredPitch = accel < -15 ? -0.055 : accel > 18 ? 0.038 : 0;
+      item.pitchAngle = (item.pitchAngle || 0) * 0.82 + desiredPitch * 0.18;
+
+      const pLen = item.pathLen || 1120;
+      item.d = ((item.d + item.currentSpeed * dt) % pLen + pLen) % pLen;
+      const nextP = pathPoint(item.path, item.d);
+      vehiclePositions[i] = nextP;
+
+      let potholeJoltY = 0;
+      let potholeTilt = 0;
+      if (item.currentSpeed > 5) {
+        for (const pot of activePotholePositions) {
+          const dist = Math.hypot(nextP.x - pot.x, nextP.y - pot.y);
+          if (dist < 46) {
+            const intensity = (1 - dist / 46);
+            potholeJoltY = Math.sin(item.d * 0.95) * 3.2 * intensity;
+            potholeTilt = Math.cos(item.d * 0.85) * 0.08 * intensity;
+            break;
+          }
+        }
+      }
+
+      item.sprite.x = nextP.x;
+      item.sprite.y = nextP.y + potholeJoltY;
+      item.sprite.zIndex = nextP.y + 40;
 
       if (item.sprite._chassis) {
-        item.sprite._chassis.y = Math.sin(item.d * 0.24) * 0.85;
-        item.sprite._chassis.rotation = potholeTilt;
+        item.sprite._chassis.y = 0;
+        item.sprite._chassis.rotation = (item.pitchAngle || 0) + potholeTilt;
       }
       if (item.sprite._exhaustPuff) {
-        const puffPhase = (item.d * 0.06) % 1;
-        item.sprite._exhaustPuff.alpha = (1 - puffPhase) * 0.35;
-        item.sprite._exhaustPuff.scale.set(0.6 + puffPhase * 0.9);
+        if (item.currentSpeed > 8) {
+          const puffPhase = (item.d * 0.06) % 1;
+          item.sprite._exhaustPuff.alpha = (1 - puffPhase) * 0.35;
+          item.sprite._exhaustPuff.scale.set(0.6 + puffPhase * 0.9);
+        } else {
+          item.sprite._exhaustPuff.alpha = 0;
+        }
       }
       if (item.sprite._strobes) {
         const flash = Math.sin(worldAnimClock * 14) > 0;
@@ -3743,9 +3943,50 @@ async function mount(host) {
       }
     }
 
-    for (const item of walkers) {
-      item.d += item.speed * dt;
+    // 2. Update Pedestrians (Yield at crosswalks if a car is actively crossing in front, and never walk through other pedestrians)
+    for (let wIdx = 0; wIdx < walkers.length; wIdx++) {
+      const item = walkers[wIdx];
+      const pNow = walkerPositions[wIdx];
+      const pAhead = pathPoint(item.path, item.d + 10);
+      const wdx = pAhead.x - pNow.x;
+      const wdy = pAhead.y - pNow.y;
+      const wLen = Math.hypot(wdx, wdy) || 1;
+      const wux = wdx / wLen;
+      const wuy = wdy / wLen;
+
+      let wait = false;
+      // Check if a vehicle is directly in front of the pedestrian in the intersection
+      for (let vIdx = 0; vIdx < traffic.length; vIdx++) {
+        const vp = vehiclePositions[vIdx];
+        const dist = Math.hypot(vp.x - pNow.x, vp.y - pNow.y);
+        const fwd = (vp.x - pNow.x) * wux + (vp.y - pNow.y) * wuy;
+        if (dist < 42 && fwd > 4) {
+          wait = true;
+          break;
+        }
+      }
+      // Check if another pedestrian is directly ahead on the same sidewalk
+      if (!wait) {
+        for (let oIdx = 0; oIdx < walkers.length; oIdx++) {
+          if (oIdx === wIdx) continue;
+          const op = walkerPositions[oIdx];
+          const dx = op.x - pNow.x;
+          const dy = op.y - pNow.y;
+          const fwd = dx * wux + dy * wuy;
+          const lat = Math.abs(-dx * wuy + dy * wux);
+          if (fwd > 0 && fwd < 22 && lat < 10 && oIdx < wIdx) {
+            wait = true;
+            break;
+          }
+        }
+      }
+
+      item.isWaiting = wait;
+      if (!wait) {
+        item.d += item.speed * dt;
+      }
       const p = pathPoint(item.path, item.d);
+      walkerPositions[wIdx] = p;
       item.sprite.x = p.x;
       item.sprite.y = p.y;
       updatePersonWalkVisual(item, p);
