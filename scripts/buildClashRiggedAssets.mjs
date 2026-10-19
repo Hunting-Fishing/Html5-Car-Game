@@ -7,6 +7,7 @@ const BRAIN_DIR = 'C:/Users/jordi/.gemini/antigravity/brain/028b010f-6426-495c-8
 
 const STAFF_SHEET = path.join(BRAIN_DIR, 'supercell_characters_spritesheet_1792373375249.jpg');
 const RESIDENT_SHEET = path.join(BRAIN_DIR, 'city_residents_sprite_sheet_final_1792373427828.jpg');
+const ISO_VEHICLE_SHEET = path.join(BRAIN_DIR, 'isometric_vehicles_spritesheet_v2_1792381600045.jpg');
 const VEHICLE_MAIN_SHEET = path.join(BRAIN_DIR, 'vehicle_spritesheet_2x4_1792373685100.jpg');
 const VEHICLE_SUPP_SHEET = path.join(BRAIN_DIR, 'game_spritesheet_pack_1792373595149.jpg');
 
@@ -197,7 +198,7 @@ async function main() {
     console.log(`Processed cutout isometric building: ${slug}`);
   }
 
-  // 2. Process all 12 Supercell-style 3D Characters + Generate 6-Frame Articulated Walk Cycle SVGs
+  // 2. Process all 12 Supercell-style 3D Characters + Generate Seamless Uncut 6-Frame Walk Cycle SVGs
   const staffDataUrl = fileToDataUrl(STAFF_SHEET);
   const residentDataUrl = fileToDataUrl(RESIDENT_SHEET);
 
@@ -307,103 +308,40 @@ async function main() {
       const cw = Math.max(1, maxX - minX + 1);
       const ch = Math.max(1, maxY - minY + 1);
 
-      // Create normalized 180x240 base character canvas
+      // Create normalized 180x240 base character canvas (100% uncut whole-body 3D render!)
       const baseCanvas = document.createElement('canvas');
       baseCanvas.width = 180;
       baseCanvas.height = 240;
       const bctx = baseCanvas.getContext('2d');
-      const scale = Math.min(164 / cw, 224 / ch);
+      const scale = Math.min(162 / cw, 220 / ch);
       const dw = cw * scale;
       const dh = ch * scale;
       const dx = (180 - dw) / 2;
-      const dy = 232 - dh;
+      const dy = 230 - dh;
       bctx.drawImage(c, minX, minY, cw, ch, dx, dy, dw, dh);
       const idlePng = baseCanvas.toDataURL('image/png');
 
-      // Now generate 6 articulated skeletal walk-cycle frames!
-      // Anatomical split on baseCanvas (y from dy to 232):
-      // Head: top 36% of character height
-      // Torso & Arms: 32% to 68% of character height
-      // Left Leg: 64% to 100%, x < 90
-      // Right Leg: 64% to 100%, x >= 90
-      const headTop = dy;
-      const headH = dh * 0.37;
-      const torsoTop = dy + dh * 0.33;
-      const torsoH = dh * 0.36;
-      const legTop = dy + dh * 0.65;
-      const legH = dh * 0.36;
-      const midX = 90;
-
+      // Generate 6-frame seamless whole-body Simpsons: Tapped Out / Brawl Stars walk stride
+      // Zero horizontal slicing — keeps hands, props, turbochargers, and knees 100% intact!
       const frames = [];
       for (let f = 0; f < 6; f++) {
         const phase = (f / 6) * Math.PI * 2;
-        const swing = Math.sin(phase); // -1..1
-        const bounce = Math.abs(Math.cos(phase)) * 5.5;
+        const swing = Math.sin(phase);
+        const hop = Math.abs(Math.cos(phase)) * 6.5;
+        const squashX = 1 + Math.cos(phase * 2) * 0.028;
+        const stretchY = 1 - Math.cos(phase * 2) * 0.028;
+        const tilt = swing * 0.042;
 
         const fc = document.createElement('canvas');
         fc.width = 180;
         fc.height = 240;
         const fctx = fc.getContext('2d');
 
-        // 1. Back leg (whichever leg is swinging backward)
-        const leftLegAngle = swing * 0.24;
-        const rightLegAngle = -swing * 0.24;
-        const leftLegLift = Math.max(0, swing) * 6;
-        const rightLegLift = Math.max(0, -swing) * 6;
-
-        const drawLeftLeg = () => {
-          fctx.save();
-          fctx.translate(midX - dw * 0.12, legTop + 6 - bounce - leftLegLift);
-          fctx.rotate(leftLegAngle);
-          fctx.drawImage(
-            baseCanvas,
-            0, legTop, midX + 4, legH,
-            -(midX - dw * 0.12), -6, midX + 4, legH
-          );
-          fctx.restore();
-        };
-
-        const drawRightLeg = () => {
-          fctx.save();
-          fctx.translate(midX + dw * 0.12, legTop + 6 - bounce - rightLegLift);
-          fctx.rotate(rightLegAngle);
-          fctx.drawImage(
-            baseCanvas,
-            midX - 4, legTop, 180 - (midX - 4), legH,
-            -4 - dw * 0.12, -6, 180 - (midX - 4), legH
-          );
-          fctx.restore();
-        };
-
-        if (swing >= 0) {
-          drawRightLeg();
-          drawLeftLeg();
-        } else {
-          drawLeftLeg();
-          drawRightLeg();
-        }
-
-        // 2. Torso & Arms (with stride bounce, forward lean, and shoulder swing)
         fctx.save();
-        fctx.translate(midX, torsoTop + torsoH * 0.5 - bounce);
-        fctx.rotate(swing * 0.045);
-        fctx.scale(1 + Math.sin(phase) * 0.025, 1);
-        fctx.drawImage(
-          baseCanvas,
-          0, torsoTop, 180, torsoH,
-          -midX, -torsoH * 0.5, 180, torsoH
-        );
-        fctx.restore();
-
-        // 3. Head (with slight counter-bob and expressive nod)
-        fctx.save();
-        fctx.translate(midX, headTop + headH * 0.82 - bounce * 1.08);
-        fctx.rotate(-swing * 0.035);
-        fctx.drawImage(
-          baseCanvas,
-          0, headTop, 180, headH,
-          -midX, -headH * 0.82, 180, headH
-        );
+        fctx.translate(90 + swing * 2.2, 228 - hop);
+        fctx.rotate(tilt);
+        fctx.scale(squashX, stretchY);
+        fctx.drawImage(baseCanvas, -90, -228);
         fctx.restore();
 
         frames.push(fc.toDataURL('image/png'));
@@ -412,48 +350,169 @@ async function main() {
       return { idlePng, frames };
     }, { src: sheetUrl, col: spec.col, row: spec.row, cols: spec.cols, rows: spec.rows });
 
-    const makeCharSvg = (pngDataUrl, label, shadowRx = 42) => `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="240" viewBox="0 0 180 240" role="img" aria-label="${label}">
-  <ellipse cx="90" cy="228" rx="${shadowRx}" ry="10" fill="#020617" opacity="0.38"/>
+    const makeCharSvg = (pngDataUrl, label, shadowRx = 42, dustX = 0, dustAlpha = 0) => `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="240" viewBox="0 0 180 240" role="img" aria-label="${label}">
+  <ellipse cx="90" cy="228" rx="${shadowRx}" ry="10" fill="#020617" opacity="0.40"/>
+  ${dustAlpha > 0 ? `<circle cx="${90 + dustX}" cy="225" r="7" fill="#e2e8f0" opacity="${dustAlpha}"/><circle cx="${90 + dustX * 1.35}" cy="221" r="4.5" fill="#f8fafc" opacity="${(dustAlpha * 0.8).toFixed(2)}"/>` : ''}
   <image href="${pngDataUrl}" x="0" y="0" width="180" height="240" preserveAspectRatio="xMidYMid meet"/>
 </svg>`;
 
-    fs.writeFileSync(path.join(peopleDir, `${spec.slug}.svg`), makeCharSvg(result.idlePng, spec.slug, 42));
+    fs.writeFileSync(path.join(peopleDir, `${spec.slug}.svg`), makeCharSvg(result.idlePng, spec.slug, 42, 0, 0));
     const charAnimFolder = path.join(animDir, spec.slug);
     fs.mkdirSync(charAnimFolder, { recursive: true });
     result.frames.forEach((frameUrl, idx) => {
-      const shadowRx = Math.round(40 + Math.sin((idx / 6) * Math.PI * 2) * 5);
+      const phase = (idx / 6) * Math.PI * 2;
+      const shadowRx = Math.round(39 + Math.cos(phase * 2) * 4);
+      const dustX = Math.round(-Math.sin(phase) * 24);
+      const dustAlpha = (idx === 1 || idx === 4) ? 0.42 : 0.16;
       fs.writeFileSync(
         path.join(charAnimFolder, `walk-0${idx + 1}.svg`),
-        makeCharSvg(frameUrl, `${spec.slug} walk ${idx + 1}`, shadowRx)
+        makeCharSvg(frameUrl, `${spec.slug} walk ${idx + 1}`, shadowRx, dustX, dustAlpha)
       );
     });
-    console.log(`Processed 3D Supercell character & 6-frame skeletal walk cycle: ${spec.slug}`);
+    console.log(`Processed seamless uncut 3D character & 6-frame walk stride: ${spec.slug}`);
   }
 
-  // 3. Process all 11 Vehicles + Props (Tree, Pothole Crater, Broken Smoking Car)
-  const mainVehUrl = fileToDataUrl(VEHICLE_MAIN_SHEET);
-  const suppVehUrl = fileToDataUrl(VEHICLE_SUPP_SHEET);
-
-  const vehicleSpecs = [
-    // From main 4x3 vehicle sheet (Row 0 = Asian Market, Row 2 = NA Market)
-    { key: 'compactCar', file: 'compact-car.svg', racerFiles: ['starter-hatch.svg'], sheet: 'main', col: 0, row: 0, cols: 4, rows: 3 },
-    { key: 'blueCar', file: 'blue-car.svg', racerFiles: ['green-compact.svg'], sheet: 'main', col: 1, row: 0, cols: 4, rows: 3 },
-    { key: 'rallyCar', file: 'rally-car.svg', racerFiles: ['rally-lite.svg'], sheet: 'main', col: 2, row: 0, cols: 4, rows: 3 },
-    { key: 'jdmGtCoupe', file: 'jdm-gt-coupe.svg', racerFiles: ['purple-coupe.svg'], sheet: 'main', col: 3, row: 0, cols: 4, rows: 3 },
-    { key: 'greenTruck', file: 'green-truck.svg', racerFiles: ['offroad-truck.svg', 'pickup-truck.svg'], sheet: 'main', col: 0, row: 2, cols: 4, rows: 3 },
-    { key: 'naMuscle', file: 'na-muscle.svg', racerFiles: [], sheet: 'main', col: 1, row: 2, cols: 4, rows: 3 },
-    { key: 'towTruck', file: 'tow-truck.svg', racerFiles: ['mountain-courier.svg'], sheet: 'main', col: 2, row: 2, cols: 4, rows: 3 },
-    { key: 'superCar', file: 'super-car.svg', racerFiles: ['super-coupe.svg'], sheet: 'main', col: 3, row: 2, cols: 4, rows: 3 },
-    // From supplementary 3x2 sheet (Row 0 = Taxi, Baja SUV, Delivery Van)
-    { key: 'yellowCar', file: 'yellow-car.svg', racerFiles: ['city-taxi.svg'], sheet: 'supp', col: 0, row: 0, cols: 3, rows: 2 },
-    { key: 'bajaSuv', file: 'baja-suv.svg', racerFiles: ['desert-runner.svg'], sheet: 'supp', col: 1, row: 0, cols: 3, rows: 2 },
-    { key: 'deliveryVan', file: 'delivery-van.svg', racerFiles: ['service-van.svg', 'export-van.svg'], sheet: 'supp', col: 2, row: 0, cols: 3, rows: 2 }
+  // 3A. Process 3D Isometric Vehicles for 365 Auto World (from ISO_VEHICLE_SHEET 4x2 grid)
+  const isoVehUrl = fileToDataUrl(ISO_VEHICLE_SHEET);
+  const isoWorldVehicleSpecs = [
+    // Row 0: (0) Blue JDM GT-Apex, (1) Yellow Taxi, (2) Red V8 Muscle, (3) White Turbo Hatch
+    { key: 'blueCar', files: ['blue-car.svg', 'rally-car.svg'], col: 0, row: 0, cols: 4, rows: 2 },
+    { key: 'yellowCar', files: ['yellow-car.svg'], col: 1, row: 0, cols: 4, rows: 2 },
+    { key: 'naMuscle', files: ['na-muscle.svg'], col: 2, row: 0, cols: 4, rows: 2 },
+    { key: 'compactCar', files: ['compact-car.svg'], col: 3, row: 0, cols: 4, rows: 2 },
+    // Row 1: (0) Green 4x4 Baja Truck, (1) Yellow Wrecker Tow Truck, (2) 365 Delivery Van, (3) Purple Widebody Coupe
+    { key: 'greenTruck', files: ['green-truck.svg', 'baja-suv.svg'], col: 0, row: 1, cols: 4, rows: 2 },
+    { key: 'towTruck', files: ['tow-truck.svg'], col: 1, row: 1, cols: 4, rows: 2 },
+    { key: 'deliveryVan', files: ['delivery-van.svg'], col: 2, row: 1, cols: 4, rows: 2 },
+    { key: 'jdmGtCoupe', files: ['jdm-gt-coupe.svg', 'super-car.svg'], col: 3, row: 1, cols: 4, rows: 2 }
   ];
 
   const vehiclesDir = path.join(ROOT, 'public/assets/World/vehicles');
   const racerDir = path.join(ROOT, 'public/assets/vehicles/racer');
   fs.mkdirSync(vehiclesDir, { recursive: true });
   fs.mkdirSync(racerDir, { recursive: true });
+
+  for (const isoSpec of isoWorldVehicleSpecs) {
+    const isoPng = await page.evaluate(async ({ src, col, row, cols, rows }) => {
+      const img = new Image();
+      img.src = src;
+      await new Promise((r) => { img.onload = r; });
+
+      const cellW = Math.floor(img.naturalWidth / cols);
+      const cellH = Math.floor(img.naturalHeight / rows);
+      const sx = col * cellW;
+      const sy = row * cellH;
+
+      const c = document.createElement('canvas');
+      c.width = cellW;
+      c.height = cellH;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, sx, sy, cellW, cellH, 0, 0, cellW, cellH);
+
+      const imgData = ctx.getImageData(0, 0, cellW, cellH);
+      const data = imgData.data;
+
+      const visited = new Uint8Array(cellW * cellH);
+      const queue = new Int32Array(cellW * cellH);
+      let head = 0, tail = 0;
+      const isWhiteBg = (r, g, b) => r > 236 && g > 236 && b > 234;
+
+      const push = (x, y) => {
+        if (x < 0 || x >= cellW || y < 0 || y >= cellH) return;
+        const p = y * cellW + x;
+        if (visited[p]) return;
+        const idx = p * 4;
+        if (isWhiteBg(data[idx], data[idx + 1], data[idx + 2])) {
+          visited[p] = 1;
+          queue[tail++] = p;
+        }
+      };
+
+      for (let x = 0; x < cellW; x++) {
+        push(x, 0);
+        push(x, cellH - 1);
+      }
+      for (let y = 0; y < cellH; y++) {
+        push(0, y);
+        push(cellW - 1, y);
+      }
+
+      while (head < tail) {
+        const p = queue[head++];
+        const x = p % cellW;
+        const y = (p - x) / cellW;
+        push(x + 1, y);
+        push(x - 1, y);
+        push(x, y + 1);
+        push(x, y - 1);
+      }
+
+      let minX = cellW, minY = cellH, maxX = 0, maxY = 0;
+      for (let y = 0; y < cellH; y++) {
+        for (let x = 0; x < cellW; x++) {
+          const p = y * cellW + x;
+          const idx = p * 4;
+          if (visited[p]) {
+            data[idx + 3] = 0;
+          } else {
+            let bgN = 0;
+            if (x > 0 && visited[p - 1]) bgN++;
+            if (x < cellW - 1 && visited[p + 1]) bgN++;
+            if (y > 0 && visited[p - cellW]) bgN++;
+            if (y < cellH - 1 && visited[p + cellW]) bgN++;
+            if (bgN > 0) data[idx + 3] = Math.round(255 * (1 - bgN * 0.2));
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+
+      const cw = Math.max(1, maxX - minX + 1);
+      const ch = Math.max(1, maxY - minY + 1);
+
+      const out = document.createElement('canvas');
+      out.width = 280;
+      out.height = 200;
+      const octx = out.getContext('2d');
+      const scale = Math.min(256 / cw, 180 / ch);
+      const dw = cw * scale;
+      const dh = ch * scale;
+      const dx = (280 - dw) / 2;
+      const dy = (200 - dh) / 2;
+      octx.drawImage(c, minX, minY, cw, ch, dx, dy, dw, dh);
+      return out.toDataURL('image/png');
+    }, { src: isoVehUrl, col: isoSpec.col, row: isoSpec.row, cols: isoSpec.cols, rows: isoSpec.rows });
+
+    const isoVehSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="280" height="200" viewBox="0 0 280 200" role="img" aria-label="${isoSpec.key}">
+  <polygon points="140,184 246,130 140,78 34,130" fill="#020617" opacity="0.32"/>
+  <image href="${isoPng}" x="0" y="0" width="280" height="200" preserveAspectRatio="xMidYMid meet"/>
+</svg>`;
+
+    for (const vFile of isoSpec.files) {
+      fs.writeFileSync(path.join(vehiclesDir, vFile), isoVehSvg);
+      console.log(`Processed 3D Isometric World vehicle: ${isoSpec.key} -> ${vFile}`);
+    }
+  }
+
+  // 3B. Process 2D Side-Profile Vehicles for Road Runner Side-Scroller (public/assets/vehicles/racer/*.svg)
+  const mainVehUrl = fileToDataUrl(VEHICLE_MAIN_SHEET);
+  const suppVehUrl = fileToDataUrl(VEHICLE_SUPP_SHEET);
+
+  const vehicleSpecs = [
+    { key: 'compactCar', racerFiles: ['starter-hatch.svg'], sheet: 'main', col: 0, row: 0, cols: 4, rows: 3 },
+    { key: 'blueCar', racerFiles: ['green-compact.svg'], sheet: 'main', col: 1, row: 0, cols: 4, rows: 3 },
+    { key: 'rallyCar', racerFiles: ['rally-lite.svg'], sheet: 'main', col: 2, row: 0, cols: 4, rows: 3 },
+    { key: 'jdmGtCoupe', racerFiles: ['purple-coupe.svg'], sheet: 'main', col: 3, row: 0, cols: 4, rows: 3 },
+    { key: 'greenTruck', racerFiles: ['offroad-truck.svg', 'pickup-truck.svg'], sheet: 'main', col: 0, row: 2, cols: 4, rows: 3 },
+    { key: 'towTruck', racerFiles: ['mountain-courier.svg'], sheet: 'main', col: 2, row: 2, cols: 4, rows: 3 },
+    { key: 'superCar', racerFiles: ['super-coupe.svg'], sheet: 'main', col: 3, row: 2, cols: 4, rows: 3 },
+    { key: 'yellowCar', racerFiles: ['city-taxi.svg'], sheet: 'supp', col: 0, row: 0, cols: 3, rows: 2 },
+    { key: 'bajaSuv', racerFiles: ['desert-runner.svg'], sheet: 'supp', col: 1, row: 0, cols: 3, rows: 2 },
+    { key: 'deliveryVan', racerFiles: ['service-van.svg', 'export-van.svg'], sheet: 'supp', col: 2, row: 0, cols: 3, rows: 2 }
+  ];
 
   for (const vSpec of vehicleSpecs) {
     const sheetUrl = vSpec.sheet === 'main' ? mainVehUrl : suppVehUrl;
@@ -555,11 +614,10 @@ async function main() {
   <image href="${vResult}" x="0" y="0" width="320" height="160" preserveAspectRatio="xMidYMid meet"/>
 </svg>`;
 
-    fs.writeFileSync(path.join(vehiclesDir, vSpec.file), vehSvg);
     for (const rFile of vSpec.racerFiles) {
       fs.writeFileSync(path.join(racerDir, rFile), vehSvg);
     }
-    console.log(`Processed cutout vehicle: ${vSpec.key} -> ${vSpec.file}`);
+    console.log(`Processed Road Runner side-profile racer: ${vSpec.key}`);
   }
 
   // 4. Process Props from Supplementary Sheet Row 1 (Col 0: broken-car.svg, Col 1: tree.svg, Col 2: pothole-crater.svg)

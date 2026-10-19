@@ -52,6 +52,15 @@ const CITY_BUILDINGS = [
   { x: 430, y: 710, w: 3, h: 3, type: 'tireRepair', label: 'Fuel Stop', action: 'lines', lineKey: 'fuelRun' }
 ];
 
+const TOWN_EXPANSION_STORAGE_KEY = '365_mobile_city_unlocked_plots_v1';
+const TOWN_EXPANSION_PLOTS = [
+  { id: 'harborPier', name: 'Harbor Import Pier', x: 755, y: 40, w: 185, h: 145, cost: 250, bonus: '+15% Asian JDM Import Speed', color: 0x38bdf8, defaultUnlocked: false },
+  { id: 'techLogistics', name: '365 Tech Annex', x: 350, y: 1020, w: 280, h: 130, cost: 350, bonus: '+20% Parts Hub Capacity', color: 0x35e58a, defaultUnlocked: false },
+  { id: 'salvageAnnex', name: 'South Salvage Annex', x: 32, y: 1325, w: 195, h: 165, cost: 450, bonus: '+25% Tow Recovery & Scrap', color: 0xf97316, defaultUnlocked: false },
+  { id: 'autoMallPlaza', name: 'VIP Auto Mall Plaza', x: 355, y: 1325, w: 275, h: 165, cost: 650, bonus: '+25% Dealer Showroom Rep', color: 0xa855f7, defaultUnlocked: false },
+  { id: 'motorsportPark', name: 'Pro Motorsport Park', x: 755, y: 1325, w: 185, h: 165, cost: 900, bonus: '+30% Track Dyno Telemetry', color: 0xfacc15, defaultUnlocked: false }
+];
+
 const SUPPLY_MANAGERS = [
   { key: 'driver', lineKey: 'streetRoute', name: 'Route Driver', business: 'Street Route', shirt: 0xf6c445 },
   { key: 'courier', lineKey: 'partsDelivery', name: 'Parts Courier', business: 'Parts Delivery', shirt: 0x16a34a },
@@ -266,8 +275,10 @@ let walkers = [];
 let selectedSupplyKey = null;
 let placedBuildings = [];
 let fixedBuildingStates = {};
+let unlockedTownPlots = {};
 let fixedLayer = null;
 let placementLayer = null;
+let expansionLayer = null;
 let incidentLayer = null;
 let gridLayer = null;
 let ghostLayer = null;
@@ -285,6 +296,32 @@ let initialized = false;
 let pixiWorldAssetsLoaded = false;
 let buildSync = null;
 let statusRefreshTimer = 0;
+
+function loadTownExpansions() {
+  try {
+    unlockedTownPlots = JSON.parse(localStorage.getItem(TOWN_EXPANSION_STORAGE_KEY) || '{}');
+  } catch {
+    unlockedTownPlots = {};
+  }
+  for (const plot of TOWN_EXPANSION_PLOTS) {
+    if (typeof unlockedTownPlots[plot.id] !== 'boolean') {
+      unlockedTownPlots[plot.id] = Boolean(plot.defaultUnlocked);
+    }
+  }
+  saveTownExpansions();
+}
+
+function saveTownExpansions() {
+  localStorage.setItem(TOWN_EXPANSION_STORAGE_KEY, JSON.stringify(unlockedTownPlots));
+}
+
+function isPlotUnlocked(plotId) {
+  return Boolean(unlockedTownPlots[plotId]);
+}
+
+function unlockedPlotCount() {
+  return TOWN_EXPANSION_PLOTS.filter((p) => isPlotUnlocked(p.id)).length;
+}
 
 function defByKey(key) {
   return BUILDING_CATALOG.find((item) => item.key === key) || BUILDING_CATALOG[0];
@@ -671,7 +708,7 @@ function html() {
       <div class="worldRuntimeTabs subTabBar" hidden></div>
       <div class="pixiWorldHeader worldMapPrimaryHeader">
         <h2>World</h2>
-        <p>Tap a building or person.</p>
+        <p>Tap a building, person, or frontier plot to expand your 3D town.</p>
       </div>
       <div class="pixiWorldHost worldMapPrimary" id="pixiWorldHost"></div>
       <div class="worldAssetPreload" aria-hidden="true">
@@ -684,6 +721,7 @@ function html() {
           <div class="cityReputation" data-city-reputation><b data-city-reputation-rank>Unknown</b><span><i data-city-reputation-bar></i></span><small data-city-reputation-score>0</small></div>
           <div class="mobileMapTools">
             <button class="btn small primary" onclick="window.openMobileBuildTraySafe?.()">Build</button>
+            <button class="btn small gold" data-expand-town-btn onclick="window.unlockNextTownPlotSafe?.()">Expand (<span data-town-expansion-count>${unlockedPlotCount()}/${TOWN_EXPANSION_PLOTS.length}</span>)</button>
             <button class="btn small ghost" onclick="window.centerMobileCitySafe?.()">Center</button>
           </div>
         </div>
@@ -883,14 +921,12 @@ function drawRoads() {
   // 1. Subtle Crowned Asphalt Texture & Tire Ruts along all Horizontal & Vertical Avenues
   for (const road of ROADS.horizontal) {
     const cy = road.y + ROADS.width / 2;
-    // Crown center highlight & lane wheel ruts
     roadLayer.addChild(rect(0, road.y + 18, WORLD.width, ROADS.width - 36, { color: 0x24334a, alpha: 0.85 }));
     roadLayer.addChild(rect(0, road.y + 19, WORLD.width, 3.5, { color: 0x101826, alpha: 0.42 }));
     roadLayer.addChild(rect(0, road.y + 30, WORLD.width, 3.5, { color: 0x101826, alpha: 0.42 }));
     roadLayer.addChild(rect(0, road.y + 54.5, WORLD.width, 3.5, { color: 0x101826, alpha: 0.42 }));
     roadLayer.addChild(rect(0, road.y + 65.5, WORLD.width, 3.5, { color: 0x101826, alpha: 0.42 }));
 
-    // Subtle texture overlay on straight segments only (never crossing intersections!)
     for (const col of xCols) {
       const segX1 = Math.max(0, col.x1 + 20);
       const segX2 = Math.min(WORLD.width, col.x2 - 20);
@@ -909,20 +945,16 @@ function drawRoads() {
       roadLayer.addChild(rect(segX1, cy - 2.6, segW, 2.1, { color: 0xfbbf24, alpha: 0.96 }));
       roadLayer.addChild(rect(segX1, cy + 0.6, segW, 2.1, { color: 0xf59e0b, alpha: 0.96 }));
 
-      // Glowing yellow cat's-eye road studs & subtle lane dashes
       for (let sx = segX1 + 22; sx < segX2 - 18; sx += 48) {
         roadLayer.addChild(roundRect(sx - 2, cy - 1.1, 4, 2.2, 0.8, 0xfef08a));
         roadLayer.addChild(roundRect(sx - 8, road.y + 25, 16, 1.8, 0.9, { color: 0xe2e8f0, alpha: 0.16 }));
         roadLayer.addChild(roundRect(sx + 10, road.y + 61, 16, 1.8, 0.9, { color: 0xe2e8f0, alpha: 0.16 }));
       }
 
-      // Directional lane arrows at segment midpoint
       if (segW >= 120) {
         const midX = (segX1 + segX2) / 2;
         const arrW = new PIXI.Graphics();
-        // Westbound arrow (y = road.y + 26)
         arrW.poly([midX - 18, road.y + 26, midX - 10, road.y + 21.5, midX - 10, road.y + 24.2, midX + 2, road.y + 24.2, midX + 2, road.y + 27.8, midX - 10, road.y + 27.8, midX - 10, road.y + 30.5]).fill({ color: 0xf8fafc, alpha: 0.22 });
-        // Eastbound arrow (y = road.y + 62)
         arrW.poly([midX + 18, road.y + 62, midX + 10, road.y + 57.5, midX + 10, road.y + 60.2, midX - 2, road.y + 60.2, midX - 2, road.y + 63.8, midX + 10, road.y + 63.8, midX + 10, road.y + 66.5]).fill({ color: 0xf8fafc, alpha: 0.22 });
         roadLayer.addChild(arrW);
       }
@@ -946,11 +978,9 @@ function drawRoads() {
       const tex = assetSprite(WORLD_ASSETS.terrain.roadVertical, cx, segY1 + segH / 2, ROADS.width, segH, 0.26);
       if (tex) roadLayer.addChild(tex);
 
-      // Crisp white outer shoulder fog lines
       roadLayer.addChild(rect(road.x + 8.5, segY1, 1.8, segH, { color: 0xf8fafc, alpha: 0.72 }));
       roadLayer.addChild(rect(road.x + ROADS.width - 10.3, segY1, 1.8, segH, { color: 0xf8fafc, alpha: 0.72 }));
 
-      // Dark median channel + Double Amber-Gold Center Divider
       roadLayer.addChild(rect(cx - 3.8, segY1, 7.6, segH, { color: 0x0d1522, alpha: 0.62 }));
       roadLayer.addChild(rect(cx - 2.6, segY1, 2.1, segH, { color: 0xfbbf24, alpha: 0.96 }));
       roadLayer.addChild(rect(cx + 0.6, segY1, 2.1, segH, { color: 0xf59e0b, alpha: 0.96 }));
@@ -963,7 +993,7 @@ function drawRoads() {
     }
   }
 
-  // 2. Seamless 15 Raised 3D City Block Islands (Rounded Concrete Curbs, Paver Sidewalks, & Inset Park Lawns)
+  // 2. 3D Extruded City Block Plazas (Simpsons: Tapped Out / Town City / SimCity BuildIt style)
   const sw = ROADS.sidewalk;
   for (const row of yRows) {
     for (const col of xCols) {
@@ -973,31 +1003,30 @@ function drawRoads() {
       const bh = row.y2 - row.y1;
       const curbR = 20;
 
-      // Step A: Deep Recessed Gutter Shadow around the entire block perimeter
-      blockLayer.addChild(roundRect(bx - 3.5, by - 3.5, bw + 7, bh + 7, curbR + 3, { color: 0x090f17, alpha: 0.72 }));
+      // Step A: Deep Recessed Asphalt Gutter Shadow + 8px 3D Extruded Southern Concrete Curb Wall
+      blockLayer.addChild(roundRect(bx - 4, by - 2, bw + 8, bh + 12, curbR + 3, { color: 0x070d16, alpha: 0.82 }));
+      blockLayer.addChild(roundRect(bx, by + 6, bw, bh, curbR, 0x475569));
+      blockLayer.addChild(roundRect(bx, by + 3, bw, bh, curbR, 0x94a3b8));
+      blockLayer.addChild(roundRect(bx + 2.5, by + 2.5, bw - 5, bh - 5, curbR - 2, 0xe2e8f0, { width: 2, color: 0xf8fafc, alpha: 0.95 }));
 
-      // Step B: 3D Bevelled Concrete Curb Stone Rim & Sidewalk Surface
-      blockLayer.addChild(roundRect(bx, by, bw, bh, curbR, 0x94a3b8));
-      blockLayer.addChild(roundRect(bx + 2.5, by + 2.5, bw - 5, bh - 5, curbR - 2, 0xdbe4ef, { width: 2, color: 0xf8fafc, alpha: 0.92 }));
-
-      // Subtle architectural concrete sidewalk paver joints around the block perimeter
+      // Step B: Isometric 2:1 Diagonal & Orthogonal Sidewalk Paver Joints
       const paverG = new PIXI.Graphics();
       const pxStart = Math.max(0, bx + 16);
       const pxEnd = Math.min(WORLD.width, bx + bw - 16);
-      for (let px = pxStart; px <= pxEnd; px += 32) {
+      for (let px = pxStart; px <= pxEnd; px += 28) {
         if (by > 0) paverG.moveTo(px, by + 3).lineTo(px, by + sw);
         if (by + bh < WORLD.height) paverG.moveTo(px, by + bh - sw).lineTo(px, by + bh - 3);
       }
       const pyStart = Math.max(0, by + 16);
       const pyEnd = Math.min(WORLD.height, by + bh - 16);
-      for (let py = pyStart; py <= pyEnd; py += 32) {
+      for (let py = pyStart; py <= pyEnd; py += 28) {
         if (bx > 0) paverG.moveTo(bx + 3, py).lineTo(bx + sw, py);
         if (bx + bw < WORLD.width) paverG.moveTo(bx + bw - sw, py).lineTo(bx + bw - 3, py);
       }
-      paverG.stroke({ width: 1.1, color: 0x94a3b8, alpha: 0.52 });
+      paverG.stroke({ width: 1.1, color: 0x94a3b8, alpha: 0.55 });
       blockLayer.addChild(paverG);
 
-      // Step C: Inset Rounded Lush Emerald Park Lawn inside the 36px Sidewalk
+      // Step C: Inset Raised 3D Lush Emerald Park Lawn with 2:1 Isometric Diagonal Mowing Stripes!
       const lx1 = bx < 0 ? bx : bx + sw;
       const lx2 = bx + bw > WORLD.width ? bx + bw : bx + bw - sw;
       const ly1 = by < 0 ? by : by + sw;
@@ -1005,52 +1034,52 @@ function drawRoads() {
       const lw = lx2 - lx1;
       const lh = ly2 - ly1;
       if (lw > 16 && lh > 16) {
-        const lawnR = 11;
-        // 3D Stone Garden Border Lip
-        blockLayer.addChild(roundRect(lx1 - 2.5, ly1 - 2.5, lw + 5, lh + 5, lawnR + 2, 0x64748b));
-        blockLayer.addChild(roundRect(lx1, ly1, lw, lh, lawnR, 0x5cb84d, { width: 2.5, color: 0x3d8b32, alpha: 0.78 }));
+        const lawnR = 12;
+        // 3D Recessed Stone Garden Planter Wall
+        blockLayer.addChild(roundRect(lx1 - 2.5, ly1 - 1.5, lw + 5, lh + 6, lawnR + 2, 0x475569));
+        blockLayer.addChild(roundRect(lx1, ly1, lw, lh, lawnR, 0x55b648, { width: 2.5, color: 0x38862d, alpha: 0.85 }));
 
-        // Clash-of-Clans style alternating sunlit lawn stripes + grassTile texture inside the block
-        const stripeH = 40;
-        for (let sy = Math.max(0, ly1 + 6); sy < Math.min(WORLD.height, ly2 - 12); sy += stripeH * 2) {
-          const sh = Math.min(stripeH, ly2 - 6 - sy);
-          if (sh > 4) {
-            blockLayer.addChild(roundRect(Math.max(0, lx1 + 6), sy, Math.min(WORLD.width, lx2 - 6) - Math.max(0, lx1 + 6), sh, 6, { color: 0x68c558, alpha: 0.38 }));
+        // Isometric 2:1 Diagonal Lawn Stripes (slope = ±0.5, matching the 30° isometric buildings!)
+        const isoLawnG = new PIXI.Graphics();
+        const clipX1 = Math.max(0, lx1 + 6);
+        const clipX2 = Math.min(WORLD.width, lx2 - 6);
+        const clipY1 = Math.max(0, ly1 + 6);
+        const clipY2 = Math.min(WORLD.height, ly2 - 6);
+        const cw = clipX2 - clipX1;
+        const ch = clipY2 - clipY1;
+        if (cw > 24 && ch > 24) {
+          for (let offset = -ch * 2; offset < cw + ch * 2; offset += 56) {
+            const xA = clipX1 + offset;
+            const yA = clipY1;
+            const xB = clipX1 + offset + 28;
+            const yB = clipY1;
+            const xC = xB - ch * 1.6;
+            const yC = clipY2;
+            const xD = xA - ch * 1.6;
+            const yD = clipY2;
+            const clampX = (v) => Math.max(clipX1, Math.min(clipX2, v));
+            isoLawnG.poly([
+              clampX(xA), yA,
+              clampX(xB), yB,
+              clampX(xC), yC,
+              clampX(xD), yD
+            ]).fill({ color: 0x67c958, alpha: 0.34 });
           }
+          // Subtle isometric garden border path framing the block interior
+          isoLawnG.roundRect(clipX1 + 4, clipY1 + 4, cw - 8, ch - 8, 8)
+            .stroke({ width: 1.5, color: 0x86efac, alpha: 0.25 });
+          blockLayer.addChild(isoLawnG);
         }
-        const grassTex = assetSprite(WORLD_ASSETS.terrain.grassTile, lx1 + lw / 2, ly1 + lh / 2, Math.max(40, lw - 12), Math.max(40, lh - 12), 0.35);
+
+        const grassTex = assetSprite(WORLD_ASSETS.terrain.grassTile, lx1 + lw / 2, ly1 + lh / 2, Math.max(40, lw - 12), Math.max(40, lh - 12), 0.28);
         if (grassTex) blockLayer.addChild(grassTex);
       }
     }
   }
 
-  // 3. Building Service Driveway Aprons & Flared Curb Cuts
-  for (const b of CITY_BUILDINGS) {
-    const bw = b.w * GRID.size;
-    const bh = b.h * GRID.size;
-    const bxCenter = b.x + bw / 2;
-    const byBottom = b.y + bh;
-    const nearRoad = ROADS.horizontal.find((r) => Math.abs(r.y - byBottom) < 85);
-    if (nearRoad) {
-      const apronW = Math.min(76, bw * 0.56);
-      const apronTop = nearRoad.y - ROADS.sidewalk - 2;
-      const apronBot = nearRoad.y + 2;
-      const apron = new PIXI.Graphics();
-      apron.poly([
-        bxCenter - apronW * 0.42, apronTop,
-        bxCenter + apronW * 0.42, apronTop,
-        bxCenter + apronW * 0.54, apronBot,
-        bxCenter - apronW * 0.54, apronBot
-      ]).fill({ color: 0x263449, alpha: 0.96 }).stroke({ width: 2, color: 0xe2e8f0, alpha: 0.9 });
-      // Yellow/Amber service entrance curb lip
-      apron.rect(bxCenter - apronW * 0.48, nearRoad.y - 2.5, apronW * 0.96, 3).fill({ color: 0xfacc15, alpha: 0.92 });
-      decorLayer.addChild(apron);
-    }
-  }
-
   drawCrosswalks(roadLayer);
 
-  // 4. Sleek Highway Street-Name Badges & Warm Streetlight Glow Pools
+  // 3. Sleek Highway Street-Name Badges & Warm Streetlight Glow Pools
   for (const road of ROADS.horizontal) {
     const signW = Math.max(108, road.label.length * 6.2 + 20);
     const signX = 112;
@@ -1080,23 +1109,19 @@ function drawCrosswalks(targetLayer = world) {
 
       const g = new PIXI.Graphics();
 
-      // Subtle curved intersection turning guide arcs
       g.moveTo(ix + 16, iy - 4).quadraticCurveTo(ix + 16, iy + 16, ix - 4, iy + 16).stroke({ width: 1.2, color: 0xcbd5e1, alpha: 0.22 });
       g.moveTo(ix + rw - 16, iy - 4).quadraticCurveTo(ix + rw - 16, iy + 16, ix + rw + 4, iy + 16).stroke({ width: 1.2, color: 0xcbd5e1, alpha: 0.22 });
       g.moveTo(ix + 16, iy + rw + 4).quadraticCurveTo(ix + 16, iy + rw - 16, ix - 4, iy + rw - 16).stroke({ width: 1.2, color: 0xcbd5e1, alpha: 0.22 });
       g.moveTo(ix + rw - 16, iy + rw + 4).quadraticCurveTo(ix + rw - 16, iy + rw - 16, ix + rw + 4, iy + rw - 16).stroke({ width: 1.2, color: 0xcbd5e1, alpha: 0.22 });
 
-      // Crisp 5-Bar Continental Zebra Crosswalks on all 4 approaches (with subtle 3D drop shadow)
       const offsets = [-28, -14, 0, 14, 28];
       for (const off of offsets) {
-        // North & South Crosswalk Bars
         g.roundRect(cx + off - 3, iy - 16, 6, 13, 1.5).fill({ color: 0x090f17, alpha: 0.45 });
         g.roundRect(cx + off - 3, iy - 17, 6, 13, 1.5).fill({ color: 0xf8fafc, alpha: 0.92 });
 
         g.roundRect(cx + off - 3, iy + rw + 4, 6, 13, 1.5).fill({ color: 0x090f17, alpha: 0.45 });
         g.roundRect(cx + off - 3, iy + rw + 3, 6, 13, 1.5).fill({ color: 0xf8fafc, alpha: 0.92 });
 
-        // West & East Crosswalk Bars
         g.roundRect(ix - 16, cy + off - 3, 13, 6, 1.5).fill({ color: 0x090f17, alpha: 0.45 });
         g.roundRect(ix - 17, cy + off - 3, 13, 6, 1.5).fill({ color: 0xf8fafc, alpha: 0.92 });
 
@@ -1104,13 +1129,11 @@ function drawCrosswalks(targetLayer = world) {
         g.roundRect(ix + rw + 3, cy + off - 3, 13, 6, 1.5).fill({ color: 0xf8fafc, alpha: 0.92 });
       }
 
-      // Stop Bars just outside the crosswalks
       g.rect(ix + 10, iy - 21, rw - 20, 2.5).fill({ color: 0xf8fafc, alpha: 0.85 });
       g.rect(ix + 10, iy + rw + 18.5, rw - 20, 2.5).fill({ color: 0xf8fafc, alpha: 0.85 });
       g.rect(ix - 21, iy + 10, 2.5, rw - 20).fill({ color: 0xf8fafc, alpha: 0.85 });
       g.rect(ix + rw + 18.5, iy + 10, 2.5, rw - 20).fill({ color: 0xf8fafc, alpha: 0.85 });
 
-      // Center Cast-Iron 365 Manhole Cover
       g.circle(cx, cy, 9.5).fill({ color: 0x0f172a, alpha: 0.95 }).stroke({ width: 1.8, color: 0x475569, alpha: 0.9 });
       g.circle(cx, cy, 6).fill({ color: 0x1e293b, alpha: 0.95 }).stroke({ width: 1, color: 0x64748b, alpha: 0.8 });
 
@@ -1122,6 +1145,7 @@ function drawCrosswalks(targetLayer = world) {
 let animatedBuildings = [];
 let animatedTrees = [];
 let incidentAnims = [];
+let expansionAnims = [];
 let activePotholePositions = [];
 let worldAnimClock = 0;
 let lastBuildingsStateSig = '';
@@ -1130,7 +1154,7 @@ function makeIsoFanRotor(x, y, radius = 9, color = 0xcbd5e1) {
   const rotor = new PIXI.Container();
   rotor.x = x;
   rotor.y = y;
-  rotor.scale.y = 0.62; // Isometric foreshortening
+  rotor.scale.y = 0.62;
   const g = new PIXI.Graphics();
   g.circle(0, 0, radius).fill({ color: 0x0f172a, alpha: 0.72 }).stroke({ width: 1.5, color: 0x475569, alpha: 0.9 });
   for (let i = 0; i < 6; i++) {
@@ -1165,25 +1189,22 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
   rigRoot.addChild(overlay);
 
   if (type === 'garage') {
-    // 1. Twin Rooftop Isometric HVAC Exhaust Fans
     const f1 = makeIsoFanRotor(-8 * s, -69 * s, 7.5 * s, 0xe2e8f0);
     const f2 = makeIsoFanRotor(7 * s, -61 * s, 7.5 * s, 0xe2e8f0);
     overlay.addChild(f1, f2);
     parts.rotors.push(f1, f2);
 
-    // 2. Animated Hydraulic Lift + Sports Car bobbing in Left Service Bay
     const liftCar = new PIXI.Container();
     liftCar.x = -38 * s;
     liftCar.y = 8 * s;
     const liftBeam = roundRect(-14 * s, 6 * s, 28 * s, 4 * s, 2, 0xfacc15, { width: 1, color: 0x0f172a });
     const carGlow = circle(0, 0, 14 * s, { color: 0x38bdf8, alpha: 0.28 });
-    const bayCar = assetSprite(WORLD_ASSETS.vehicles.blueCar, 0, -2 * s, 36 * s, 18 * s, 0.95);
+    const bayCar = assetSprite(WORLD_ASSETS.vehicles.blueCar, 0, -2 * s, 38 * s, 26 * s, 0.95);
     liftCar.addChild(carGlow, liftBeam);
     if (bayCar) liftCar.addChild(bayCar);
     overlay.addChild(liftCar);
     parts.liftCar = { node: liftCar, baseY: 8 * s, amp: 4.5 * s };
 
-    // 3. Center & Right Bay Welding Arc Flash + Sparks
     const weldingArc = new PIXI.Container();
     weldingArc.x = -2 * s;
     weldingArc.y = 28 * s;
@@ -1193,7 +1214,6 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
     overlay.addChild(weldingArc);
     parts.weldingArc = weldingArc;
   } else if (type === 'partsHub' || type === 'partsWarehouse') {
-    // 1. Rooftop Ventilation Fan Bank
     const fanCoords = [[-48, -46], [-32, -55], [-34, -38], [-18, -46]];
     for (const [fx, fy] of fanCoords) {
       const rotor = makeIsoFanRotor(fx * s, fy * s, 6.5 * s, 0x99f6e4);
@@ -1201,21 +1221,18 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
       parts.rotors.push(rotor);
     }
 
-    // 2. Animated Isometric Forklift patrolling the front loading dock
     const forklift = new PIXI.Container();
     forklift.x = -24 * s;
     forklift.y = 44 * s;
     const fkBody = new PIXI.Graphics();
     fkBody.roundRect(-8 * s, -7 * s, 16 * s, 12 * s, 3).fill({ color: 0xf59e0b }).stroke({ width: 1.5, color: 0x0f172a });
     fkBody.roundRect(-5 * s, -12 * s, 10 * s, 7 * s, 2).fill({ color: 0x1e293b });
-    // Pallet crate on forks
     fkBody.roundRect(7 * s, -5 * s, 9 * s, 8 * s, 1.5).fill({ color: 0xfcd34d }).stroke({ width: 1, color: 0x78350f });
     const fkBeacon = circle(0, -14 * s, 3 * s, { color: 0xfef08a, alpha: 0.95 });
     forklift.addChild(fkBody, fkBeacon);
     overlay.addChild(forklift);
     parts.forklift = { node: forklift, baseX: -24 * s, baseY: 44 * s, rangeX: 22 * s, rangeY: 13 * s };
   } else if (type === 'dealerShowroom') {
-    // 1. Rotating VIP Showroom Turntable Laser Ring
     const turntableRing = new PIXI.Container();
     turntableRing.x = -12 * s;
     turntableRing.y = 22 * s;
@@ -1228,7 +1245,6 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
     overlay.addChild(turntableRing);
     parts.turntableRing = turntableRing;
 
-    // 2. Dual Sweeping Rooftop Sky-Tracker Searchlights
     const makeBeam = (bx, by) => {
       const b = new PIXI.Container();
       b.x = bx;
@@ -1245,7 +1261,6 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
     parts.searchlightA = beamA;
     parts.searchlightB = beamB;
   } else if (type === 'towDispatch') {
-    // 1. Expanding Rooftop Satellite Radar Waves
     const radarWave = new PIXI.Container();
     radarWave.x = -22 * s;
     radarWave.y = -56 * s;
@@ -1256,14 +1271,12 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
     overlay.addChild(radarWave);
     parts.radarWave = radarWave;
 
-    // 2. Dual Rooftop & Wrecker Emergency Strobe Beacons
     const s1 = circle(-39 * s, -38 * s, 6 * s, { color: 0xf59e0b, alpha: 0.95 });
     const s2 = circle(28 * s, -15 * s, 6 * s, { color: 0xef4444, alpha: 0.95 });
     const s3 = circle(-3 * s, 16 * s, 5 * s, { color: 0xfacc15, alpha: 0.95 });
     overlay.addChild(s1, s2, s3);
     parts.strobes.push(s1, s2, s3);
   } else if (type === 'tireRepair') {
-    // Giant Spinning 3D Rooftop Neon Tire & Alloy Rim Sign
     const tireRotor = new PIXI.Container();
     tireRotor.x = -12 * s;
     tireRotor.y = -58 * s;
@@ -1279,19 +1292,16 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
     overlay.addChild(tireRotor);
     parts.rotors.push(tireRotor);
 
-    // Rooftop AC fans
     const f1 = makeIsoFanRotor(44 * s, -42 * s, 6 * s, 0x99f6e4);
     const f2 = makeIsoFanRotor(56 * s, -35 * s, 6 * s, 0x99f6e4);
     overlay.addChild(f1, f2);
     parts.rotors.push(f1, f2);
   } else if (type === 'privateShop') {
-    // 1. 4x Rooftop Exhaust Fans
     for (const [fx, fy] of [[-46, -37], [-30, -47], [-14, -56], [2, -65]]) {
       const r = makeIsoFanRotor(fx * s, fy * s, 6.5 * s, 0xc4b5fd);
       overlay.addChild(r);
       parts.rotors.push(r);
     }
-    // 2. Dyno Car Twin Exhaust Flame Pop & Roller Glow
     const dynoFlame = new PIXI.Container();
     dynoFlame.x = -10 * s;
     dynoFlame.y = 22 * s;
@@ -1302,7 +1312,6 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
     overlay.addChild(dynoFlame);
     parts.dynoFlame = dynoFlame;
   } else if (type === 'salvageBlock') {
-    // Swinging Electromagnetic Crane Magnet & Electric Sparks
     const craneArm = new PIXI.Container();
     craneArm.x = 56 * s;
     craneArm.y = 4 * s;
@@ -1314,13 +1323,11 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
     overlay.addChild(craneArm);
     parts.craneArm = { node: craneArm, baseX: 56 * s, baseY: 4 * s };
   } else if (type === 'testTrack') {
-    // 1. Rooftop AC Fans
     const f1 = makeIsoFanRotor(-14 * s, -54 * s, 6.5 * s, 0xe2e8f0);
     const f2 = makeIsoFanRotor(-2 * s, -48 * s, 6.5 * s, 0xe2e8f0);
     overlay.addChild(f1, f2);
     parts.rotors.push(f1, f2);
 
-    // 2. Starting Gantry Race Lights & Track Car Drift Smoke
     const g1 = circle(-62 * s, -2 * s, 4.5 * s, { color: 0xef4444, alpha: 0.95 });
     const g2 = circle(-54 * s, -6 * s, 4.5 * s, { color: 0x22c55e, alpha: 0.95 });
     overlay.addChild(g1, g2);
@@ -1330,7 +1337,6 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
     overlay.addChild(driftSmoke);
     parts.trackCar = { smoke: driftSmoke, baseX: 42 * s, baseY: 44 * s };
   } else if (type === 'streetKiosk') {
-    // Floating Rotating 3D "365" Holo-Beacon on Kiosk Roof
     const holo = new PIXI.Container();
     holo.x = 12 * s;
     holo.y = -32 * s;
@@ -1343,6 +1349,75 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
   }
 
   return parts;
+}
+
+// 3D Extruded Isometric Diamond Plaza Pad under each building (Simpsons: Tapped Out / SimCity BuildIt style)
+function drawIsoBuildingPlaza(w, h, ready = false, accentColor = 0x38bdf8) {
+  const plaza = new PIXI.Graphics();
+  const cx = w / 2;
+  const cy = h / 2 + 14;
+  const rx = Math.min(116, Math.max(76, w * 0.58));
+  const ry = rx * 0.52;
+  const wallH = 8;
+
+  // 1. Soft Ambient Ground Shadow under the 3D Isometric Terrace
+  plaza.poly([
+    cx, cy - ry + 6,
+    cx + rx + 8, cy + 6,
+    cx, cy + ry + wallH + 8,
+    cx - rx - 8, cy + 6
+  ]).fill({ color: 0x040b14, alpha: 0.58 });
+
+  // 2. 3D Extruded South-West Concrete Curb Wall (Sunlit Left Face)
+  plaza.poly([
+    cx - rx, cy,
+    cx, cy + ry,
+    cx, cy + ry + wallH,
+    cx - rx, cy + wallH
+  ]).fill({ color: 0x94a3b8, alpha: 0.98 });
+
+  // 3. 3D Extruded South-East Concrete Curb Wall (Shaded Right Face)
+  plaza.poly([
+    cx, cy + ry,
+    cx + rx, cy,
+    cx + rx, cy + wallH,
+    cx, cy + ry + wallH
+  ]).fill({ color: 0x475569, alpha: 0.98 });
+
+  // 4. Isometric Diamond Concrete Sidewalk Terrace Top
+  plaza.poly([
+    cx, cy - ry,
+    cx + rx, cy,
+    cx, cy + ry,
+    cx - rx, cy
+  ]).fill({ color: 0xdbe4ef, alpha: 0.96 })
+    .stroke({ width: 2, color: 0xf8fafc, alpha: 0.95 });
+
+  // 5. Inset Dark-Slate Asphalt Lot Pad matching the building's 2:1 diamond base
+  const irx = rx * 0.84;
+  const iry = ry * 0.84;
+  plaza.poly([
+    cx, cy - iry,
+    cx + irx, cy,
+    cx, cy + iry,
+    cx - irx, cy
+  ]).fill({ color: 0x1e293b, alpha: 0.95 })
+    .stroke({ width: ready ? 2.5 : 1.5, color: ready ? 0x35e58a : accentColor, alpha: ready ? 0.92 : 0.58 });
+
+  // 6. Flush Isometric SE Service Driveway Curb Cut inside the terrace rim
+  plaza.poly([
+    cx + irx * 0.30, cy + iry * 0.70,
+    cx + irx * 0.68, cy + iry * 0.32,
+    cx + rx * 0.68, cy + ry * 0.32,
+    cx + rx * 0.30, cy + ry * 0.70
+  ]).fill({ color: 0x334155, alpha: 0.92 })
+    .stroke({ width: 1.2, color: 0xfacc15, alpha: 0.75 });
+
+  // 7. Lush Isometric Corner Shrub Planters on West & East Diamond Points
+  plaza.circle(cx - rx + 11, cy, 5.5).fill({ color: 0x22c55e, alpha: 0.95 }).stroke({ width: 1.2, color: 0x14532d });
+  plaza.circle(cx + rx - 11, cy, 5.5).fill({ color: 0x16a34a, alpha: 0.95 }).stroke({ width: 1.2, color: 0x14532d });
+
+  return plaza;
 }
 
 function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation = 0, buildingState = null, onCollect = null }) {
@@ -1358,16 +1433,20 @@ function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation 
 
   const status = buildingState ? collectStatus(buildingState, def) : { ready: false };
 
-  // Isometric Diamond Ground Aura (NO square card box!)
+  // 3D Isometric Diamond Plaza Pad under the building (aligns the 2:1 diamond building flush with the city block!)
+  const isoPlaza = drawIsoBuildingPlaza(w, h, status.ready, def.colorA || 0x38bdf8);
+  isoPlaza.zIndex = 2;
+  c.addChild(isoPlaza);
+
+  // Subtle Pulsing Isometric Aura Ring
   const aura = new PIXI.Graphics();
   const auraColor = status.ready ? 0x35e58a : 0x38bdf8;
   aura.poly([
-    w / 2, h + 14,
-    w + 18, h / 2 + 8,
-    w / 2, -4,
-    -18, h / 2 + 8
-  ]).fill({ color: auraColor, alpha: status.ready ? 0.22 : 0.08 })
-    .stroke({ width: status.ready ? 2.5 : 1.2, color: auraColor, alpha: status.ready ? 0.78 : 0.28 });
+    w / 2, h + 22,
+    w + 22, h / 2 + 16,
+    w / 2, -6,
+    -22, h / 2 + 16
+  ]).stroke({ width: status.ready ? 2.8 : 1.4, color: auraColor, alpha: status.ready ? 0.85 : 0.32 });
   aura.zIndex = 4;
   c.addChild(aura);
 
@@ -1379,7 +1458,7 @@ function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation 
   rigRoot.zIndex = 10;
   c.addChild(rigRoot);
 
-  const spriteSize = Math.max(156, w * 1.32, h * 1.32);
+  const spriteSize = Math.max(162, w * 1.36, h * 1.36);
   const art = assetSprite(buildingAssetForKey(type, name, buildingState?.level || 1), 0, 0, spriteSize, spriteSize, 1);
   if (art) {
     art.zIndex = 10;
@@ -1391,8 +1470,8 @@ function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation 
 
   const labelPlate = new PIXI.Container();
   labelPlate.zIndex = 30;
-  labelPlate.addChild(roundRect(8, h - 2, w - 16, 20, 10, { color: 0x04111d, alpha: 0.88 }, { width: 1.5, color: status.ready ? 0x35e58a : 0x38bdf8, alpha: 0.82 }));
-  labelPlate.addChild(textLabel(name || def.shortName, w / 2, h + 8, 9.5, 0xf8fafc));
+  labelPlate.addChild(roundRect(8, h + 2, w - 16, 20, 10, { color: 0x04111d, alpha: 0.90 }, { width: 1.5, color: status.ready ? 0x35e58a : 0x38bdf8, alpha: 0.86 }));
+  labelPlate.addChild(textLabel(name || def.shortName, w / 2, h + 12, 9.5, 0xf8fafc));
   c.addChild(labelPlate);
 
   const animRecord = {
@@ -1419,23 +1498,9 @@ function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation 
   return c;
 }
 
-const VEHICLE_WHEEL_LAYOUT = {
-  compactCar: { wheelKey: 'wheelSport', rearX: -27, frontX: 27, wheelY: 13, size: 15 },
-  blueCar: { wheelKey: 'wheelGold', rearX: -26, frontX: 27, wheelY: 13, size: 15.5 },
-  yellowCar: { wheelKey: 'wheelSport', rearX: -27, frontX: 27, wheelY: 13, size: 15.5 },
-  rallyCar: { wheelKey: 'wheelGold', rearX: -26, frontX: 27, wheelY: 13, size: 15.5 },
-  jdmGtCoupe: { wheelKey: 'wheelSport', rearX: -26, frontX: 27, wheelY: 13, size: 15.5 },
-  greenTruck: { wheelKey: 'wheelTruck', rearX: -30, frontX: 30, wheelY: 14, size: 20 },
-  naMuscle: { wheelKey: 'wheelSport', rearX: -27, frontX: 28, wheelY: 13, size: 16 },
-  bajaSuv: { wheelKey: 'wheelTruck', rearX: -27, frontX: 28, wheelY: 14, size: 19 },
-  towTruck: { wheelKey: 'wheelTruck', rearX: -25, frontX: 31, wheelY: 14.5, size: 17.5 },
-  deliveryVan: { wheelKey: 'wheelTruck', rearX: -27, frontX: 28, wheelY: 14, size: 16.5 },
-  superCar: { wheelKey: 'wheelSport', rearX: -27, frontX: 27, wheelY: 13, size: 16 }
-};
-
 function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', truck = false, assetKey = 'compactCar', towTargetKey = '' }) {
-  const bodyW = truck ? 62 : 54;
-  const bodyH = truck ? 31 : 27;
+  const bodyW = truck ? 64 : 56;
+  const bodyH = truck ? 44 : 38;
   const car = new PIXI.Container();
   car.sortableChildren = true;
   const wheels = [];
@@ -1443,11 +1508,24 @@ function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', 
   chassis.sortableChildren = true;
   car.addChild(chassis);
 
-  // Preserve exact 2:1 aspect ratio of our 320x160 cutout vehicle sprites
-  const spriteW = bodyW * 1.92;
-  const spriteH = spriteW * 0.5;
-  const art = assetSprite(vehicleAssetForKey(assetKey), 0, 0, spriteW, spriteH, 1);
+  // 1. Subtle Warm Headlight Ground Glow Cone in front of the 3D Isometric Vehicle
+  const headlightBeam = new PIXI.Graphics();
+  headlightBeam.poly([
+    18, 4,
+    56, -8,
+    56, 22
+  ]).fill({ color: 0xfef08a, alpha: 0.16 });
+  headlightBeam.zIndex = 2;
+  chassis.addChild(headlightBeam);
+
+  // 2. True 30° Elevated 3D Isometric Vehicle Render (280x200 1.4:1 aspect ratio)
+  // Raw spritesheet faces SW (bottom-left); mirror horizontally (scale.x < 0) and rotate -0.44 rad (-25°) so Eastbound faces straight right (+X) with full 3D roof/hood visibility!
+  const spriteW = bodyW * 1.54;
+  const spriteH = spriteW * (200 / 280);
+  const art = assetSprite(vehicleAssetForKey(assetKey), 0, -2, spriteW, spriteH, 1);
   if (art) {
+    art.scale.x = -Math.abs(art.scale.x);
+    art.rotation = -0.44;
     art.zIndex = 10;
     chassis.addChild(art);
   } else {
@@ -1456,26 +1534,15 @@ function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', 
     chassis.addChild(roundRect(-bodyW / 2 + 8, -bodyH / 2 + 4, bodyW - 24, bodyH - 8, 5, accent, { width: 2, color: 0x172033 }));
   }
 
-  // Subtle rotating spoke-spin overlay aligned to each vehicle's wheel wells
-  const wheelSpec = VEHICLE_WHEEL_LAYOUT[assetKey] || VEHICLE_WHEEL_LAYOUT.compactCar;
-  [wheelSpec.rearX, wheelSpec.frontX].forEach((wx) => {
-    const spinRing = new PIXI.Graphics();
-    const r = wheelSpec.size * 0.36;
-    spinRing.circle(0, 0, r).stroke({ width: 1.4, color: 0xf8fafc, alpha: 0.45 });
-    for (let s = 0; s < 3; s++) {
-      const a = (s * Math.PI) / 3;
-      spinRing.moveTo(Math.cos(a) * -r, Math.sin(a) * -r).lineTo(Math.cos(a) * r, Math.sin(a) * r).stroke({ width: 1.5, color: 0xe2e8f0, alpha: 0.58 });
-    }
-    spinRing.x = wx;
-    spinRing.y = wheelSpec.wheelY;
-    spinRing.zIndex = 20;
-    chassis.addChild(spinRing);
-    wheels.push(spinRing);
-  });
+  // 3. Animated Exhaust Vapor Puff behind rear bumper
+  const exhaustPuff = circle(-spriteW * 0.36, 4, 4.5, { color: 0xe2e8f0, alpha: 0.32 });
+  exhaustPuff.zIndex = 8;
+  chassis.addChild(exhaustPuff);
+  car._exhaustPuff = exhaustPuff;
 
   if (assetKey === 'towTruck') {
-    const strobeRed = circle(10, -17, 4.5, { color: 0xef4444, alpha: 0.85 });
-    const strobeAmber = circle(15, -17, 4.5, { color: 0xfacc15, alpha: 0.85 });
+    const strobeRed = circle(6, -16, 4.5, { color: 0xef4444, alpha: 0.90 });
+    const strobeAmber = circle(12, -14, 4.5, { color: 0xfacc15, alpha: 0.90 });
     strobeRed.zIndex = 28;
     strobeAmber.zIndex = 28;
     chassis.addChild(strobeRed);
@@ -1484,17 +1551,21 @@ function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', 
 
     if (towTargetKey) {
       const towCable = new PIXI.Graphics();
-      towCable.moveTo(-36, -6).lineTo(-64, 4).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.95 });
+      towCable.moveTo(-32, 0).lineTo(-58, 6).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.95 });
       towCable.zIndex = 8;
       chassis.addChild(towCable);
 
       const towed = new PIXI.Container();
-      towed.x = -88;
-      towed.y = -2;
-      towed.rotation = 0.14;
+      towed.x = -76;
+      towed.y = 2;
+      towed.rotation = 0.06;
       towed.zIndex = 9;
-      const towedArt = assetSprite(vehicleAssetForKey(towTargetKey), 0, 0, 92, 46, 0.98);
-      if (towedArt) towed.addChild(towedArt);
+      const towedArt = assetSprite(vehicleAssetForKey(towTargetKey), 0, 0, 78, 56, 0.98);
+      if (towedArt) {
+        towedArt.scale.x = -Math.abs(towedArt.scale.x);
+        towedArt.rotation = -0.44;
+        towed.addChild(towedArt);
+      }
       chassis.addChild(towed);
     }
   }
@@ -2171,6 +2242,9 @@ function publishWorldOpenState() {
     fixedBuildingCount: CITY_BUILDINGS.length,
     readyBuildingCount: collectReadyCount(),
     poorBuildingCount: problemBuildings(null, true).length,
+    unlockedPlotCount: unlockedPlotCount(),
+    totalPlotCount: TOWN_EXPANSION_PLOTS.length,
+    unlockedPlots: { ...unlockedTownPlots },
     selectedBuildingTarget,
     selectedResidentKey,
     selectedResidentMenu,
@@ -2209,18 +2283,20 @@ function updateHud() {
   const confirm = document.querySelector('[data-confirm-row]');
   const syncTotal = document.querySelector('[data-build-sync-total]');
   const syncLines = document.querySelector('[data-build-sync-lines]');
+  const expandCount = document.querySelector('[data-town-expansion-count]');
   const hud = document.querySelector('.mobileCityHud');
   if (hud) {
     hud.classList.toggle('build-mode', mode !== 'normal');
     if (mode !== 'normal') hud.classList.remove('building-open', 'resident-open');
   }
   if (badge) badge.textContent = mode === 'placing' ? 'Build Mode' : mode === 'moving' ? 'Move Mode' : 'Normal';
-  if (help) help.textContent = mode === 'normal' ? 'Tap buildings to collect, inspect, and upgrade. Build mode places owned buildings.' : mode === 'placing' ? 'Tap a green cell to preview placement.' : 'Tap a green cell to preview the new location.';
+  if (help) help.textContent = mode === 'normal' ? 'Tap buildings to collect, inspect, and upgrade. Tap frontier plots to expand town.' : mode === 'placing' ? 'Tap a green cell to preview placement.' : 'Tap a green cell to preview the new location.';
   if (tray) tray.hidden = mode === 'normal';
   if (sheet && mode !== 'normal') sheet.hidden = true;
   if (residentSheet && mode !== 'normal') residentSheet.hidden = true;
   if (confirm) confirm.hidden = !pendingPlacement;
   if (syncTotal) syncTotal.textContent = `+${totalSyncedWorldInventory()} world`;
+  if (expandCount) expandCount.textContent = `${unlockedPlotCount()}/${TOWN_EXPANSION_PLOTS.length}`;
   if (syncLines) {
     const sync = getBuildSync();
     syncLines.textContent = `${sync?.unlockedLineCount || 0}/${sync?.totalLineCount || 0} linked supplies`;
@@ -2316,6 +2392,159 @@ function rebuildPlacements() {
   }
 }
 
+// Expandable Town Unlockable Frontier Plots (Simpsons: Tapped Out / SimCity BuildIt / Town City style)
+function rebuildExpansions() {
+  if (!world) return;
+  if (expansionLayer) expansionLayer.destroy({ children: true });
+  expansionLayer = new PIXI.Container();
+  expansionLayer.sortableChildren = true;
+  expansionLayer.zIndex = 3200;
+  world.addChild(expansionLayer);
+  expansionAnims = [];
+
+  TOWN_EXPANSION_PLOTS.forEach((plot, idx) => {
+    const unlocked = isPlotUnlocked(plot.id);
+    const node = new PIXI.Container();
+    node.sortableChildren = true;
+    node.x = plot.x;
+    node.y = plot.y;
+    node.zIndex = plot.y + 50;
+
+    const cx = plot.w / 2;
+    const cy = plot.h / 2;
+    const rx = plot.w * 0.48;
+    const ry = plot.h * 0.44;
+
+    if (!unlocked) {
+      // Locked Frontier Land Plot: 3D Isometric Surveyed Parcel with Dashed Boundary & "EXPAND TOWN" Billboard
+      const g = new PIXI.Graphics();
+      // Shaded uncultivated frontier turf diamond
+      g.poly([
+        cx, cy - ry,
+        cx + rx, cy,
+        cx, cy + ry,
+        cx - rx, cy
+      ]).fill({ color: 0x0f241d, alpha: 0.68 })
+        .stroke({ width: 2.5, color: 0xfacc15, alpha: 0.88 });
+
+      // Inner surveyor grid diamond
+      g.poly([
+        cx, cy - ry * 0.72,
+        cx + rx * 0.72, cy,
+        cx, cy + ry * 0.72,
+        cx - rx * 0.72, cy
+      ]).stroke({ width: 1.4, color: plot.color || 0x38bdf8, alpha: 0.55 });
+
+      // 4 Isometric Corner Surveyor Stakes
+      for (const [sx, sy] of [[cx, cy - ry], [cx + rx, cy], [cx, cy + ry], [cx - rx, cy]]) {
+        g.roundRect(sx - 3, sy - 9, 6, 12, 2).fill({ color: 0xfacc15 }).stroke({ width: 1, color: 0x0f172a });
+        g.circle(sx, sy - 10, 3.5).fill({ color: 0xef4444 });
+      }
+      node.addChild(g);
+
+      // Floating 3D "EXPAND TOWN" Interactive Signboard
+      const sign = new PIXI.Container();
+      sign.x = cx;
+      sign.y = cy;
+      sign.zIndex = 20;
+      sign.addChild(roundRect(-74, -27, 148, 54, 12, { color: 0x06131d, alpha: 0.94 }, { width: 2, color: 0xfacc15, alpha: 0.96 }));
+      sign.addChild(roundRect(-64, -22, 128, 15, 7, { color: plot.color || 0x38bdf8, alpha: 0.24 }));
+      sign.addChild(textLabel(`LOCKED · ${plot.name.toUpperCase()}`, 0, -14.5, 7.5, 0xfef08a));
+      sign.addChild(textLabel(plot.bonus, 0, 1, 8, 0xe2e8f0));
+      sign.addChild(roundRect(-54, 10, 108, 14, 7, { color: 0x35e58a, alpha: 0.92 }));
+      sign.addChild(textLabel(`TAP TO EXPAND (${plot.cost}G)`, 0, 17, 7.2, 0x052e16));
+      node.addChild(sign);
+
+      makeClickable(node, () => window.unlockTownPlotSafe?.(plot.id));
+      expansionAnims.push({ sign, baseY: cy, phase: idx * 1.3 });
+    } else {
+      // Unlocked 3D Isometric Developed District Plaza!
+      const plaza = drawIsoBuildingPlaza(plot.w, plot.h, true, plot.color || 0x35e58a);
+      node.addChild(plaza);
+
+      // 3D Isometric VIP Showcase Turntable + Unlocked Fleet Vehicles on the Expanded District Plaza
+      const turntable = new PIXI.Graphics();
+      turntable.ellipse(cx, cy - 2, 46, 23).fill({ color: 0x0f172a, alpha: 0.92 }).stroke({ width: 2, color: plot.color || 0x35e58a, alpha: 0.88 });
+      turntable.ellipse(cx, cy - 2, 34, 17).stroke({ width: 1.2, color: 0xfacc15, alpha: 0.55 });
+      node.addChild(turntable);
+
+      const showcaseKeys = {
+        harborPier: ['blueCar', 'rallyCar'],
+        techLogistics: ['superCar', 'deliveryVan'],
+        salvageAnnex: ['towTruck', 'greenTruck'],
+        autoMallPlaza: ['naMuscle', 'superCar'],
+        motorsportPark: ['jdmGtCoupe', 'rallyCar']
+      }[plot.id] || ['blueCar', 'naMuscle'];
+
+      const carL = assetSprite(vehicleAssetForKey(showcaseKeys[0]), cx - 22, cy - 6, 78, 56, 1);
+      const carR = assetSprite(vehicleAssetForKey(showcaseKeys[1]), cx + 24, cy + 4, 78, 56, 1);
+      if (carL) node.addChild(carL);
+      if (carR) node.addChild(carR);
+
+      // Decorative Lush Trees on the Newly Expanded Plaza
+      const treeL = assetSprite(WORLD_ASSETS.props.tree, cx - rx * 0.62, cy - 10, 52, 62, 1);
+      const treeR = assetSprite(WORLD_ASSETS.props.tree, cx + rx * 0.62, cy - 10, 52, 62, 1);
+      if (treeL) node.addChild(treeL);
+      if (treeR) node.addChild(treeR);
+
+      const badge = new PIXI.Container();
+      badge.x = cx;
+      badge.y = cy + ry * 0.54;
+      badge.zIndex = 25;
+      badge.addChild(roundRect(-78, -12, 156, 24, 12, { color: 0x04111d, alpha: 0.94 }, { width: 1.8, color: 0x35e58a, alpha: 0.95 }));
+      badge.addChild(textLabel(`UNLOCKED · ${plot.name.toUpperCase()}`, 0, -4, 7.2, 0x8fffc2));
+      badge.addChild(textLabel(plot.bonus, 0, 5.5, 6.8, 0xfef08a));
+      node.addChild(badge);
+    }
+
+    expansionLayer.addChild(node);
+  });
+}
+
+function focusWorldPoint(wx, wy) {
+  if (!world || !app) return;
+  const viewW = app.renderer.width / app.renderer.resolution;
+  const viewH = app.renderer.height / app.renderer.resolution;
+  world.x = Math.round(viewW * 0.5 - wx);
+  world.y = Math.round(viewH * 0.5 - wy);
+  clamp();
+}
+
+window.focusTownPlotSafe = (plotId) => {
+  const plot = TOWN_EXPANSION_PLOTS.find((p) => p.id === plotId) || TOWN_EXPANSION_PLOTS[0];
+  if (!plot) return false;
+  focusWorldPoint(plot.x + plot.w / 2, plot.y + plot.h / 2);
+  return true;
+};
+
+window.unlockTownPlotSafe = (plotId) => {
+  const plot = TOWN_EXPANSION_PLOTS.find((p) => p.id === plotId);
+  if (!plot) return false;
+  if (!unlockedTownPlots[plot.id]) {
+    const purse = playerPurse();
+    if ((purse.coins || 0) >= plot.cost) {
+      purse.coins -= plot.cost;
+    }
+    unlockedTownPlots[plot.id] = true;
+    saveTownExpansions();
+    reputationCache = Math.min(100, cityReputation() + 6);
+  }
+  focusWorldPoint(plot.x + plot.w / 2, plot.y + plot.h / 2);
+  rebuildExpansions();
+  rebuildGrid();
+  updateHud();
+  return true;
+};
+
+window.unlockNextTownPlotSafe = () => {
+  const nextPlot = TOWN_EXPANSION_PLOTS.find((p) => !isPlotUnlocked(p.id));
+  if (!nextPlot) {
+    window.focusTownPlotSafe?.(TOWN_EXPANSION_PLOTS[0]?.id);
+    return false;
+  }
+  return window.unlockTownPlotSafe(nextPlot.id);
+};
+
 const CITY_ISSUE_MARKERS = {
   potholes: [
     { x: 420, y: 295 }, { x: 525, y: 589 }, { x: 420, y: 909 }, { x: 825, y: 589 }
@@ -2378,53 +2607,58 @@ function rebuildIncidents() {
 
       if (key === 'potholes') {
         activePotholePositions.push({ x: pos.x, y: pos.y });
-        const ring = circle(0, 2, 26, { color: 0xf97316, alpha: 0.14 }, { width: 2, color: 0xf97316, alpha: 0.72 });
+        const ring = new PIXI.Graphics();
+        ring.ellipse(0, 2, 22, 12).fill({ color: 0xf97316, alpha: 0.14 }).stroke({ width: 1.5, color: 0xf97316, alpha: 0.68 });
         marker.addChild(ring);
-        const crater = assetSprite(WORLD_ASSETS.props.potholeCrater, 0, 0, 66, 46, 0.98);
+        const crater = assetSprite(WORLD_ASSETS.props.potholeCrater, 0, 0, 56, 38, 0.98);
         if (crater) marker.addChild(crater);
 
         const badge = new PIXI.Container();
-        badge.y = -24;
-        badge.addChild(roundRect(-34, -9, 68, 18, 9, { color: 0x04111d, alpha: 0.90 }, { width: 1.5, color: 0xf97316, alpha: 0.9 }));
-        badge.addChild(textLabel(`POTHOLE ${condition.score}%`, 0, 0, 7.5, 0xfed7aa));
+        badge.y = -22;
+        badge.addChild(roundRect(-32, -8, 64, 16, 8, { color: 0x04111d, alpha: 0.90 }, { width: 1.2, color: 0xf97316, alpha: 0.9 }));
+        badge.addChild(textLabel(`POTHOLE ${condition.score}%`, 0, 0, 7, 0xfed7aa));
         marker.addChild(badge);
         incidentAnims.push({ type: 'pothole', marker, ring, phase: i * 1.4 });
       } else if (key === 'vehicleBreakdowns' || key === 'stuckVehicles') {
-        const ring = circle(0, 0, 38, { color: 0xef4444, alpha: 0.12 }, { width: 2, color: 0xfacc15, alpha: 0.75 });
+        const ring = new PIXI.Graphics();
+        ring.ellipse(0, 4, 34, 16).fill({ color: 0xef4444, alpha: 0.10 }).stroke({ width: 1.5, color: 0xfacc15, alpha: 0.65 });
         marker.addChild(ring);
 
         const towRig = new PIXI.Container();
-        towRig.x = -28;
+        towRig.x = -24;
         towRig.y = -2;
-        const towArt = assetSprite(WORLD_ASSETS.vehicles.towTruck, 0, 0, 84, 42, 1);
-        if (towArt) towRig.addChild(towArt);
-        const strobe = circle(8, -14, 5, { color: 0xfacc15, alpha: 0.95 });
+        const towArt = assetSprite(WORLD_ASSETS.vehicles.towTruck, 0, 0, 72, 50, 1);
+        if (towArt) {
+          towArt.rotation = 0.44;
+          towRig.addChild(towArt);
+        }
+        const strobe = circle(6, -12, 4, { color: 0xfacc15, alpha: 0.95 });
         towRig.addChild(strobe);
         marker.addChild(towRig);
 
         const winchCable = new PIXI.Graphics();
-        winchCable.moveTo(-4, -6).lineTo(16, 2).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.95 });
+        winchCable.moveTo(-2, -2).lineTo(14, 2).stroke({ width: 2, color: 0xfacc15, alpha: 0.95 });
         marker.addChild(winchCable);
 
         const broken = new PIXI.Container();
-        broken.x = 28;
+        broken.x = 24;
         broken.y = 2;
-        broken.rotation = -0.10;
-        const brokenArt = assetSprite(WORLD_ASSETS.props.brokenCar, 0, 0, 72, 42, 1);
+        broken.rotation = -0.06;
+        const brokenArt = assetSprite(WORLD_ASSETS.props.brokenCar, 0, 0, 64, 38, 1);
         if (brokenArt) broken.addChild(brokenArt);
-        const hazardLight = circle(-22, 2, 4, { color: 0xf97316, alpha: 0.95 });
+        const hazardLight = circle(-18, 2, 3.5, { color: 0xf97316, alpha: 0.95 });
         broken.addChild(hazardLight);
         marker.addChild(broken);
 
-        const smokeA = circle(16, -12, 6, { color: 0xcbd5e1, alpha: 0.65 });
-        const smokeB = circle(22, -20, 8, { color: 0x94a3b8, alpha: 0.45 });
+        const smokeA = circle(14, -10, 5, { color: 0xcbd5e1, alpha: 0.65 });
+        const smokeB = circle(19, -18, 7, { color: 0x94a3b8, alpha: 0.45 });
         marker.addChild(smokeA);
         marker.addChild(smokeB);
 
         const badge = new PIXI.Container();
-        badge.y = -28;
-        badge.addChild(roundRect(-38, -9, 76, 18, 9, { color: 0x04111d, alpha: 0.92 }, { width: 1.5, color: 0xfacc15, alpha: 0.92 }));
-        badge.addChild(textLabel(`TOW OPS · ${condition.score}%`, 0, 0, 7.5, 0xfef08a));
+        badge.y = -26;
+        badge.addChild(roundRect(-36, -8, 72, 16, 8, { color: 0x04111d, alpha: 0.92 }, { width: 1.2, color: 0xfacc15, alpha: 0.92 }));
+        badge.addChild(textLabel(`TOW OPS · ${condition.score}%`, 0, 0, 7, 0xfef08a));
         marker.addChild(badge);
 
         incidentAnims.push({
@@ -2440,14 +2674,14 @@ function rebuildIncidents() {
           phase: i * 1.9
         });
       } else {
-        const ring = circle(0, 0, 22, { color: issueColor(key), alpha: 0.22 }, { width: 2, color: issueColor(key), alpha: 0.72 });
+        // Sleek Isometric Roadside Alert Pill + Traffic Cone (no giant flat circle!)
+        const ring = new PIXI.Graphics();
+        ring.ellipse(0, 6, 18, 9).fill({ color: issueColor(key), alpha: 0.18 }).stroke({ width: 1.5, color: issueColor(key), alpha: 0.75 });
         marker.addChild(ring);
-        const cone = assetSprite(WORLD_ASSETS.props.roadCone, -16, 4, 20, 24, 0.95);
+        const cone = assetSprite(WORLD_ASSETS.props.roadCone, -14, 2, 18, 22, 0.98);
         if (cone) marker.addChild(cone);
-        marker.addChild(circle(0, 0, 17, { color: issueColor(key), alpha: 0.88 }, { width: 2.5, color: 0xffffff, alpha: 0.65 }));
-        marker.addChild(textLabel(issueShortLabel(key), 0, -1, 7.5, 0xffffff));
-        marker.addChild(roundRect(-25, 20, 50, 15, 7, { color: 0x04111d, alpha: 0.86 }, { width: 1, color: 0x9fe8ff, alpha: 0.55 }));
-        marker.addChild(textLabel(`${condition.score}%`, 0, 27.5, 7, 0xffffff));
+        marker.addChild(roundRect(-28, -12, 56, 18, 9, { color: 0x04111d, alpha: 0.92 }, { width: 1.5, color: issueColor(key), alpha: 0.92 }));
+        marker.addChild(textLabel(`${issueShortLabel(key)} ${condition.score}%`, 2, -3, 7, 0xf8fafc));
         incidentAnims.push({ type: 'signal', marker, ring, phase: i * 1.1 });
       }
 
@@ -2458,6 +2692,7 @@ function rebuildIncidents() {
 }
 
 function rebuildGrid() {
+  if (!world) return;
   if (gridLayer) gridLayer.destroy({ children: true });
   gridLayer = new PIXI.Container();
   gridLayer.zIndex = 5000;
@@ -3161,17 +3396,19 @@ function buildWorld() {
   app.stage.addChild(world);
   fixedLayer = null;
   placementLayer = null;
+  expansionLayer = null;
   incidentLayer = null;
   gridLayer = null;
   ghostLayer = null;
   animatedTrees = [];
   loadPlaced();
   loadFixedBuildingStates();
+  loadTownExpansions();
   drawGround();
   drawRoads();
   rebuildFixedBuildings();
 
-  // Top Asian Market & Top North American Market Fleet with Real Spinning Tires
+  // Top Asian Market & Top North American Market 3D Isometric Fleet
   addTraffic(pathH(0, 'east'), { color: 0x60a5fa, accent: 0xdbeafe, direction: 'east', speed: 88, scale: 0.78, assetKey: 'blueCar' }); // Asian Bayside Blue GT-Apex
   addTraffic(pathH(0, 'west'), { color: 0x4ade80, accent: 0xe0f2fe, direction: 'west', truck: true, speed: 74, scale: 0.80, assetKey: 'greenTruck' }); // NA 4x4 Baja Raptor Pickup
   addTraffic(pathH(0, 'east'), { color: 0xf43f5e, accent: 0xfef3c7, direction: 'east', speed: 94, scale: 0.78, assetKey: 'naMuscle' }); // NA Crimson V8 Muscle
@@ -3228,6 +3465,7 @@ function buildWorld() {
   ghostLayer = new PIXI.Container();
   ghostLayer.zIndex = 4500;
   world.addChild(ghostLayer);
+  rebuildExpansions();
   rebuildPlacements();
   rebuildIncidents();
   rebuildGrid();
@@ -3319,15 +3557,21 @@ async function mount(host) {
         item.sprite._chassis.y = Math.sin(item.d * 0.24) * 0.85;
         item.sprite._chassis.rotation = potholeTilt;
       }
-      if (item.sprite._wheels) {
-        for (const wheel of item.sprite._wheels) {
-          wheel.rotation += item.speed * dt * 0.14;
-        }
+      if (item.sprite._exhaustPuff) {
+        const puffPhase = (item.d * 0.06) % 1;
+        item.sprite._exhaustPuff.alpha = (1 - puffPhase) * 0.35;
+        item.sprite._exhaustPuff.scale.set(0.6 + puffPhase * 0.9);
       }
       if (item.sprite._strobes) {
         const flash = Math.sin(worldAnimClock * 14) > 0;
         if (item.sprite._strobes[0]) item.sprite._strobes[0].alpha = flash ? 1 : 0.2;
         if (item.sprite._strobes[1]) item.sprite._strobes[1].alpha = flash ? 0.2 : 1;
+      }
+    }
+
+    for (const exp of expansionAnims) {
+      if (exp.sign) {
+        exp.sign.y = exp.baseY + Math.sin(worldAnimClock * 2.8 + exp.phase) * 3.5;
       }
     }
 
