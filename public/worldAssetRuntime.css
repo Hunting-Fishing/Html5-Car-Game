@@ -3179,5 +3179,680 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
   font-weight: 900 !important;
 }
 
+/* ==========================================================================
+   UNIFIED MOBILE GAME FLOATING GUI & READABLE 4-TAB INSPECTORS
+   (Clash of Clans / SimCity BuildIt / RCT Touch / Kingshot Style)
+   ========================================================================== */
+
+/* 1. Maximize 3D World Viewport — Hide Bulky Legacy Banners */
+#screen-world .pixiWorldHeader,
+#screen-world .mobileCityStatus {
+  display: none !important;
+}
+
+#screen-world .worldCard {
+  padding: 4px !important;
+  overflow: hidden !important;
+}
+
+#screen-world .pixiWorldStage {
+  height: 100% !important;
+  min-height: 520px !important;
+  border-radius: 18px !important;
+}
+
+/* 2. Floating Top Status & Camera Pills */
+#screen-world .worldFloatingTopHud {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  z-index: 30;
+  pointer-events: none;
+}
+
+#screen-world .worldTopStatsPill,
+#screen-world .worldTopCameraPill {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(6, 24, 40, 0.92), rgba(3, 12, 22, 0.96));
+  border: 1.5px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+#screen-world .worldTopStatsPill {
+  cursor: pointer;
+}
+
+#screen-world .worldTopStatsPill strong {
+  color: #4ade80;
+  font-size: 12.5px;
+  font-weight: 1000;
+}
+
+#screen-world .worldTopStatsPill .wtDivider {
+  color: rgba(148, 163, 184, 0.5);
+}
+
+#screen-world .worldTopCameraPill {
+  padding: 3px 5px;
+  gap: 4px;
+}
+
+#screen-world .wtCamBtn {
+  min-height: 28px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, 0.3);
+  background: rgba(14, 48, 74, 0.85);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#screen-world .wtCamBtn:hover {
+  background: rgba(2, 132, 199, 0.9);
+}
+
+/* 3. Floating Bottom 5-Button Mobile Game Dock */
+#screen-world .mobileCityHud:not(.building-open):not(.vehicle-open):not(.resident-open):not(.build-mode) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+#screen-world .mobileBottomGameDock {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  z-index: 32;
+  pointer-events: auto;
+}
+
+/* Hide bottom dock cleanly whenever an inspector sheet or build mode is open */
+#screen-world .mobileCityHud.building-open .mobileBottomGameDock,
+#screen-world .mobileCityHud.vehicle-open .mobileBottomGameDock,
+#screen-world .mobileCityHud.resident-open .mobileBottomGameDock,
+#screen-world .mobileCityHud.build-mode .mobileBottomGameDock {
+  display: none !important;
+}
+
+#screen-world .mGameDockBtn,
+#screen-world .mDockBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 54px;
+  padding: 6px 4px;
+  border-radius: 15px;
+  background: linear-gradient(180deg, rgba(12, 46, 72, 0.95) 0%, rgba(4, 18, 30, 0.98) 100%);
+  border: 2px solid rgba(56, 189, 248, 0.55);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+#screen-world .mGameDockBtn.accent,
+#screen-world .mDockBtn.dock-build {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  border-color: #fde68a;
+  color: #1e1100;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+#screen-world .mDockIcon {
+  font-size: 19px;
+  line-height: 1;
+}
+
+#screen-world .mDockLabel,
+#screen-world .mDockBtn b {
+  font-size: 11.5px;
+  font-weight: 1000;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+#screen-world .mDockBtn b small {
+  font-size: 10px;
+  color: #7dd3fc;
+}
+
+/* 4. Unified Mobile Game Inspector Sheet Container (Zero Scroll, Big Text) */
+#screen-world .mobilePlacedSheet,
+#screen-world .mobileVehicleSheet,
+#screen-world .mobileResidentSheet {
+  max-height: none !important;
+  overflow: hidden !important;
+  padding: 10px 12px !important;
+  border-radius: 20px !important;
+  background: linear-gradient(180deg, rgba(7, 30, 48, 0.98) 0%, rgba(3, 13, 23, 0.99) 100%) !important;
+  border: 2px solid rgba(56, 189, 248, 0.55) !important;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.68), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+#screen-world .mgInspectorWindow {
+  display: grid !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+}
+
+/* 5. Clean Mobile Game Header Row */
+#screen-world .mgInspectorWindow .residentWindowHeader {
+  display: grid !important;
+  grid-template-columns: 34px 50px 1fr auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 7px 9px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, rgba(14, 54, 84, 0.92), rgba(5, 20, 35, 0.96)) !important;
+  border: 1.5px solid rgba(125, 211, 252, 0.32) !important;
+}
+
+#screen-world .mgInspectorWindow .inspectorCycleBtn {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 1000 !important;
+}
+
+#screen-world .mgInspectorWindow .personHeroFrame,
+#screen-world .mgInspectorWindow .vehiclePaintSwatch {
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 13px !important;
+}
+
+#screen-world .mgInspectorWindow .personHeaderAvatar {
+  width: 44px !important;
+  height: 44px !important;
+  object-fit: contain !important;
+}
+
+#screen-world .mgInspectorWindow .vehiclePaintSwatch span {
+  font-size: 13px !important;
+  font-weight: 1000 !important;
+}
+
+#screen-world .mgInspectorWindow .vehiclePaintSwatch small {
+  font-size: 9.5px !important;
+  font-weight: 900 !important;
+}
+
+#screen-world .mgInspectorWindow .residentKicker,
+#screen-world .mgInspectorWindow .personStatusBadge {
+  font-size: 10px !important;
+  padding: 2px 7px !important;
+  font-weight: 900 !important;
+}
+
+#screen-world .mgInspectorWindow .personTitleName {
+  font-size: 15.5px !important;
+  font-weight: 1000 !important;
+  line-height: 1.15 !important;
+  color: #ffffff !important;
+}
+
+#screen-world .mgInspectorWindow .personWorkplaceLine {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: #bae6fd !important;
+}
+
+#screen-world .mgInspectorWindow .buildingCloseX {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  background: rgba(239, 68, 68, 0.22) !important;
+  border: 1.5px solid rgba(248, 113, 113, 0.5) !important;
+  color: #fecaca !important;
+}
+
+/* 6. Clean Single-Line 4-Tab Bar */
+#screen-world .mgInspectorWindow .residentTabBar {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+}
+
+#screen-world .mgInspectorWindow .residentTab {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  min-height: 36px !important;
+  padding: 6px 8px !important;
+  border-radius: 12px !important;
+  background: rgba(8, 30, 48, 0.9) !important;
+  border: 1.5px solid rgba(125, 211, 252, 0.24) !important;
+  color: #bae6fd !important;
+}
+
+#screen-world .mgInspectorWindow .residentTab.active {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%) !important;
+  border-color: #7dd3fc !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4) !important;
+}
+
+#screen-world .mgInspectorWindow .residentTab b {
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+
+#screen-world .mgInspectorWindow .residentTab span {
+  font-size: 12.5px !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* 7. Unified Tab Content Cards, Grids & Big Tactile Buttons */
+#screen-world .mgTabPane,
+#screen-world .buildingTabPane {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+#screen-world .mgHeroCard {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(12, 48, 76, 0.92), rgba(5, 20, 34, 0.96));
+  border: 1.5px solid rgba(56, 189, 248, 0.36);
+}
+
+#screen-world .mgHeroCard:has(> .mgHeroRight) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#screen-world .mgHeroCard.is-ready,
+#screen-world .mgHeroCard.is-hired,
+#screen-world .mgHeroCard.tone-ready {
+  border-color: rgba(74, 222, 128, 0.65);
+}
+
+#screen-world .mgHeroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#screen-world .mgHeroLeft {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+#screen-world .mgHeroLabel,
+#screen-world .mgKicker {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #7dd3fc;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+#screen-world .mgHeroValue,
+#screen-world .mgBigVal {
+  font-size: 16px;
+  font-weight: 1000;
+  color: #ffffff;
+  line-height: 1.15;
+}
+
+#screen-world .mgBigVal small {
+  font-size: 12px;
+  color: #86efac;
+  font-weight: 800;
+}
+
+#screen-world .mgHeroSub,
+#screen-world .mgSubText {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+#screen-world .mgHeroBadge {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+#screen-world .mgHeroBadge span {
+  font-size: 10.5px;
+  color: #93c5fd;
+  font-weight: 800;
+}
+
+#screen-world .mgHeroBadge b {
+  font-size: 12px;
+  color: #fef08a;
+  font-weight: 1000;
+}
+
+#screen-world .mgHeroRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+#screen-world .mgBadgePill {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.2);
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  color: #e0f2fe;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+#screen-world .mgBadgePill.gold {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: #fbbf24;
+  color: #fef08a;
+}
+
+#screen-world .mgBadgePill.ok {
+  background: rgba(34, 197, 94, 0.24);
+  border-color: #4ade80;
+  color: #bbf7d0;
+}
+
+#screen-world .mgBadgePill.warn {
+  background: rgba(239, 68, 68, 0.24);
+  border-color: #f87171;
+  color: #fecaca;
+}
+
+#screen-world .mgProgressBar,
+#screen-world .mgMiniBar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(2, 10, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+
+#screen-world .mgProgressBar i,
+#screen-world .mgMiniBar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38bdf8 0%, #35e58a 60%, #facc15 100%);
+}
+
+/* Stat Grids */
+#screen-world .mgStatGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+#screen-world .mgStatGrid.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#screen-world .mgStatBox {
+  display: grid;
+  gap: 4px;
+  padding: 8px 8px;
+  border-radius: 12px;
+  background: rgba(6, 24, 40, 0.9);
+  border: 1px solid rgba(125, 211, 252, 0.25);
+  text-align: center;
+}
+
+#screen-world .mgStatBox span {
+  font-size: 11px;
+  font-weight: 800;
+  color: #93c5fd;
+}
+
+#screen-world .mgStatBox strong {
+  font-size: 13.5px;
+  font-weight: 1000;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#screen-world .mgStatBox small {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #86efac;
+}
+
+/* Big Action Button Row */
+#screen-world .mgActionRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#screen-world .mgBigBtn {
+  flex: 1.35;
+  min-height: 40px !important;
+  padding: 8px 12px !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+  font-weight: 1000 !important;
+}
+
+#screen-world .mgCompactBtn {
+  flex: 0.85;
+  min-height: 40px !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+/* Staff Hero Row inside Building Staff Tab */
+#screen-world .mgStaffHeroCard,
+#screen-world .mgStaffRow {
+  display: grid !important;
+  grid-template-columns: 48px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  flex: 1 1 100% !important;
+}
+
+#screen-world .mgStaffAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: rgba(6, 20, 34, 0.85);
+  border: 1.5px solid rgba(125, 211, 252, 0.35);
+}
+
+#screen-world .mgStaffInfo,
+#screen-world .mgStaffMeta {
+  display: grid !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+#screen-world .mgStaffBtns {
+  display: flex !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Connected Game Mode Grid */
+#screen-world .mgModeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+#screen-world .mgModeTile {
+  display: grid;
+  gap: 2px;
+  min-height: 46px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(12, 44, 68, 0.92), rgba(5, 20, 34, 0.96));
+  border: 1.5px solid rgba(56, 189, 248, 0.32);
+  color: #ffffff;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+#screen-world .mgModeTile span {
+  font-size: 11px;
+  font-weight: 900;
+  color: #bae6fd;
+}
+
+#screen-world .mgModeTile strong {
+  font-size: 13px;
+  font-weight: 1000;
+  color: #4ade80;
+  white-space: nowrap;
+}
+
+#screen-world .mgModeTile small {
+  font-size: 10.5px;
+  color: #cbd5e1;
+}
+
+/* 3-Column Quick Switcher Pills */
+#screen-world .mgPillGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+#screen-world .mgPillBtn {
+  flex: 1;
+  min-height: 36px;
+  padding: 6px 8px;
+  border-radius: 11px;
+  background: rgba(8, 30, 48, 0.9);
+  border: 1.5px solid rgba(125, 211, 252, 0.25);
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#screen-world .mgPillBtn.active {
+  background: linear-gradient(180deg, #0284c7, #0369a1);
+  border-color: #7dd3fc;
+  color: #ffffff;
+}
+
+/* Readable Skill Bars, Dyno Bars, Mood Card & Chat inside Tabs */
+#screen-world .mgInspectorWindow .personSkillItem,
+#screen-world .mgInspectorWindow .vDynoBarItem {
+  padding: 7px 9px !important;
+  border-radius: 11px !important;
+}
+
+#screen-world .mgInspectorWindow .personSkillHead span,
+#screen-world .mgInspectorWindow .vDynoHead span {
+  font-size: 11.5px !important;
+  font-weight: 900 !important;
+}
+
+#screen-world .mgInspectorWindow .personSkillHead b,
+#screen-world .mgInspectorWindow .vDynoHead b {
+  font-size: 12.5px !important;
+  font-weight: 1000 !important;
+}
+
+#screen-world .mgInspectorWindow .personSkillTrack,
+#screen-world .mgInspectorWindow .vDynoTrack {
+  height: 7px !important;
+}
+
+#screen-world .mgInspectorWindow .personMoodTitleRow b {
+  font-size: 14px !important;
+}
+
+#screen-world .mgInspectorWindow .happinessBuffPill {
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+}
+
+#screen-world .mgInspectorWindow .residentMoodInfo > span {
+  font-size: 11.5px !important;
+}
+
+#screen-world .mgInspectorWindow .pillarChip {
+  font-size: 11px !important;
+  padding: 3px 8px !important;
+}
+
+#screen-world .mgInspectorWindow .npcBond b {
+  font-size: 12.5px !important;
+}
+
+#screen-world .mgInspectorWindow .npcSpeechBubble {
+  font-size: 12.5px !important;
+  padding: 8px 10px !important;
+  line-height: 1.3 !important;
+}
+
+#screen-world .mgInspectorWindow .npcReplies .btn,
+#screen-world .mgInspectorWindow .compactTalkTab .npcReplies .btn.small {
+  min-height: 34px !important;
+  padding: 6px 10px !important;
+  font-size: 11.5px !important;
+  font-weight: 900 !important;
+}
+
+#screen-world .buildingFeedbackBanner {
+  font-size: 11.5px !important;
+  padding: 5px 10px !important;
+}
+
+
+
 
 

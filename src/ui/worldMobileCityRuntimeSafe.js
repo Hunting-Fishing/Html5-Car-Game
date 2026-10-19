@@ -1621,29 +1621,62 @@ function html() {
   return `
     <section class="card pixiWorldShell worldPlayArea">
       <div class="worldRuntimeTabs subTabBar" hidden></div>
-      <div class="pixiWorldHeader worldMapPrimaryHeader">
+      <div class="pixiWorldHeader worldMapPrimaryHeader" hidden>
         <h2>World</h2>
         <p>Tap any building, car, person, or frontier plot to explore &amp; expand your 3D town.</p>
       </div>
       <div class="pixiWorldHost worldMapPrimary" id="pixiWorldHost"></div>
+      <div class="worldFloatingTopHud">
+        <div class="worldTopStatsPill" data-city-reputation>
+          <span class="wtStatChip" onclick="window.inspectResidentByKeySafe?.('residentBlue')" title="City Happiness">
+            😊 <b data-world-happy-avg>${cityNeedStats().average}%</b>
+          </span>
+          <span class="wtStatChip" title="City Reputation">
+            ⭐ <b data-city-reputation-rank>Local</b> <small data-city-reputation-score>0</small>
+            <i data-city-reputation-bar hidden></i>
+          </span>
+          <span class="wtStatChip" title="Build Sync">
+            🔗 <b data-build-sync-total>+${totalSyncedWorldInventory()}</b>
+            <small data-build-sync-lines hidden>${getBuildSync()?.unlockedLineCount || 0}/${getBuildSync()?.totalLineCount || 0}</small>
+          </span>
+        </div>
+        <div class="worldTopCameraPill">
+          <button type="button" class="wtCamBtn" data-camera-angle-btn onclick="window.toggleCityCameraAngleSafe?.()">🎥 3D</button>
+          <button type="button" class="wtCamBtn" data-zoom-in-btn onclick="window.zoomMobileCityInSafe?.()" title="Zoom In">➕</button>
+          <button type="button" class="wtCamBtn" data-zoom-out-btn onclick="window.zoomMobileCityOutSafe?.()" title="Zoom Out">➖</button>
+          <button type="button" class="wtCamBtn" onclick="window.centerMobileCitySafe?.()" title="Center Camera">🎯</button>
+        </div>
+      </div>
       <div class="worldAssetPreload" aria-hidden="true">
         ${WORLD_ASSET_LIST.map((item) => `<img class="worldAssetPreloadImage" data-world-asset="${item.category}:${item.key}" src="${item.src}" alt="" loading="eager">`).join('')}
       </div>
       <div class="mobileCityHud">
-        <div class="mobileCityStatus">
+        <div class="mobileCityStatus" hidden>
           <span class="mobileCityModeBadge" data-mobile-city-mode>Normal</span>
-          <span data-mobile-city-help>Tap buildings to collect, inspect, and upgrade.</span>
-          <div class="cityReputation" data-city-reputation><b data-city-reputation-rank>Unknown</b><span><i data-city-reputation-bar></i></span><small data-city-reputation-score>0</small></div>
-          <div class="mobileMapTools">
-            <button class="btn small primary" onclick="window.openMobileBuildTraySafe?.()">Build</button>
-            <button class="btn small gold" data-expand-town-btn onclick="window.unlockNextTownPlotSafe?.()">Expand (<span data-town-expansion-count>${unlockedPlotCount()}/${TOWN_EXPANSION_PLOTS.length}</span>)</button>
-            <button class="btn small ghost" data-camera-angle-btn onclick="window.toggleCityCameraAngleSafe?.()">3D City</button>
-            <button class="btn small ghost" data-zoom-in-btn onclick="window.zoomMobileCityInSafe?.()">Zoom +</button>
-            <button class="btn small ghost" data-zoom-out-btn onclick="window.zoomMobileCityOutSafe?.()">Zoom -</button>
-            <button class="btn small ghost" onclick="window.centerMobileCitySafe?.()">Center</button>
-          </div>
+          <span data-mobile-city-help>Tap buildings, vehicles, or people.</span>
         </div>
-        <div class="mobileBuildSyncStatus"><span>Sync</span><b data-build-sync-total>+${totalSyncedWorldInventory()} world</b><small data-build-sync-lines>${getBuildSync()?.unlockedLineCount || 0}/${getBuildSync()?.totalLineCount || 0} lines</small></div>
+        <div class="mobileBottomGameDock" data-mobile-game-dock>
+          <button type="button" class="mDockBtn dock-buildings" onclick="window.inspectFixedMobileBuildingSafe?.(0)">
+            <span class="mDockIcon">🏢</span>
+            <b>Buildings</b>
+          </button>
+          <button type="button" class="mDockBtn dock-vehicles" onclick="window.inspectMobileCityVehicleSafe?.(0)">
+            <span class="mDockIcon">🏎️</span>
+            <b>Vehicles</b>
+          </button>
+          <button type="button" class="mDockBtn dock-people" onclick="window.inspectResidentByKeySafe?.('residentBlue')">
+            <span class="mDockIcon">👷</span>
+            <b>People</b>
+          </button>
+          <button type="button" class="mDockBtn dock-build" onclick="window.openMobileBuildTraySafe?.()">
+            <span class="mDockIcon">🛠️</span>
+            <b>Build</b>
+          </button>
+          <button type="button" class="mDockBtn dock-expand" data-expand-town-btn onclick="window.unlockNextTownPlotSafe?.()">
+            <span class="mDockIcon">🗺️</span>
+            <b>Expand <small data-town-expansion-count>${unlockedPlotCount()}/${TOWN_EXPANSION_PLOTS.length}</small></b>
+          </button>
+        </div>
         <div class="mobileCityActions worldActionDock" hidden></div>
         <div class="mobileBuildTray" data-build-tray hidden>
           <div class="mobileTrayTitle mobileBuildTrayTitle">
@@ -3342,11 +3375,16 @@ function updateHud() {
   if (residentSheet && mode !== 'normal') residentSheet.hidden = true;
   if (vehicleSheet && mode !== 'normal') vehicleSheet.hidden = true;
   if (confirm) confirm.hidden = !pendingPlacement;
-  if (syncTotal) syncTotal.textContent = `+${totalSyncedWorldInventory()} world`;
+  if (syncTotal) syncTotal.textContent = `+${totalSyncedWorldInventory()}`;
   if (expandCount) expandCount.textContent = `${unlockedPlotCount()}/${TOWN_EXPANSION_PLOTS.length}`;
   if (syncLines) {
     const sync = getBuildSync();
     syncLines.textContent = `${sync?.unlockedLineCount || 0}/${sync?.totalLineCount || 0} linked supplies`;
+  }
+  const happyAvgEl = document.querySelector('[data-world-happy-avg]');
+  if (happyAvgEl) {
+    const needs = cityNeedStats();
+    happyAvgEl.textContent = `${needs.average}%`;
   }
   const repScore = cityReputation();
   const repRank = document.querySelector('[data-city-reputation-rank]');
@@ -3959,107 +3997,91 @@ function focusBuildingTargetOnMap(target) {
 }
 
 function renderBuildingOverviewTab(record, ctx) {
-  const { item, def } = record;
+  const { def } = record;
   const {
-    level, stock, health, happiness, power, tierCode,
-    yieldAmount, secYield, cycleNow, req, service, wm,
-    raceBuffVal, nextLevelYield, nextCycleMs, nextHappiness, nextRaceBuffVal
+    yieldAmount, secYield, cycleNow, status, wm, staffMult, isPlaced
   } = ctx;
-
-  const modesHtml = Object.values(BUILDING_WORK_MODES).map((m) => {
-    const active = wm.key === m.key;
-    return `
-      <button class="buildingWorkModeBtn ${active ? 'active' : ''}" onclick="window.setBuildingWorkModeSafe?.('${m.key}')">
-        <div class="wmTop">
-          <span class="wmIcon">${m.icon}</span>
-          <strong>${escapeHtml(m.shortLabel)}</strong>
-          ${active ? '<em class="wmActiveTag">ACTIVE</em>' : ''}
-        </div>
-        <small>${escapeHtml(m.desc)}</small>
-      </button>
-    `;
-  }).join('');
-
-  const stockTone = stock >= 70 ? 'green' : stock >= 40 ? 'yellow' : 'red';
-  const healthTone = health >= 76 ? 'green' : health >= 45 ? 'yellow' : 'red';
-  const drainPerCycle = (def.stockDrain || 10) + (wm.drainAdd || 0);
 
   return `
     <div class="buildingTabPane" data-building-tab-pane="overview">
-      <div class="buildingSectionBlock">
-        <div class="buildingSectionHead">
-          <span>⚙️ Production Work Order</span>
-          <small>Active: <b>${escapeHtml(wm.label)}</b></small>
-        </div>
-        <div class="buildingWorkModeBar">
-          ${modesHtml}
-        </div>
-      </div>
-
-      <div class="buildingTelemetryGrid">
-        <div class="buildingTelemetryCard">
-          <div class="telHead"><span>📦 Stock Supply</span><strong class="tone-${stockTone}" data-placed-stock>${stock}%</strong></div>
-          <div class="buildingMiniMeter"><i class="tone-${stockTone}" style="width:${stock}%" data-placed-stock-meter></i></div>
-          <small>${stock < 70 ? '⚠️ Restock recommended' : 'Optimal supply'} · -${drainPerCycle}%/run</small>
-        </div>
-        <div class="buildingTelemetryCard">
-          <div class="telHead"><span>🛠️ Building Health</span><strong class="tone-${healthTone}">${health}%</strong></div>
-          <div class="buildingMiniMeter"><i class="tone-${healthTone}" style="width:${health}%"></i></div>
-          <small>${health < 76 ? '⚠️ Needs maintenance' : 'Structural integrity high'}</small>
-        </div>
-        <div class="buildingTelemetryCard">
-          <div class="telHead"><span>😊 City Happiness</span><strong class="tone-green">+${happiness}</strong></div>
-          <small>District Service Score: <b>${service.score}%</b> (${service.count} lot${service.count === 1 ? '' : 's'})</small>
-        </div>
-        <div class="buildingTelemetryCard">
-          <div class="telHead"><span>⚡ Tycoon Valuation</span><strong class="tone-cyan">${power.toLocaleString()} PWR</strong></div>
-          <small>Tier Rating: <b>${tierCode}</b> · Runs: <b>${item.collected || 0}</b></small>
-        </div>
-      </div>
-
-      <div class="buildingUpgradePreviewCard ${req.met ? 'ready' : req.maxed ? 'maxed' : 'locked'}">
-        <div class="upPreviewHead">
-          <div>
-            <span class="upKicker">${req.maxed ? 'MAX TIER ACHIEVED' : `NEXT LEVEL BLUEPRINT · LV ${level} → LV ${req.nextLevel}`}</span>
-            <h4>${req.maxed ? `${escapeHtml(def.name)} (Max Lv ${level})` : `Upgrade to Level ${req.nextLevel} (${req.coinCost} Coins)`}</h4>
+      <div class="mgHeroCard ${status.ready ? 'tone-ready' : 'tone-active'}">
+        <div class="mgHeroTop">
+          <div class="mgHeroLeft">
+            <span class="mgKicker">${status.ready ? '💰 READY TO COLLECT' : `⏱ NEXT PAYOUT IN ${formatDuration(status.msLeft)}`}</span>
+            <strong class="mgBigVal">+${yieldAmount} ${escapeHtml(def.outputLabel)} <small>&amp; +${secYield.amount} ${escapeHtml(secYield.label)}</small></strong>
           </div>
-          <span class="upStatusBadge ${req.met ? 'ready' : req.maxed ? 'maxed' : 'locked'}">
-            ${req.maxed ? '★ MAXED' : req.met ? '✅ READY' : '⚡ INSTANT UPGRADE AVAILABLE'}
-          </span>
+          <div class="mgHeroBadge">
+            <span>Cycle ${formatDuration(cycleNow)}</span>
+            <b>${wm.icon} ${escapeHtml(wm.shortLabel)} · ×${staffMult.toFixed(2)}</b>
+          </div>
         </div>
-        ${req.maxed ? `
-          <p class="upMaxedCopy">This building is operating at peak architectural capacity with maximum output and district synergy.</p>
+        <div class="mgProgressBar">
+          <i style="width:${Math.round(status.pct)}%"></i>
+        </div>
+      </div>
+
+      <div class="mgActionRow cols-2">
+        ${status.ready ? `
+          <button type="button" class="btn primary mgBigBtn" onclick="window.collectSelectedMobileBuildingSafe?.()">
+            💰 Collect +${yieldAmount} ${escapeHtml(def.outputLabel)}
+          </button>
         ` : `
-          <div class="upDeltaGrid">
-            <div>
-              <span>Primary Yield</span>
-              <b>+${yieldAmount} → <em>+${nextLevelYield} ${escapeHtml(def.outputLabel)}</em></b>
-            </div>
-            <div>
-              <span>Secondary Bonus</span>
-              <b>+${secYield.amount} → <em>+${secYield.amount + 1} ${escapeHtml(secYield.label)}</em></b>
-            </div>
-            <div>
-              <span>Cycle Time</span>
-              <b>${formatDuration(cycleNow)} → <em>${formatDuration(nextCycleMs)}</em></b>
-            </div>
-            <div>
-              <span>Happiness &amp; Race</span>
-              <b>+${happiness} Happy · <em>+${nextRaceBuffVal}% ${escapeHtml(def.raceBuffLabel)}</em></b>
-            </div>
-          </div>
-          <div class="upReqPills">
-            <span class="upReqPill ${req.stockMet ? 'met' : 'short'}">
-              ${req.stockMet ? '✅' : '⚠️'} Stock ${stock}% / ${req.stockNeed}%
-            </span>
-            <span class="upReqPill ${req.collectMet ? 'met' : 'short'}">
-              ${req.collectMet ? '✅' : '⚠️'} Runs ${item.collected || 0} / ${req.collectNeed}
-            </span>
-            <span class="upReqPill met">
-              🪙 Cost: ${req.coinCost} Coins
-            </span>
-          </div>
+          <button type="button" class="btn gold mgBigBtn" onclick="window.rushSelectedMobileBuildingSafe?.()">
+            ⚡ Rush Cycle (${status.rushCostCoins}c)
+          </button>
         `}
+        ${isPlaced ? `
+          <button type="button" class="btn ghost mgBigBtn" onclick="window.moveSelectedMobileBuildingSafe?.()">
+            📐 Move Lot
+          </button>
+        ` : `
+          <button type="button" class="btn primary mgBigBtn" onclick="window.claimBuildingWorkshopCrateSafe?.()">
+            🎁 Bonus Crate (+${secYield.amount * 2} ${escapeHtml(secYield.label)})
+          </button>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function renderBuildingUpgradeTab(record, ctx) {
+  const { def } = record;
+  const {
+    level, stock, health, happiness, req, nextLevelYield, restockCost, repairCost
+  } = ctx;
+  const stockTone = stock >= 70 ? 'green' : stock >= 40 ? 'yellow' : 'red';
+  const healthTone = health >= 76 ? 'green' : health >= 45 ? 'yellow' : 'red';
+
+  return `
+    <div class="buildingTabPane" data-building-tab-pane="upgrade">
+      <div class="mgStatGrid cols-3">
+        <div class="mgStatBox">
+          <span>⭐ Next Level</span>
+          <strong class="tone-gold">${req.maxed ? `Max Lv ${level}` : `Lv ${req.nextLevel} → +${nextLevelYield}`}</strong>
+          <small>+${happiness} City Happy</small>
+        </div>
+        <div class="mgStatBox">
+          <span>📦 Supply Stock</span>
+          <strong class="tone-${stockTone}" data-placed-stock>${stock}%</strong>
+          <div class="mgMiniBar"><i class="tone-${stockTone}" style="width:${stock}%" data-placed-stock-meter></i></div>
+        </div>
+        <div class="mgStatBox">
+          <span>🔧 Health</span>
+          <strong class="tone-${healthTone}">${health}%</strong>
+          <div class="mgMiniBar"><i class="tone-${healthTone}" style="width:${health}%"></i></div>
+        </div>
+      </div>
+
+      <div class="mgActionRow cols-3">
+        <button type="button" class="btn primary mgBigBtn" onclick="window.upgradeSelectedMobileBuildingSafe?.()" ${req.maxed ? 'disabled' : ''}>
+          ${req.maxed ? '★ Max Level' : `⬆️ Upgrade Lv ${req.nextLevel} (${req.coinCost}c)`}
+        </button>
+        <button type="button" class="btn gold mgBigBtn" onclick="window.restockSelectedMobileBuildingSafe?.()" ${stock >= 100 ? 'disabled' : ''}>
+          ${stock >= 100 ? '📦 Stock 100%' : `📦 Restock (${restockCost}c)`}
+        </button>
+        <button type="button" class="btn mgBigBtn" onclick="window.repairSelectedMobileBuildingSafe?.()" ${health >= 100 ? 'disabled' : ''}>
+          ${health >= 100 ? '🔧 Health 100%' : `🔧 Repair (${repairCost}c)`}
+        </button>
       </div>
     </div>
   `;
@@ -4067,214 +4089,99 @@ function renderBuildingOverviewTab(record, ctx) {
 
 function renderBuildingStaffTab(record, ctx) {
   const { def, fixed } = record;
-  const { staffMult, cycleReduction, upgradeDiscount, incomeBoost } = ctx;
+  const { staffMult, wm } = ctx;
   const { leadStaff, people } = buildingLinkedPeople(def, fixed);
-  const leadProfile = personProfile(leadStaff);
-
-  const rowsHtml = people.map((person) => {
-    const id = person.lineKey || person.key;
-    const mood = residentMood(person);
-    const prof = mood.profile;
-    const isLead = (leadStaff?.lineKey || leadStaff?.key) === id;
-    return `
-      <div class="buildingStaffCard ${prof.hired ? 'is-hired' : 'is-unemployed'}">
-        <div class="bStaffPortraitWrap">
-          <img src="${personAssetForKey(id)}" alt="${escapeHtml(person.name)}" loading="eager">
-          <span class="bStaffStateDot ${prof.hired ? 'hired' : 'unemployed'}"></span>
-        </div>
-        <div class="bStaffMain">
-          <div class="bStaffTitleRow">
-            <strong>${escapeHtml(person.name)}</strong>
-            ${isLead ? '<span class="bStaffLeadTag">LEAD MANAGER</span>' : '<span class="bStaffSpecTag">SPECIALIST</span>'}
-            <span class="bStaffJobBadge ${prof.hired ? 'hired' : 'unemployed'}">
-              ${prof.hired ? `HIRED LV ${prof.level}` : 'UNEMPLOYED'}
-            </span>
-          </div>
-          <small class="bStaffJobSub">${escapeHtml(person.jobTitle || 'Operations Crew')} · ${escapeHtml(prof.primarySkillLabel)} <b>${prof.primarySkillValue}%</b></small>
-          <div class="bStaffHappinessRow">
-            <span>Happiness: <b class="tone-${mood.key}">${mood.score}% ${escapeHtml(mood.label)}</b></span>
-            <span>Building Buff: <b>+${prof.worldYieldBonus}% Yield</b></span>
-          </div>
-          <div class="buildingMiniMeter"><i class="tone-${mood.key}" style="width:${mood.score}%"></i></div>
-        </div>
-        <div class="bStaffActions">
-          ${!prof.hired ? `
-            <button class="btn small primary" onclick="window.hireBuildingPersonSafe?.('${escapeHtml(id)}')">Hire (${prof.hireCost}c)</button>
-          ` : `
-            <button class="btn small gold" onclick="window.trainBuildingPersonSafe?.('${escapeHtml(id)}')">Train Lv ${prof.level + 1} (${prof.trainCost}c)</button>
-            <button class="btn small ghost" onclick="window.boostBuildingPersonSafe?.('${escapeHtml(id)}')">Morale +12%</button>
-          `}
-          <button class="btn small ghost" onclick="window.inspectBuildingPersonSafe?.('${escapeHtml(id)}')">Inspect</button>
-        </div>
-      </div>
-    `;
-  }).join('');
+  const person = leadStaff || people[0] || RESIDENT_WANTS[0];
+  const id = person.lineKey || person.key;
+  const mood = residentMood(person);
+  const prof = mood.profile;
 
   return `
     <div class="buildingTabPane" data-building-tab-pane="staff">
-      <div class="buildingStaffSummaryBanner">
-        <div class="bStaffSumTop">
-          <div>
-            <span class="upKicker">ASSIGNED BUILDING WORKFORCE</span>
-            <h4>Staff Synergy Multiplier: <em>×${staffMult.toFixed(2)}</em></h4>
+      <div class="mgHeroCard ${prof.hired ? 'tone-ready' : 'tone-warn'}">
+        <div class="mgStaffRow">
+          <img class="mgStaffAvatar" src="${personAssetForKey(id)}" alt="${escapeHtml(person.name)}" loading="eager">
+          <div class="mgStaffMeta">
+            <span class="mgKicker">${prof.hired ? `✓ HIRED · LV ${prof.level} · AUTO-COLLECT ON` : '● UNASSIGNED SPECIALIST'}</span>
+            <strong class="mgBigVal">${escapeHtml(person.name)} <small>· ${escapeHtml(person.jobTitle || 'Lead Crew')}</small></strong>
+            <span class="mgSubText">${mood.face} ${mood.score}% Happy · Building Multiplier: <b>×${staffMult.toFixed(2)}</b></span>
           </div>
-          <span class="bAutoBadge ${leadProfile.hired ? 'on' : 'off'}">
-            ${leadProfile.hired ? '⚡ AUTO-COLLECT ACTIVE' : '👤 MANUAL COLLECTION'}
-          </span>
-        </div>
-        <div class="bStaffBuffPills">
-          <div><span>Cycle Speed</span><b>-${cycleReduction}%</b></div>
-          <div><span>Upgrade Discount</span><b>-${upgradeDiscount}%</b></div>
-          <div><span>Output Bonus</span><b>+${incomeBoost}%</b></div>
+          <div class="mgStaffBtns">
+            ${!prof.hired ? `
+              <button type="button" class="btn primary mgCompactBtn" onclick="window.hireBuildingPersonSafe?.('${escapeHtml(id)}')">✅ Hire (${prof.hireCost}c)</button>
+            ` : `
+              <button type="button" class="btn gold mgCompactBtn" onclick="window.trainBuildingPersonSafe?.('${escapeHtml(id)}')">⬆️ Train (${prof.trainCost}c)</button>
+            `}
+            <button type="button" class="btn ghost mgCompactBtn" onclick="window.inspectBuildingPersonSafe?.('${escapeHtml(id)}')">👤 Inspect</button>
+          </div>
         </div>
       </div>
 
-      <div class="buildingStaffList">
-        ${rowsHtml}
+      <div class="mgActionRow cols-3">
+        ${Object.values(BUILDING_WORK_MODES).map((m) => `
+          <button type="button" class="mgPillBtn ${wm.key === m.key ? 'active' : ''}" onclick="window.setBuildingWorkModeSafe?.('${m.key}')">
+            <b>${m.icon} ${escapeHtml(m.shortLabel)}</b>
+          </button>
+        `).join('')}
       </div>
     </div>
   `;
 }
 
 function renderBuildingModesTab(record, ctx) {
-  const { item, def, fixed } = record;
-  const { yieldAmount, secYield, raceBuffVal, service } = ctx;
+  const { def, fixed } = record;
+  const { secYield, raceBuffVal } = ctx;
   const lineKey = fixed?.lineKey || def.lineKey || 'streetRoute';
-  const leadStaff = supplyManagerByLine(lineKey) || SUPPLY_MANAGERS[0];
   const supStatus = supplyStatus(lineKey);
-  const conditions = cityConditionStats();
-  const issueKey = def.cityIssueKey || 'mapBuild';
-  const issueCond = conditions[issueKey] || conditions.mapBuild || { label: 'City Service', score: 78, count: 0 };
+  const allRecords = allBuildingRecords();
+  const readyCount = allRecords.filter((r) => collectStatus(r.item, r.def).ready).length;
 
   return `
     <div class="buildingTabPane" data-building-tab-pane="modes">
-      <div class="buildingModesIntro">
-        <span>🌐 Cross-Mode Tycoon Synergy</span>
-        <small>Upgrading, stocking, and staffing <b>${escapeHtml(def.shortName)}</b> actively powers all 4 game modes.</small>
+      <div class="mgStatGrid cols-3">
+        <button type="button" class="mgModeTile" onclick="window.syncBuildingSupplyLineSafe?.()">
+          <span>🏭 Supply Line</span>
+          <strong class="tone-cyan">Lv ${supStatus.level || 1} → +1</strong>
+          <small>Boost Line (45c)</small>
+        </button>
+        <button type="button" class="mgModeTile" onclick="window.openPersonGameScreenSafe?.('race')">
+          <span>🏁 Road Runner</span>
+          <strong class="tone-green">+${raceBuffVal}% ${escapeHtml(def.raceBuffLabel || 'Pace')}</strong>
+          <small>Launch Race</small>
+        </button>
+        <button type="button" class="mgModeTile" onclick="window.openPersonGameScreenSafe?.('merge')">
+          <span>🧩 Merge Bay</span>
+          <strong class="tone-gold">+${secYield.amount * 2} ${escapeHtml(secYield.label)}</strong>
+          <small>Open Workshop</small>
+        </button>
       </div>
 
-      <div class="buildingGameModesGrid">
-        <div class="buildingModeCard mode-world">
-          <div class="bModeHead">
-            <span class="bModeIcon">🏙️</span>
-            <div>
-              <strong>World City &amp; Street Care</strong>
-              <small>${escapeHtml(def.cityEffectLabel || 'District Coverage')}</small>
-            </div>
-            <em class="bModeVal">${issueCond.score}%</em>
-          </div>
-          <p>Satisfies resident need: <b>"${escapeHtml(def.want)}"</b>. District coverage is <b>${service.score}%</b> (${issueCond.count || 0} active street alerts).</p>
-          <div class="bModeFoot">
-            <button class="btn small ghost" onclick="window.openCityIssueMenuSafe?.('${escapeHtml(issueKey)}')">Inspect Street Issue</button>
-          </div>
-        </div>
-
-        <div class="buildingModeCard mode-supply">
-          <div class="bModeHead">
-            <span class="bModeIcon">🏭</span>
-            <div>
-              <strong>Supply Line: ${escapeHtml(leadStaff?.business || 'Service Line')}</strong>
-              <small>Line Lv ${supStatus.level || 1} · ${supStatus.hired ? 'Manager Active' : 'Unassigned'}</small>
-            </div>
-            <em class="bModeVal">+${Math.round(service.score * 0.28)}%</em>
-          </div>
-          <p>Feeds stock &amp; automation into your <b>${escapeHtml(leadStaff?.business || 'Supply Line')}</b> idle business empire.</p>
-          <div class="bModeFoot">
-            <button class="btn small primary" onclick="window.syncBuildingSupplyLineSafe?.()">⚡ Boost Supply Line (45c)</button>
-            <button class="btn small ghost" onclick="window.openSupplyFromWorld?.()">Open Supplies</button>
-          </div>
-        </div>
-
-        <div class="buildingModeCard mode-race">
-          <div class="bModeHead">
-            <span class="bModeIcon">🏁</span>
-            <div>
-              <strong>Road Runner Race Perk</strong>
-              <small>${escapeHtml(def.raceBuffLabel || 'Route Pace')}</small>
-            </div>
-            <em class="bModeVal">+${raceBuffVal}%</em>
-          </div>
-          <p>${escapeHtml(def.raceBuffDesc || 'Boosts vehicle performance in Road Runner.')} Synced live to your race crew telemetry.</p>
-          <div class="bModeFoot">
-            <button class="btn small gold" onclick="window.openPersonGameScreenSafe?.('race')">Launch Road Race</button>
-          </div>
-        </div>
-
-        <div class="buildingModeCard mode-merge">
-          <div class="bModeHead">
-            <span class="bModeIcon">🔩</span>
-            <div>
-              <strong>Merge Bay &amp; 365 Workshop</strong>
-              <small>${escapeHtml(def.mergeBuffLabel || 'Workshop Supply')}</small>
-            </div>
-            <em class="bModeVal">+${secYield.amount * 2} ${escapeHtml(secYield.label)}</em>
-          </div>
-          <p>${escapeHtml(def.mergeBuffDesc || 'Supplies bonus parts & toolkits.')} Crates claimed from this building: <b>${item.cratesClaimed || 0}</b>.</p>
-          <div class="bModeFoot">
-            <button class="btn small primary" onclick="window.claimBuildingWorkshopCrateSafe?.()">📦 Claim Crate (+${secYield.amount * 2} ${escapeHtml(secYield.label)})</button>
-            <button class="btn small ghost" onclick="window.openPersonGameScreenSafe?.('merge')">Open Merge Bay</button>
-          </div>
-        </div>
+      <div class="mgActionRow cols-3">
+        <button type="button" class="btn primary mgBigBtn" onclick="window.batchBuildingActionSafe?.('collect')">
+          💰 Collect All (${readyCount})
+        </button>
+        <button type="button" class="btn gold mgBigBtn" onclick="window.batchBuildingActionSafe?.('restock')">
+          📦 Restock All
+        </button>
+        <button type="button" class="btn ghost mgBigBtn" onclick="window.batchBuildingActionSafe?.('repair')">
+          🔧 Repair All
+        </button>
       </div>
     </div>
   `;
 }
 
 function renderBuildingDistrictTab(target) {
-  const allRecords = allBuildingRecords();
-  const readyCount = allRecords.filter((r) => collectStatus(r.item, r.def).ready).length;
-  const lowStockCount = allRecords.filter((r) => (r.item.stock ?? 80) < 95).length;
-  const damagedCount = allRecords.filter((r) => (r.item.health ?? 88) < 95).length;
-
-  const rowsHtml = allRecords.map((rec) => {
-    const isCurrent = targetMatches(target, rec.target);
-    const st = collectStatus(rec.item, rec.def);
-    const yAmt = buildingYield(rec.item, rec.def);
-    const token = targetToken(rec.target);
-    const stock = Math.round(rec.item.stock ?? 80);
-    const health = Math.round(rec.item.health ?? 88);
-    return `
-      <div class="buildingDistrictRow ${isCurrent ? 'is-current' : ''}">
-        <img class="bDistThumb" src="${buildingAssetForKey(rec.def.key, rec.label, rec.item.level || 1)}" alt="" loading="eager">
-        <div class="bDistInfo">
-          <div class="bDistTitleLine">
-            <strong>${escapeHtml(rec.label)}</strong>
-            <span class="bDistLv">Lv ${rec.item.level || 1}</span>
-            <span class="bDistKind ${rec.kind}">${rec.kind === 'fixed' ? 'HUB' : 'LOT'}</span>
-          </div>
-          <small>
-            Stock <b>${stock}%</b> · Health <b>${health}%</b> ·
-            <em class="${st.ready ? 'ready' : ''}">${st.ready ? `Ready +${yAmt} ${rec.def.outputLabel}` : formatDuration(st.msLeft)}</em>
-          </small>
-        </div>
-        <div class="bDistActions">
-          ${st.ready ? `<button class="btn small primary" onclick="window.collectDistrictBuildingSafe?.('${token}')">Collect</button>` : ''}
-          <button class="btn small ${isCurrent ? 'gold' : 'ghost'}" onclick="window.selectBuildingFromDistrictSafe?.('${token}')">
-            ${isCurrent ? 'Selected' : 'Inspect'}
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  return `
-    <div class="buildingTabPane" data-building-tab-pane="district">
-      <div class="buildingBatchBar">
-        <button class="btn small primary" onclick="window.batchBuildingActionSafe?.('collect')">
-          💰 Collect All (${readyCount})
-        </button>
-        <button class="btn small gold" onclick="window.batchBuildingActionSafe?.('restock')">
-          📦 Restock All (${lowStockCount})
-        </button>
-        <button class="btn small ghost" onclick="window.batchBuildingActionSafe?.('repair')">
-          🔧 Repair All (${damagedCount})
-        </button>
-      </div>
-      <div class="buildingDistrictList">
-        ${rowsHtml}
-      </div>
-    </div>
-  `;
+  const record = getBuildingRecord(target) || allBuildingRecords()[0];
+  if (!record) return '';
+  const level = record.item.level || 1;
+  const wm = buildingWorkMode(record.item);
+  const staffMult = buildingStaffYieldMultiplier(record.def.key);
+  const stock = Math.round(record.item.stock ?? 80);
+  const health = Math.round(record.item.health ?? 88);
+  const secYield = buildingSecondaryYield(record.item, record.def);
+  const raceBuffVal = Math.max(3, Math.round((2.5 + level * 1.8) * (stock / 100) * (health / 100) * wm.modeBuffMult * staffMult));
+  return renderBuildingModesTab(record, { secYield, raceBuffVal });
 }
 
 function renderBuildingSheet(target) {
@@ -4295,9 +4202,7 @@ function renderBuildingSheet(target) {
   const power = buildingPower(item, def);
   const isPlaced = target.kind === 'placed';
   const stars = buildingStarsForLevel(level);
-  const starStr = `${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}`;
-  const lineKey = fixed?.lineKey || def.lineKey || 'streetRoute';
-  const supStatus = supplyStatus(lineKey);
+  const tierCode = stars >= 4 ? 'SSR' : stars >= 2 ? 'SR' : 'R';
   const service = serviceStats(def.key);
 
   const cycleNow = cycleMsFor(item, def);
@@ -4305,106 +4210,62 @@ function renderBuildingSheet(target) {
   const nextLevelYield = buildingYield(nextItemPreview, def);
   const nextCycleMs = cycleMsFor(nextItemPreview, def);
   const nextHappiness = Math.round((def.happiness * (level + 1) * (stock / 100) * (health / 100)) + (wm.happinessAdd || 0));
-
   const raceBuffVal = Math.max(3, Math.round((2.5 + level * 1.8) * (stock / 100) * (health / 100) * wm.modeBuffMult * staffMult));
   const nextRaceBuffVal = Math.max(raceBuffVal + 2, Math.round((2.5 + (level + 1) * 1.8) * (stock / 100) * (health / 100) * wm.modeBuffMult * staffMult));
 
-  const cycleReduction = Math.min(45, +(3.5 + level * 1.4 + (supStatus.level || 0) * 0.6 + (staffMult - 1) * 28).toFixed(1));
-  const upgradeDiscount = Math.min(30, +(2.0 + level * 0.9 + (staffMult - 1) * 20).toFixed(1));
-  const incomeBoost = Math.min(160, +((staffMult - 1) * 100 + (wm.yieldMult - 1) * 100 + (level - 1) * 6).toFixed(1));
-  const tierCode = stars >= 4 ? 'SSR' : stars >= 2 ? 'SR' : 'R';
-
   const { people } = buildingLinkedPeople(def, fixed);
   const hiredCount = people.filter((p) => personProfile(p).hired).length;
-  const allRecords = allBuildingRecords();
-
   const restockCost = stock >= 100 ? 0 : Math.max(10, Math.round(((100 - stock) / 100) * (def.restockCostBase || 32)));
   const repairCost = health >= 100 ? 0 : Math.max(10, Math.round(((100 - health) / 100) * (def.repairCostBase || 28)));
 
-  let opStateLabel = '🟢 OPERATING';
-  let opStateCls = 'operating';
+  let opStateLabel = '🟢 ACTIVE';
+  let opStateCls = 'ok';
   if (status.ready) {
-    opStateLabel = '💰 READY TO COLLECT';
+    opStateLabel = '💰 READY';
     opStateCls = 'ready';
-  } else if (health < 65) {
-    opStateLabel = '🔧 NEEDS REPAIR';
-    opStateCls = 'warn';
-  } else if (stock < 50) {
-    opStateLabel = '🟡 LOW STOCK';
+  } else if (health < 65 || stock < 50) {
+    opStateLabel = '⚠️ CHECK';
     opStateCls = 'warn';
   }
 
   const ctx = {
     level, stock, health, happiness, power, tierCode,
-    yieldAmount, secYield, cycleNow, req, service, wm,
-    staffMult, cycleReduction, upgradeDiscount, incomeBoost,
+    yieldAmount, secYield, cycleNow, status, req, service, wm,
+    staffMult, isPlaced, restockCost, repairCost,
     raceBuffVal, nextLevelYield, nextCycleMs, nextHappiness, nextRaceBuffVal
   };
 
+  const tabKey = ['overview', 'upgrade', 'staff', 'modes', 'district'].includes(selectedBuildingTab) ? selectedBuildingTab : 'overview';
   let activeTabContent = '';
-  if (selectedBuildingTab === 'staff') {
+  if (tabKey === 'upgrade') {
+    activeTabContent = renderBuildingUpgradeTab(record, ctx);
+  } else if (tabKey === 'staff') {
     activeTabContent = renderBuildingStaffTab(record, ctx);
-  } else if (selectedBuildingTab === 'modes') {
+  } else if (tabKey === 'modes' || tabKey === 'district') {
     activeTabContent = renderBuildingModesTab(record, ctx);
-  } else if (selectedBuildingTab === 'district') {
-    activeTabContent = renderBuildingDistrictTab(target);
   } else {
     activeTabContent = renderBuildingOverviewTab(record, ctx);
   }
 
   return `
-    <div class="buildingWindow" data-building-sheet>
-      <div class="buildingWindowHeader">
-        <div class="buildingHeroIconBox">
-          <img src="${buildingAssetForKey(def.key, title, level)}" alt="${escapeHtml(title)}" loading="eager">
-          <span class="buildingHeroStars">${starStr}</span>
+    <div class="buildingWindow mgInspectorWindow" data-building-sheet>
+      <div class="residentWindowHeader">
+        <button type="button" class="inspectorCycleBtn" onclick="window.cycleMobileBuildingSafe?.(-1)" title="Previous Building">◀</button>
+        <div class="personHeroFrame rarity-${tierCode.toLowerCase()}">
+          <img class="personHeaderAvatar" src="${buildingAssetForKey(def.key, title, level)}" alt="${escapeHtml(title)}" loading="eager">
+          <span class="personRarityTag">LV <span data-placed-level>${level}</span></span>
         </div>
-        <div class="buildingHeaderMain">
-          <div class="buildingHeaderKickerRow">
-            <span class="buildingCategoryTag">${escapeHtml(def.category || 'City Service')}</span>
-            <span class="buildingLotTag">${isPlaced ? `PLACED · ${def.footprintW}x${def.footprintH}` : `CORE HUB · ${(fixed?.w || def.footprintW)}x${(fixed?.h || def.footprintH)}`}</span>
-            <span class="buildingOpBadge ${opStateCls}">${opStateLabel}</span>
+        <div class="personHeaderMeta">
+          <div class="personHeaderKickerRow">
+            <span class="residentKicker">${isPlaced ? 'PLACED LOT' : 'CORE HUB'}</span>
+            <span class="personStatusBadge ${opStateCls === 'warn' ? 'unemployed' : 'hired'}">${opStateLabel}</span>
           </div>
-          <h3 class="buildingWindowTitle">${escapeHtml(title)}</h3>
-          <p class="buildingWindowSub">${escapeHtml(def.bonus)} — <em>${escapeHtml(def.want)}</em></p>
+          <b class="personTitleName">${escapeHtml(title)}</b>
+          <span class="personWorkplaceLine">+${yieldAmount} ${escapeHtml(def.outputLabel)} / ${formatDuration(cycleNow)} · Stock ${stock}%</span>
         </div>
-        <div class="buildingHeaderRight">
-          <div class="buildingLevelOrb">
-            <span>LEVEL</span>
-            <strong data-placed-level>${level}</strong>
-            <small>/ ${def.maxLevel || 10}</small>
-          </div>
-          <button class="buildingCloseX" onclick="window.closeMobileBuildingSheetSafe?.()" title="Close">✕</button>
-        </div>
-      </div>
-
-      <div class="buildingProfitCard ${status.ready ? 'is-ready' : 'is-cycling'}">
-        <div class="buildingProfitTop">
-          <div class="bProfitTimerCol">
-            <span class="bProfitTimerLabel">${status.ready ? '💰 PRODUCTION COMPLETE' : `⏱ NEXT PAYOUT IN ${formatDuration(status.msLeft)}`}</span>
-            <small>Cycle: <b>${formatDuration(cycleNow)}</b> · Mode: <b>${wm.icon} ${escapeHtml(wm.shortLabel)}</b> · Staff: <b>×${staffMult.toFixed(2)}</b></small>
-          </div>
-          <div class="bProfitYieldPills">
-            <span class="bYieldPrimary">+${yieldAmount} ${escapeHtml(def.outputLabel)}</span>
-            <span class="bYieldSecondary">+${secYield.amount} ${escapeHtml(secYield.label)}</span>
-          </div>
-        </div>
-        <div class="buildingProfitProgressTrack">
-          <span class="buildingProfitProgressFill" style="width:${Math.round(status.pct)}%"></span>
-        </div>
-        <div class="buildingProfitFoot">
-          <span class="bMultFormula">
-            Base ${def.baseYield} × Lv${level} × Staff ${(staffMult).toFixed(2)}x × Stock ${stock}% × ${escapeHtml(wm.shortLabel)} ${(wm.yieldMult).toFixed(2)}x
-          </span>
-          ${status.ready ? `
-            <button class="btn small primary bInstantCollectBtn" onclick="window.collectSelectedMobileBuildingSafe?.()">
-              💰 Collect +${yieldAmount} ${escapeHtml(def.outputLabel)} &amp; +${secYield.amount} ${escapeHtml(secYield.label)}
-            </button>
-          ` : `
-            <button class="btn small gold bInstantRushBtn" onclick="window.rushSelectedMobileBuildingSafe?.()">
-              ⚡ Rush Cycle Now (${status.rushCostCoins}c) → +${yieldAmount} ${escapeHtml(def.outputLabel)}
-            </button>
-          `}
+        <div class="personHeaderRight">
+          <button type="button" class="inspectorCycleBtn" onclick="window.cycleMobileBuildingSafe?.(1)" title="Next Building">▶</button>
+          <button type="button" class="buildingCloseX" onclick="window.closeMobileBuildingSheetSafe?.()" title="Close">✕</button>
         </div>
       </div>
 
@@ -4414,48 +4275,23 @@ function renderBuildingSheet(target) {
         </div>
       ` : ''}
 
-      <div class="buildingTabBar" role="tablist">
-        <button class="buildingTabBtn ${selectedBuildingTab === 'overview' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('overview')">
-          📊 Ops &amp; Upgrade
+      <div class="residentTabBar" role="tablist">
+        <button type="button" class="residentTab ${tabKey === 'overview' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('overview')">
+          <b>💰</b><span>Output</span>
         </button>
-        <button class="buildingTabBtn ${selectedBuildingTab === 'staff' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('staff')">
-          👷 Staff (${hiredCount}/${people.length})
+        <button type="button" class="residentTab ${tabKey === 'upgrade' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('upgrade')">
+          <b>⬆️</b><span>Upgrade</span>
         </button>
-        <button class="buildingTabBtn ${selectedBuildingTab === 'modes' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('modes')">
-          🌐 Game Links
+        <button type="button" class="residentTab ${tabKey === 'staff' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('staff')">
+          <b>👷</b><span>Staff</span>
         </button>
-        <button class="buildingTabBtn ${selectedBuildingTab === 'district' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('district')">
-          🏢 District (${allRecords.length})
+        <button type="button" class="residentTab ${tabKey === 'modes' || tabKey === 'district' ? 'active' : ''}" onclick="window.openBuildingTabSafe?.('modes')">
+          <b>🌐</b><span>Modes</span>
         </button>
       </div>
 
-      <div class="buildingTabContent">
+      <div class="residentTabPanel buildingTabContent" data-building-tab-panel>
         ${activeTabContent}
-      </div>
-
-      <div class="mobilePlacedActions mobileBuildingActions buildingCommandDock">
-        ${status.ready ? `
-          <button class="btn primary" onclick="window.collectSelectedMobileBuildingSafe?.()">
-            💰 Collect +${yieldAmount} ${escapeHtml(def.outputLabel)}
-          </button>
-        ` : `
-          <button class="btn gold" onclick="window.rushSelectedMobileBuildingSafe?.()">
-            ⚡ Rush (${status.rushCostCoins}c)
-          </button>
-        `}
-        <button class="btn primary" onclick="window.upgradeSelectedMobileBuildingSafe?.()" ${req.maxed ? 'disabled' : ''}>
-          ${req.maxed ? '★ Max Level' : `⬆️ Upgrade Lv ${req.nextLevel} (${req.coinCost}c)`}
-        </button>
-        <button class="btn gold" onclick="window.restockSelectedMobileBuildingSafe?.()" ${stock >= 100 ? 'disabled' : ''}>
-          ${stock >= 100 ? '📦 Stock 100%' : `📦 Restock (${restockCost}c)`}
-        </button>
-        <button class="btn" onclick="window.repairSelectedMobileBuildingSafe?.()" ${health >= 100 ? 'disabled' : ''}>
-          ${health >= 100 ? '🔧 Health 100%' : `🔧 Repair (${repairCost}c)`}
-        </button>
-        ${isPlaced
-          ? '<button class="btn ghost" onclick="window.moveSelectedMobileBuildingSafe?.()">📐 Move Lot</button>'
-          : '<button class="btn ghost" onclick="window.openSupplyFromWorld?.()">🏭 Supplies</button>'}
-        <button class="btn ghost" onclick="window.closeMobileBuildingSheetSafe?.()">Close</button>
       </div>
     </div>
   `;
@@ -4494,6 +4330,15 @@ function openBuildingSheet(target, refresh = false) {
   publishWorldOpenState();
 }
 
+window.cycleMobileBuildingSafe = (delta = 1) => {
+  const all = allBuildingRecords();
+  if (!all.length) return false;
+  const curIdx = Math.max(0, all.findIndex((r) => targetMatches(r.target, selectedBuildingTarget)));
+  const nextIdx = ((curIdx + (Number(delta) || 1)) % all.length + all.length) % all.length;
+  openBuildingSheet(all[nextIdx].target);
+  return true;
+};
+
 let selectedVehicleTab = 'telemetry';
 let lastVehicleActionNote = '';
 const vehicleRuntimeUpgrades = {};
@@ -4508,54 +4353,53 @@ function vehicleUpgradeState(assetKey) {
 function renderVehicleTelemetryTab(trafficItem, spec, upState, speedKmh, statusText) {
   const roadList = trafficItem?.roadAxis === 'v' ? ROADS.vertical : ROADS.horizontal;
   const roadObj = roadList?.[trafficItem?.roadIndex || 0] || ROADS.horizontal[0];
-  const roadLabel = roadObj?.label || 'Dealer / Factory Ave';
+  const roadLabel = (roadObj?.label || 'Dealer Ave').split('/')[0].trim();
   const dirLabel = String(trafficItem?.direction || 'east').toUpperCase();
   const isRoadside = Boolean(trafficItem?.isRoadsideIncident);
 
   return `
-    <div class="vehicleTabPane" data-vehicle-tab-pane="telemetry">
-      <div class="vehicleTelemetryGrid">
-        <div class="vTelCard">
-          <span>⚙️ Powerplant</span>
+    <div class="vehicleTabPane mgTabPane" data-vehicle-tab-pane="telemetry">
+      <div class="mgStatGrid">
+        <div class="mgStatBox">
+          <span>⚙️ Engine</span>
           <strong>${escapeHtml(spec.engine || 'Twin-Turbo I6')}</strong>
-          <small>Stage ${upState.tuneStage} ECU Map</small>
         </div>
-        <div class="vTelCard">
-          <span>🛞 Drivetrain</span>
-          <strong>${escapeHtml(spec.drivetrain || 'AWD')}</strong>
-          <small>${upState.polished ? '✨ Ceramic Coated' : 'Street Spec Tires'}</small>
+        <div class="mgStatBox">
+          <span>🛞 Drive</span>
+          <strong>${escapeHtml(spec.drivetrain || 'AWD')} · Stg ${upState.tuneStage}</strong>
         </div>
-        <div class="vTelCard">
-          <span>⚡ Live Speed</span>
+        <div class="mgStatBox">
+          <span>⚡ Speed</span>
           <strong class="${speedKmh > 10 ? 'tone-green' : 'tone-yellow'}">${speedKmh} km/h</strong>
-          <small>${trafficItem?.isBraking ? '🔴 Brake Lights ON' : '🟢 Cruise Throttle'}</small>
         </div>
-        <div class="vTelCard">
-          <span>📍 Street GPS</span>
-          <strong class="tone-cyan">${escapeHtml(dirLabel)} · ${escapeHtml(roadLabel.split('/')[0].trim())}</strong>
-          <small>${isRoadside ? '🚨 Roadside Recovery' : 'Active 3D Signal Sync'}</small>
+        <div class="mgStatBox">
+          <span>📍 Street</span>
+          <strong class="tone-cyan">${escapeHtml(dirLabel)} · ${escapeHtml(roadLabel)}</strong>
         </div>
       </div>
 
-      <div class="vehicleLiveStatusBanner ${isRoadside ? 'is-incident' : trafficItem?.isBraking ? 'is-braking' : 'is-cruising'}">
-        <div class="vLiveStatusText">
-          <b>${isRoadside ? '🚨 Roadside Breakdown / Tow Recovery Active' : '📡 Live 365 Street Telemetry'}</b>
-          <span>${escapeHtml(statusText)} · ${upState.hpBonus > 0 ? `+${upState.hpBonus} Dyno HP Tuned` : 'Factory 365 Street Spec'}</span>
-        </div>
-        <div class="vLiveStatusBtns">
-          ${isRoadside ? `
-            <button type="button" class="btn small gold" onclick="window.clearRoadsideVehicleSafe?.()">🚨 Dispatch Tow (+40c)</button>
-          ` : `
-            <button type="button" class="btn small primary" onclick="window.toggleCityCameraAngleSafe?.()">🎥 3D Angle</button>
-          `}
-          <button type="button" class="btn small" onclick="window.zoomMobileCityInSafe?.()">🔍 Zoom Car</button>
-        </div>
+      <div class="mgActionRow">
+        ${isRoadside ? `
+          <button type="button" class="btn gold mgBigBtn" onclick="window.clearRoadsideVehicleSafe?.()">
+            🚨 Dispatch Tow (+40 Coins)
+          </button>
+        ` : `
+          <button type="button" class="btn gold mgBigBtn" onclick="window.openVehicleTabSafe?.('tune')">
+            🔧 Tune &amp; Upgrade (${35}c)
+          </button>
+        `}
+        <button type="button" class="btn primary mgCompactBtn" onclick="window.toggleCityCameraAngleSafe?.()">
+          🎥 3D Angle
+        </button>
+        <button type="button" class="btn ghost mgCompactBtn" onclick="window.zoomMobileCityInSafe?.()">
+          🔍 Zoom
+        </button>
       </div>
     </div>
   `;
 }
 
-function renderVehicleDynoTab(trafficItem, spec, upState, totalHp) {
+function renderVehicleDynoTab(trafficItem, spec, upState) {
   const baseHpNum = parseInt(String(spec.hp || '420'), 10) || 420;
   const speedPct = Math.min(100, Math.round((baseHpNum + upState.hpBonus) / 7.5));
   const accelPct = Math.min(100, Math.round(62 + upState.tuneStage * 8 + (spec.drivetrain?.includes('AWD') ? 12 : 6)));
@@ -4563,7 +4407,7 @@ function renderVehicleDynoTab(trafficItem, spec, upState, totalHp) {
   const aeroPct = Math.min(100, Math.round(64 + upState.tuneStage * 7 + (spec.underglow ? 12 : 5)));
 
   return `
-    <div class="vehicleTabPane" data-vehicle-tab-pane="dyno">
+    <div class="vehicleTabPane mgTabPane" data-vehicle-tab-pane="dyno">
       <div class="vehicleDynoBars">
         <div class="vDynoBarItem">
           <div class="vDynoHead"><span>Top Speed</span><b>${speedPct}%</b></div>
@@ -4583,19 +4427,40 @@ function renderVehicleDynoTab(trafficItem, spec, upState, totalHp) {
         </div>
       </div>
 
-      <div class="vehicleTuneActionsCard">
-        <div class="vTuneInfo">
-          <b>🔧 365 Dyno &amp; Showroom Upgrade Bay · Stage ${upState.tuneStage} (${totalHp} HP)</b>
-          <small>Upgrade this fleet vehicle on the street to boost City Reputation and Showroom prestige.</small>
+      <div class="mgActionRow">
+        <button type="button" class="btn gold mgBigBtn" onclick="window.openVehicleTabSafe?.('tune')">
+          🔧 Open Dyno Tune Bay →
+        </button>
+        <button type="button" class="btn primary mgCompactBtn" onclick="window.openPersonGameScreenSafe?.('race')">
+          🏎️ Race Now
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderVehicleTuneTab(trafficItem, spec, upState, totalHp) {
+  return `
+    <div class="vehicleTabPane mgTabPane" data-vehicle-tab-pane="tune">
+      <div class="mgHeroCard">
+        <div class="mgHeroLeft">
+          <span class="mgHeroLabel">🔧 365 DYNO &amp; DETAIL BAY</span>
+          <strong class="mgHeroValue">Stage ${upState.tuneStage} · ${totalHp} HP</strong>
+          <small class="mgHeroSub">${upState.polished ? '✨ Showroom Ceramic Coat Active (+3 Rep)' : 'Upgrade ECU map or detail paint for City Rep'}</small>
         </div>
-        <div class="vTuneBtns">
-          <button type="button" class="btn small gold" onclick="window.tuneSelectedVehicleSafe?.()">
-            ⚡ ECU Tune +25 HP (35c)
-          </button>
-          <button type="button" class="btn small primary" onclick="window.polishSelectedVehicleSafe?.()">
-            ✨ Detail Polish +30c Rep
-          </button>
+        <div class="mgHeroRight">
+          <span class="mgBadgePill gold">+${upState.hpBonus} HP</span>
+          <span class="mgBadgePill">${upState.polished ? '✨ Polished' : 'Street Coat'}</span>
         </div>
+      </div>
+
+      <div class="mgActionRow">
+        <button type="button" class="btn gold mgBigBtn" onclick="window.tuneSelectedVehicleSafe?.()">
+          ⚡ ECU Tune +25 HP · 35c
+        </button>
+        <button type="button" class="btn primary mgBigBtn" onclick="window.polishSelectedVehicleSafe?.()">
+          ✨ Detail Polish · +30c
+        </button>
       </div>
     </div>
   `;
@@ -4613,32 +4478,22 @@ function renderVehicleFleetTab(trafficItem, spec) {
   ];
 
   return `
-    <div class="vehicleTabPane" data-vehicle-tab-pane="fleet">
-      <div class="personGameModesGrid">
-        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('race')">
-          <span class="modeKicker">🏎️ Road Runner Route</span>
-          <strong>Race ${escapeHtml(spec.market || 'Street')} Class</strong>
-          <small>Launch side-scroll route run with ${escapeHtml(spec.name || curKey)}</small>
+    <div class="vehicleTabPane mgTabPane" data-vehicle-tab-pane="fleet">
+      <div class="mgActionRow">
+        <button type="button" class="btn primary mgBigBtn" onclick="window.openPersonGameScreenSafe?.('race')">
+          🏎️ Race ${escapeHtml(spec.market || 'Street')} Class
         </button>
-        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('garage')">
-          <span class="modeKicker">🏢 365 Garage &amp; Showroom</span>
-          <strong>+12% VIP Showcase</strong>
-          <small>Open Workshop Floor &amp; Dyno Bays</small>
+        <button type="button" class="btn gold mgBigBtn" onclick="window.openPersonGameScreenSafe?.('garage')">
+          🏢 365 Garage &amp; Showroom
         </button>
       </div>
 
-      <div class="vehicleQuickFleetBlock">
-        <div class="vQuickFleetHead">
-          <span>🚗 Switch Active 3D Street Vehicle (${traffic.length} on Map)</span>
-          <small>Tap any model to lock camera</small>
-        </div>
-        <div class="vQuickFleetPills">
-          ${fleetQuickList.map((f) => `
-            <button type="button" class="vFleetPill ${f.key === curKey ? 'active' : ''}" onclick="window.inspectMobileCityVehicleSafe?.('${f.key}')">
-              ${escapeHtml(f.label)}
-            </button>
-          `).join('')}
-        </div>
+      <div class="mgPillGrid">
+        ${fleetQuickList.map((f) => `
+          <button type="button" class="mgPillBtn ${f.key === curKey ? 'active' : ''}" onclick="window.inspectMobileCityVehicleSafe?.('${f.key}')">
+            🚗 ${escapeHtml(f.label)}
+          </button>
+        `).join('')}
       </div>
     </div>
   `;
@@ -4653,21 +4508,21 @@ function renderVehicleSheet(trafficItem) {
   const speedKmh = Math.round((trafficItem?.currentSpeed ?? trafficItem?.speed ?? 80) * 1.15);
   const isRoadside = Boolean(trafficItem?.isRoadsideIncident);
   const statusText = isRoadside
-    ? 'Roadside Tow Recovery in Progress'
+    ? '🚨 Roadside Tow Recovery'
     : trafficItem?.isBraking
-      ? 'Yielding at Intersection / Traffic Queue'
-      : speedKmh <= 5
-        ? 'Stopped at Red Signal'
-        : `Cruising ${String(trafficItem?.direction || 'east').toUpperCase()} Avenue`;
+      ? '🔴 Yielding at Signal'
+      : `🟢 ${speedKmh} km/h · ${totalHp} HP`;
 
   const paintHex = `#${Number(spec.body || spec.bodyColor || 0x0284c7).toString(16).padStart(6, '0')}`;
   const trimHex = `#${Number(spec.trim || spec.accentColor || 0x38bdf8).toString(16).padStart(6, '0')}`;
-  const activeTab = ['telemetry', 'dyno', 'fleet'].includes(selectedVehicleTab) ? selectedVehicleTab : 'telemetry';
+  const activeTab = ['telemetry', 'dyno', 'tune', 'fleet'].includes(selectedVehicleTab) ? selectedVehicleTab : 'telemetry';
   const badgeCode = (spec.name || key).slice(0, 3).toUpperCase();
 
   let tabBody = '';
   if (activeTab === 'dyno') {
-    tabBody = renderVehicleDynoTab(trafficItem, spec, upState, totalHp);
+    tabBody = renderVehicleDynoTab(trafficItem, spec, upState);
+  } else if (activeTab === 'tune') {
+    tabBody = renderVehicleTuneTab(trafficItem, spec, upState, totalHp);
   } else if (activeTab === 'fleet') {
     tabBody = renderVehicleFleetTab(trafficItem, spec);
   } else {
@@ -4675,29 +4530,22 @@ function renderVehicleSheet(trafficItem) {
   }
 
   return `
-    <div class="vehicleWindow" data-vehicle-window data-vehicle-key="${escapeHtml(key)}">
-      <div class="vehicleWindowHeader" data-vehicle-sheet-title>
+    <div class="vehicleWindow mgInspectorWindow" data-vehicle-window data-vehicle-key="${escapeHtml(key)}">
+      <div class="residentWindowHeader" data-vehicle-sheet-title>
         <button type="button" class="inspectorCycleBtn" onclick="window.cycleMobileVehicleSafe?.(-1)" title="Previous Vehicle">◀</button>
         <div class="vehiclePaintSwatch" style="--swatch-main:${paintHex};--swatch-trim:${trimHex}">
           <span>${escapeHtml(badgeCode)}</span>
           <small>STG ${upState.tuneStage}</small>
         </div>
-        <div class="vehicleHeaderMain">
-          <div class="vehicleKickerRow">
-            <span class="vehicleMarketPill">${escapeHtml(spec.market || '365 Custom')}</span>
-            <span class="vehicleStatePill ${isRoadside ? 'warn' : speedKmh > 10 ? 'ok' : 'wait'}">
-              ${isRoadside ? '🚨 TOW OPS' : speedKmh > 10 ? `🟢 ${speedKmh} KM/H` : '🔴 SIGNAL STOP'}
-            </span>
+        <div class="personHeaderMeta">
+          <div class="personHeaderKickerRow">
+            <span class="residentKicker">${escapeHtml(spec.market || '365 Fleet')}</span>
+            <span class="personStatusBadge ${isRoadside ? 'unemployed' : 'hired'}">${escapeHtml(statusText)}</span>
           </div>
-          <b class="vehicleTitleName">${escapeHtml(spec.name || spec.label || key)}</b>
-          <span class="vehicleSubStatus">${escapeHtml(statusText)}</span>
+          <b class="personTitleName">${escapeHtml(spec.name || spec.label || key)}</b>
+          <span class="personWorkplaceLine">⚙️ ${escapeHtml(spec.engine || 'Turbo')} · ${escapeHtml(spec.drivetrain || 'AWD')}</span>
         </div>
-        <div class="vehicleHeaderRight">
-          <div class="vehicleHpOrb">
-            <span>POWER</span>
-            <strong>${totalHp}</strong>
-            <small>HP</small>
-          </div>
+        <div class="personHeaderRight">
           <button type="button" class="inspectorCycleBtn" onclick="window.cycleMobileVehicleSafe?.(1)" title="Next Vehicle">▶</button>
           <button type="button" class="buildingCloseX" onclick="window.closeMobileVehicleSheetSafe?.()" title="Close">✕</button>
         </div>
@@ -4711,30 +4559,25 @@ function renderVehicleSheet(trafficItem) {
 
       <div class="residentTabBar vehicleTabBar" role="tablist">
         <button type="button" class="residentTab ${activeTab === 'telemetry' ? 'active' : ''}" onclick="window.openVehicleTabSafe?.('telemetry')">
-          <b>🏎️</b>
-          <span>Telemetry</span>
-          <small>${speedKmh} km/h</small>
+          <b>📊</b>
+          <span>Status</span>
         </button>
         <button type="button" class="residentTab ${activeTab === 'dyno' ? 'active' : ''}" onclick="window.openVehicleTabSafe?.('dyno')">
+          <b>📈</b>
+          <span>Specs</span>
+        </button>
+        <button type="button" class="residentTab ${activeTab === 'tune' ? 'active' : ''}" onclick="window.openVehicleTabSafe?.('tune')">
           <b>🔧</b>
-          <span>Dyno &amp; Tune</span>
-          <small>${totalHp} HP</small>
+          <span>Tune</span>
         </button>
         <button type="button" class="residentTab ${activeTab === 'fleet' ? 'active' : ''}" onclick="window.openVehicleTabSafe?.('fleet')">
-          <b>🌐</b>
-          <span>Fleet &amp; Race</span>
-          <small>${traffic.length} Cars</small>
+          <b>🚗</b>
+          <span>Fleet</span>
         </button>
       </div>
 
       <div class="residentTabPanel vehicleTabPanel" data-vehicle-tab-panel>
         ${tabBody}
-      </div>
-
-      <div class="mobilePlacedActions residentFooterActions">
-        <button type="button" class="btn gold" onclick="window.tuneSelectedVehicleSafe?.()">⚡ Tune +25 HP (35c)</button>
-        <button type="button" class="btn primary" onclick="window.zoomMobileCityInSafe?.()">🔍 Street Zoom</button>
-        <button type="button" class="btn ghost" onclick="window.closeMobileVehicleSheetSafe?.()">Close</button>
       </div>
     </div>
   `;
@@ -4778,7 +4621,7 @@ function openVehicleInspector(trafficItem, refresh = false) {
 }
 
 window.openVehicleTabSafe = (tabKey = 'telemetry') => {
-  selectedVehicleTab = ['telemetry', 'dyno', 'fleet'].includes(tabKey) ? tabKey : 'telemetry';
+  selectedVehicleTab = ['telemetry', 'dyno', 'tune', 'fleet'].includes(tabKey) ? tabKey : 'telemetry';
   if (selectedVehicleItem) openVehicleInspector(selectedVehicleItem, true);
   return selectedVehicleTab;
 };
@@ -4914,17 +4757,13 @@ function residentActiveTab(menu = selectedResidentMenu) {
   return residentMenuTarget(menu);
 }
 
-function renderResidentTabs(resident, mood) {
+function renderResidentTabs() {
   const active = residentActiveTab();
-  const id = resident.lineKey || resident.key;
-  const prof = mood.profile;
-  const relScore = relationshipScore(id);
-  const relRank = relationshipRank(relScore);
   const tabs = [
-    { key: 'job', label: 'Job & Skills', value: prof.hired ? `LV ${prof.level}` : 'HIRE NOW', icon: '🪪' },
-    { key: 'mood', label: 'Happiness', value: `${mood.score}%`, icon: mood.face },
-    { key: 'modes', label: 'Mode Perks', value: `+${prof.totalModeBonusPct}%`, icon: '⚡' },
-    { key: 'talk', label: 'Talk & Trade', value: `${relRank} ${relScore}`, icon: '💬' }
+    { key: 'job', label: 'Job', icon: '🪪' },
+    { key: 'mood', label: 'Mood', icon: '😊' },
+    { key: 'modes', label: 'Perks', icon: '⚡' },
+    { key: 'talk', label: 'Chat', icon: '💬' }
   ];
   return `
     <div class="residentTabBar" role="tablist" aria-label="Resident information tabs">
@@ -4932,7 +4771,6 @@ function renderResidentTabs(resident, mood) {
         <button type="button" class="residentTab ${active === tab.key ? 'active' : ''}" role="tab" aria-selected="${active === tab.key}" onclick="window.openResidentNeedMenuSafe?.('${tab.key}')">
           <b>${escapeHtml(tab.icon)}</b>
           <span>${escapeHtml(tab.label)}</span>
-          <small>${escapeHtml(tab.value)}</small>
         </button>
       `).join('')}
     </div>
@@ -4947,34 +4785,21 @@ function renderResidentJobTab(resident, mood) {
   const records = problemBuildings(buildingKey, false);
   const primaryRecord = records[0] || allBuildingRecords()[0];
   const bToken = primaryRecord ? targetToken(primaryRecord.target) : '';
-  const bCond = primaryRecord?.condition || { health: 90, stock: 85, score: 88 };
 
   return `
-    <div class="residentTabPane" data-resident-tab-pane="job">
-      <!-- Whiteout Survival / Kingshot Survivor Job Assignment Card -->
-      <div class="personJobActionCard ${prof.hired ? 'is-hired' : 'is-unemployed'}" data-person-job-card>
-        <div class="personJobDetails">
-          <div class="personJobTitleRow">
-            <b>${prof.hired ? `✓ Employed: ${escapeHtml(resident.jobTitle)}` : `● Unemployed — Hire as ${escapeHtml(resident.jobTitle)}`}</b>
-            <span class="personRankPill">${escapeHtml(prof.rank)} · ⚡ ${prof.energy}/${prof.energyMax}</span>
-          </div>
-          <small>
-            ${prof.hired
-              ? `Assigned to ${escapeHtml(resident.business || def.shortName)} & ${escapeHtml(def.name)} · Salary ${prof.salaryCoins}c · +${prof.totalModeBonusPct}% All Mode Buffs.`
-              : `Unemployed (+0% automation). Hire now to automate ${escapeHtml(resident.business || def.shortName)} & unlock +${prof.potentialBonusPct}% game-mode buffs!`}
-          </small>
+    <div class="residentTabPane mgTabPane" data-resident-tab-pane="job">
+      <div class="mgHeroCard ${prof.hired ? 'is-hired' : 'is-unemployed'}" data-person-job-card>
+        <div class="mgHeroLeft">
+          <span class="mgHeroLabel">${prof.hired ? '✓ EMPLOYED SPECIALIST' : '● UNEMPLOYED CANDIDATE'}</span>
+          <strong class="mgHeroValue">${escapeHtml(resident.jobTitle || 'Specialist')} · Lv ${prof.level}</strong>
+          <small class="mgHeroSub">🏢 ${escapeHtml(primaryRecord?.label || def.name)} · +${prof.hired ? prof.totalModeBonusPct : prof.potentialBonusPct}% Mode Buffs</small>
         </div>
-        <div class="personJobButtons">
-          ${!prof.hired
-            ? `<button type="button" class="btn primary personHireBtn" data-hire-person="${escapeHtml(id)}" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">✅ Hire Now · ${prof.hireCost} Coins</button>`
-            : `<button type="button" class="btn gold personTrainBtn" data-train-person="${escapeHtml(id)}" onclick="window.trainWorldPersonSafe?.('${escapeHtml(id)}')">⬆️ Train Lv ${prof.level + 1} (${prof.trainCost}c)</button>
-               <button type="button" class="btn small primary" data-boost-person="${escapeHtml(id)}" onclick="window.boostWorldPersonSafe?.('${escapeHtml(id)}')">⚡ Morale +12%</button>`
-          }
-          <button type="button" class="btn small ghost" onclick="window.openStaffFromWorldSafe?.('${escapeHtml(resident.crewId || id)}')">📋 Crew File</button>
+        <div class="mgHeroRight">
+          <span class="mgBadgePill ${prof.hired ? 'ok' : 'warn'}">${escapeHtml(prof.rank)}</span>
+          <span class="mgBadgePill">⚡ ${prof.energy}/100</span>
         </div>
       </div>
 
-      <!-- 3 Core Specialist Skill Bars -->
       <div class="personSkillsBar">
         ${prof.skills.map((sk) => `
           <div class="personSkillItem">
@@ -4987,21 +4812,15 @@ function renderResidentJobTab(resident, mood) {
         `).join('')}
       </div>
 
-      <!-- Assigned Workplace Quick Bar -->
-      <div class="personWorkplaceStrip">
-        <div class="pwInfo">
-          <b>🏢 Workplace: ${escapeHtml(primaryRecord?.label || def.name)}</b>
-          <span>Stock ${bCond.stock}% · Health ${bCond.health}% · Service ${bCond.score}%</span>
-        </div>
-        <div class="pwActions">
-          ${bToken ? `
-            <button type="button" class="btn small" onclick="window.inspectResidentBuildingSafe?.('${bToken}')">Inspect</button>
-            <button type="button" class="btn small gold" onclick="window.restockResidentBuildingSafe?.('${bToken}')" ${bCond.stock >= 100 ? 'disabled' : ''}>Restock</button>
-            <button type="button" class="btn small primary" onclick="window.repairResidentBuildingSafe?.('${bToken}')" ${bCond.health >= 100 ? 'disabled' : ''}>Repair</button>
-          ` : `
-            <button type="button" class="btn small gold" onclick="window.openMobileBuildTraySafe?.()">Build ${escapeHtml(def.shortName)}</button>
-          `}
-        </div>
+      <div class="mgActionRow">
+        ${!prof.hired
+          ? `<button type="button" class="btn primary mgBigBtn personHireBtn" data-hire-person="${escapeHtml(id)}" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">✅ Hire Now · ${prof.hireCost}c</button>`
+          : `<button type="button" class="btn gold mgBigBtn personTrainBtn" data-train-person="${escapeHtml(id)}" onclick="window.trainWorldPersonSafe?.('${escapeHtml(id)}')">⬆️ Train Lv ${prof.level + 1} · ${prof.trainCost}c</button>
+             <button type="button" class="btn primary mgCompactBtn" data-boost-person="${escapeHtml(id)}" onclick="window.boostWorldPersonSafe?.('${escapeHtml(id)}')">⚡ +12% Morale</button>`
+        }
+        ${bToken ? `
+          <button type="button" class="btn ghost mgCompactBtn" onclick="window.inspectResidentBuildingSafe?.('${bToken}')">🏢 Shop</button>
+        ` : ''}
       </div>
     </div>
   `;
@@ -5017,58 +4836,39 @@ function renderResidentHappinessTab(resident, mood) {
   const shopToken = topShop ? targetToken(topShop.target) : '';
 
   return `
-    <div class="residentTabPane" data-resident-tab-pane="mood">
-      <!-- RollerCoaster Tycoon / Whiteout Survival Connected Happiness Scale Card -->
+    <div class="residentTabPane mgTabPane" data-resident-tab-pane="mood">
       <div class="residentMoodCard residentHero mood-${mood.key}" data-resident-mood-card>
         <div class="residentMoodFace" data-resident-mood-face aria-label="${escapeHtml(mood.label)}">${escapeHtml(mood.face)}</div>
         <div class="residentMoodInfo">
           <div class="personMoodTitleRow">
-            <b>Happiness Scale · ${mood.score}/100 (${escapeHtml(mood.label)})</b>
-            <em class="happinessBuffPill">+${prof.totalModeBonusPct}% All Mode Buffs</em>
+            <b>Happiness · ${mood.score}/100 (${escapeHtml(mood.label)})</b>
+            <em class="happinessBuffPill">+${prof.totalModeBonusPct}% Mode Buffs</em>
           </div>
           <span data-resident-want>${escapeHtml(resident.want)}</span>
-          <div class="residentMoodMeter" style="--resident-mood:${mood.score}%;" aria-label="Resident happiness ${mood.score} percent">
+          <div class="residentMoodMeter" style="--resident-mood:${mood.score}%;">
             <span></span><i></i>
           </div>
           <div class="personHappinessPillars">
             <span class="pillarChip ${prof.jobScore < 50 ? 'warn' : 'ok'}">Job <b>${prof.jobScore}%</b></span>
-            <span class="pillarChip ${mood.service.score < 55 ? 'warn' : 'ok'}">World <b>${mood.service.score}%</b></span>
+            <span class="pillarChip ${mood.service.score < 55 ? 'warn' : 'ok'}">Shop <b>${mood.service.score}%</b></span>
             <span class="pillarChip ${prof.supplyScore < 55 ? 'warn' : 'ok'}">Supply <b>${prof.supplyScore}%</b></span>
-            <span class="pillarChip ${prof.streetScore < 55 ? 'warn' : 'ok'}">Streets <b>${prof.streetScore}%</b></span>
-            <span class="pillarChip ok">Bond <b>${prof.bondScore}%</b></span>
+            <span class="pillarChip ok">Trust <b>${prof.bondScore}%</b></span>
           </div>
         </div>
       </div>
 
-      <!-- 2 Compact Actionable Need Cards (Zero Scroll) -->
-      <div class="personMoodFixGrid">
-        <div class="personMoodFixCard">
-          <div>
-            <b>🏪 ${escapeHtml(topShop?.label || def.name)}</b>
-            <small>${topShop ? `Stock ${topShop.condition.stock}% · Health ${topShop.condition.health}%` : 'Build shop to satisfy need'}</small>
-          </div>
-          <div class="pmFixBtns">
-            ${shopToken ? `
-              <button type="button" class="btn small gold" onclick="window.restockResidentBuildingSafe?.('${shopToken}')">📦 Restock</button>
-              <button type="button" class="btn small primary" onclick="window.repairResidentBuildingSafe?.('${shopToken}')">🔧 Repair</button>
-            ` : `
-              <button type="button" class="btn small gold" onclick="window.openMobileBuildTraySafe?.()">🏗️ Build</button>
-            `}
-          </div>
-        </div>
-        <div class="personMoodFixCard">
-          <div>
-            <b>⚡ Personal Morale &amp; Energy</b>
-            <small>Energy ${prof.energy}/100 · ${prof.hired ? 'Employed Bonus Active' : 'Unemployed (-28 Happy)'}</small>
-          </div>
-          <div class="pmFixBtns">
-            ${!prof.hired ? `
-              <button type="button" class="btn small primary" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">Hire (${prof.hireCost}c)</button>
-            ` : `
-              <button type="button" class="btn small primary" onclick="window.boostWorldPersonSafe?.('${escapeHtml(id)}')">Morale +12%</button>
-            `}
-          </div>
-        </div>
+      <div class="mgActionRow">
+        ${!prof.hired ? `
+          <button type="button" class="btn primary mgBigBtn" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">✅ Hire (${prof.hireCost}c)</button>
+        ` : `
+          <button type="button" class="btn primary mgBigBtn" onclick="window.boostWorldPersonSafe?.('${escapeHtml(id)}')">⚡ Boost Morale +12%</button>
+        `}
+        ${shopToken ? `
+          <button type="button" class="btn gold mgCompactBtn" onclick="window.restockResidentBuildingSafe?.('${shopToken}')">📦 Restock</button>
+          <button type="button" class="btn ghost mgCompactBtn" onclick="window.repairResidentBuildingSafe?.('${shopToken}')">🔧 Repair</button>
+        ` : `
+          <button type="button" class="btn gold mgCompactBtn" onclick="window.openMobileBuildTraySafe?.()">🏗️ Build ${escapeHtml(def.shortName)}</button>
+        `}
       </div>
     </div>
   `;
@@ -5084,49 +4884,36 @@ function renderResidentModesTab(resident, mood) {
   const firstToken = records[0] ? targetToken(records[0].target) : '';
 
   return `
-    <div class="residentTabPane" data-resident-tab-pane="modes">
-      <!-- 2x2 Connected Game Mode Synergy Grid -->
-      <div class="personGameModesGrid">
-        <button type="button" class="personModeCard" onclick="${firstToken ? `window.inspectResidentBuildingSafe?.('${firstToken}')` : `window.openMobileBuildTraySafe?.()`}">
-          <span class="modeKicker">🏙️ World City · ${escapeHtml(def.shortName)}</span>
-          <strong>+${prof.worldYieldBonus}% Shop Yield</strong>
-          <small>Stock ${Math.round(mood.service.avgStock || 0)}% · Health ${Math.round(mood.service.avgHealth || 0)}%</small>
+    <div class="residentTabPane mgTabPane" data-resident-tab-pane="modes">
+      <div class="mgModeGrid">
+        <button type="button" class="mgModeTile" onclick="${firstToken ? `window.inspectResidentBuildingSafe?.('${firstToken}')` : `window.openMobileBuildTraySafe?.()`}">
+          <span>🏙️ World · ${escapeHtml(def.shortName)}</span>
+          <strong>+${prof.worldYieldBonus}% Yield</strong>
         </button>
-        <button type="button" class="personModeCard" onclick="window.openSupplyFromWorld?.()">
-          <span class="modeKicker">📦 Supplies · ${escapeHtml(resident.business || 'Line')}</span>
-          <strong>+${prof.supplyYieldBonus}% Line Output</strong>
-          <small>${prof.hired ? `Auto-Collect ON (Lv ${prof.lineLevel})` : 'Hire to Auto-Collect'}</small>
+        <button type="button" class="mgModeTile" onclick="window.openSupplyFromWorld?.()">
+          <span>📦 Supplies</span>
+          <strong>+${prof.supplyYieldBonus}% Output</strong>
         </button>
-        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('race')">
-          <span class="modeKicker">🏎️ Road Runner Race</span>
+        <button type="button" class="mgModeTile" onclick="window.openPersonGameScreenSafe?.('race')">
+          <span>🏎️ Race Mode</span>
           <strong>+${prof.raceBonusPct}% ${escapeHtml(prof.primarySkillLabel)}</strong>
-          <small>${escapeHtml(resident.raceEffectLabel || 'Speed, Grip & Fuel Bonus')}</small>
         </button>
-        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('merge')">
-          <span class="modeKicker">🔧 Merge &amp; Garage</span>
-          <strong>+${prof.mergeBonusPct}% Craft Speed</strong>
-          <small>${escapeHtml(resident.mergeEffectLabel || 'Workshop Parts & Tools')}</small>
+        <button type="button" class="mgModeTile" onclick="window.openPersonGameScreenSafe?.('merge')">
+          <span>🔧 Merge Bay</span>
+          <strong>+${prof.mergeBonusPct}% Speed</strong>
         </button>
       </div>
 
-      <!-- Compact 12-Person Quick Switcher Pill Grid (Zero Scroll) -->
-      <div class="personQuickRosterBlock">
-        <div class="pqHead">
-          <span>👥 Quick Crew Switcher (${roster.filter((p) => personProfile(p)?.hired).length}/${roster.length} Hired)</span>
-          <small>Tap any specialist to inspect</small>
-        </div>
-        <div class="personQuickRosterPills">
-          ${roster.slice(0, 8).map((item) => {
-            const itemId = item.lineKey || item.key;
-            const pProf = personProfile(item);
-            return `
-              <button type="button" class="pqPill ${itemId === currentId ? 'active' : ''} ${pProf.hired ? 'hired' : 'unemployed'}" onclick="window.inspectResidentByKeySafe?.('${escapeHtml(itemId)}')">
-                <span class="pqDot"></span>
-                <b>${escapeHtml(item.name)}</b>
-              </button>
-            `;
-          }).join('')}
-        </div>
+      <div class="mgPillGrid">
+        ${roster.slice(0, 6).map((item) => {
+          const itemId = item.lineKey || item.key;
+          const pProf = personProfile(item);
+          return `
+            <button type="button" class="mgPillBtn ${itemId === currentId ? 'active' : ''}" onclick="window.inspectResidentByKeySafe?.('${escapeHtml(itemId)}')">
+              ${pProf.hired ? '🟢' : '⚪'} ${escapeHtml(item.name)}
+            </button>
+          `;
+        }).join('')}
       </div>
     </div>
   `;
@@ -5137,23 +4924,21 @@ function renderResidentTalkTab(resident) {
   const node = currentNpcNode(resident);
   const score = relationshipScore(id);
   const rank = relationshipRank(score);
-  const replies = (node.choices || []).slice(0, 4).map((choice) => (
-    `<button type="button" class="btn small" onclick="window.replyToNpc?.('${id}','${choice.id}')">${escapeHtml(choice.label)}</button>`
+  const replies = (node.choices || []).slice(0, 3).map((choice) => (
+    `<button type="button" class="btn small primary" onclick="window.replyToNpc?.('${id}','${choice.id}')">💬 ${escapeHtml(choice.label)}</button>`
   )).join('');
   const market = renderNpcMarket(resident);
 
   return `
-    <div class="residentTabPane" data-resident-tab-pane="talk">
+    <div class="residentTabPane mgTabPane" data-resident-tab-pane="talk">
       <div class="npcTalk compactTalkTab">
         <div class="npcBond">
-          <b>🤝 Trust Rank: ${escapeHtml(rank)}</b>
+          <b>🤝 Trust: ${escapeHtml(rank)} (${score}/100)</b>
           <span><i style="width:${score}%"></i></span>
-          <small>${score}/100</small>
         </div>
         <p class="npcSpeechBubble">"${escapeHtml(spokenText(node, score))}"</p>
         <div class="npcReplies">${replies}</div>
         <div class="npcTradeSection">
-          <span class="npcTradeKicker">🛒 Street Barter &amp; Resource Favor</span>
           ${market}
         </div>
       </div>
@@ -5180,7 +4965,7 @@ function renderResidentSheet(resident) {
   const rarityTag = prof.level >= 4 ? 'SSR' : isSupply ? 'SR' : 'R';
 
   return `
-    <div class="residentWindow" data-resident-window data-person-id="${escapeHtml(id)}">
+    <div class="residentWindow mgInspectorWindow" data-resident-window data-person-id="${escapeHtml(id)}">
       <div class="residentWindowHeader" data-resident-sheet-title>
         <button type="button" class="inspectorCycleBtn" onclick="window.cycleWorldPersonSafe?.(-1)" title="Previous Person">◀</button>
         <div class="personHeroFrame rarity-${rarityTag.toLowerCase()}">
@@ -5189,19 +4974,15 @@ function renderResidentSheet(resident) {
         </div>
         <div class="personHeaderMeta">
           <div class="personHeaderKickerRow">
-            <span class="residentKicker">${isSupply ? 'SUPPLY MANAGER' : 'CITY SPECIALIST'}</span>
+            <span class="residentKicker">${isSupply ? 'STAFF' : 'RESIDENT'}</span>
             <span class="personStatusBadge ${prof.hired ? 'hired' : 'unemployed'}" data-person-employment-status>
-              ${prof.hired ? `✓ HIRED · LV ${prof.level}` : '● UNEMPLOYED'}
+              ${prof.hired ? `✓ HIRED · LV ${prof.level}` : '● UNEMPLOYED'} · ${escapeHtml(mood.face)} ${mood.score}%
             </span>
           </div>
-          <b class="personTitleName">${escapeHtml(resident.name)} <small class="personRoleTag">· ${escapeHtml(resident.jobTitle || 'Specialist')}</small></b>
-          <span class="personWorkplaceLine">🏢 ${escapeHtml(resident.desk || resident.business || def.name)} · Linked: ${escapeHtml(def.shortName)}</span>
+          <b class="personTitleName">${escapeHtml(resident.name)}</b>
+          <span class="personWorkplaceLine">${escapeHtml(resident.jobTitle || 'Specialist')} · 🏢 ${escapeHtml(def.shortName)}</span>
         </div>
         <div class="personHeaderRight">
-          <div class="personMoodOrb mood-${mood.key}" onclick="window.openResidentNeedMenuSafe?.('mood')" title="View Happiness Scale">
-            <span>${escapeHtml(mood.face)}</span>
-            <strong>${mood.score}%</strong>
-          </div>
           <button type="button" class="inspectorCycleBtn" onclick="window.cycleWorldPersonSafe?.(1)" title="Next Person">▶</button>
           <button type="button" class="buildingCloseX" onclick="window.closeMobileResidentSheetSafe?.()" title="Close">✕</button>
         </div>
@@ -5213,19 +4994,10 @@ function renderResidentSheet(resident) {
         </div>
       ` : ''}
 
-      <!-- 4 Zero-Scroll Mobile Tycoon Tabs: Job & Skills | Happiness | Mode Perks | Talk & Trade -->
       ${renderResidentTabs(resident, mood)}
 
       <div class="residentTabPanel" data-resident-tab-panel>
         ${renderResidentActionMenu(resident, mood)}
-      </div>
-
-      <div class="mobilePlacedActions residentFooterActions">
-        ${!prof.hired
-          ? `<button type="button" class="btn primary" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">✅ Hire Now (${prof.hireCost}c)</button>`
-          : `<button type="button" class="btn gold" onclick="window.trainWorldPersonSafe?.('${escapeHtml(id)}')">⬆️ Train Lv ${prof.level + 1} (${prof.trainCost}c)</button>`}
-        <button type="button" class="btn primary" onclick="window.openPersonGameScreenSafe?.('${isSupply ? 'lines' : 'race'}')">Open ${isSupply ? 'Supplies' : 'Race'}</button>
-        <button type="button" class="btn ghost" onclick="window.closeMobileResidentSheetSafe?.()">Close</button>
       </div>
     </div>
   `;
@@ -5700,7 +5472,7 @@ window.openSupplyFromWorld = () => {
 };
 
 window.openBuildingTabSafe = (tabKey = 'overview') => {
-  selectedBuildingTab = ['overview', 'staff', 'modes', 'district'].includes(tabKey) ? tabKey : 'overview';
+  selectedBuildingTab = ['overview', 'upgrade', 'staff', 'modes', 'district'].includes(tabKey) ? tabKey : 'overview';
   if (selectedBuildingTarget) openBuildingSheet(selectedBuildingTarget, true);
   return selectedBuildingTab;
 };
