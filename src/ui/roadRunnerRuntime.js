@@ -477,10 +477,10 @@ let activeGhostMode = 'ghost2';
 let ghostStore = loadGhostStore();
 let saveData = loadSave();
 let images = loadImages();
-let input = { gas: false, brake: false };
+let input = { gas: false, brake: false, boost: false };
 let game = null;
 let lastTime = 0;
-let activeTab = 'routes';
+let activeTab = 'drive';
 let activeVehicleFilter = 'all';
 let leaderboardSearch = '';
 
@@ -513,6 +513,7 @@ function loadSave() {
     const parsed = JSON.parse(raw);
     const unlockedVehicles = Array.isArray(parsed.unlockedVehicles) && parsed.unlockedVehicles.length ? parsed.unlockedVehicles : ['hatchback'];
     const selectedVehicle = unlockedVehicles.includes(parsed.selectedVehicle) ? parsed.selectedVehicle : 'hatchback';
+    const rawRivals = Array.isArray(parsed.selectedRivals) ? parsed.selectedRivals : ['friend_mia', 'local_scout'];
     const result = {
       coins: parsed.coins || 0,
       parts: parsed.parts || 0,
@@ -523,7 +524,7 @@ function loadSave() {
       unlockedVehicles,
       selectedVehicle,
       completedMissions: Array.isArray(parsed.completedMissions) ? parsed.completedMissions : [],
-      selectedRivals: normalizeSelectedRivals(parsed.selectedRivals),
+      selectedRivals: normalizeSelectedRivals(rawRivals),
       lifetimeFuel: parsed.lifetimeFuel || 0,
       lifetimeWear: parsed.lifetimeWear || 0,
       lifetimeRepairs: parsed.lifetimeRepairs || 0,
@@ -547,7 +548,7 @@ function loadSave() {
     }
     return result;
   } catch {
-    const fallback = { coins: 0, parts: 0, tools: 0, bestDistance: 0, bestTrail: [], upgrades: defaultUpgrades(), unlockedVehicles: ['hatchback'], selectedVehicle: 'hatchback', completedMissions: [], selectedRivals: [], lifetimeFuel: 0, lifetimeWear: 0, lifetimeRepairs: 0, lifetime: { distance: 0, coinsEarned: 0, partsEarned: 0, runs: 0 }, missions: null, stageProgress: normalizeStageProgress() };
+    const fallback = { coins: 0, parts: 0, tools: 0, bestDistance: 0, bestTrail: [], upgrades: defaultUpgrades(), unlockedVehicles: ['hatchback'], selectedVehicle: 'hatchback', completedMissions: [], selectedRivals: ['friend_mia', 'local_scout'], lifetimeFuel: 0, lifetimeWear: 0, lifetimeRepairs: 0, lifetime: { distance: 0, coinsEarned: 0, partsEarned: 0, runs: 0 }, missions: null, stageProgress: normalizeStageProgress() };
     ensureMissionState(fallback);
     return fallback;
   }
@@ -731,9 +732,54 @@ function routeUnlocked(key) {
   return (saveData.bestDistance || 0) >= (ROUTES[key].unlock || 0);
 }
 
+function getWorldTycoonRaceBuffs() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(COMPANION_SAVE_KEY) || '{}');
+    const worldRuntime = window.__worldMobileRuntimeState || {};
+    const stage = Math.max(1, Number(parsed.stage) || 1);
+    const cityMood = clamp(Number(worldRuntime.cityHappiness) || 82, 40, 100);
+    const moodBonus = Math.max(0, (cityMood - 50) / 50); // 0..1
+    const speedPct = Math.round(clamp(4 + stage * 2 + moodBonus * 6, 4, 24));
+    const accelPct = Math.round(clamp(5 + stage * 2.5 + moodBonus * 6, 5, 28));
+    const wearResistPct = Math.round(clamp(6 + stage * 2 + moodBonus * 8, 6, 30));
+    const fuelBonusPct = Math.round(clamp(5 + stage * 2 + moodBonus * 5, 5, 25));
+    const coinBonusPct = Math.round(clamp(8 + stage * 3 + moodBonus * 10, 8, 35));
+    return {
+      speedMult: 1 + speedPct / 100,
+      accelMult: 1 + accelPct / 100,
+      wearMult: 1 + wearResistPct / 100,
+      fuelMult: 1 + fuelBonusPct / 100,
+      coinMult: 1 + coinBonusPct / 100,
+      speedPct,
+      accelPct,
+      wearResistPct,
+      fuelBonusPct,
+      coinBonusPct,
+      cityMood: Math.round(cityMood),
+      summary: `+${speedPct}% SPD · -${wearResistPct}% Wear · +${coinBonusPct}% Loot`
+    };
+  } catch {
+    return {
+      speedMult: 1.08,
+      accelMult: 1.10,
+      wearMult: 1.12,
+      fuelMult: 1.08,
+      coinMult: 1.15,
+      speedPct: 8,
+      accelPct: 10,
+      wearResistPct: 12,
+      fuelBonusPct: 8,
+      coinBonusPct: 15,
+      cityMood: 84,
+      summary: '+8% SPD · -12% Wear · +15% Loot'
+    };
+  }
+}
+
 function vehicleStats() {
   const u = normalizeUpgrades(saveData.upgrades);
   const vehicle = selectedVehicle();
+  const worldBuffs = getWorldTycoonRaceBuffs();
   const engineUpgrade = u.engine - 1;
   const tireUpgrade = u.tires - 1;
   const fuelUpgrade = u.fuelTank - 1;
@@ -743,25 +789,26 @@ function vehicleStats() {
     vehicleClass: vehicle.cls,
     engineLevel: u.engine,
     transmissionLevel: u.transmission,
-    acceleration: (36 + engineUpgrade * 2.55 + transmissionUpgrade * 1.15 + tireUpgrade * 0.5) * vehicle.accel,
-    topSpeed: (150 + tireUpgrade * 6.2 + engineUpgrade * 2.0 + transmissionUpgrade * 1.2) * vehicle.speed,
-    reverseTop: 28 + transmissionUpgrade * 3.8,
-    drag: Math.max(0.65, 3.25 - tireUpgrade * 0.12 - suspensionUpgrade * 0.04 - transmissionUpgrade * 0.04),
-    grip: 0.82 + tireUpgrade * 0.026 + suspensionUpgrade * 0.012,
-    maxFuel: (105 + fuelUpgrade * 24) * vehicle.fuel,
-    fuelUse: Math.max(1.55, 3.75 - fuelUpgrade * 0.11 + engineUpgrade * 0.045 + tireUpgrade * 0.015),
-    handling: (0.1 + suspensionUpgrade * 0.017 + tireUpgrade * 0.004) * vehicle.handling,
-    spring: 5.2 + suspensionUpgrade * 0.48,
-    damping: 2.9 + suspensionUpgrade * 0.19,
-    durability: (1 + u.durability * 0.1) * vehicle.durability,
-    wearLimit: 100 + u.durability * 12,
-    climb: 1 + transmissionUpgrade * 0.07 + engineUpgrade * 0.024 + suspensionUpgrade * 0.012,
-    brakePower: 54 + u.brakes * 5.4,
-    repairPower: 6 + u.repairKit * 2,
-    launchBonus: 0.52 + engineUpgrade * 0.022 + transmissionUpgrade * 0.018,
-    midRangePull: 1 + engineUpgrade * 0.022 + tireUpgrade * 0.01 + transmissionUpgrade * 0.012,
-    topEndPull: 1 + engineUpgrade * 0.012 + tireUpgrade * 0.018 + transmissionUpgrade * 0.012,
-    hazardSpeedResistance: clamp(tireUpgrade * 0.01 + suspensionUpgrade * 0.014, 0, 0.34)
+    worldBuffs,
+    acceleration: (38 + engineUpgrade * 2.65 + transmissionUpgrade * 1.2 + tireUpgrade * 0.55) * vehicle.accel * worldBuffs.accelMult,
+    topSpeed: (154 + tireUpgrade * 6.4 + engineUpgrade * 2.1 + transmissionUpgrade * 1.3) * vehicle.speed * worldBuffs.speedMult,
+    reverseTop: 32 + transmissionUpgrade * 4.0,
+    drag: Math.max(0.62, 3.15 - tireUpgrade * 0.12 - suspensionUpgrade * 0.04 - transmissionUpgrade * 0.04),
+    grip: 0.84 + tireUpgrade * 0.026 + suspensionUpgrade * 0.014,
+    maxFuel: (110 + fuelUpgrade * 25) * vehicle.fuel * worldBuffs.fuelMult,
+    fuelUse: Math.max(1.45, 3.65 - fuelUpgrade * 0.11 + engineUpgrade * 0.042 + tireUpgrade * 0.015),
+    handling: (0.11 + suspensionUpgrade * 0.018 + tireUpgrade * 0.005) * vehicle.handling,
+    spring: 5.4 + suspensionUpgrade * 0.48,
+    damping: 3.0 + suspensionUpgrade * 0.2,
+    durability: (1 + u.durability * 0.11) * vehicle.durability * worldBuffs.wearMult,
+    wearLimit: 105 + u.durability * 13,
+    climb: 1.04 + transmissionUpgrade * 0.075 + engineUpgrade * 0.026 + suspensionUpgrade * 0.014,
+    brakePower: 62 + u.brakes * 6.0,
+    repairPower: 7 + u.repairKit * 2.2,
+    launchBonus: 0.56 + engineUpgrade * 0.024 + transmissionUpgrade * 0.02,
+    midRangePull: 1.02 + engineUpgrade * 0.024 + tireUpgrade * 0.012 + transmissionUpgrade * 0.014,
+    topEndPull: 1.02 + engineUpgrade * 0.014 + tireUpgrade * 0.02 + transmissionUpgrade * 0.014,
+    hazardSpeedResistance: clamp(tireUpgrade * 0.012 + suspensionUpgrade * 0.015, 0, 0.38)
   };
 }
 
@@ -1245,17 +1292,18 @@ function resetRun() {
   route.road = mapStage.roadColor || route.road;
   route.seed = mapStage.seed || route.seed;
   route.difficulty = mapStage.difficulty || route.difficulty;
-  route.theme = mapStage.theme || 'monaco';
-  route.bgAsset = '';
+  route.theme = mapStage.theme || 'manila';
+  route.bgAsset = ROUTES[activeRoute]?.bgAsset || 'routeTrack';
   const scale = mapStage.targetM / ROUTES[activeRoute].meters;
   route.length = Math.max(2400, Math.round(route.length * scale));
   route.meters = mapStage.targetM;
   route.terrain = makeTerrainProfile(route);
   const badge = document.querySelector('[data-rr-route]');
-  if (badge) badge.textContent = mapStage.id;
+  if (badge) badge.textContent = route.label;
   const stats = vehicleStats();
   const director = makeDirector(route);
   const stage = currentGhostStage();
+  const activeGhosts = ghostsForRun(route, stage);
   game = {
     route,
     routeKey: activeRoute,
@@ -1294,11 +1342,22 @@ function resetRun() {
     eventText: '',
     eventTimer: 0,
     floaters: [],
+    particles: [],
     boostPulse: 0,
+    boostCharge: 45,
+    boostActive: false,
+    boostBurstTimer: 0,
+    prevGear: 1,
+    crestCooldown: 0,
+    cleanBrakes: 0,
+    airtimeCount: 0,
+    overtakenGhosts: new Set(),
+    liveRank: 1,
+    totalRacers: 1 + activeGhosts.length,
     hazardsCleared: 0,
     usedRepair: false,
-    activeGhosts: ghostsForRun(route, stage),
-    ghostColors: ['#22c55e', '#f97316', '#e5e7eb']
+    activeGhosts,
+    ghostColors: ['#22c55e', '#f97316', '#38bdf8']
   };
   game.telemetry = computeTelemetry();
   hidePostRunPanel();
@@ -1307,22 +1366,81 @@ function resetRun() {
 
 function shellHtml() {
   const tabs = [
-    ['drive', 'Drive', 'run'],
-    ['leaderboard', 'Ranks', 'search'],
-    ['garage', 'Garage', 'tune'],
-    ['vehicles', 'Vehicles', 'cars'],
-    ['routes', 'Map', 'map'],
-    ['missions', 'Missions', 'goals']
+    ['drive', 'Drive', '🏁'],
+    ['routes', 'Map', '🗺️'],
+    ['vehicles', 'Cars', '🏎️'],
+    ['garage', 'Tune', '🔧'],
+    ['leaderboard', 'Ranks', '🏆'],
+    ['missions', 'Quests', '📋']
   ];
+  const car = selectedVehicle();
+  const buffs = getWorldTycoonRaceBuffs();
   return `<section class="card roadRunnerShell GamePanel" data-component="GamePanel" data-rr-active-tab="${activeTab}">
     <div class="roadRunnerHud"><div class="roadRunnerStat"><b data-rr-speed>0</b><span>KM/H</span></div><div class="tach" aria-label="RPM gauge"><svg viewBox="0 0 120 72"><path d="M14 62 A46 46 0 0 1 106 62" fill="none" stroke="#243140" stroke-width="8"/><path d="M86 24 A46 46 0 0 1 106 62" fill="none" stroke="#dc2626" stroke-width="8"/><line class="tachNeedle" data-rr-needle x1="60" y1="62" x2="60" y2="22" stroke="#f8fafc" stroke-width="2"/><circle cx="60" cy="62" r="4" fill="#e2e8f0"/></svg><b data-rr-rpm>825</b><span>RPM</span></div><div class="roadRunnerStat"><b data-rr-gear>G1</b><span>Gear</span></div><div class="roadRunnerStat"><b data-rr-distance>0m</b><span>Distance</span></div><div class="roadRunnerStat"><b data-rr-fuel>100%</b><span>Fuel</span></div></div>
-    <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" ${key === 'leaderboard' ? 'data-guide-target="previewGhostRace"' : ''} onclick="window.rrSetTab?.('${key}')"><b>${label}</b></button>`).join('')}</nav>
+    <nav class="racerInnerNav" data-rr-tabs>${tabs.map(([key, label, icon]) => `<button class="${activeTab === key ? 'active' : ''}" data-rr-tab="${key}" ${key === 'leaderboard' ? 'data-guide-target="previewGhostRace"' : ''} onclick="window.rrSetTab?.('${key}')"><i class="rrTabEmoji">${icon}</i><b>${label}</b></button>`).join('')}</nav>
     <div class="racerPages">
       <section class="racerPage ${activeTab === 'drive' ? 'active' : ''}" data-rr-page="drive">
-        <div class="roadRunnerGameFrame"><div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div><div class="roadRunnerOverlay"><div class="roadRunnerBadge" data-rr-route>${currentStage().id}</div><button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button></div></div>
+        <div class="roadRunnerGameFrame">
+          <div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div>
+          <div class="roadRunnerOverlay">
+            <div class="roadRunnerBadge" data-rr-route>${currentStage().name || currentStage().id}</div>
+            <div class="rrLiveRankBadge" data-rr-rank-pill>🏆 1st/3</div>
+            <button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button>
+          </div>
+          <div class="rrRouteProgressBar" aria-label="Route progress">
+            <div class="rrRouteTrack">
+              <div class="rrRouteFill" data-rr-progress-fill style="width:0%"></div>
+              <div class="rrRouteRivals" data-rr-progress-rivals></div>
+              <div class="rrRoutePlayerDot" data-rr-progress-car style="left:0%">🏎️</div>
+              <div class="rrRouteFinishFlag">🏁</div>
+            </div>
+            <div class="rrRouteMetaRow">
+              <span data-rr-progress-label>0m / 360m (0%)</span>
+              <span class="rrLootStrip">🪙 <b data-rr-run-coins>0</b> · ⚙️ <b data-rr-run-parts>0</b> · 🧰 <b data-rr-run-tools>0</b></span>
+            </div>
+          </div>
+        </div>
         <div class="racePedalRow">
-          <button class="raceGasPedal raceBrakePedal" type="button" data-rr-control="brake" aria-label="Brake pedal"><span class="raceGasHinge"></span><span class="raceGasPad"><b>BRAKE</b></span></button>
-          <button class="raceGasPedal" type="button" data-rr-control="gas" data-guide-target="raceBoost" aria-label="Gas pedal"><span class="raceGasHinge"></span><span class="raceGasPad"><b>GAS</b></span></button>
+          <button class="raceGasPedal raceBrakePedal" type="button" data-rr-control="brake" aria-label="Brake pedal">
+            <span class="raceGasHinge"></span>
+            <span class="racePedalPressure"><i data-rr-brake-bar style="height:0%"></i></span>
+            <span class="raceGasPad">
+              <small class="racePedalSub" data-rr-brake-hint>ABS · REV</small>
+              <b>BRAKE</b>
+              <em class="racePedalKey">◀ HOLD</em>
+            </span>
+          </button>
+          <div class="rrCockpitCenter">
+            <div class="rrShiftStrip">
+              <div class="rrShiftLeds" data-rr-shift-lights>
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+              <div class="rrCockpitReadout">
+                <b class="rrCockpitGear" data-rr-cockpit-gear>G1</b>
+                <span data-rr-cockpit-telemetry>0 KM/H · 100% GRIP</span>
+              </div>
+            </div>
+            <button class="rrNitroButton" type="button" data-rr-control="boost" aria-label="Activate Nitro Boost">
+              <span class="rrNitroFill" data-rr-boost-fill style="width:45%"></span>
+              <span class="rrNitroCopy">
+                <b>⚡ NITRO BOOST</b>
+                <small data-rr-boost-pct>45% READY</small>
+              </span>
+            </button>
+            <div class="rrWorldSynergyPill" title="Active bonuses from your 365 Auto World city & crew">
+              <span>🏙️ ${escapeHtml(car.label)}</span>
+              <b data-rr-world-buff>${escapeHtml(buffs.summary)}</b>
+            </div>
+          </div>
+          <button class="raceGasPedal" type="button" data-rr-control="gas" data-guide-target="raceBoost" aria-label="Gas pedal">
+            <span class="raceGasHinge"></span>
+            <span class="racePedalPressure"><i data-rr-gas-bar style="height:0%"></i></span>
+            <span class="raceGasPad">
+              <small class="racePedalSub" data-rr-gas-hint>THROTTLE</small>
+              <b>GAS</b>
+              <em class="racePedalKey">HOLD ▶</em>
+            </span>
+          </button>
         </div>
       </section>
       <div class="roadRunnerEndPanel rrPostRunPanel" hidden data-rr-end-panel></div>
@@ -1345,29 +1463,105 @@ function updateHud() {
   publishRoadRunnerAssetState();
   refreshRaceCommand();
   const fuelPct = clamp(Math.floor(game.fuel / game.stats.maxFuel * 100), 0, 100);
+  const wearPct = clamp(Math.floor(game.wear / game.stats.wearLimit * 100), 0, 100);
   const nextFuel = nextFuelMeters();
-  setText('[data-rr-speed]', `${Math.round(game.telemetry.kmh)}`);
+  const kmh = Math.round(game.telemetry.kmh);
+  setText('[data-rr-speed]', `${kmh}`);
   setText('[data-rr-route]', game.route?.label || game.stageCode || currentStage().id);
   setText('[data-rr-rpm]', `${Math.round(game.telemetry.rpm)}`);
   const racing = Boolean(document.querySelector('#screen-race.active')) && !game.finished;
-  setEngineSound({ rpm: game.telemetry.rpm, throttle: input.gas, active: racing });
+  setEngineSound({ rpm: game.telemetry.rpm, throttle: input.gas || game.boostActive, active: racing });
   const sliding = input.brake && game.telemetry.kmh > 18;
   setTireScreech({ active: racing, intensity: sliding ? Math.min(1, game.telemetry.kmh / 80) : 0 });
   const needle = document.querySelector('[data-rr-needle]');
+  const idle = game.telemetry.idleRpm || 800;
+  const redline = game.telemetry.redlineRpm || 7000;
+  const sweep = Math.max(0, Math.min(1, (game.telemetry.rpm - idle) / (redline - idle)));
   if (needle) {
-    const idle = game.telemetry.idleRpm || 800;
-    const redline = game.telemetry.redlineRpm || 7000;
-    const sweep = Math.max(0, Math.min(1, (game.telemetry.rpm - idle) / (redline - idle)));
     needle.setAttribute('transform', `rotate(${-110 + sweep * 220} 60 62)`);
   }
   setText('[data-rr-gear]', game.telemetry.gearLabel || 'G1');
+  setText('[data-rr-cockpit-gear]', game.telemetry.gearLabel || 'G1');
+  const gradeDeg = Math.round((-game.pitch * 180) / Math.PI);
+  const gradeStr = gradeDeg > 2 ? `▲+${gradeDeg}°` : gradeDeg < -2 ? `▼${gradeDeg}°` : 'FLAT';
+  setText('[data-rr-cockpit-telemetry]', `${kmh} KM/H · ${gradeStr} · ${Math.round((game.traction || 1) * 100)}% GRIP`);
   setText('[data-rr-distance]', `${Math.floor(game.distanceM)}m`);
   setText('[data-rr-fuel]', `${fuelPct}% · ${nextFuel}m`);
-  setText('[data-rr-wear]', `${Math.floor(Math.min(100, game.wear / game.stats.wearLimit * 100))}%`);
+  setText('[data-rr-wear]', `${wearPct}%`);
   setText('[data-rr-coins]', `${formatSmall(saveData.coins)} +${game.coins}`);
   setText('[data-rr-parts]', `${formatSmall(saveData.parts)} +${game.parts}`);
   setText('[data-rr-tools]', `${formatSmall(saveData.tools || 0)} +${game.tools}`);
   setText('[data-rr-best]', `${formatSmall(saveData.bestDistance)}m`);
+  setText('[data-rr-run-coins]', `${game.coins}`);
+  setText('[data-rr-run-parts]', `${game.parts}`);
+  setText('[data-rr-run-tools]', `${game.tools}`);
+
+  // Route progress bar & live rival rank
+  const routeLen = Math.max(1, game.route?.length || 2400);
+  const progressPct = clamp((game.distancePx / routeLen) * 100, 0, 100);
+  const progressFill = document.querySelector('[data-rr-progress-fill]');
+  if (progressFill) progressFill.style.width = `${progressPct.toFixed(1)}%`;
+  const progressCar = document.querySelector('[data-rr-progress-car]');
+  if (progressCar) progressCar.style.left = `${clamp(progressPct, 2, 96).toFixed(1)}%`;
+  const targetM = game.route?.meters || Math.round(routeLen * 0.15);
+  setText('[data-rr-progress-label]', `${Math.floor(game.distanceM)}m / ${targetM}m (${Math.round(progressPct)}%)`);
+
+  // Rival ghost progress dots & live rank
+  const ghosts = game.activeGhosts || [];
+  let aheadCount = 0;
+  const rivalDotsHtml = ghosts.map((ghost, idx) => {
+    const sample = sampleGhostAt(ghost, game.elapsed * 1000);
+    const gx = Math.max(0, sample.x || 0);
+    if (gx > game.distancePx + 4) aheadCount += 1;
+    const gPct = clamp((gx / routeLen) * 100, 1, 97);
+    const color = game.ghostColors?.[idx] || '#38bdf8';
+    return `<i class="rrRouteRivalDot" style="left:${gPct.toFixed(1)}%;background:${color}" title="${escapeAttr(ghost.playerName || 'Rival')}"></i>`;
+  }).join('');
+  const rivalsHost = document.querySelector('[data-rr-progress-rivals]');
+  if (rivalsHost && rivalsHost.innerHTML !== rivalDotsHtml) rivalsHost.innerHTML = rivalDotsHtml;
+  const rank = 1 + aheadCount;
+  game.liveRank = rank;
+  game.totalRacers = 1 + ghosts.length;
+  const ord = rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : `${rank}th`;
+  setText('[data-rr-rank-pill]', ghosts.length ? `🏆 ${ord}/${1 + ghosts.length}` : '🏁 SOLO');
+
+  // Shift LEDs & Pedal pressure bars
+  const shiftHost = document.querySelector('[data-rr-shift-lights]');
+  if (shiftHost) {
+    const leds = shiftHost.querySelectorAll('i');
+    const activeCount = Math.round(sweep * leds.length);
+    leds.forEach((led, idx) => {
+      const on = idx < activeCount;
+      const tier = idx >= 6 ? 'red' : idx >= 4 ? 'amber' : 'green';
+      led.className = on ? `on ${tier}` : '';
+    });
+  }
+  const gasBar = document.querySelector('[data-rr-gas-bar]');
+  if (gasBar) gasBar.style.height = `${input.gas ? Math.max(30, Math.round(sweep * 100)) : 0}%`;
+  const brakeBar = document.querySelector('[data-rr-brake-bar]');
+  if (brakeBar) brakeBar.style.height = `${input.brake ? 100 : 0}%`;
+
+  const upcomingHazard = game.hazards?.find((h) => h.x + h.length > game.x && h.x - game.x < 340);
+  if (upcomingHazard && kmh >= DAMAGE_SPEED_KMH) {
+    setText('[data-rr-brake-hint]', '⚠️ BRAKE NOW!');
+  } else if (input.brake && game.speed < -1) {
+    setText('[data-rr-brake-hint]', '◀ REVERSE');
+  } else {
+    setText('[data-rr-brake-hint]', 'ABS · REV');
+  }
+  setText('[data-rr-gas-hint]', game.boostActive ? '🔥 OVERDRIVE' : input.gas ? `PULL ${game.telemetry.gearLabel}` : 'THROTTLE');
+
+  // Nitro boost button state
+  const boostCharge = clamp(Math.round(game.boostCharge || 0), 0, 100);
+  const boostFill = document.querySelector('[data-rr-boost-fill]');
+  if (boostFill) boostFill.style.width = `${boostCharge}%`;
+  const boostBtn = document.querySelector('[data-rr-control="boost"]');
+  if (boostBtn) {
+    boostBtn.classList.toggle('ready', boostCharge >= 20 || game.boostActive);
+    boostBtn.classList.toggle('active', Boolean(game.boostActive));
+  }
+  setText('[data-rr-boost-pct]', game.boostActive ? `🔥 BOOSTING ${boostCharge}%` : boostCharge >= 20 ? `${boostCharge}% · TAP BOOST!` : `CHARGING ${boostCharge}%`);
+
   window.__rrHudState = {
     coins: saveData.coins,
     runCoins: game.coins,
@@ -1376,6 +1570,7 @@ function updateHud() {
     tools: saveData.tools || 0,
     runTools: game.tools,
     fuelPct,
+    wearPct,
     nextFuelMeters: nextFuel,
     speedKmh: game.telemetry.kmh,
     rpm: game.telemetry.rpm,
@@ -1384,7 +1579,11 @@ function updateHud() {
     topSpeedKmh: game.telemetry.topSpeedKmh,
     speedometerMaxKmh: game.telemetry.speedometerMaxKmh,
     rpmMax: game.telemetry.redlineRpm,
-    damageThresholdKmh: DAMAGE_SPEED_KMH
+    damageThresholdKmh: DAMAGE_SPEED_KMH,
+    boostCharge,
+    boostActive: Boolean(game.boostActive),
+    liveRank: game.liveRank,
+    totalRacers: game.totalRacers
   };
 }
 
@@ -2471,7 +2670,7 @@ function draw() {
   const width = canvas.width;
   const height = canvas.height;
   const route = game.route;
-  const cameraX = clamp(game.x - width * 0.34, 0, Math.max(0, route.length - width + 260));
+  const cameraX = clamp(game.x - width * 0.32, 0, Math.max(0, route.length - width + 260));
   drawBackground(width, height, route, cameraX);
   drawRoad(width, height, route, cameraX);
   drawSpeedStreaks(width, height, route, cameraX);
@@ -2480,126 +2679,194 @@ function draw() {
   drawMilestoneCheckpoints(width, height, route, cameraX);
   drawPickups(width, height, route, cameraX);
   drawGhosts(width, height, route, cameraX);
+  drawParticles(width, height, cameraX);
   drawPlayer(width, height, route, cameraX);
   drawFinish(width, height, route, cameraX);
   drawNextFuelGuide(width, height, route, cameraX);
+  drawApproachingHazardGuide(width, height, route, cameraX);
   drawFloatingRewards(width, height, route, cameraX);
   drawProblemWarning(width, height);
   drawRunMeters(width, height);
 }
 
 function drawBackground(width, height, route, cameraX) {
-  if (route.theme) {
-    drawCityBackdrop(width, height, route, cameraX);
-    return;
-  }
-  const bg = images[route.bgAsset];
-  if (bg?.ready && bg.naturalWidth > 0) {
-    const scale = height / Math.max(1, bg.naturalHeight);
-    const drawW = Math.max(width, bg.naturalWidth * scale);
-    const parallax = (cameraX * 0.09) % drawW;
-    for (let x = -parallax; x < width + drawW; x += drawW) {
-      ctx.drawImage(bg, x, 0, drawW, height);
-    }
-    return;
-  }
-
-  const sky = ctx.createLinearGradient(0, 0, 0, height);
-  sky.addColorStop(0, route.skyA);
-  sky.addColorStop(0.58, route.skyB);
-  sky.addColorStop(0.59, route.grass);
-  sky.addColorStop(1, '#2f8f3f');
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, width, height);
-  for (let worldX = Math.floor(cameraX / 520) * 520 - 200; worldX < cameraX + width + 520; worldX += 520) {
-    ctx.globalAlpha = 0.7;
-    ctx.fillStyle = '#fff';
-    roundedCloud(worldX - cameraX, 52 + (worldX % 110));
-    ctx.globalAlpha = 1;
-  }
+  drawCityBackdrop(width, height, route, cameraX);
 }
 
 function drawCityBackdrop(width, height, route, cameraX) {
-  const horizon = height * 0.58;
+  const horizon = Math.round(height * 0.57);
+  const themes = {
+    manila: { skyTop: '#071b34', skyMid: '#134e7a', skyBot: '#67c6e3', sun: '#fde047', water: '#0284c7', waterHi: '#38bdf8', ground: '#15803d', groundBot: '#064e3b', mtnFar: '#1e3a5f', mtnNear: '#1e40af', bldgA: '#1e293b', bldgB: '#0f172a', win: '#fef08a', accent: '#38bdf8', palm: true },
+    monaco: { skyTop: '#0c1e3e', skyMid: '#1d4ed8', skyBot: '#93c5fd', sun: '#fef08a', water: '#0369a1', waterHi: '#7dd3fc', ground: '#166534', groundBot: '#052e16', mtnFar: '#334155', mtnNear: '#475569', bldgA: '#334155', bldgB: '#1e293b', win: '#fde68a', accent: '#f43f5e' },
+    denver: { skyTop: '#0f172a', skyMid: '#1e3a8a', skyBot: '#bae6fd', sun: '#fed7aa', water: '#075985', waterHi: '#38bdf8', ground: '#14532d', groundBot: '#052e16', mtnFar: '#475569', mtnNear: '#64748b', bldgA: '#1e293b', bldgB: '#0f172a', win: '#bae6fd', accent: '#34d399', pine: true, snowPeak: true },
+    garage: { skyTop: '#040d1a', skyMid: '#0f2942', skyBot: '#1e4e68', sun: '#38bdf8', water: '#083344', waterHi: '#22d3ee', ground: '#1e293b', groundBot: '#0f172a', mtnFar: '#0f172a', mtnNear: '#1e293b', bldgA: '#0f172a', bldgB: '#1e293b', win: '#35e58a', accent: '#ffd166' }
+  };
+  const look = themes[route.theme] || themes.manila;
+
+  // 1. Multi-stop atmospheric sky
   const sky = ctx.createLinearGradient(0, 0, 0, horizon);
-  sky.addColorStop(0, route.skyA || '#7ddcff');
-  sky.addColorStop(1, route.skyB || '#eef8ff');
+  sky.addColorStop(0, look.skyTop);
+  sky.addColorStop(0.52, look.skyMid);
+  sky.addColorStop(1, look.skyBot);
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, width, horizon);
-  const look = {
-    monaco: { ground: '#3f9d4a', water: '#2d78c8', building: '#f4f7fb', roof: '#c23b3b', tree: '#1f7a45' },
-    milan: { ground: '#6a9a4e', building: '#e7d3b0', roof: '#8c3b2a', tree: '#2f6b32', spire: '#6e5b4b' },
-    manila: { ground: '#5fbf57', water: '#39b7d8', building: '#f2c14e', roof: '#d4532b', tree: '#1f8a43', palm: true },
-    bangkok: { ground: '#49a35a', water: '#4aa3c7', building: '#f6e27a', roof: '#e0a106', tree: '#2e8b57', spire: '#f0c84a' },
-    nairobi: { ground: '#c6a15a', building: '#c9843a', roof: '#8a5a2b', tree: '#6b8f3a', peak: '#b7a48a', acacia: true },
-    lyon: { ground: '#6eae48', water: '#6aaed6', building: '#f3e2c4', roof: '#b94a3a', tree: '#4c8c3a' },
-    denver: { ground: '#5f8f55', building: '#d9dee6', roof: '#8ea0b5', tree: '#1e5c38', peak: '#f7fbff', pine: true },
-    zurich: { ground: '#4f8f5a', water: '#5aa7d6', building: '#f7f4ef', roof: '#8d3d32', tree: '#2f7d46', peak: '#f4f8ff', pine: true },
-    singapore: { ground: '#218a62', water: '#2f86c5', building: '#d7e6f5', roof: '#2f6f9f', tree: '#1d7a55', glass: true },
-    dubai: { ground: '#e2c27a', building: '#f3e6c4', roof: '#d4a017', tree: '#8aaa55', peak: '#f0d7a2', glass: true },
-    garage: { ground: '#2c3540', building: '#4b5563', roof: '#f6c445', tree: '#1f2937' }
-  }[route.theme] || { ground: route.grass || '#58b957', building: '#d7e2ea', roof: '#8aa0b0', tree: '#2f7d46' };
-  ctx.fillStyle = look.ground;
-  ctx.fillRect(0, horizon, width, height - horizon);
-  if (look.water) {
-    ctx.fillStyle = look.water;
-    ctx.fillRect(0, horizon - 16, width, 26);
+
+  // 2. Sun & atmospheric glow
+  const sunX = width * 0.76 - ((cameraX * 0.015) % (width * 0.35));
+  const sunY = horizon * 0.34;
+  const sunGrad = ctx.createRadialGradient(sunX, sunY, 6, sunX, sunY, 78);
+  sunGrad.addColorStop(0, 'rgba(255, 250, 210, 0.92)');
+  sunGrad.addColorStop(0.3, 'rgba(253, 224, 71, 0.38)');
+  sunGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
+  ctx.fillStyle = sunGrad;
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 78, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. Soft drifting clouds
+  ctx.save();
+  for (let i = -1; i < 6; i += 1) {
+    const cx = ((i * 220 - (cameraX * 0.055) % 220) + 1100) % (width + 260) - 110;
+    const cy = 44 + (Math.abs(i * 37) % 52);
+    ctx.globalAlpha = 0.24;
+    ctx.fillStyle = '#ffffff';
+    roundedCloud(cx, cy);
   }
-  if (look.peak) {
-    ctx.fillStyle = look.peak;
-    for (let index = -1; index < 8; index += 1) {
-      const x = index * 160 - (cameraX * 0.15) % 160;
+  ctx.restore();
+
+  // 4. Far mountain range (0.11x parallax)
+  const mtnSpan = 220;
+  ctx.fillStyle = look.mtnFar;
+  ctx.beginPath();
+  ctx.moveTo(0, horizon);
+  for (let i = -1; i <= Math.ceil(width / mtnSpan) + 2; i += 1) {
+    const mx = i * mtnSpan - ((cameraX * 0.11) % mtnSpan);
+    const peakH = 54 + ((Math.abs(i * 73 + 19)) % 48);
+    ctx.lineTo(mx + mtnSpan * 0.5, horizon - peakH);
+    ctx.lineTo(mx + mtnSpan, horizon);
+  }
+  ctx.lineTo(width, horizon);
+  ctx.closePath();
+  ctx.fill();
+
+  // Snow / mist caps on peaks
+  if (look.snowPeak || route.profile === 'mountain') {
+    ctx.fillStyle = 'rgba(241, 245, 249, 0.45)';
+    for (let i = -1; i <= Math.ceil(width / mtnSpan) + 2; i += 1) {
+      const mx = i * mtnSpan - ((cameraX * 0.11) % mtnSpan);
+      const peakH = 54 + ((Math.abs(i * 73 + 19)) % 48);
       ctx.beginPath();
-      ctx.moveTo(x, horizon);
-      ctx.lineTo(x + 70, horizon - 78);
-      ctx.lineTo(x + 140, horizon);
+      ctx.moveTo(mx + mtnSpan * 0.5, horizon - peakH);
+      ctx.lineTo(mx + mtnSpan * 0.5 - 22, horizon - peakH + 19);
+      ctx.lineTo(mx + mtnSpan * 0.5 + 22, horizon - peakH + 19);
+      ctx.closePath();
       ctx.fill();
     }
   }
-  for (let index = -1; index < 12; index += 1) {
-    const x = index * 110 - (cameraX * 0.28) % 110;
-    const tall = 28 + ((index * 37) % 58);
-    ctx.fillStyle = look.building;
-    ctx.fillRect(x, horizon - tall, look.glass ? 28 : 46, tall);
-    ctx.fillStyle = look.roof;
-    if (look.spire) {
+
+  // 5. Midground City Skyline & Bridges (0.24x parallax)
+  const bldgSlot = 68;
+  const startSlot = Math.floor((cameraX * 0.24) / bldgSlot) - 1;
+  const visibleSlots = Math.ceil(width / bldgSlot) + 3;
+  for (let s = 0; s < visibleSlots; s += 1) {
+    const idx = startSlot + s;
+    const bx = idx * bldgSlot - cameraX * 0.24;
+    const seed = Math.abs(idx * 97 + 31);
+    const bW = 36 + (seed % 22);
+    const bH = 38 + ((seed * 13) % 74);
+    const by = horizon - bH - 12;
+
+    // Building body
+    ctx.fillStyle = idx % 2 === 0 ? look.bldgA : look.bldgB;
+    ctx.fillRect(bx, by, bW, bH + 12);
+
+    // Roof trim / spire
+    ctx.fillStyle = look.accent;
+    ctx.fillRect(bx, by, bW, 2.5);
+    if (seed % 3 === 0) {
+      ctx.fillStyle = look.bldgA;
+      ctx.fillRect(bx + bW * 0.3, by - 10, bW * 0.4, 10);
+      ctx.strokeStyle = look.accent;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(x + 8, horizon - tall);
-      ctx.lineTo(x + 23, horizon - tall - 34);
-      ctx.lineTo(x + 38, horizon - tall);
-      ctx.fill();
-    } else if (look.glass) {
-      ctx.fillRect(x + 6, horizon - tall - 10, 16, 10);
-    } else {
-      ctx.fillRect(x, horizon - tall - 8, 46, 8);
+      ctx.moveTo(bx + bW * 0.5, by - 10);
+      ctx.lineTo(bx + bW * 0.5, by - 22);
+      ctx.stroke();
     }
+
+    // Lit windows grid
+    ctx.fillStyle = look.win;
+    ctx.globalAlpha = 0.55;
+    for (let wy = by + 7; wy < horizon - 16; wy += 9) {
+      for (let wx = bx + 5; wx < bx + bW - 6; wx += 8) {
+        if (((wx + wy + seed) % 5) !== 0) {
+          ctx.fillRect(wx, wy, 4, 5);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
   }
-  for (let index = -1; index < 14; index += 1) {
-    const x = index * 96 - (cameraX * 0.55) % 96;
-    const y = horizon + 18;
-    ctx.fillStyle = look.tree;
-    if (look.palm) {
-      ctx.fillRect(x + 8, y, 4, 28);
+
+  // 6. Bay / Harbor water strip with shimmer
+  const waterGrad = ctx.createLinearGradient(0, horizon - 14, 0, horizon + 16);
+  waterGrad.addColorStop(0, look.water);
+  waterGrad.addColorStop(0.5, look.waterHi);
+  waterGrad.addColorStop(1, look.water);
+  ctx.fillStyle = waterGrad;
+  ctx.fillRect(0, horizon - 14, width, 28);
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+  for (let i = 0; i < 14; i += 1) {
+    const sx = ((i * 84 - (cameraX * 0.35) % 84) + width) % width;
+    const sy = horizon - 9 + (i % 3) * 6;
+    ctx.fillRect(sx, sy, 26, 2);
+  }
+
+  // 7. Ground & lush lower meadow gradient
+  const groundGrad = ctx.createLinearGradient(0, horizon + 12, 0, height);
+  groundGrad.addColorStop(0, look.ground);
+  groundGrad.addColorStop(1, look.groundBot);
+  ctx.fillStyle = groundGrad;
+  ctx.fillRect(0, horizon + 12, width, height - horizon);
+
+  // 8. Roadside trees & light poles (0.58x parallax)
+  const propStep = 115;
+  const firstProp = Math.floor((cameraX * 0.58) / propStep) - 1;
+  const propCount = Math.ceil(width / propStep) + 3;
+  for (let p = 0; p < propCount; p += 1) {
+    const pIdx = firstProp + p;
+    const px = pIdx * propStep - cameraX * 0.58;
+    const roadAtScreen = routeY(route, cameraX + px, height);
+    const py = Math.min(horizon + 26, roadAtScreen - 26);
+
+    // Streetlight every 2nd slot
+    if (pIdx % 2 === 0) {
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.ellipse(x + 10, y, 16, 6, 0, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (look.acacia) {
-      ctx.fillRect(x + 10, y + 8, 3, 22);
+      ctx.moveTo(px + 42, py + 24);
+      ctx.lineTo(px + 42, py - 24);
+      ctx.lineTo(px + 54, py - 27);
+      ctx.stroke();
+      ctx.fillStyle = '#fef08a';
       ctx.beginPath();
-      ctx.ellipse(x + 12, y + 6, 22, 7, 0, 0, Math.PI * 2);
+      ctx.arc(px + 55, py - 27, 3.5, 0, Math.PI * 2);
       ctx.fill();
-    } else if (look.pine) {
-      ctx.beginPath();
-      ctx.moveTo(x + 10, y - 28);
-      ctx.lineTo(x - 8, y + 16);
-      ctx.lineTo(x + 28, y + 16);
-      ctx.fill();
-    } else {
-      ctx.beginPath();
-      ctx.arc(x + 12, y, 14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillRect(x + 10, y, 4, 18);
     }
+
+    // Stylized Tree
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(px + 8, py - 2, 5, 24);
+    ctx.fillStyle = '#15803d';
+    ctx.beginPath();
+    ctx.arc(px + 10.5, py - 8, 15, 0, Math.PI * 2);
+    ctx.arc(px + 3, py - 2, 11, 0, Math.PI * 2);
+    ctx.arc(px + 18, py - 2, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#4ade80';
+    ctx.beginPath();
+    ctx.arc(px + 8, py - 12, 8, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
@@ -2612,88 +2879,147 @@ function roundedCloud(x, y) {
 }
 
 function drawRoad(width, height, route, cameraX) {
-  const start = Math.max(0, cameraX - 80);
-  const end = Math.min(route.length + 260, cameraX + width + 140);
-  const roadSprite = images.roadStrip;
-  if (roadSprite?.ready && roadSprite.naturalWidth > 0) {
-    const spacing = route.profile === 'track' ? 154 : 132;
-    const spriteW = route.profile === 'track' ? 236 : 210;
-    const spriteH = route.profile === 'track' ? 58 : 52;
-    ctx.save();
-    for (let worldX = Math.floor(start / spacing) * spacing - spacing; worldX <= end + spacing; worldX += spacing) {
-      const x = worldX - cameraX;
-      const y = routeY(route, worldX, height);
-      const angle = routeAngle(route, worldX, height) * 0.72;
-      ctx.save();
-      ctx.translate(x + spriteW * 0.44, y + 1);
-      ctx.rotate(angle);
-      ctx.drawImage(roadSprite, -spriteW * 0.55, -spriteH * 0.47, spriteW, spriteH);
-      ctx.restore();
-    }
-    ctx.restore();
-    return;
-  }
+  const step = 12;
+  const start = Math.max(0, Math.floor((cameraX - 48) / step) * step);
+  const end = Math.min(route.length + 280, cameraX + width + 96);
+  const halfRoad = route.profile === 'track' ? 24 : 21;
 
-  ctx.fillStyle = route.grass;
+  // 1. Deep Earth / Rock Embankment Cut below the road
+  const earthGrad = ctx.createLinearGradient(0, height * 0.5, 0, height);
+  earthGrad.addColorStop(0, '#1e293b');
+  earthGrad.addColorStop(0.35, '#0f172a');
+  earthGrad.addColorStop(1, '#020617');
+  ctx.fillStyle = earthGrad;
   ctx.beginPath();
-  ctx.moveTo(0, height);
-  for (let worldX = start; worldX <= end; worldX += 18) ctx.lineTo(worldX - cameraX, routeY(route, worldX, height) + 38);
+  ctx.moveTo(start - cameraX, height);
+  for (let worldX = start; worldX <= end; worldX += step) {
+    ctx.lineTo(worldX - cameraX, routeY(route, worldX, height) + halfRoad + 6);
+  }
   ctx.lineTo(end - cameraX, height);
   ctx.closePath();
   ctx.fill();
-  ctx.strokeStyle = route.road;
-  ctx.lineWidth = route.profile === 'track' ? 34 : 28;
+
+  // Retaining wall support pillars along the embankment
+  ctx.fillStyle = 'rgba(51, 65, 85, 0.42)';
+  for (let worldX = Math.floor(start / 160) * 160; worldX <= end; worldX += 160) {
+    const sx = worldX - cameraX;
+    const sy = routeY(route, worldX, height) + halfRoad + 8;
+    ctx.fillRect(sx - 6, sy, 12, height - sy);
+  }
+
+  // 2. Upper & Lower Grass Verge Shoulders
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#22c55e';
+  ctx.lineWidth = halfRoad * 2 + 16;
   ctx.beginPath();
-  for (let worldX = start; worldX <= end; worldX += 14) {
-    const x = worldX - cameraX;
-    const y = routeY(route, worldX, height);
-    if (worldX === start) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  for (let worldX = start; worldX <= end; worldX += step) {
+    const sx = worldX - cameraX;
+    const sy = routeY(route, worldX, height);
+    if (worldX === start) ctx.moveTo(sx, sy);
+    else ctx.lineTo(sx, sy);
   }
   ctx.stroke();
-  ctx.strokeStyle = 'rgba(248,250,252,.62)';
-  ctx.lineWidth = 4;
-  for (let worldX = Math.floor(start / 120) * 120; worldX <= end; worldX += 120) {
+
+  // 3. Alternating Red & White Racing Rumble Curbs along road edges
+  const curbLen = 36;
+  for (let worldX = Math.floor(start / curbLen) * curbLen; worldX < end; worldX += curbLen) {
+    const x1 = worldX - cameraX;
+    const y1 = routeY(route, worldX, height);
+    const x2 = worldX + curbLen - cameraX;
+    const y2 = routeY(route, worldX + curbLen, height);
+    const isRed = Math.floor(worldX / curbLen) % 2 === 0;
+    ctx.strokeStyle = isRed ? '#ef4444' : '#f8fafc';
+    ctx.lineWidth = 5;
+    // Upper curb
     ctx.beginPath();
-    ctx.moveTo(worldX - cameraX, routeY(route, worldX, height) - 1);
-    ctx.lineTo(worldX + 58 - cameraX, routeY(route, worldX + 58, height) - 1);
+    ctx.moveTo(x1, y1 - halfRoad - 1);
+    ctx.lineTo(x2, y2 - halfRoad - 1);
     ctx.stroke();
+    // Lower curb
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 + halfRoad + 1);
+    ctx.lineTo(x2, y2 + halfRoad + 1);
+    ctx.stroke();
+  }
+
+  // 4. Main Asphalt Road Deck
+  ctx.strokeStyle = '#1e2636';
+  ctx.lineWidth = halfRoad * 2;
+  ctx.beginPath();
+  for (let worldX = start; worldX <= end; worldX += step) {
+    const sx = worldX - cameraX;
+    const sy = routeY(route, worldX, height);
+    if (worldX === start) ctx.moveTo(sx, sy);
+    else ctx.lineTo(sx, sy);
+  }
+  ctx.stroke();
+
+  // Inner specular asphalt crown highlight
+  ctx.strokeStyle = '#2b364b';
+  ctx.lineWidth = halfRoad * 1.15;
+  ctx.beginPath();
+  for (let worldX = start; worldX <= end; worldX += step) {
+    const sx = worldX - cameraX;
+    const sy = routeY(route, worldX, height) - 2;
+    if (worldX === start) ctx.moveTo(sx, sy);
+    else ctx.lineTo(sx, sy);
+  }
+  ctx.stroke();
+
+  // 5. Crisp Center Dashed Racing Lane Markings (following road slope)
+  ctx.strokeStyle = '#facc15';
+  ctx.lineWidth = 3;
+  for (let worldX = Math.floor(start / 84) * 84; worldX <= end; worldX += 84) {
+    const x1 = worldX - cameraX;
+    const y1 = routeY(route, worldX, height);
+    const x2 = worldX + 42 - cameraX;
+    const y2 = routeY(route, worldX + 42, height);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  // 6. Roadside Distance Marker Signs every 100m
+  const pxPer100m = Math.max(400, Math.round((100 / Math.max(100, route.meters)) * route.length));
+  for (let worldX = 80 + pxPer100m; worldX < route.length - 200; worldX += pxPer100m) {
+    const sx = worldX - cameraX;
+    if (sx < -60 || sx > width + 60) continue;
+    const sy = routeY(route, worldX, height) - halfRoad - 6;
+    const meters = routeMeters(route, worldX - 80);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(sx - 1.5, sy - 24, 3, 24);
+    ctx.fillStyle = '#0f172a';
+    roundRect(sx - 20, sy - 38, 40, 16, 5);
+    ctx.fill();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '900 9px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${meters}m`, sx, sy - 27);
   }
 }
 
 function drawSpeedStreaks(width, height, route, cameraX) {
   const kmh = game.telemetry?.kmh || 0;
-  const intensity = clamp((kmh - 95) / 170, 0, 1);
+  const boostBonus = game.boostActive ? 0.55 : 0;
+  const intensity = clamp((kmh - 75) / 140 + boostBonus, 0, 1);
   if (intensity <= 0.02) return;
-  const streakSprite = images.speedStreaks;
   ctx.save();
-  ctx.globalAlpha = 0.1 + intensity * 0.28;
-  if (streakSprite?.ready && streakSprite.naturalWidth > 0) {
-    const baseX = game.x - cameraX - 30;
-    const roadY = routeY(route, game.x, height);
-    for (let i = 0; i < 7; i += 1) {
-      const offsetSeed = seededNoise(game.elapsed * 420 + i * 83, route.seed + 91);
-      const x = baseX - 58 - i * 35 - offsetSeed * 42;
-      const y = roadY - 62 + (i % 4) * 18 + offsetSeed * 12;
-      const len = 58 + intensity * 62 + offsetSeed * 18;
-      if (x < -100 || x > width + 60) continue;
-      ctx.drawImage(streakSprite, x - len, y - 10, len, 22);
-    }
-    ctx.restore();
-    return;
-  }
-
-  ctx.strokeStyle = '#f8fafc';
-  ctx.lineWidth = 1.5 + intensity * 1.5;
+  ctx.globalAlpha = 0.16 + intensity * 0.38;
+  ctx.strokeStyle = game.boostActive ? '#38bdf8' : '#f8fafc';
+  ctx.lineWidth = 2 + intensity * 2;
   ctx.lineCap = 'round';
-  const baseX = game.x - cameraX - 30;
+  const baseX = game.x - cameraX - 24;
   const roadY = routeY(route, game.x, height);
-  for (let i = 0; i < 7; i += 1) {
-    const offsetSeed = seededNoise(game.elapsed * 420 + i * 83, route.seed + 91);
-    const x = baseX - 45 - i * 36 - offsetSeed * 42;
-    const y = roadY - 54 + (i % 4) * 18 + offsetSeed * 12;
-    const len = 24 + intensity * 42 + offsetSeed * 20;
+  for (let i = 0; i < 9; i += 1) {
+    const offsetSeed = seededNoise(game.elapsed * 480 + i * 83, route.seed + 91);
+    const x = baseX - 36 - i * 32 - offsetSeed * 46;
+    const y = roadY - 58 + (i % 5) * 16 + offsetSeed * 12;
+    const len = 32 + intensity * 58 + offsetSeed * 24;
     if (x < -80 || x > width + 40) continue;
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -2706,29 +3032,124 @@ function drawSpeedStreaks(width, height, route, cameraX) {
 function drawHazards(width, height, route, cameraX) {
   for (const hazard of game.hazards) {
     const x = hazard.x - cameraX;
-    if (x < -120 || x > width + 120) continue;
-    const y = routeY(route, hazard.x, height) + 4;
-    ctx.fillStyle = hazard.type === 'mud' ? 'rgba(101,67,33,.75)' : hazard.type === 'gravel' ? 'rgba(203,213,225,.75)' : hazard.type === 'rough' ? 'rgba(100,116,139,.75)' : 'rgba(15,23,42,.82)';
-    ctx.beginPath();
-    ctx.ellipse(x + hazard.length / 2, y, hazard.length / 2, 10, 0, 0, Math.PI * 2);
+    if (x < -160 || x > width + 160) continue;
+    const centerX = hazard.x + hazard.length / 2;
+    const cx = centerX - cameraX;
+    const cy = routeY(route, centerX, height) + 2;
+    const angle = routeAngle(route, centerX, height);
+    const hw = hazard.length / 2;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+
+    if (hazard.type === 'mud') {
+      ctx.fillStyle = 'rgba(69, 26, 3, 0.88)';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, hw, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(120, 53, 15, 0.75)';
+      ctx.beginPath();
+      ctx.ellipse(-hw * 0.2, -2, hw * 0.65, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (hazard.type === 'gravel') {
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.78)';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, hw, 11, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#475569';
+      for (let s = -hw + 12; s < hw - 10; s += 18) {
+        ctx.beginPath();
+        ctx.arc(s, ((s * 7) % 9) - 4, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (hazard.type === 'rough') {
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.85)';
+      ctx.fillRect(-hw, -10, hazard.length, 20);
+      for (let b = -hw + 10; b < hw - 8; b += 22) {
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(b, -9, 8, 18);
+      }
+    } else {
+      // Pothole crater + orange cone
+      ctx.fillStyle = '#020617';
+      ctx.beginPath();
+      ctx.ellipse(0, 1, Math.max(24, hw), 11, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      // Traffic cone at front edge
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath();
+      ctx.moveTo(-hw - 6, 6);
+      ctx.lineTo(-hw, -12);
+      ctx.lineTo(-hw + 6, 6);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Hazard pill label
+    const safe = (game.telemetry?.kmh || 0) < DAMAGE_SPEED_KMH;
+    const badgeText = hazard.hit
+      ? `✓ ${hazard.type.toUpperCase()}`
+      : `⚠️ ${hazard.type.toUpperCase()} · <${DAMAGE_SPEED_KMH} KM/H`;
+    ctx.save();
+    ctx.fillStyle = hazard.hit ? 'rgba(6, 78, 59, 0.88)' : safe ? 'rgba(15, 23, 42, 0.86)' : 'rgba(127, 29, 29, 0.92)';
+    roundRect(cx - 56, cy - 38, 112, 18, 9);
     ctx.fill();
-    drawOutlinedText(hazard.type.toUpperCase(), x + hazard.length / 2, y - 18, '10px');
+    ctx.strokeStyle = hazard.hit ? '#34d399' : safe ? '#38bdf8' : '#f87171';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 9px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(badgeText, cx, cy - 26);
+    ctx.restore();
   }
+}
+
+function drawApproachingHazardGuide(width, height, route, cameraX) {
+  const upcoming = game.hazards?.find((h) => !h.hit && h.x > game.x && h.x - game.x < 420);
+  if (!upcoming) return;
+  const meters = Math.max(1, routeMeters(route, upcoming.x - game.x));
+  const kmh = Math.round(game.telemetry?.kmh || 0);
+  const danger = kmh >= DAMAGE_SPEED_KMH && !game.boostActive;
+  const boxW = 158;
+  const boxH = 30;
+  const bx = width - boxW - 10;
+  const by = 84;
+  ctx.save();
+  ctx.fillStyle = danger ? 'rgba(127, 29, 29, 0.92)' : 'rgba(6, 78, 59, 0.9)';
+  roundRect(bx, by, boxW, boxH, 10);
+  ctx.fill();
+  ctx.strokeStyle = danger ? '#f87171' : '#34d399';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 9px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(`⚠️ ${upcoming.type.toUpperCase()} IN ${meters}m`, bx + 8, by + 12);
+  ctx.fillStyle = danger ? '#fde047' : '#a7f3d0';
+  ctx.font = '800 8px Arial';
+  ctx.fillText(danger ? `BRAKE <${DAMAGE_SPEED_KMH} KM/H FOR BONUS!` : '✓ SAFE SPEED · +6C BONUS!', bx + 8, by + 23);
+  ctx.restore();
 }
 
 function drawCheckpoints(width, height, route, cameraX) {
   for (const item of game.checkpoints) {
     const x = item.x - cameraX;
     if (x < -120 || x > width + 120) continue;
-    const y = routeY(route, item.x, height) - 76;
+    const y = routeY(route, item.x, height) - 72;
     const img = images[item.type];
     if (img && img.ready) ctx.drawImage(img, x - 42, y - 34, 84, 68);
     else {
       ctx.fillStyle = item.type === 'fuelStation' ? '#22c55e' : item.type === 'partsStore' ? '#f97316' : item.type === 'mechanicShop' ? '#2563eb' : '#94a3b8';
       ctx.fillRect(x - 34, y - 24, 68, 48);
     }
-    const label = item.type === 'fuelStation' ? 'FUEL STOP' : item.type === 'partsStore' ? 'PARTS STORE' : item.type === 'mechanicShop' ? 'MECHANIC' : 'SALVAGE';
-    drawOutlinedText(item.used ? 'USED' : label, x, y - 40, '10px');
+    const label = item.type === 'fuelStation' ? '⛽ FUEL STOP' : item.type === 'partsStore' ? '⚙️ PARTS SHOP' : item.type === 'mechanicShop' ? '🔧 MECHANIC' : '🧰 SALVAGE';
+    drawOutlinedText(item.used ? '✓ USED' : label, x, y - 40, '10px');
   }
 }
 
@@ -2742,7 +3163,7 @@ function drawMilestoneCheckpoints(width, height, route, cameraX) {
     const y = routeY(route, worldX, height) - 76;
     const reached = game.distancePx >= route.length * pct;
     ctx.save();
-    ctx.globalAlpha = reached ? 1 : 0.58;
+    ctx.globalAlpha = reached ? 1 : 0.75;
     if (flagSprite?.ready && flagSprite.naturalWidth > 0) {
       ctx.drawImage(flagSprite, x - 29, y - 28, 58, 54);
       ctx.fillStyle = '#06131d';
@@ -2772,13 +3193,23 @@ function drawMilestoneCheckpoints(width, height, route, cameraX) {
 }
 
 function drawPickups(width, height, route, cameraX) {
+  const bob = Math.sin(game.elapsed * 5.5) * 3.5;
   for (const pickup of game.pickups) {
     if (pickup.collected) continue;
     const x = pickup.x - cameraX;
     if (x < -60 || x > width + 60) continue;
-    const y = routeY(route, pickup.x, height) - 34 + (pickup.yOffset || 0);
+    const y = routeY(route, pickup.x, height) - 34 + (pickup.yOffset || 0) + bob;
     const img = images[pickup.type];
-    const size = pickup.type === 'coin' ? 32 : 40;
+    const size = pickup.type === 'coin' ? 30 : 38;
+    // Subtle glow behind pickup
+    ctx.save();
+    ctx.globalAlpha = 0.28;
+    ctx.fillStyle = pickup.type === 'fuel' ? '#38bdf8' : pickup.type === 'parts' ? '#c084fc' : pickup.type === 'tools' ? '#fb923c' : '#fde047';
+    ctx.beginPath();
+    ctx.arc(x, y, size * 0.56, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
     if (img && img.ready) ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
     else {
       ctx.fillStyle = pickup.type === 'fuel' ? '#38bdf8' : pickup.type === 'parts' ? '#a78bfa' : pickup.type === 'tools' ? '#f97316' : '#facc15';
@@ -2796,10 +3227,33 @@ function drawGhosts(width, height, route, cameraX) {
     const ghost = ghosts[i];
     const point = ghostPoint(ghost, height);
     const x = point.x - cameraX;
-    if (x < -100 || x > width + 120) continue;
+    const gapM = routeMeters(route, Math.abs(point.x - game.x));
+    const ahead = point.x >= game.x;
+    const shortName = (ghost.source === 'local_best' ? 'Your Best' : ghost.playerName || `Rival ${i + 1}`).split(' ')[0];
+    const color = game.ghostColors[i] || '#38bdf8';
+
+    // If off-screen, draw an edge radar indicator pill so player tracks rival distance
+    if (x < -70 || x > width + 70) {
+      const edgeX = ahead ? width - 48 : 48;
+      const edgeY = 122 + i * 24;
+      ctx.save();
+      ctx.fillStyle = 'rgba(4, 17, 29, 0.88)';
+      roundRect(edgeX - 44, edgeY - 10, 88, 20, 10);
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 9px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(ahead ? `${shortName} +${gapM}m ▶` : `◀ ${shortName} -${gapM}m`, edgeX, edgeY + 3);
+      ctx.restore();
+      continue;
+    }
+
     const imageKey = images[ghost.carKey]?.ready ? ghost.carKey : keys[i] || 'ghostA';
-    const label = ghost.source === 'local_best' ? 'Your Best' : ghost.playerName || `Rival ${i + 1}`;
-    drawCar(x, point.y, routeAngle(route, point.x, height) * 0.65, images[imageKey], label, 0.5, game.ghostColors[i] || '#e5e7eb');
+    const label = `${shortName} (${ahead ? `+${gapM}m` : `-${gapM}m`})`;
+    drawCar(x, point.y, routeAngle(route, point.x, height) * 0.72, images[imageKey], label, 0.68, color, false, 16 + i * 18);
   }
 }
 
@@ -2807,56 +3261,131 @@ function ghostPoint(ghost, height) {
   const route = game.route;
   const sample = sampleGhostAt(ghost, game.elapsed * 1000);
   const x = 80 + Math.max(0, sample.x || 0);
-  return { x, y: routeY(route, x, height) - 30, speed: sample.speed || 0 };
+  return { x, y: routeY(route, x, height) - 28, speed: sample.speed || 0 };
+}
+
+function spawnParticle(opts) {
+  if (!game?.particles) return;
+  if (game.particles.length > 90) game.particles.shift();
+  game.particles.push({
+    x: opts.x || game.x,
+    y: opts.y || 0,
+    vx: opts.vx || 0,
+    vy: opts.vy || 0,
+    r: opts.r || 5,
+    color: opts.color || '#ffffff',
+    life: opts.life || 0.5,
+    maxLife: opts.life || 0.5
+  });
+}
+
+function drawParticles(width, height, cameraX) {
+  if (!game?.particles?.length) return;
+  ctx.save();
+  for (const p of game.particles) {
+    const sx = p.x - cameraX;
+    if (sx < -40 || sx > width + 40) continue;
+    const alpha = clamp(p.life / Math.max(0.05, p.maxLife), 0, 1);
+    ctx.globalAlpha = alpha * 0.85;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(sx, p.y, p.r * (0.6 + (1 - alpha) * 0.7), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 }
 
 function drawPlayer(width, height, route, cameraX) {
   const x = game.x - cameraX;
-  const y = routeY(route, game.x, height) - 30;
+  const y = routeY(route, game.x, height) - 28 + game.suspensionTravel * 0.45;
   drawBoostGlow(x, y);
-  drawCar(x, y, game.pitch, images[selectedVehicle().asset], 'You', 1, '#3b82f6');
+  drawCar(x, y, game.pitch, images[selectedVehicle().asset], 'YOU', 1, '#3b82f6', true, 0);
 }
 
 function drawBoostGlow(x, y) {
   const speedRatio = clamp(Math.abs(game.speed) / Math.max(1, game.stats.topSpeed), 0, 1);
-  const glow = clamp((input.gas ? 0.34 : 0) + speedRatio * 0.32 + (game.boostPulse || 0), 0, 1);
+  const glow = clamp((input.gas ? 0.28 : 0) + (game.boostActive ? 0.65 : 0) + speedRatio * 0.25 + (game.boostPulse || 0), 0, 1);
   if (glow <= 0.04) return;
   ctx.save();
   ctx.globalAlpha = glow;
-  const pulse = 1 + Math.sin(game.elapsed * 20) * 0.08;
-  const boostSprite = images.boostRing;
-  if (boostSprite?.ready && boostSprite.naturalWidth > 0) {
-    ctx.translate(x - 28, y + 17);
-    ctx.rotate(game.pitch * 0.22);
-    ctx.drawImage(boostSprite, -82 * pulse, -38 * pulse, 164 * pulse, 76 * pulse);
-    ctx.restore();
-    return;
-  }
-
-  const grad = ctx.createRadialGradient(x - 36, y + 18, 4, x - 36, y + 18, 68 * pulse);
-  grad.addColorStop(0, 'rgba(109,255,159,.65)');
-  grad.addColorStop(0.42, 'rgba(56,189,248,.32)');
-  grad.addColorStop(1, 'rgba(56,189,248,0)');
+  const pulse = 1 + Math.sin(game.elapsed * 24) * 0.1;
+  const grad = ctx.createRadialGradient(x - 36, y + 16, 4, x - 36, y + 16, (game.boostActive ? 88 : 62) * pulse);
+  grad.addColorStop(0, game.boostActive ? 'rgba(56, 189, 248, 0.82)' : 'rgba(53, 229, 138, 0.58)');
+  grad.addColorStop(0.45, game.boostActive ? 'rgba(53, 229, 138, 0.42)' : 'rgba(56, 189, 248, 0.26)');
+  grad.addColorStop(1, 'rgba(56, 189, 248, 0)');
   ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.ellipse(x - 26, y + 17, 82 * pulse, 30 * pulse, game.pitch * 0.35, 0, Math.PI * 2);
+  ctx.ellipse(x - 28, y + 16, (game.boostActive ? 92 : 68) * pulse, 26 * pulse, game.pitch * 0.35, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
 
-function drawCar(x, y, angle, img, label, alpha, color) {
+function drawCar(x, y, angle, img, label, alpha, color, isPlayer = false, tagOffset = 0) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
   ctx.globalAlpha = alpha;
   const hasSprite = Boolean(img && img.ready);
-  ctx.fillStyle = 'rgba(0,0,0,.22)';
+
+  // 1. Contact shadow under vehicle
+  ctx.fillStyle = isPlayer ? 'rgba(2, 6, 23, 0.46)' : 'rgba(2, 6, 23, 0.28)';
   ctx.beginPath();
-  ctx.ellipse(0, 22, 48, 10, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 23, isPlayer ? 50 : 42, 9, 0, 0, Math.PI * 2);
   ctx.fill();
+
+  // Holographic ring for Rival Ghosts
+  if (!isPlayer) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, 23, 44, 8, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // 2. Player Headlight Beam Cone
+  if (isPlayer) {
+    const beamGrad = ctx.createLinearGradient(42, 4, 135, 22);
+    beamGrad.addColorStop(0, 'rgba(224, 242, 254, 0.42)');
+    beamGrad.addColorStop(1, 'rgba(224, 242, 254, 0)');
+    ctx.fillStyle = beamGrad;
+    ctx.beginPath();
+    ctx.moveTo(42, 4);
+    ctx.lineTo(135, -6);
+    ctx.lineTo(135, 26);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // 3. Exhaust & Nitro Flame Jet behind rear bumper
+  if (isPlayer && (input.gas || game.boostActive || game.boostPulse > 0.1)) {
+    const flameLen = game.boostActive
+      ? 42 + Math.sin(game.elapsed * 45) * 12
+      : 18 + (game.boostPulse || 0) * 22 + Math.sin(game.elapsed * 36) * 5;
+    const outerColor = game.boostActive ? '#38bdf8' : '#f97316';
+    const innerColor = game.boostActive ? '#6dff9f' : '#fef08a';
+    ctx.fillStyle = outerColor;
+    ctx.beginPath();
+    ctx.moveTo(-44, 14);
+    ctx.lineTo(-44 - flameLen, 8);
+    ctx.lineTo(-44 - flameLen * 0.75, 16);
+    ctx.lineTo(-44 - flameLen, 21);
+    ctx.lineTo(-44, 19);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = innerColor;
+    ctx.beginPath();
+    ctx.moveTo(-44, 15);
+    ctx.lineTo(-44 - flameLen * 0.62, 13);
+    ctx.lineTo(-44 - flameLen * 0.62, 19);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // 4. Vehicle Body Sprite
   if (hasSprite) {
     const aspect = Math.max(0.6, Math.min(2.4, img.naturalWidth / Math.max(1, img.naturalHeight)));
-    const targetW = alpha < 1 ? 88 : 100;
+    const targetW = isPlayer ? 104 : 90;
     const targetH = clamp(targetW / aspect, 46, 76);
     ctx.drawImage(img, -targetW / 2, 27 - targetH, targetW, targetH);
   } else {
@@ -2866,44 +3395,55 @@ function drawCar(x, y, angle, img, label, alpha, color) {
     ctx.strokeStyle = '#172033';
     ctx.lineWidth = 3;
     ctx.stroke();
+    drawWheelSpinOverlay(game.wheelRotation + x * 0.01, alpha, false);
   }
-  if (!hasSprite) {
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 2;
+
+  // 5. Brake Light Glow when player holds BRAKE
+  if (isPlayer && input.brake) {
+    const brakeGlow = ctx.createRadialGradient(-45, 5, 2, -45, 5, 24);
+    brakeGlow.addColorStop(0, 'rgba(255, 30, 66, 0.95)');
+    brakeGlow.addColorStop(0.5, 'rgba(239, 68, 68, 0.45)');
+    brakeGlow.addColorStop(1, 'rgba(239, 68, 68, 0)');
+    ctx.fillStyle = brakeGlow;
     ctx.beginPath();
-    ctx.moveTo(-28, 18 + game.suspensionTravel);
-    ctx.lineTo(-28, 30);
-    ctx.moveTo(28, 18 - game.suspensionTravel);
-    ctx.lineTo(28, 30);
-    ctx.stroke();
+    ctx.arc(-45, 5, 24, 0, Math.PI * 2);
+    ctx.fill();
   }
-  drawWheelSpinOverlay(game.wheelRotation + x * 0.01, alpha, hasSprite);
+
   ctx.restore();
-  drawOutlinedText(label, x, y - (alpha >= 1 ? 58 : 46), '11px', alpha);
+
+  // 6. Floating Tag Pill above Car (staggered vertically by tagOffset so rivals never overlap YOU)
+  const tagY = y - (isPlayer ? 48 : 48 + tagOffset);
+  ctx.save();
+  ctx.globalAlpha = isPlayer ? 0.95 : 0.88;
+  ctx.fillStyle = isPlayer ? 'rgba(6, 24, 44, 0.92)' : 'rgba(15, 23, 42, 0.85)';
+  const tagW = Math.max(46, label.length * 6.2 + 14);
+  roundRect(x - tagW / 2, tagY - 12, tagW, 17, 8.5);
+  ctx.fill();
+  ctx.strokeStyle = isPlayer ? (game.boostActive ? '#35e58a' : '#38bdf8') : color;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 9.5px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, x, tagY);
+  ctx.restore();
 }
 
 function drawWheelSpinOverlay(rotation, alpha = 1, hasSprite = false) {
-  const wheelY = hasSprite ? 19 : 22;
-  const wheelOffsets = hasSprite ? [-25, 25] : [-30, 29];
-  const radius = hasSprite ? 8.2 : 10;
-  const traction = game?.traction ?? 1;
-  const stroke = traction < 0.82 ? '#facc15' : '#e0f2fe';
+  if (hasSprite) return;
+  const wheelY = 22;
+  const wheelOffsets = [-30, 29];
+  const radius = 10;
   for (const wheelX of wheelOffsets) {
     ctx.save();
     ctx.translate(wheelX, wheelY);
     ctx.rotate(rotation);
-    ctx.globalAlpha = (hasSprite ? 0.52 : 0.28) * alpha + (1 - traction) * 0.34;
-    ctx.strokeStyle = stroke;
+    ctx.globalAlpha = 0.4 * alpha;
+    ctx.strokeStyle = '#e0f2fe';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(0, 0, radius, 0.18, Math.PI * 1.25);
-    ctx.stroke();
-    ctx.beginPath();
-    for (let s = 0; s < 3; s++) {
-      const a = (s * Math.PI) / 3;
-      ctx.moveTo(Math.cos(a) * -(radius - 2), Math.sin(a) * -(radius - 2));
-      ctx.lineTo(Math.cos(a) * (radius - 2), Math.sin(a) * (radius - 2));
-    }
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
@@ -2936,12 +3476,15 @@ function drawOutlinedText(text, x, y, size = '11px', alpha = 1) {
 
 function drawFinish(width, height, route, cameraX) {
   const x = route.length - cameraX;
-  if (x < -20 || x > width + 30) return;
+  if (x < -40 || x > width + 40) return;
   const y = routeY(route, route.length, height);
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(x - 5, y - 70, 10, 90);
-  ctx.fillStyle = '#111827';
-  for (let i = 0; i < 6; i++) ctx.fillRect(x - 5 + (i % 2) * 5, y - 70 + i * 10, 5, 10);
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(x - 6, y - 78, 12, 96);
+  ctx.fillStyle = '#0f172a';
+  for (let i = 0; i < 7; i++) {
+    ctx.fillRect(x - 6 + (i % 2) * 6, y - 78 + i * 10, 6, 10);
+  }
+  drawOutlinedText('🏁 FINISH', x, y - 86, '11px');
 }
 
 function drawNextFuelGuide(width, height, route, cameraX) {
@@ -2951,27 +3494,29 @@ function drawNextFuelGuide(width, height, route, cameraX) {
   if (meters <= 0 || meters > 650) return;
   const targetX = target.x - cameraX;
   const onScreen = targetX >= 36 && targetX <= width - 36;
-  const x = onScreen ? targetX : width - 42;
-  const y = Math.max(92, Math.min(height - 134, routeY(route, game.x + Math.min(520, target.x - game.x), height) - 88));
+  const x = onScreen ? targetX : width - 48;
+  const y = onScreen
+    ? Math.max(122, Math.min(height - 134, routeY(route, target.x, height) - 82))
+    : 178;
   ctx.save();
   ctx.globalAlpha = 0.92;
-  ctx.fillStyle = 'rgba(2, 14, 24, .72)';
-  roundRect(x - 34, y - 18, 68, 34, 14);
+  ctx.fillStyle = 'rgba(2, 14, 24, .82)';
+  roundRect(x - 36, y - 16, 72, 30, 14);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(125, 220, 255, .65)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(56, 189, 248, .75)';
+  ctx.lineWidth = 1.5;
   ctx.stroke();
   const img = images.fuel;
-  if (img && img.ready) ctx.drawImage(img, x - 28, y - 11, 22, 22);
+  if (img && img.ready) ctx.drawImage(img, x - 30, y - 11, 20, 20);
   ctx.fillStyle = '#e0faff';
   ctx.font = '900 9px Arial';
   ctx.textAlign = 'left';
-  ctx.fillText(`${meters}m`, x - 2, y + 4);
+  ctx.fillText(`${meters}m`, x - 6, y + 3);
   if (!onScreen) {
     ctx.beginPath();
-    ctx.moveTo(x + 27, y);
-    ctx.lineTo(x + 18, y - 7);
-    ctx.lineTo(x + 18, y + 7);
+    ctx.moveTo(x + 29, y - 1);
+    ctx.lineTo(x + 21, y - 7);
+    ctx.lineTo(x + 21, y + 5);
     ctx.closePath();
     ctx.fillStyle = '#7ddcff';
     ctx.fill();
@@ -2980,62 +3525,47 @@ function drawNextFuelGuide(width, height, route, cameraX) {
 }
 
 function drawRunMeters(width, height) {
-  const fuelPct = game.fuel / game.stats.maxFuel;
-  const wearPct = Math.min(1, game.wear / game.stats.wearLimit);
-  const lowFuelY = width <= 430 ? 154 : 124;
-  drawBar(14, 42, 154, 15, 'Fuel', fuelPct);
-  drawBar(14, 62, 154, 15, 'Wear', wearPct, true);
-  if (game.fuel / game.stats.maxFuel < 0.18 && nextFuelMeters() > 220) drawOutlinedText('LOW FUEL - COAST OR FIND STATION', width / 2, lowFuelY, '13px');
+  const fuelPct = clamp(game.fuel / game.stats.maxFuel, 0, 1);
+  const healthPct = clamp(1 - game.wear / game.stats.wearLimit, 0, 1);
+  const lowFuelY = width <= 430 ? 158 : 134;
+  drawBar(12, 76, 132, 14, `⛽ ${Math.round(fuelPct * 100)}%`, fuelPct, false);
+  drawBar(12, 95, 132, 14, `🛡️ ${Math.round(healthPct * 100)}%`, healthPct, false);
+  if (fuelPct < 0.2 && nextFuelMeters() > 180) {
+    drawOutlinedText('⚠️ LOW FUEL — COAST OR REACH FUEL STOP!', width / 2, lowFuelY, '12px');
+  }
 }
 
 function drawProblemWarning(width, height) {
   if (!game.eventTimer || game.eventTimer <= 0 || !game.eventText) return;
   const danger = /slow|hazard|pothole|mud|gravel|rough|out|low|worn/i.test(game.eventText);
-  const w = Math.min(width - 28, 304);
-  const h = 42;
+  const w = Math.min(width - 36, 276);
+  const h = 36;
   const x = (width - w) / 2;
-  const collectionSafeY = width <= 430 ? 148 : 122;
-  const y = clamp(collectionSafeY, 88, Math.max(88, height - 168));
+  const y = 116;
   const alpha = clamp(game.eventTimer / 0.25, 0, 1);
   ctx.save();
   ctx.globalAlpha = alpha;
-  const panelSprite = images.warningPanel;
-  const badgeSprite = images.warningBadge;
-  if (panelSprite?.ready && panelSprite.naturalWidth > 0) {
-    ctx.drawImage(panelSprite, x, y, w, h);
-    if (badgeSprite?.ready && badgeSprite.naturalWidth > 0) ctx.drawImage(badgeSprite, x + 8, y + 7, 32, 28);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 13px Arial';
-    ctx.textAlign = 'left';
-    ctx.fillText(game.eventText, x + 48, y + 17);
-    ctx.fillStyle = '#bfe9f5';
-    ctx.font = '800 9px Arial';
-    ctx.fillText(danger ? 'React fast to protect wear and speed.' : 'Reward collected during the run.', x + 48, y + 31);
-    ctx.restore();
-    return;
-  }
-
-  ctx.fillStyle = danger ? 'rgba(89,22,32,.88)' : 'rgba(4,31,49,.86)';
-  roundRect(x, y, w, h, 16);
+  ctx.fillStyle = danger ? 'rgba(127, 29, 29, 0.9)' : 'rgba(6, 46, 70, 0.9)';
+  roundRect(x, y, w, h, 12);
   ctx.fill();
-  ctx.strokeStyle = danger ? '#ffd166' : '#7ddcff';
-  ctx.lineWidth = 3;
-  roundRect(x, y, w, h, 16);
+  ctx.strokeStyle = danger ? '#f87171' : '#35e58a';
+  ctx.lineWidth = 2;
+  roundRect(x, y, w, h, 12);
   ctx.stroke();
-  ctx.fillStyle = danger ? '#ffd166' : '#6dff9f';
-  roundRect(x + 8, y + 8, 31, 26, 10);
+  ctx.fillStyle = danger ? '#ffd166' : '#35e58a';
+  roundRect(x + 6, y + 6, 24, 24, 8);
   ctx.fill();
   ctx.fillStyle = '#06131d';
-  ctx.font = '900 18px Arial';
+  ctx.font = '900 14px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText(danger ? '!' : '+', x + 23.5, y + 28);
+  ctx.fillText(danger ? '!' : '★', x + 18, y + 23);
   ctx.fillStyle = '#ffffff';
-  ctx.font = '900 13px Arial';
+  ctx.font = '900 11px Arial';
   ctx.textAlign = 'left';
-  ctx.fillText(game.eventText, x + 48, y + 17);
+  ctx.fillText(game.eventText, x + 38, y + 16);
   ctx.fillStyle = '#bfe9f5';
-  ctx.font = '800 9px Arial';
-  ctx.fillText(danger ? 'React fast to protect wear and speed.' : 'Reward collected during the run.', x + 48, y + 31);
+  ctx.font = '800 8.5px Arial';
+  ctx.fillText(danger ? 'Hold BRAKE below 50 km/h for Clean Brake Bonus!' : 'Skilled driving bonus awarded!', x + 38, y + 28);
   ctx.restore();
 }
 
@@ -3049,12 +3579,12 @@ function drawFloatingRewards(width, height, route, cameraX) {
     const x = floater.x - cameraX;
     if (x < -80 || x > width + 80) continue;
     const age = 1 - floater.life;
-    const y = routeY(route, floater.x, height) + floater.yOffset - age * 36;
+    const y = routeY(route, floater.x, height) + floater.yOffset - age * 38;
     ctx.save();
     ctx.globalAlpha = clamp(floater.life, 0, 1);
-    ctx.font = '900 18px Arial';
+    ctx.font = '900 15px Arial';
     ctx.textAlign = 'center';
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 4;
     ctx.strokeStyle = '#06131d';
     ctx.strokeText(floater.text, x, y);
     ctx.fillStyle = floater.color;
@@ -3065,9 +3595,9 @@ function drawFloatingRewards(width, height, route, cameraX) {
 
 function drawBar(x, y, width, height, label, pct, dangerHigh = false) {
   const value = clamp(pct, 0, 1);
-  const actualHeight = Math.max(15, height);
-  const pad = 3;
-  const gap = 3;
+  const actualHeight = Math.max(14, height);
+  const pad = 2.5;
+  const gap = 2.5;
   const segments = 5;
   const cellW = (width - pad * 2 - gap * (segments - 1)) / segments;
   const colors = dangerHigh
@@ -3075,15 +3605,12 @@ function drawBar(x, y, width, height, label, pct, dangerHigh = false) {
     : ['#ff4667', '#ff8f1f', '#ffe05f', '#a9f43c', '#26e872'];
 
   ctx.save();
-  ctx.fillStyle = 'rgba(4,17,29,.82)';
+  ctx.fillStyle = 'rgba(4, 17, 29, 0.86)';
   roundRect(x, y, width, actualHeight, actualHeight / 2);
   ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,.14)';
-  roundRect(x + 3, y + 2, width - 6, 4, 4);
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,.34)';
-  ctx.lineWidth = 1.5;
-  roundRect(x + 0.75, y + 0.75, width - 1.5, actualHeight - 1.5, actualHeight / 2);
+  ctx.strokeStyle = 'rgba(125, 220, 255, 0.35)';
+  ctx.lineWidth = 1.25;
+  roundRect(x + 0.5, y + 0.5, width - 1, actualHeight - 1, actualHeight / 2);
   ctx.stroke();
 
   for (let i = 0; i < segments; i += 1) {
@@ -3091,31 +3618,28 @@ function drawBar(x, y, width, height, label, pct, dangerHigh = false) {
     const sy = y + pad;
     const sh = actualHeight - pad * 2;
     const fill = clamp(value * segments - i, 0, 1);
-    ctx.globalAlpha = 0.30;
+    ctx.globalAlpha = 0.25;
     ctx.fillStyle = colors[i];
-    roundRect(sx, sy, cellW, sh, 4);
+    roundRect(sx, sy, cellW, sh, 3);
     ctx.fill();
     ctx.globalAlpha = 1;
     if (fill > 0) {
       ctx.fillStyle = colors[i];
-      roundRect(sx, sy, cellW * fill, sh, 4);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,.44)';
-      roundRect(sx + 2, sy + 1, Math.max(0, cellW * fill - 4), 3, 2);
+      roundRect(sx, sy, cellW * fill, sh, 3);
       ctx.fill();
     }
   }
-
-  const needleX = x + clamp(value, 0.02, 0.98) * width;
-  ctx.fillStyle = '#ffe08a';
-  roundRect(needleX - 2.5, y - 3, 5, actualHeight + 6, 3);
-  ctx.fill();
   ctx.restore();
 
-  ctx.fillStyle = '#fff';
-  ctx.font = '800 9px Arial';
+  ctx.save();
+  ctx.font = '900 9.5px Arial';
   ctx.textAlign = 'left';
-  ctx.fillText(label, x + width + 6, y + 10);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(2, 6, 23, 0.85)';
+  ctx.strokeText(label, x + width + 6, y + 10.5);
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillText(label, x + width + 6, y + 10.5);
+  ctx.restore();
 }
 
 function activeHazard() {
@@ -3124,11 +3648,12 @@ function activeHazard() {
 
 function triggerEvent(text) {
   game.eventText = text;
-  game.eventTimer = 1.2;
+  game.eventTimer = 1.25;
 }
 
 function hazardDamage(hazard) {
   if (!hazard) return { slow: 1, wear: 0 };
+  if (game.boostActive) return { slow: 0.96, wear: 0 };
   return calculateHazardEffect({
     type: hazard.type,
     kmh: game.telemetry.kmh,
@@ -3146,13 +3671,53 @@ function update(dt) {
   const slope = Math.sin(targetPitch);
   const hazard = activeHazard();
   const hazardEffect = hazardDamage(hazard);
+
+  // 1. Skilled Hazard Braking vs Hazard Impact
   if (hazard && !hazard.hit) {
     hazard.hit = true;
     game.hazardsCleared += 1;
-    triggerEvent(`${hazard.type.toUpperCase()} - slow down!`);
+    const currentKmh = game.telemetry?.kmh || 0;
+    if (currentKmh < DAMAGE_SPEED_KMH || (input.brake && currentKmh < DAMAGE_SPEED_KMH + 16)) {
+      const cleanBonus = 6;
+      game.coins += cleanBonus;
+      saveData.coins += cleanBonus;
+      game.cleanBrakes = (game.cleanBrakes || 0) + 1;
+      game.boostCharge = clamp((game.boostCharge || 0) + 20, 0, 100);
+      triggerEvent(`✨ CLEAN BRAKE! +${cleanBonus} Coins · 0 Wear`);
+      spawnFloatingReward(`✨ CLEAN BRAKE +${cleanBonus}C`, '#35e58a', game.x, -82);
+    } else {
+      triggerEvent(`${hazard.type.toUpperCase()} — Brake <${DAMAGE_SPEED_KMH} km/h!`);
+    }
   }
 
-  const speedRatio = clamp(Math.abs(game.speed) / game.stats.topSpeed, 0, 1);
+  // 2. Nitro Overdrive Boost logic
+  if (input.brake) {
+    game.boostBurstTimer = 0;
+    input.boost = false;
+  }
+  if (game.boostBurstTimer > 0) {
+    game.boostBurstTimer = Math.max(0, game.boostBurstTimer - dt);
+  }
+  const wantsBoost = !input.brake && (input.boost || game.boostBurstTimer > 0);
+  if (wantsBoost && game.boostCharge > 2 && game.fuel > 0) {
+    game.boostActive = true;
+    game.boostCharge = Math.max(0, game.boostCharge - dt * 26);
+    if (game.boostCharge <= 0.5) {
+      game.boostActive = false;
+      game.boostBurstTimer = 0;
+    }
+  } else {
+    game.boostActive = false;
+    if (input.gas && game.speed > 5) {
+      game.boostCharge = clamp((game.boostCharge || 0) + dt * 6.8, 0, 100);
+    }
+  }
+
+  const boostSpeedMult = game.boostActive ? 1.18 : 1;
+  const boostAccelMult = game.boostActive ? 1.42 : 1;
+  const effectiveTopSpeed = game.stats.topSpeed * boostSpeedMult;
+
+  const speedRatio = clamp(Math.abs(game.speed) / Math.max(1, effectiveTopSpeed), 0, 1);
   const rearPitch = routeAngle(route, Math.max(0, game.x - 42), height);
   const frontPitch = routeAngle(route, game.x + 42, height);
   const terrainChatter = clamp(Math.abs(frontPitch - rearPitch) * 1.75 + (hazard ? 0.16 : 0), 0, 1);
@@ -3166,22 +3731,29 @@ function update(dt) {
   const gear = game.telemetry?.gear || 1;
   const pull = gearPull(gear);
   const hillFight = 1 + Math.max(0, slope) * 0.85;
-  const gasForce = input.gas && game.fuel > 0 ? game.stats.acceleration * pull * hillFight * powerBand * launchTorque * rangePull * lowSpeedGrip * game.traction : 0;
+  const activeThrottle = (input.gas || game.boostActive) && game.fuel > 0;
+  const gasForce = activeThrottle
+    ? game.stats.acceleration * boostAccelMult * pull * hillFight * powerBand * launchTorque * rangePull * lowSpeedGrip * game.traction
+    : 0;
   const gravityForce = -slope * 28 / game.stats.climb;
   const rollingDrag = game.stats.drag + Math.abs(game.speed) * 0.0065;
+
   if (gasForce > 0) {
     game.speed += gasForce * dt;
-    game.fuel -= game.stats.fuelUse * dt * (1 + Math.max(0, slope) * 0.55 + speedRatio * 0.18);
-    game.boostPulse = Math.min(0.8, (game.boostPulse || 0) + dt * 0.65);
+    game.fuel -= game.stats.fuelUse * dt * (game.boostActive ? 1.15 : 1) * (1 + Math.max(0, slope) * 0.52 + speedRatio * 0.16);
+    game.boostPulse = Math.min(0.85, (game.boostPulse || 0) + dt * 0.75);
   }
   game.speed += gravityForce * dt;
   if (input.brake) {
-    if (game.speed > 8) game.speed -= game.stats.brakePower * dt;
-    else if (game.x > 82) game.speed -= game.stats.reverseTop * dt;
+    if (game.speed > 6) {
+      game.speed -= game.stats.brakePower * dt;
+    } else if (game.x > 82) {
+      game.speed -= game.stats.reverseTop * dt;
+    }
   }
   if (game.speed > 0) game.speed -= rollingDrag * dt;
   if (game.speed < 0) game.speed += rollingDrag * 0.55 * dt;
-  game.speed = clamp(game.speed, -game.stats.reverseTop, game.stats.topSpeed);
+  game.speed = clamp(game.speed, -game.stats.reverseTop, effectiveTopSpeed);
   const hazardMoveFactor = hazardEffect.slow + (1 - hazardEffect.slow) * game.stats.hazardSpeedResistance;
   game.x += game.speed * dt * hazardMoveFactor;
   game.x = Math.max(80, game.x);
@@ -3190,13 +3762,107 @@ function update(dt) {
   game.distancePx = Math.max(0, game.x - 80);
   game.distanceM = routeMeters(route, game.distancePx);
 
-  game.pitchVel += (targetPitch - game.pitch) * game.stats.spring * dt;
+  // Active Pitch & Suspension Dynamics (Gas pitches nose up slightly, Brake pitches nose down)
+  const pedalPitchBias = (input.gas ? -0.035 : 0) + (input.brake && game.speed > 15 ? 0.045 : 0);
+  game.pitchVel += (targetPitch + pedalPitchBias - game.pitch) * game.stats.spring * dt;
   game.pitchVel -= game.pitchVel * game.stats.damping * dt;
   game.pitch += game.pitchVel * dt;
   game.suspensionTravel = Math.sin(game.elapsed * 18) * Math.min(6, Math.abs(game.speed) / 38) + targetPitch * 6;
 
+  // Hill Crest Bonus Detection
+  if (game.crestCooldown > 0) game.crestCooldown = Math.max(0, game.crestCooldown - dt);
+  if (game.crestCooldown <= 0 && (game.telemetry?.kmh || 0) > 88 && rearPitch < -0.14 && frontPitch > 0.08) {
+    game.crestCooldown = 3.5;
+    game.airtimeCount = (game.airtimeCount || 0) + 1;
+    game.coins += 8;
+    saveData.coins += 8;
+    game.boostCharge = clamp((game.boostCharge || 0) + 22, 0, 100);
+    spawnFloatingReward('🚀 CREST AIRTIME +8C', '#38bdf8', game.x, -86);
+  }
+
   game.telemetry = computeTelemetry(dt, actualSpeed);
   game.maxKmh = Math.max(game.maxKmh, game.telemetry.kmh);
+
+  // Gear Shift Surge & Exhaust Pop
+  if (game.telemetry.gear > (game.prevGear || 1) && activeThrottle) {
+    game.boostPulse = 0.85;
+    const roadY = routeY(route, game.x, height);
+    for (let s = 0; s < 5; s += 1) {
+      spawnParticle({
+        x: game.x - 44,
+        y: roadY - 12 + (Math.random() - 0.5) * 8,
+        vx: -90 - Math.random() * 60,
+        vy: (Math.random() - 0.5) * 30,
+        r: 4 + Math.random() * 3,
+        color: s % 2 === 0 ? '#fde047' : '#f97316',
+        life: 0.32
+      });
+    }
+  }
+  game.prevGear = game.telemetry.gear;
+
+  // Rival Overtake Callout
+  if (game.elapsed > 3 && game.activeGhosts?.length) {
+    game.activeGhosts.forEach((ghost) => {
+      const sample = sampleGhostAt(ghost, game.elapsed * 1000);
+      const gx = 80 + Math.max(0, sample.x || 0);
+      if (game.x > gx + 18 && game.x < gx + 90 && !game.overtakenGhosts.has(ghost.ghostId)) {
+        game.overtakenGhosts.add(ghost.ghostId);
+        game.coins += 10;
+        saveData.coins += 10;
+        const shortName = (ghost.playerName || 'Rival').split(' ')[0].toUpperCase();
+        spawnFloatingReward(`🔥 PASSED ${shortName} +10C`, '#ffd166', game.x, -94);
+      }
+    });
+  }
+
+  // Spawn Live Tire Smoke, Sparks, Hazard Spray & Nitro Particles
+  const carRoadY = routeY(route, game.x, height);
+  if (input.brake && game.telemetry.kmh > 26) {
+    spawnParticle({
+      x: game.x - 24 + (Math.random() - 0.5) * 14,
+      y: carRoadY - 4,
+      vx: -40 - Math.random() * 30,
+      vy: -15 - Math.random() * 20,
+      r: 5 + Math.random() * 4,
+      color: 'rgba(226, 232, 240, 0.75)',
+      life: 0.42
+    });
+  }
+  if (hazard && Math.abs(game.speed) > 18) {
+    const sprayColor = hazard.type === 'mud' ? '#78350f' : hazard.type === 'gravel' ? '#94a3b8' : '#f97316';
+    spawnParticle({
+      x: game.x - 22 + (Math.random() - 0.5) * 20,
+      y: carRoadY - 4,
+      vx: -55 - Math.random() * 45,
+      vy: -28 - Math.random() * 26,
+      r: 3.5 + Math.random() * 3,
+      color: sprayColor,
+      life: 0.36
+    });
+  }
+  if (game.boostActive) {
+    spawnParticle({
+      x: game.x - 48,
+      y: carRoadY - 12 + (Math.random() - 0.5) * 6,
+      vx: -120 - Math.random() * 60,
+      vy: (Math.random() - 0.5) * 24,
+      r: 4 + Math.random() * 3,
+      color: Math.random() > 0.5 ? '#35e58a' : '#38bdf8',
+      life: 0.28
+    });
+  }
+
+  // Update active particles
+  if (game.particles?.length) {
+    for (let i = game.particles.length - 1; i >= 0; i -= 1) {
+      const p = game.particles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.life -= dt;
+      if (p.life <= 0) game.particles.splice(i, 1);
+    }
+  }
 
   const damageSpeedScale = game.telemetry.kmh > DAMAGE_SPEED_KMH
     ? clamp((game.telemetry.kmh - DAMAGE_SPEED_KMH) / DAMAGE_SPEED_KMH, 0, 2.5)
@@ -3224,19 +3890,22 @@ function update(dt) {
 }
 
 function collectPickupsAndCheckpoints() {
+  const coinMult = game.stats?.worldBuffs?.coinMult || 1;
   for (const pickup of game.pickups) {
-    if (pickup.collected || Math.abs(game.x - pickup.x) > 42) continue;
+    if (pickup.collected || Math.abs(game.x - pickup.x) > 44) continue;
     pickup.collected = true;
     if (pickup.type === 'fuel') {
-      const amount = 16;
+      const amount = 18;
       game.fuel = Math.min(game.stats.maxFuel + 24, game.fuel + amount);
+      game.boostCharge = clamp((game.boostCharge || 0) + 12, 0, 100);
       saveData.lifetimeFuel += amount;
-      triggerEvent('Fuel +');
+      triggerEvent('Fuel +18 · +12% Nitro');
       spawnFloatingReward('+Fuel', '#38bdf8', pickup.x);
     }
     if (pickup.type === 'parts') {
       game.parts += 1;
       saveData.parts += 1;
+      game.boostCharge = clamp((game.boostCharge || 0) + 10, 0, 100);
       triggerEvent('Part +1');
       spawnFloatingReward('+1 Part', '#c4b5fd', pickup.x);
     }
@@ -3246,13 +3915,14 @@ function collectPickupsAndCheckpoints() {
       game.wear = Math.max(0, game.wear - game.stats.repairPower);
       game.usedRepair = true;
       saveData.lifetimeRepairs += 1;
-      triggerEvent('Tool repair');
-      spawnFloatingReward('Repair', '#fb923c', pickup.x);
+      triggerEvent('Tool Repair');
+      spawnFloatingReward('🔧 Repair', '#fb923c', pickup.x);
     }
     if (pickup.type === 'coin') {
-      const coins = Math.round((pickup.value || 4) * game.route.reward);
+      const coins = Math.max(1, Math.round((pickup.value || 4) * game.route.reward * coinMult));
       game.coins += coins;
       saveData.coins += coins;
+      game.boostCharge = clamp((game.boostCharge || 0) + 3.5, 0, 100);
       spawnFloatingReward(`+${coins}`, '#facc15', pickup.x);
     }
     saveGameData();
@@ -3261,32 +3931,33 @@ function collectPickupsAndCheckpoints() {
     if (checkpoint.used || Math.abs(game.x - checkpoint.x) > 68) continue;
     checkpoint.used = true;
     if (checkpoint.type === 'fuelStation') {
-      const amount = game.stats.maxFuel * 0.42;
+      const amount = game.stats.maxFuel * 0.45;
       game.fuel = Math.min(game.stats.maxFuel + 36, game.fuel + amount);
+      game.boostCharge = clamp((game.boostCharge || 0) + 25, 0, 100);
       saveData.lifetimeFuel += Math.floor(amount);
-      triggerEvent('Fuel Station + Range');
+      triggerEvent('⛽ Fuel Pit Stop +25% Nitro');
       spawnFloatingReward('+Fuel Stop', '#38bdf8', checkpoint.x, -92);
     }
     if (checkpoint.type === 'partsStore') {
       game.parts += 3;
       saveData.parts += 3;
-      triggerEvent('Auto Parts +3');
+      triggerEvent('⚙️ Auto Parts +3');
       spawnFloatingReward('+3 Parts', '#c4b5fd', checkpoint.x, -92);
     }
     if (checkpoint.type === 'mechanicShop') {
-      const repair = game.stats.wearLimit * 0.45;
+      const repair = game.stats.wearLimit * 0.5;
       game.wear = Math.max(0, game.wear - repair);
       game.usedRepair = true;
       saveData.lifetimeRepairs += 1;
-      triggerEvent('Mechanic Repair');
-      spawnFloatingReward('Repair', '#6dff9f', checkpoint.x, -92);
+      triggerEvent('🔧 Mechanic Chassis Overhaul');
+      spawnFloatingReward('🔧 +50% Chassis', '#6dff9f', checkpoint.x, -92);
     }
     if (checkpoint.type === 'wreck') {
       game.parts += 2;
       saveData.parts += 2;
-      game.wear = Math.max(0, game.wear - 8);
+      game.wear = Math.max(0, game.wear - 10);
       game.usedRepair = true;
-      triggerEvent('Salvage +2 Parts');
+      triggerEvent('🧰 Salvage +2 Parts');
       spawnFloatingReward('+2 Parts', '#f97316', checkpoint.x, -92);
     }
     saveGameData();
@@ -3296,7 +3967,9 @@ function collectPickupsAndCheckpoints() {
 function finishRun(completed) {
   if (game.finished) return;
   game.finished = true;
-  const bonus = Math.floor(game.distanceM / 75);
+  input.boost = false;
+  game.boostActive = false;
+  const bonus = Math.floor(game.distanceM / 65);
   saveData.coins += bonus;
   saveData.lifetimeWear += Math.floor(game.wear);
   saveData.lifetime.distance += Math.floor(game.distanceM);
@@ -3366,39 +4039,82 @@ function resizeCanvas() {
   if (!host) return;
   const rect = host.getBoundingClientRect();
   const width = Math.max(320, Math.floor(rect.width || 420));
-  const height = Math.max(320, Math.floor(rect.height || 340));
+  const height = Math.max(280, Math.floor(rect.height || 340));
   canvas.width = width;
   canvas.height = height;
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
 }
 
+function triggerNitroBurst() {
+  if (!game || game.finished) return;
+  if ((game.boostCharge || 0) >= 12) {
+    game.boostBurstTimer = 2.6;
+    game.boostActive = true;
+    input.gas = true;
+    window.dispatchEvent(new CustomEvent('roadRunnerFirstGas'));
+  }
+}
+
 function bindControls() {
+  window.triggerNitroBoost = triggerNitroBurst;
   document.querySelectorAll('[data-rr-control]').forEach((button) => {
     const control = button.getAttribute('data-rr-control');
     const set = (value, event) => {
       if (event) event.preventDefault();
       if (control === 'gas') input.gas = value;
       if (control === 'brake') input.brake = value;
+      if (control === 'boost') {
+        input.boost = value;
+        if (value) triggerNitroBurst();
+      }
       if (control === 'gas' && value) window.dispatchEvent(new CustomEvent('roadRunnerFirstGas'));
       button.classList.toggle('active', value);
     };
-    button.addEventListener('pointerdown', (event) => { button.setPointerCapture?.(event.pointerId); set(true, event); }, { passive: false });
+    button.addEventListener('pointerdown', (event) => {
+      if (control !== 'boost') button.setPointerCapture?.(event.pointerId);
+      set(true, event);
+    }, { passive: false });
     button.addEventListener('pointerup', (event) => set(false, event), { passive: false });
     button.addEventListener('pointercancel', (event) => set(false, event), { passive: false });
     button.addEventListener('pointerleave', (event) => set(false, event), { passive: false });
+    if (control === 'boost') {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        triggerNitroBurst();
+      });
+    }
   });
   window.onkeydown = (event) => {
     if (!document.querySelector('#screen-race.active')) return;
     if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') {
       input.gas = true;
+      document.querySelector('[data-rr-control="gas"]')?.classList.add('active');
       window.dispatchEvent(new CustomEvent('roadRunnerFirstGas'));
     }
-    if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') input.brake = true;
+    if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') {
+      input.brake = true;
+      document.querySelector('[data-rr-control="brake"]')?.classList.add('active');
+    }
+    if (event.key === ' ' || event.key === 'Shift' || event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+      input.boost = true;
+      triggerNitroBurst();
+      document.querySelector('[data-rr-control="boost"]')?.classList.add('active');
+    }
   };
   window.onkeyup = (event) => {
-    if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') input.gas = false;
-    if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') input.brake = false;
+    if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') {
+      input.gas = false;
+      document.querySelector('[data-rr-control="gas"]')?.classList.remove('active');
+    }
+    if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') {
+      input.brake = false;
+      document.querySelector('[data-rr-control="brake"]')?.classList.remove('active');
+    }
+    if (event.key === ' ' || event.key === 'Shift' || event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+      input.boost = false;
+      document.querySelector('[data-rr-control="boost"]')?.classList.remove('active');
+    }
   };
 }
 

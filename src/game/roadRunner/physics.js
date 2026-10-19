@@ -84,21 +84,34 @@ export function computeVehicleTelemetry({
     return gauge(profile, kmh, 1, 'R', rpm);
   }
 
-  const gearStart = profile.shiftSpeedsKmh[gear - 1];
-  const gearEnd = Math.max(gearStart + 1, profile.shiftSpeedsKmh[gear]);
-  const wheelProgress = clamp((kmh - gearStart) / (gearEnd - gearStart), 0, 1);
+  let gearStart = profile.shiftSpeedsKmh[gear - 1];
+  let gearEnd = Math.max(gearStart + 1, profile.shiftSpeedsKmh[gear]);
+  let wheelProgress = clamp((kmh - gearStart) / (gearEnd - gearStart), 0, 1);
   const band = profile.redlineRpm - profile.idleRpm;
-  const wheelRpm = profile.idleRpm + band * (gear === 1 ? wheelProgress * 0.72 : profile.shiftDropRatio + wheelProgress * (1 - profile.shiftDropRatio));
-  const targetRpm = braking
-    ? profile.idleRpm + band * 0.08
-    : throttle
-      ? Math.max(wheelRpm, profile.idleRpm + band * 0.9)
-      : Math.max(profile.idleRpm, wheelRpm * 0.82);
-  let rpm = Math.round(targetRpm);
 
-  if (throttle && rpm > profile.redlineRpm * 0.92 && kmh >= profile.shiftSpeedsKmh[gear] * 0.92) gear = Math.min(5, gear + 1);
-  if (!throttle && gear > 1 && kmh < profile.shiftSpeedsKmh[gear - 1] * 0.8) gear -= 1;
-  if (gear !== currentGear && gear > 1) rpm = Math.round(profile.idleRpm + band * profile.shiftDropRatio);
+  if (gear < 5 && kmh >= profile.shiftSpeedsKmh[gear] * 0.9) {
+    gear = Math.min(5, gear + 1);
+    gearStart = profile.shiftSpeedsKmh[gear - 1];
+    gearEnd = Math.max(gearStart + 1, profile.shiftSpeedsKmh[gear]);
+    wheelProgress = clamp((kmh - gearStart) / (gearEnd - gearStart), 0, 1);
+  } else if (gear > 1 && kmh < profile.shiftSpeedsKmh[gear - 1] * 0.82) {
+    gear = Math.max(1, gear - 1);
+    gearStart = profile.shiftSpeedsKmh[gear - 1];
+    gearEnd = Math.max(gearStart + 1, profile.shiftSpeedsKmh[gear]);
+    wheelProgress = clamp((kmh - gearStart) / (gearEnd - gearStart), 0, 1);
+  }
+
+  const minBandRatio = gear === 1 ? 0.16 : profile.shiftDropRatio;
+  const wheelRpm = profile.idleRpm + band * (minBandRatio + wheelProgress * (0.98 - minBandRatio));
+  const targetRpm = braking
+    ? Math.max(profile.idleRpm, profile.idleRpm + band * (wheelProgress * 0.42))
+    : throttle
+      ? Math.max(wheelRpm, profile.idleRpm + band * (0.35 + wheelProgress * 0.63))
+      : Math.max(profile.idleRpm, wheelRpm * 0.84);
+  let rpm = Math.round(clamp(targetRpm, profile.idleRpm, profile.redlineRpm));
+  if (gear !== currentGear && gear > (currentGear || 1)) {
+    rpm = Math.round(profile.idleRpm + band * profile.shiftDropRatio);
+  }
 
   return gauge(profile, kmh, gear, `G${gear}`, rpm);
 }
