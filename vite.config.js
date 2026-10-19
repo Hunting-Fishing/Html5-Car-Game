@@ -48,7 +48,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        cacheId: '365-garage-v21',
+        cacheId: '365-garage-v22',
         globPatterns: ['**/*.{js,css,svg,png,jpg,ico,webp}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,

@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { WORLD_ASSET_LIST, WORLD_ASSETS, buildingAssetForKey, personAnimationFramesForKey, personAssetForKey, vehicleAssetForKey } from '../data/worldAssetMap.js';
 import { BUILD_COMMUNICATION_STORAGE_KEY, readBuildCommunicationState } from '../systems/buildCommunicationSystem.js';
-import { Three3DCityViewport, getIntersectionLightState } from './worldThree3dCity.js';
+import { Three3DCityViewport, VEHICLE_SPECS, getIntersectionLightState } from './worldThree3dCity.js';
 
 const WORLD = { width: 960, height: 1720, startX: -210, startY: -75 };
 const GRID = {
@@ -293,6 +293,7 @@ let selectedPlacedId = null;
 let selectedBuildingTarget = null;
 let selectedResidentKey = null;
 let selectedResidentMenu = 'mood';
+let selectedVehicleItem = null;
 let dragMoved = false;
 let initialized = false;
 let pixiWorldAssetsLoaded = false;
@@ -710,7 +711,7 @@ function html() {
       <div class="worldRuntimeTabs subTabBar" hidden></div>
       <div class="pixiWorldHeader worldMapPrimaryHeader">
         <h2>World</h2>
-        <p>Tap a building, person, or frontier plot to expand your 3D town.</p>
+        <p>Tap any building, car, person, or frontier plot to explore &amp; expand your 3D town.</p>
       </div>
       <div class="pixiWorldHost worldMapPrimary" id="pixiWorldHost"></div>
       <div class="worldAssetPreload" aria-hidden="true">
@@ -733,19 +734,32 @@ function html() {
         <div class="mobileBuildSyncStatus"><span>Sync</span><b data-build-sync-total>+${totalSyncedWorldInventory()} world</b><small data-build-sync-lines>${getBuildSync()?.unlockedLineCount || 0}/${getBuildSync()?.totalLineCount || 0} lines</small></div>
         <div class="mobileCityActions worldActionDock" hidden></div>
         <div class="mobileBuildTray" data-build-tray hidden>
-          <div class="mobileTrayTitle mobileBuildTrayTitle"><span>Choose Building</span><span data-selected-building>${selectedDef().name}</span><span data-selected-rotation>0 deg</span></div>
+          <div class="mobileTrayTitle mobileBuildTrayTitle">
+            <span class="buildTrayKicker">Choose Building</span>
+            <span data-selected-building>${selectedDef().name}</span>
+            <span data-selected-rotation>0 deg</span>
+          </div>
           <div class="mobileBuildingList">
-            ${BUILDING_CATALOG.map((item) => `<button class="btn small ghost" data-building-key="${item.key}" onclick="window.selectMobileBuildingSafe?.('${item.key}')">${item.shortName}<small>${item.footprintW}x${item.footprintH} / owned <span data-owned-count="${item.key}">${ownedRemaining(item.key)}</span></small></button>`).join('')}
+            ${BUILDING_CATALOG.map((item) => `
+              <button class="btn small ghost buildCatalogCard" data-building-key="${item.key}" onclick="window.selectMobileBuildingSafe?.('${item.key}')">
+                <img class="buildCardThumb" src="${buildingAssetForKey(item.key, item.name, 1)}" alt="" loading="eager">
+                <strong class="buildCardName">${item.shortName}</strong>
+                <em class="buildCardYield">+${item.baseYield} ${item.outputLabel}</em>
+                <small>${item.footprintW}x${item.footprintH} · owned <span data-owned-count="${item.key}">${ownedRemaining(item.key)}</span></small>
+              </button>
+            `).join('')}
           </div>
-          <div class="mobileGhostHelp">Tap green land to preview. Confirm to place. Red cells are blocked.</div>
-          <div class="mobileConfirmRow" data-confirm-row hidden>
-            <button class="btn primary" onclick="window.confirmMobilePlacementSafe?.()">Confirm</button>
-            <button class="btn red" onclick="window.cancelMobilePlacementSafe?.()">Cancel</button>
-          </div>
-          <div class="mobileBuildActions">
-            <button class="btn gold" onclick="window.rotateMobileBuildingSafe?.()">Rotate Building</button>
-            <button class="btn ghost" onclick="window.cancelMobilePlacementSafe?.()">Close Build Mode</button>
-            <button class="btn red" onclick="window.clearMobilePlacementsSafe?.()">Clear Test Buildings</button>
+          <div class="mobileBuildBottomBar">
+            <div class="mobileGhostHelp">Tap green land to preview · Confirm to place</div>
+            <div class="mobileConfirmRow" data-confirm-row hidden>
+              <button class="btn primary" onclick="window.confirmMobilePlacementSafe?.()">Confirm</button>
+              <button class="btn red" onclick="window.cancelMobilePlacementSafe?.()">Cancel</button>
+            </div>
+            <div class="mobileBuildActions">
+              <button class="btn gold" onclick="window.rotateMobileBuildingSafe?.()">Rotate Building</button>
+              <button class="btn ghost" onclick="window.cancelMobilePlacementSafe?.()">Close Build Mode</button>
+              <button class="btn red" onclick="window.clearMobilePlacementsSafe?.()">Clear Test Buildings</button>
+            </div>
           </div>
         </div>
         <div class="mobilePlacedSheet" data-placed-sheet hidden>
@@ -762,6 +776,7 @@ function html() {
             <button class="btn ghost" onclick="window.closeMobileResidentSheetSafe?.()">Close</button>
           </div>
         </div>
+        <div class="mobileVehicleSheet" data-vehicle-sheet hidden></div>
       </div>
     </section>
     <button class="pixiWorldProxy" data-proxy="garage" data-action="screen" data-screen="garage" hidden></button>
@@ -832,38 +847,111 @@ function makeClickable(container, handler) {
   container.on('pointertap', () => { if (!dragMoved) handler(); });
 }
 
+function buildingStarsForLevel(level = 1) {
+  if (level >= 9) return 5;
+  if (level >= 7) return 4;
+  if (level >= 5) return 3;
+  if (level >= 3) return 2;
+  return 1;
+}
+
+function spawnRichdomCollectBurst(container, cx, cy, amount, label) {
+  if (!container) return;
+  const burst = new PIXI.Container();
+  burst.x = cx;
+  burst.y = cy;
+  burst.zIndex = 2200;
+  container.addChild(burst);
+
+  const bills = [];
+  for (let i = 0; i < 6; i++) {
+    const bill = new PIXI.Graphics();
+    bill.roundRect(-11, -6, 22, 12, 3).fill({ color: 0x22c55e, alpha: 0.96 }).stroke({ width: 1.4, color: 0x052e16 });
+    bill.circle(0, 0, 3).fill({ color: 0x86efac, alpha: 0.95 });
+    bill.x = (i - 2.5) * 9;
+    bill.y = 0;
+    bill.rotation = (i - 2.5) * 0.16;
+    burst.addChild(bill);
+    bills.push({ node: bill, vx: (i - 2.5) * 0.85, vy: -1.8 - (i % 3) * 0.45, vr: (i % 2 === 0 ? 1 : -1) * 0.04 });
+  }
+
+  const floatPill = new PIXI.Container();
+  floatPill.y = -14;
+  floatPill.addChild(roundRect(-44, -11, 88, 22, 11, { color: 0xf8fafc, alpha: 0.98 }, { width: 2, color: 0x16a34a }));
+  floatPill.addChild(textLabel(`+${amount} ${label}`, 0, 0, 9.2, 0x15803d));
+  burst.addChild(floatPill);
+
+  let step = 0;
+  const timer = setInterval(() => {
+    step += 1;
+    if (!burst.parent || step > 24) {
+      clearInterval(timer);
+      if (burst.parent) burst.destroy({ children: true });
+      return;
+    }
+    for (const b of bills) {
+      b.node.x += b.vx;
+      b.node.y += b.vy;
+      b.node.rotation += b.vr;
+      b.node.alpha = Math.max(0, 1 - step / 24);
+    }
+    floatPill.y -= 1.25;
+    floatPill.alpha = Math.max(0, 1 - step / 24);
+  }, 28);
+}
+
 function addBuildingStatusBadges(container, w, h, item, def, onCollect = null) {
   if (!item) return null;
   container.sortableChildren = true;
   const status = collectStatus(item, def);
   const req = upgradeRequirement(item, def);
+  const yieldAmount = buildingYield(item, def);
+  const stars = buildingStarsForLevel(item.level || 1);
   const bubble = new PIXI.Container();
   bubble.x = w / 2;
-  bubble.y = -36;
+  bubble.y = -38;
   bubble.zIndex = 1000;
-  bubble.addChild(roundRect(-36, -12, 72, 24, 12, { color: 0x06131d, alpha: 0.90 }, { width: 2, color: status.ready ? 0x35e58a : 0x38bdf8, alpha: 0.95 }));
-  const iconSrc = status.ready ? WORLD_ASSETS.ui.collectReady : req.met ? WORLD_ASSETS.ui.upgradeReady : WORLD_ASSETS.ui.collectTimer;
-  const icon = assetSprite(iconSrc, -21, 0, 18, 18, 1);
-  if (icon) bubble.addChild(icon);
-  bubble.addChild(textLabel(status.ready ? 'Collect' : formatDuration(status.msLeft), 8, 0.5, 8.5, status.ready ? 0x8fffc2 : 0xe2e8f0));
+
+  if (status.ready) {
+    // Richdom-style crisp white & emerald speech callout pill with pointer tail
+    const tail = new PIXI.Graphics();
+    tail.poly([-6, 11, 6, 11, 0, 18]).fill({ color: 0xf8fafc, alpha: 0.98 }).stroke({ width: 1.8, color: 0x22c55e });
+    bubble.addChild(tail);
+    bubble.addChild(roundRect(-44, -13, 88, 25, 12.5, { color: 0xf8fafc, alpha: 0.98 }, { width: 2.2, color: 0x22c55e, alpha: 0.98 }));
+    const billIcon = new PIXI.Graphics();
+    billIcon.roundRect(-36, -6, 16, 12, 2.5).fill({ color: 0x22c55e }).stroke({ width: 1.2, color: 0x052e16 });
+    billIcon.circle(-28, 0, 2.5).fill({ color: 0xbbf7d0 });
+    bubble.addChild(billIcon);
+    bubble.addChild(textLabel(`+${yieldAmount} ${def.outputLabel}`, 7, 0, 8.5, 0x15803d));
+  } else {
+    bubble.addChild(roundRect(-38, -12, 76, 24, 12, { color: 0x06131d, alpha: 0.90 }, { width: 2, color: 0x38bdf8, alpha: 0.95 }));
+    const iconSrc = req.met ? WORLD_ASSETS.ui.upgradeReady : WORLD_ASSETS.ui.collectTimer;
+    const icon = assetSprite(iconSrc, -22, 0, 17, 17, 1);
+    if (icon) bubble.addChild(icon);
+    bubble.addChild(textLabel(formatDuration(status.msLeft), 7, 0.5, 8.2, 0xe2e8f0));
+  }
+
   if (status.ready && onCollect) {
     bubble.eventMode = 'static';
     bubble.cursor = 'pointer';
     bubble.on('pointertap', (event) => {
       event.stopPropagation?.();
-      if (!dragMoved && mode === 'normal') onCollect();
+      if (!dragMoved && mode === 'normal') {
+        spawnRichdomCollectBurst(container, w / 2, -38, yieldAmount, def.outputLabel);
+        onCollect();
+      }
     });
   }
   container.addChild(bubble);
 
   const levelBadge = new PIXI.Container();
-  levelBadge.x = w - 9;
+  levelBadge.x = w - 12;
   levelBadge.y = h - 9;
   levelBadge.zIndex = 1001;
-  const levelIcon = assetSprite(WORLD_ASSETS.ui.levelBadge, 0, 0, 28, 22, 1);
+  const levelIcon = assetSprite(WORLD_ASSETS.ui.levelBadge, 0, 0, 32, 22, 1);
   if (levelIcon) levelBadge.addChild(levelIcon);
-  levelBadge.addChild(roundRect(-16, -9, 32, 18, 9, { color: 0x04111d, alpha: 0.84 }, { width: 1, color: 0x9fe8ff }));
-  levelBadge.addChild(textLabel(`Lv ${item.level || 1}`, 0, 0, 7.5, 0xffffff));
+  levelBadge.addChild(roundRect(-22, -9, 44, 18, 9, { color: 0x04111d, alpha: 0.88 }, { width: 1.2, color: 0xfacc15 }));
+  levelBadge.addChild(textLabel(`Lv${item.level || 1} ${'★'.repeat(Math.min(3, stars))}`, 0, 0, 7.2, 0xfef08a));
   container.addChild(levelBadge);
 
   if (req.met && !req.maxed) {
@@ -1687,7 +1775,7 @@ function addTraffic(path, options) {
   const baseSpeed = options.speed || 80;
   const pathLen = path._len || 1120;
   const startD = typeof options.startD === 'number' ? options.startD : Math.random() * 600;
-  traffic.push({
+  const trafficItem = {
     sprite: vehicle,
     path,
     pathLen,
@@ -1702,8 +1790,12 @@ function addTraffic(path, options) {
     assetKey: options.assetKey || 'skylineR34',
     direction: options.direction || path._lane || 'east',
     towTargetKey: options.towTargetKey || '',
-    scale: options.scale || 0.80
-  });
+    scale: options.scale || 0.80,
+    isSelected: false,
+    onTap: () => openVehicleInspector(trafficItem)
+  };
+  makeClickable(vehicle, () => openVehicleInspector(trafficItem));
+  traffic.push(trafficItem);
 }
 
 function readSupplyState() {
@@ -2158,12 +2250,16 @@ function openSupplyManager(staff) {
   purseCache.ready = false;
   const placedSheet = document.querySelector('[data-placed-sheet]');
   if (placedSheet) placedSheet.hidden = true;
+  const vehicleSheet = document.querySelector('[data-vehicle-sheet]');
+  if (vehicleSheet) vehicleSheet.hidden = true;
+  traffic.forEach((t) => { t.isSelected = false; });
+  selectedVehicleItem = null;
   selectedSupplyKey = staff.lineKey;
   selectedResidentKey = null;
   selectedBuildingTarget = null;
   selectedPlacedId = null;
   document.querySelector('.mobileCityHud')?.classList.add('resident-open');
-  document.querySelector('.mobileCityHud')?.classList.remove('building-open');
+  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'vehicle-open');
   const sheet = document.querySelector('[data-resident-sheet]');
   if (sheet) {
     sheet.innerHTML = renderSupplyManagerSheet(staff);
@@ -2282,6 +2378,7 @@ function publishWorldOpenState() {
     selectedBuildingTarget,
     selectedResidentKey,
     selectedResidentMenu,
+    selectedVehicleKey: selectedVehicleItem?.assetKey || null,
     selectedResidentMood: selectedResidentMood ? {
       score: selectedResidentMood.score,
       label: selectedResidentMood.label,
@@ -2314,6 +2411,7 @@ function updateHud() {
   const tray = document.querySelector('[data-build-tray]');
   const sheet = document.querySelector('[data-placed-sheet]');
   const residentSheet = document.querySelector('[data-resident-sheet]');
+  const vehicleSheet = document.querySelector('[data-vehicle-sheet]');
   const confirm = document.querySelector('[data-confirm-row]');
   const syncTotal = document.querySelector('[data-build-sync-total]');
   const syncLines = document.querySelector('[data-build-sync-lines]');
@@ -2321,13 +2419,14 @@ function updateHud() {
   const hud = document.querySelector('.mobileCityHud');
   if (hud) {
     hud.classList.toggle('build-mode', mode !== 'normal');
-    if (mode !== 'normal') hud.classList.remove('building-open', 'resident-open');
+    if (mode !== 'normal') hud.classList.remove('building-open', 'resident-open', 'vehicle-open');
   }
   if (badge) badge.textContent = mode === 'placing' ? 'Build Mode' : mode === 'moving' ? 'Move Mode' : 'Normal';
-  if (help) help.textContent = mode === 'normal' ? 'Tap buildings to collect, inspect, and upgrade. Tap frontier plots to expand town.' : mode === 'placing' ? 'Tap a green cell to preview placement.' : 'Tap a green cell to preview the new location.';
+  if (help) help.textContent = mode === 'normal' ? 'Tap buildings to collect, inspect, and upgrade. Tap any vehicle or resident to inspect.' : mode === 'placing' ? 'Tap a green cell to preview placement.' : 'Tap a green cell to preview the new location.';
   if (tray) tray.hidden = mode === 'normal';
   if (sheet && mode !== 'normal') sheet.hidden = true;
   if (residentSheet && mode !== 'normal') residentSheet.hidden = true;
+  if (vehicleSheet && mode !== 'normal') vehicleSheet.hidden = true;
   if (confirm) confirm.hidden = !pendingPlacement;
   if (syncTotal) syncTotal.textContent = `+${totalSyncedWorldInventory()} world`;
   if (expandCount) expandCount.textContent = `${unlockedPlotCount()}/${TOWN_EXPANSION_PLOTS.length}`;
@@ -2693,10 +2792,10 @@ const CITY_ISSUE_MARKERS = {
     { x: 420, y: 295 }, { x: 525, y: 589 }, { x: 420, y: 909 }, { x: 825, y: 589 }
   ],
   vehicleBreakdowns: [
-    { x: 575, y: 262 }, { x: 155, y: 892 }, { x: 825, y: 1222 }, { x: 425, y: 572 }
+    { x: 565, y: 234 }, { x: 155, y: 864 }, { x: 825, y: 1194 }, { x: 425, y: 544 }
   ],
   stuckVehicles: [
-    { x: 825, y: 572 }, { x: 165, y: 1222 }, { x: 825, y: 262 }, { x: 465, y: 1222 }
+    { x: 825, y: 544 }, { x: 165, y: 1194 }, { x: 825, y: 234 }, { x: 465, y: 1194 }
   ],
   trafficJams: [
     { x: 145, y: 589 }, { x: 555, y: 909 }, { x: 155, y: 1239 }, { x: 555, y: 1239 }
@@ -2902,10 +3001,21 @@ function renderBuildingSheet(target) {
   const collectLabel = status.ready ? `Collect +${yieldAmount}` : `Ready in ${formatDuration(status.msLeft)}`;
   const upgradeLabel = req.maxed ? 'Max Level' : `Upgrade to Lv ${req.nextLevel}`;
   const requirementClass = req.met ? 'ready' : req.maxed ? 'maxed' : 'locked';
+  const stars = buildingStarsForLevel(item.level || 1);
+  const starStr = `${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}`;
+  const lineKey = fixed?.lineKey || 'streetRoute';
+  const staff = supplyManagerByLine(lineKey) || SUPPLY_MANAGERS[0];
+  const supStatus = supplyStatus(lineKey);
+  const cycleReduction = Math.min(35, +(3.5 + (item.level || 1) * 1.2 + (supStatus.level || 0) * 0.4).toFixed(1));
+  const upgradeDiscount = Math.min(25, +(2.0 + (item.level || 1) * 0.8).toFixed(1));
+  const incomeBoost = Math.min(120, +(10.0 + (item.level || 1) * 4.5 + (supStatus.hired ? 15 : 0)).toFixed(1));
+  const tierCode = stars >= 4 ? 'SSR' : stars >= 2 ? 'SR' : 'R';
+  const tierCls = tierCode.toLowerCase();
+
   return `
     <div class="mobileTrayTitle" data-building-sheet>
       <span>${escapeHtml(title)}</span>
-      <span>${isPlaced ? 'Placed' : 'City'} Building</span>
+      <span class="richdomStarRow">${starStr} · ${isPlaced ? 'Placed' : 'City'}</span>
     </div>
     <div class="mobileBuildingHero">
       <img src="${buildingAssetForKey(def.key, title, item.level || 1)}" alt="" loading="eager">
@@ -2914,6 +3024,13 @@ function renderBuildingSheet(target) {
         <small>${escapeHtml(def.want)}</small>
       </div>
       <div class="mobileBuildingLevel"><span>Lv</span><strong data-placed-level>${item.level || 1}</strong></div>
+    </div>
+    <div class="richdomBuildingProfitBar">
+      <span class="richdomProfitFill" style="width:${Math.round(status.pct)}%"></span>
+      <div class="richdomProfitLabels">
+        <span>⏱ ${status.ready ? 'READY' : formatDuration(status.msLeft)}</span>
+        <b>+${yieldAmount} ${escapeHtml(def.outputLabel)}</b>
+      </div>
     </div>
     <div class="mobileBuildingStatsGrid">
       <div><strong>${escapeHtml(def.outputLabel)}</strong><span>+${yieldAmount} / collect</span></div>
@@ -2924,6 +3041,18 @@ function renderBuildingSheet(target) {
       <div><strong>${item.collected || 0}</strong><span>Collections</span></div>
     </div>
     <div class="mobileCityMeter mobileBuildingMeter"><span style="--meter-value:${Math.round(item.stock ?? 70)}%" data-placed-stock-meter></span></div>
+    <div class="richdomManagerBuffBox worldBuildingMgrBox">
+      <div class="richdomManagerBuffHead">
+        <span class="richdomTierBadge ${tierCls}">${tierCode}</span>
+        <b>${escapeHtml(staff?.name || 'Elite Manager')}</b>
+        <span class="assignRole ${supStatus.hired ? 'workingRibbon' : 'hired'}">${supStatus.hired ? 'Working' : 'Unassigned'}</span>
+      </div>
+      <div class="richdomBuffRows">
+        <div><span>Income cycle reduced</span><b>-${cycleReduction}%</b></div>
+        <div><span>Building upgrade cost reduced</span><b>-${upgradeDiscount}%</b></div>
+        <div><span>${escapeHtml(def.outputLabel)} income increased</span><b>+${incomeBoost}%</b></div>
+      </div>
+    </div>
     <div class="mobileBuildingBonus">
       <img src="${WORLD_ASSETS.ui.bonusBadge}" alt="" loading="eager">
       <span><b>Building Bonus</b>${escapeHtml(def.bonus)}. Cycle improves with level: ${formatDuration(cycleMsFor(item, def))}.</span>
@@ -2949,13 +3078,17 @@ function openBuildingSheet(target, refresh = false) {
   if (!record) return;
   const residentSheet = document.querySelector('[data-resident-sheet]');
   if (residentSheet) residentSheet.hidden = true;
+  const vehicleSheet = document.querySelector('[data-vehicle-sheet]');
+  if (vehicleSheet) vehicleSheet.hidden = true;
+  traffic.forEach((t) => { t.isSelected = false; });
+  selectedVehicleItem = null;
   selectedBuildingTarget = target;
   selectedPlacedId = target.kind === 'placed' ? target.id : null;
   selectedResidentKey = null;
   selectedSupplyKey = null;
   selectedResidentMenu = 'mood';
   const hud = document.querySelector('.mobileCityHud');
-  hud?.classList.remove('resident-open');
+  hud?.classList.remove('resident-open', 'vehicle-open');
   hud?.classList.add('building-open');
   const sheet = document.querySelector('[data-placed-sheet]');
   if (sheet) {
@@ -2963,6 +3096,73 @@ function openBuildingSheet(target, refresh = false) {
     sheet.hidden = false;
     if (!refresh) sheet.scrollTop = 0;
   }
+  publishWorldOpenState();
+}
+
+function renderVehicleSheet(trafficItem) {
+  const key = trafficItem?.assetKey || 'skylineR34';
+  const spec = VEHICLE_SPECS[key] || VEHICLE_SPECS.skylineR34;
+  const speedKmh = Math.round((trafficItem?.currentSpeed ?? trafficItem?.speed ?? 80) * 1.15);
+  const statusText = trafficItem?.isBraking
+    ? 'Yielding at Intersection / Traffic Queue'
+    : speedKmh <= 5
+      ? 'Stopped at Red Signal'
+      : `Cruising ${String(trafficItem?.direction || 'east').toUpperCase()} Avenue`;
+  const paintHex = `#${Number(spec.body || spec.bodyColor || 0x0284c7).toString(16).padStart(6, '0')}`;
+  const trimHex = `#${Number(spec.trim || spec.accentColor || 0x38bdf8).toString(16).padStart(6, '0')}`;
+  return `
+    <div class="mobileTrayTitle" data-vehicle-sheet-title>
+      <span>365 Street Fleet Inspector</span>
+      <span>${escapeHtml(spec.market || '365 Custom')}</span>
+    </div>
+    <div class="mobileBuildingHero vehicleInspectorHero">
+      <div class="vehiclePaintSwatch" style="--swatch-main:${paintHex};--swatch-trim:${trimHex}">
+        <span>365</span>
+      </div>
+      <div>
+        <b>${escapeHtml(spec.name || spec.label || key)}</b>
+        <small>${escapeHtml(statusText)}</small>
+      </div>
+      <div class="mobileBuildingLevel"><span>HP</span><strong>${escapeHtml(spec.hp || '400')}</strong></div>
+    </div>
+    <div class="mobileBuildingStatsGrid">
+      <div><strong>${escapeHtml(spec.engine || 'Twin-Turbo')}</strong><span>Powerplant</span></div>
+      <div><strong>${escapeHtml(spec.drivetrain || 'AWD')}</strong><span>Drivetrain</span></div>
+      <div><strong>${speedKmh} km/h</strong><span>Live Speed</span></div>
+    </div>
+    <div class="mobileBuildingBonus">
+      <img src="${WORLD_ASSETS.ui.bonusBadge}" alt="" loading="eager">
+      <span><b>365 Garage Spec</b>Custom clearcoat finish, active brake/turn telemetry & street-tuned suspension.</span>
+    </div>
+    <div class="mobilePlacedActions mobileBuildingActions">
+      <button class="btn primary" onclick="window.zoomMobileCityInSafe?.()">Zoom Street View</button>
+      <button class="btn ghost" onclick="window.closeMobileVehicleSheetSafe?.()">Close</button>
+    </div>
+  `;
+}
+
+function openVehicleInspector(trafficItem) {
+  if (mode !== 'normal' || !trafficItem) return;
+  const residentSheet = document.querySelector('[data-resident-sheet]');
+  if (residentSheet) residentSheet.hidden = true;
+  const placedSheet = document.querySelector('[data-placed-sheet]');
+  if (placedSheet) placedSheet.hidden = true;
+  traffic.forEach((t) => { t.isSelected = t === trafficItem; });
+  selectedVehicleItem = trafficItem;
+  selectedBuildingTarget = null;
+  selectedPlacedId = null;
+  selectedResidentKey = null;
+  selectedSupplyKey = null;
+  const hud = document.querySelector('.mobileCityHud');
+  hud?.classList.remove('resident-open', 'building-open', 'build-mode');
+  hud?.classList.add('vehicle-open');
+  const sheet = document.querySelector('[data-vehicle-sheet]');
+  if (sheet) {
+    sheet.innerHTML = renderVehicleSheet(trafficItem);
+    sheet.hidden = false;
+  }
+  const pt = pathPoint(trafficItem.path, trafficItem.d);
+  if (pt) focusWorldPoint(pt.x, pt.y);
   publishWorldOpenState();
 }
 
@@ -3220,9 +3420,13 @@ function openResidentSheet(resident) {
   purseCache.ready = false;
   const placedSheet = document.querySelector('[data-placed-sheet]');
   if (placedSheet) placedSheet.hidden = true;
+  const vehicleSheet = document.querySelector('[data-vehicle-sheet]');
+  if (vehicleSheet) vehicleSheet.hidden = true;
+  traffic.forEach((t) => { t.isSelected = false; });
+  selectedVehicleItem = null;
   if (selectedResidentKey !== resident.key) selectedResidentMenu = 'mood';
   const hud = document.querySelector('.mobileCityHud');
-  hud?.classList.remove('building-open', 'build-mode');
+  hud?.classList.remove('building-open', 'build-mode', 'vehicle-open');
   hud?.classList.add('resident-open');
   selectedBuildingTarget = null;
   selectedSupplyKey = null;
@@ -3314,6 +3518,28 @@ window.inspectFixedMobileBuildingSafe = (index = 0) => {
   openFixedBuildingSheet(CITY_BUILDINGS[Math.abs(Number(index) || 0) % CITY_BUILDINGS.length]);
 };
 
+window.inspectMobileCityVehicleSafe = (assetKeyOrIndex = 0) => {
+  if (!traffic.length) return false;
+  let item = null;
+  if (typeof assetKeyOrIndex === 'string') {
+    item = traffic.find((t) => t.assetKey === assetKeyOrIndex) || traffic[0];
+  } else {
+    item = traffic[Math.abs(Number(assetKeyOrIndex) || 0) % traffic.length];
+  }
+  if (!item) return false;
+  openVehicleInspector(item);
+  return true;
+};
+
+window.closeMobileVehicleSheetSafe = () => {
+  const sheet = document.querySelector('[data-vehicle-sheet]');
+  if (sheet) sheet.hidden = true;
+  traffic.forEach((t) => { t.isSelected = false; });
+  selectedVehicleItem = null;
+  document.querySelector('.mobileCityHud')?.classList.remove('vehicle-open');
+  publishWorldOpenState();
+};
+
 window.openMobileBuildTraySafe = () => {
   mode = 'placing';
   pendingPlacement = null;
@@ -3322,9 +3548,12 @@ window.openMobileBuildTraySafe = () => {
   selectedBuildingTarget = null;
   selectedResidentKey = null;
   selectedResidentMenu = 'mood';
+  traffic.forEach((t) => { t.isSelected = false; });
+  selectedVehicleItem = null;
   document.querySelector('[data-resident-sheet]')?.setAttribute('hidden', '');
   document.querySelector('[data-placed-sheet]')?.setAttribute('hidden', '');
-  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open');
+  document.querySelector('[data-vehicle-sheet]')?.setAttribute('hidden', '');
+  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open', 'vehicle-open');
   clearGhost();
   rebuildGrid();
   updateHud();
@@ -3359,7 +3588,9 @@ window.confirmMobilePlacementSafe = () => {
   selectedBuildingTarget = null;
   selectedResidentKey = null;
   selectedResidentMenu = 'mood';
-  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open');
+  traffic.forEach((t) => { t.isSelected = false; });
+  selectedVehicleItem = null;
+  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open', 'vehicle-open');
   clearGhost();
   rebuildPlacements();
   rebuildIncidents();
@@ -3375,7 +3606,9 @@ window.cancelMobilePlacementSafe = () => {
   selectedBuildingTarget = null;
   selectedResidentKey = null;
   selectedResidentMenu = 'mood';
-  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open');
+  traffic.forEach((t) => { t.isSelected = false; });
+  selectedVehicleItem = null;
+  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open', 'vehicle-open');
   clearGhost();
   rebuildPlacements();
   rebuildIncidents();
@@ -3393,7 +3626,9 @@ window.clearMobilePlacementsSafe = () => {
   selectedBuildingTarget = null;
   selectedResidentKey = null;
   selectedResidentMenu = 'mood';
-  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open');
+  traffic.forEach((t) => { t.isSelected = false; });
+  selectedVehicleItem = null;
+  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open', 'vehicle-open');
   clearGhost();
   rebuildPlacements();
   rebuildIncidents();
@@ -3406,7 +3641,7 @@ window.closeMobileBuildingSheetSafe = () => {
   selectedBuildingTarget = null;
   selectedResidentKey = null;
   selectedResidentMenu = 'mood';
-  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open');
+  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'resident-open', 'vehicle-open');
   const sheet = document.querySelector('[data-placed-sheet]');
   if (sheet) sheet.hidden = true;
 };
@@ -3832,10 +4067,10 @@ async function mount(host) {
       }
 
       // (B) Vehicle-to-Vehicle Collision Avoidance (Same-lane bumper queueing + Intersection cross-traffic yielding)
-      const safeGap = item.towTargetKey ? 86 : 62;
       for (let j = 0; j < traffic.length; j++) {
         if (i === j) continue;
         const other = traffic[j];
+        const safeGap = (item.towTargetKey || other.towTargetKey) ? 112 : 78;
         const op = vehiclePositions[j];
         const dx = op.x - p.x;
         const dy = op.y - p.y;
@@ -3848,11 +4083,11 @@ async function mount(host) {
           if (gap < 0 && other.roadAxis === item.roadAxis && other.roadIndex === item.roadIndex) {
             gap += item.pathLen || 1120;
           }
-          if (gap > 0 && gap < 120) {
+          if (gap > 0 && gap < 148) {
             if (gap <= safeGap) {
               targetSpeed = 0;
             } else {
-              const followSpeed = (other.currentSpeed ?? other.speed) * ((gap - safeGap) / (120 - safeGap));
+              const followSpeed = (other.currentSpeed ?? other.speed) * ((gap - safeGap) / (148 - safeGap));
               targetSpeed = Math.min(targetSpeed, followSpeed);
             }
           }
