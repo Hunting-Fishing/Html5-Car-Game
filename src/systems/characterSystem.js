@@ -420,20 +420,25 @@ export function equipCrewTask(state, id, task) {
 export function crewTaskBonus(state, key) {
   if (!TASKS[key]) return 0;
   const rows = state.characters || {};
+  const cityHappiness = Math.max(0, Math.min(100, Number(state.worldHappiness?.average ?? 72)));
   let total = 0;
   for (const [id, row] of Object.entries(rows)) {
-    if (!row?.hired || row.task !== key || (row.energy || 0) <= 0) continue;
+    if (!row?.hired || (row.energy || 0) <= 0) continue;
     const character = characterById(id);
     if (!character) continue;
+    const activeTask = row.task || character.skills?.[0]?.key || '';
+    if (activeTask !== key) continue;
     const skill = knownSkills(character, row).find((item) => item.key === key);
     if (!skill) continue;
-    let share = skillValue(skill, row.boosts?.[key]) / 100 * 0.35;
+    const personHappiness = Math.max(0, Math.min(100, Number(row.happiness ?? cityHappiness)));
+    const happinessMultiplier = 0.75 + (personHappiness / 100) * 0.50;
+    let share = (skillValue(skill, row.boosts?.[key]) / 100) * 0.35 * happinessMultiplier;
     if (row.perk === 'focus') share *= 1.5;
     if (row.perk === 'hustle') share += 0.08;
     share += treeBonusPercent(row, key) / 100;
     total += share;
   }
-  return Math.min(1, total);
+  return Math.min(1.25, total);
 }
 
 export function sendToCourse(state, id, courseId) {

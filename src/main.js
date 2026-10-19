@@ -678,4 +678,73 @@ window.addEventListener('npc-trade', (event) => {
   queueSave();
 });
 
+window.addEventListener('world-person-sync', (event) => {
+  const detail = event.detail || {};
+  const { personId, crewId, lineKey, hired, level, energy, primarySkill, happiness, cityAverageHappiness, costCoins, note, openStaffId } = detail;
+  if (costCoins && costCoins > 0) {
+    state.currencies.coins = Math.max(0, (state.currencies.coins || 0) - costCoins);
+  }
+  if (personId) {
+    state.worldHiredPeople = { ...(state.worldHiredPeople || {}), [personId]: Boolean(hired) };
+    state.worldPersonStats = {
+      ...(state.worldPersonStats || {}),
+      [personId]: {
+        ...(state.worldPersonStats?.[personId] || {}),
+        hired: Boolean(hired),
+        level: Number(level || 1),
+        energy: Number(energy || 80),
+        happiness: Number(happiness || 75)
+      }
+    };
+  }
+  if (crewId) {
+    state.characters = state.characters || {};
+    const existing = state.characters[crewId] || { level: 1, xp: 0, uses: 0 };
+    state.characters[crewId] = {
+      ...existing,
+      hired: Boolean(hired),
+      level: Math.max(Number(existing.level || 1), Number(level || 1)),
+      energy: typeof energy === 'number' ? energy : existing.energy,
+      task: existing.task || primarySkill || '',
+      happiness: typeof happiness === 'number' ? happiness : existing.happiness
+    };
+  }
+  if (lineKey && hired) {
+    ensureIdleLineState(state);
+    state.idleLines.managers[lineKey] = true;
+    state.idleLines.autoCollect[lineKey] = true;
+    if (state.idleLines.lines[lineKey] && (state.idleLines.lines[lineKey].level || 0) < 1) {
+      state.idleLines.lines[lineKey].level = 1;
+    }
+    state.objectives.firstManager = true;
+  }
+  if (typeof cityAverageHappiness === 'number') {
+    state.worldHappiness = { ...(state.worldHappiness || {}), average: cityAverageHappiness, updatedAt: Date.now() };
+  }
+  if (openStaffId) {
+    setSelectedStaff(openStaffId);
+    state.activeScreen = 'staff';
+    render();
+    queueSave();
+    return;
+  }
+  if (note) {
+    toast(note);
+    addLog(note);
+  }
+  publishBuildCommunicationState(state);
+  updateTopBar();
+  saveState(state);
+});
+
+window.addEventListener('world-building-collect', (event) => {
+  const { output, amount, label } = event.detail || {};
+  if (!output || !amount) return;
+  addCurrency(state, output, amount);
+  addXp(state, Math.max(1, Math.round(amount / 5)));
+  updateTopBar();
+  queueSave();
+});
+
 setInterval(() => saveState(state), 5000);
+

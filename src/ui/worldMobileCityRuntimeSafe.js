@@ -63,22 +63,305 @@ const TOWN_EXPANSION_PLOTS = [
 ];
 
 const SUPPLY_MANAGERS = [
-  { key: 'driver', lineKey: 'streetRoute', name: 'Route Driver', business: 'Street Route', shirt: 0xf6c445 },
-  { key: 'courier', lineKey: 'partsDelivery', name: 'Parts Courier', business: 'Parts Delivery', shirt: 0x16a34a },
-  { key: 'mechanic', lineKey: 'mobileMechanic', name: 'Mobile Tech', business: 'Mobile Mechanic', shirt: 0x38bdf8 },
-  { key: 'racer', lineKey: 'fuelRun', name: 'Fuel Runner', business: 'Fuel Run', shirt: 0xf59e0b },
-  { key: 'towOperator', lineKey: 'towingJob', name: 'Tow Operator', business: 'Towing Job', shirt: 0xf97316 },
-  { key: 'salesRep', lineKey: 'dealerShowcase', name: 'Sales Rep', business: 'Dealer Showcase', shirt: 0x7c3aed }
+  {
+    key: 'driver',
+    lineKey: 'streetRoute',
+    crewId: 'crew-001',
+    crewName: 'Maya Lin',
+    name: 'Route Driver',
+    jobTitle: 'Lead Route Driver',
+    desk: 'Street Route · 365 Garage',
+    business: 'Street Route',
+    building: 'garage365',
+    menuLabel: '365 Garage & Route hubs',
+    want: 'Keep 365 Garage stocked and street signals green so Street Route runs fast.',
+    factors: ['trafficJams', 'trafficLights', 'mapBuild'],
+    hireCostCoins: 80,
+    salaryCoins: 12,
+    primarySkill: 'route',
+    skills: [
+      { key: 'route', label: 'Route Pace', base: 44 },
+      { key: 'race', label: 'Street Speed', base: 38 },
+      { key: 'fuel', label: 'Fuel Econ', base: 31 }
+    ],
+    raceEffectLabel: 'Idle Route Speed & Coin Payout',
+    mergeEffectLabel: 'Original Parts Shelf Speed',
+    shirt: 0xf6c445
+  },
+  {
+    key: 'courier',
+    lineKey: 'partsDelivery',
+    crewId: 'crew-002',
+    crewName: 'Jaxon Cole',
+    name: 'Parts Courier',
+    jobTitle: 'Express Parts Courier',
+    desk: 'Parts Delivery · Parts Hub',
+    business: 'Parts Delivery',
+    building: 'partsWarehouse',
+    menuLabel: 'Parts supply buildings',
+    want: 'Keep Parts Hub shelves stocked and clear delivery lanes for workshop runs.',
+    factors: ['trafficJams', 'stuckVehicles', 'mapBuild'],
+    hireCostCoins: 90,
+    salaryCoins: 14,
+    primarySkill: 'parts',
+    skills: [
+      { key: 'parts', label: 'Parts Logistics', base: 48 },
+      { key: 'route', label: 'Route Pace', base: 36 },
+      { key: 'grip', label: 'Load Grip', base: 29 }
+    ],
+    raceEffectLabel: 'Delivery Run Parts Bonus',
+    mergeEffectLabel: 'Parts Bin Generator Yield',
+    shirt: 0x16a34a
+  },
+  {
+    key: 'mechanic',
+    lineKey: 'mobileMechanic',
+    crewId: 'crew-003',
+    crewName: 'Elena Vance',
+    name: 'Mobile Tech',
+    jobTitle: 'Chief Mobile Mechanic',
+    desk: 'Mobile Mechanic · Repair Shop',
+    business: 'Mobile Mechanic',
+    building: 'privateShop',
+    menuLabel: 'Repair shop buildings',
+    want: 'Upgrade Repair Shops and supply toolkits to fix roadside breakdowns.',
+    factors: ['vehicleBreakdowns', 'potholes', 'mapBuild'],
+    hireCostCoins: 105,
+    salaryCoins: 15,
+    primarySkill: 'repair',
+    skills: [
+      { key: 'repair', label: 'Field Repair', base: 50 },
+      { key: 'parts', label: 'Tool Prep', base: 38 },
+      { key: 'grip', label: 'Chassis Tune', base: 33 }
+    ],
+    raceEffectLabel: 'Condition Protection & Pit Fix',
+    mergeEffectLabel: 'Workbench Shop Tools Crafting',
+    shirt: 0x38bdf8
+  },
+  {
+    key: 'racer',
+    lineKey: 'fuelRun',
+    crewId: 'crew-004',
+    crewName: 'Marcus Sterling',
+    name: 'Fuel Runner',
+    jobTitle: 'Pro Fuel & Pace Runner',
+    desk: 'Fuel Run · 2D Test Track',
+    business: 'Fuel Run',
+    building: 'testTrack',
+    menuLabel: 'Test Track & Fuel bays',
+    want: 'Keep Test Track active and fuel reserves full for Road Runner stages.',
+    factors: ['potholes', 'trafficLights', 'mapBuild'],
+    hireCostCoins: 115,
+    salaryCoins: 16,
+    primarySkill: 'fuel',
+    skills: [
+      { key: 'fuel', label: 'Fuel Tech', base: 47 },
+      { key: 'race', label: 'Track Pace', base: 45 },
+      { key: 'grip', label: 'Apex Grip', base: 35 }
+    ],
+    raceEffectLabel: 'Fuel Burn Reduction & Boost Power',
+    mergeEffectLabel: 'Shop Fluids & Race Gear Yield',
+    shirt: 0xf59e0b
+  },
+  {
+    key: 'towOperator',
+    lineKey: 'towingJob',
+    crewId: 'crew-005',
+    crewName: 'Kendra Shaw',
+    name: 'Tow Operator',
+    jobTitle: 'Heavy Recovery Operator',
+    desk: 'Towing Job · Tow Dispatch',
+    business: 'Towing Job',
+    building: 'towDispatch',
+    menuLabel: 'Tow and recovery buildings',
+    want: 'Keep Tow Dispatch fueled and ready so broken-down cars never block the avenue.',
+    factors: ['vehicleBreakdowns', 'stuckVehicles', 'trafficJams'],
+    hireCostCoins: 120,
+    salaryCoins: 18,
+    primarySkill: 'tow',
+    skills: [
+      { key: 'tow', label: 'Heavy Tow', base: 52 },
+      { key: 'repair', label: 'Salvage Fix', base: 40 },
+      { key: 'route', label: 'Dispatch Route', base: 34 }
+    ],
+    raceEffectLabel: 'Roadside Recovery & Scrap Yield',
+    mergeEffectLabel: 'Body Shop & Salvage Parts',
+    shirt: 0xf97316
+  },
+  {
+    key: 'salesRep',
+    lineKey: 'dealerShowcase',
+    crewId: 'crew-006',
+    crewName: 'Devon Brooks',
+    name: 'Sales Rep',
+    jobTitle: 'Executive Showroom Rep',
+    desk: 'Dealer Showcase · Showroom',
+    business: 'Dealer Showcase',
+    building: 'dealerShowroom',
+    menuLabel: 'Showroom buildings',
+    want: 'Keep Dealer Showroom stocked with display cars to grow 365 City Reputation.',
+    factors: ['trafficJams', 'trafficLights', 'mapBuild'],
+    hireCostCoins: 135,
+    salaryCoins: 20,
+    primarySkill: 'sales',
+    skills: [
+      { key: 'sales', label: 'VIP Sales', base: 54 },
+      { key: 'race', label: 'Showcase Pace', base: 36 },
+      { key: 'route', label: 'Buyer Reach', base: 32 }
+    ],
+    raceEffectLabel: 'Showcase Rep & Stage Multiplier',
+    mergeEffectLabel: 'Cabin & Customer Order Payout',
+    shirt: 0x7c3aed
+  }
 ];
 
 const RESIDENT_WANTS = [
-  { key: 'residentBlue', name: 'Mia', want: 'I want a tire shop closer to this block.', building: 'tireRepair', menuLabel: 'Tire repair buildings', factors: ['potholes', 'trafficLights', 'mapBuild'] },
-  { key: 'residentGreen', name: 'Jay', want: 'I want the parts warehouse restocked.', building: 'partsWarehouse', menuLabel: 'Parts supply buildings', factors: ['trafficJams', 'stuckVehicles', 'mapBuild'] },
-  { key: 'residentOrange', name: 'Nico', want: 'I want a repair shop before traffic gets worse.', building: 'privateShop', menuLabel: 'Repair buildings', factors: ['potholes', 'vehicleBreakdowns', 'trafficJams'] },
-  { key: 'residentPurple', name: 'Ari', want: 'I want more cars in the dealer showroom.', building: 'dealerShowroom', menuLabel: 'Showroom buildings', factors: ['trafficJams', 'trafficLights', 'mapBuild'] },
-  { key: 'mechanic', name: 'Rae', want: 'I want tools and work orders from upgraded shops.', building: 'streetKiosk', menuLabel: 'Work order buildings', factors: ['vehicleBreakdowns', 'potholes', 'mapBuild'] },
-  { key: 'driver', name: 'Sol', want: 'I want tow dispatch ready when cars break down.', building: 'towDispatch', menuLabel: 'Tow and recovery buildings', factors: ['vehicleBreakdowns', 'stuckVehicles', 'trafficJams'] }
+  {
+    key: 'residentBlue',
+    crewId: 'crew-009',
+    crewName: 'Chloe Bennett',
+    name: 'Mia',
+    jobTitle: 'Tire & Grip Specialist',
+    desk: 'Tire Repair Desk',
+    business: 'Performance Bay',
+    lineKeyRef: 'performanceBay',
+    want: 'I want a tire shop closer to this block.',
+    building: 'tireRepair',
+    menuLabel: 'Tire repair buildings',
+    factors: ['potholes', 'trafficLights', 'mapBuild'],
+    hireCostCoins: 75,
+    salaryCoins: 10,
+    primarySkill: 'grip',
+    skills: [
+      { key: 'grip', label: 'Tire Grip', base: 45 },
+      { key: 'repair', label: 'Rim Repair', base: 35 },
+      { key: 'race', label: 'Cornering', base: 30 }
+    ],
+    raceEffectLabel: 'Tire Grip & Less Road Wear',
+    mergeEffectLabel: 'Tire Station & Racing Chain'
+  },
+  {
+    key: 'residentGreen',
+    crewId: 'crew-010',
+    crewName: "Liam O'Connor",
+    name: 'Jay',
+    jobTitle: 'Warehouse Parts Clerk',
+    desk: 'Parts Desk',
+    business: 'Parts Delivery',
+    lineKeyRef: 'partsDelivery',
+    want: 'I want the parts warehouse restocked.',
+    building: 'partsWarehouse',
+    menuLabel: 'Parts supply buildings',
+    factors: ['trafficJams', 'stuckVehicles', 'mapBuild'],
+    hireCostCoins: 80,
+    salaryCoins: 11,
+    primarySkill: 'parts',
+    skills: [
+      { key: 'parts', label: 'Stock Inventory', base: 47 },
+      { key: 'route', label: 'Dock Dispatch', base: 33 },
+      { key: 'sales', label: 'Order Fill', base: 28 }
+    ],
+    raceEffectLabel: 'Parts Delivery Route Yield',
+    mergeEffectLabel: 'Parts Bin & Original Chain'
+  },
+  {
+    key: 'residentOrange',
+    crewId: 'crew-011',
+    crewName: 'Zoe Ramirez',
+    name: 'Nico',
+    jobTitle: 'Street Traffic & Tune Scout',
+    desk: 'Street Watch Desk',
+    business: 'Street Route',
+    lineKeyRef: 'streetRoute',
+    want: 'I want a repair shop before traffic gets worse.',
+    building: 'privateShop',
+    menuLabel: 'Repair buildings',
+    factors: ['potholes', 'vehicleBreakdowns', 'trafficJams'],
+    hireCostCoins: 85,
+    salaryCoins: 12,
+    primarySkill: 'route',
+    skills: [
+      { key: 'route', label: 'Traffic Scout', base: 44 },
+      { key: 'repair', label: 'Quick Tune', base: 37 },
+      { key: 'race', label: 'Street Sprint', base: 34 }
+    ],
+    raceEffectLabel: 'Lower Police Heat & Idle Speed',
+    mergeEffectLabel: 'Diagnostic Bench & ECU Tune'
+  },
+  {
+    key: 'residentPurple',
+    crewId: 'crew-012',
+    crewName: 'Noah Takahashi',
+    name: 'Ari',
+    jobTitle: 'VIP Showroom Host',
+    desk: 'Showroom Floor',
+    business: 'Dealer Showcase',
+    lineKeyRef: 'dealerShowcase',
+    want: 'I want more cars in the dealer showroom.',
+    building: 'dealerShowroom',
+    menuLabel: 'Showroom buildings',
+    factors: ['trafficJams', 'trafficLights', 'mapBuild'],
+    hireCostCoins: 90,
+    salaryCoins: 13,
+    primarySkill: 'sales',
+    skills: [
+      { key: 'sales', label: 'Showroom Pitch', base: 49 },
+      { key: 'race', label: 'Demo Drive', base: 32 },
+      { key: 'grip', label: 'Spec Polish', base: 29 }
+    ],
+    raceEffectLabel: 'Dealer Showcase Rep Bonus',
+    mergeEffectLabel: 'VIP Customer Delivery Bonus'
+  },
+  {
+    key: 'mechanic',
+    crewId: 'crew-013',
+    crewName: 'Sadie Morales',
+    name: 'Rae',
+    jobTitle: 'Tool Crib & Work Order Tech',
+    desk: 'Tool Crib Desk',
+    business: 'Mobile Mechanic',
+    lineKeyRef: 'mobileMechanic',
+    want: 'I want tools and work orders from upgraded shops.',
+    building: 'streetKiosk',
+    menuLabel: 'Work order buildings',
+    factors: ['vehicleBreakdowns', 'potholes', 'mapBuild'],
+    hireCostCoins: 85,
+    salaryCoins: 12,
+    primarySkill: 'repair',
+    skills: [
+      { key: 'repair', label: 'Wrench Mastery', base: 48 },
+      { key: 'parts', label: 'Tool Crib', base: 38 },
+      { key: 'tow', label: 'Field Assist', base: 29 }
+    ],
+    raceEffectLabel: 'Cheaper Pit Fixes & Reliability',
+    mergeEffectLabel: 'Workbench & Garage Build Speed'
+  },
+  {
+    key: 'driver',
+    crewId: 'crew-014',
+    crewName: 'Caleb Wright',
+    name: 'Sol',
+    jobTitle: 'Recovery Dispatch Spotter',
+    desk: 'Tow Desk',
+    business: 'Towing Job',
+    lineKeyRef: 'towingJob',
+    want: 'I want tow dispatch ready when cars break down.',
+    building: 'towDispatch',
+    menuLabel: 'Tow and recovery buildings',
+    factors: ['vehicleBreakdowns', 'stuckVehicles', 'trafficJams'],
+    hireCostCoins: 90,
+    salaryCoins: 12,
+    primarySkill: 'tow',
+    skills: [
+      { key: 'tow', label: 'Recovery Spotter', base: 46 },
+      { key: 'fuel', label: 'Emergency Fuel', base: 36 },
+      { key: 'route', label: 'Lane Clearing', base: 33 }
+    ],
+    raceEffectLabel: 'Rough Road & Tow Event Bonus',
+    mergeEffectLabel: 'Salvage & Electrical Chain'
+  }
 ];
+
 
 function residentTree({ problem, ask, personal, favor, cold, rumor, stake }) {
   return {
@@ -434,10 +717,33 @@ function collectStatus(item, def) {
   return { ready, elapsed, cycle, msLeft: Math.max(0, cycle - elapsed), pct };
 }
 
+function buildingStaffYieldMultiplier(buildingKey) {
+  if (!buildingKey) return 1;
+  const linked = [...SUPPLY_MANAGERS, ...RESIDENT_WANTS].filter((p) => p.building === buildingKey);
+  if (!linked.length) return 1;
+  let bonus = 0;
+  const save = readSupplyState();
+  for (const p of linked) {
+    const id = p.lineKey || p.key;
+    const rt = personRuntimeState[id] || {};
+    const hired = rt.hired !== undefined
+      ? Boolean(rt.hired)
+      : Boolean(save.worldHiredPeople?.[id] || (p.lineKey && save.idleLines?.managers?.[p.lineKey]));
+    const lvl = Math.max(1, Number(rt.level || save.worldPersonStats?.[id]?.level || 1));
+    const moodBoost = Number(rt.moodBoost || save.worldPersonStats?.[id]?.moodBoost || 0);
+    if (hired) {
+      bonus += 0.12 + Math.min(0.28, (lvl - 1) * 0.03 + moodBoost * 0.005);
+    }
+  }
+  return 1 + Math.min(0.65, bonus);
+}
+
 function buildingYield(item, def) {
   const stockFactor = Math.max(0.25, (item.stock ?? 80) / 100);
-  return Math.max(1, Math.round((def.baseYield || 10) * (item.level || 1) * stockFactor));
+  const staffMult = buildingStaffYieldMultiplier(def?.key);
+  return Math.max(1, Math.round((def.baseYield || 10) * (item.level || 1) * stockFactor * staffMult));
 }
+
 
 function buildingPower(item, def) {
   return Math.round((def.cost || 50) * 6 + (item.level || 1) * (def.happiness || 8) * 95 + (item.collected || 0) * 24);
@@ -596,15 +902,128 @@ function cityConditionStats() {
   };
 }
 
-function residentFactorList(resident) {
-  const def = defByKey(resident.building);
-  const service = serviceStats(resident.building);
+const personRuntimeState = {};
+
+function rankLabelForPersonLevel(level = 1) {
+  if (level >= 12) return 'Partner';
+  if (level >= 8) return 'Chief';
+  if (level >= 5) return 'Lead';
+  if (level >= 3) return 'Specialist';
+  return 'Rookie';
+}
+
+function personProfile(person) {
+  if (!person) return null;
+  const id = person.lineKey || person.key;
+  const isSupply = Boolean(person.lineKey);
+  const linkedLineKey = person.lineKey || person.lineKeyRef || 'streetRoute';
+  const save = readSupplyState();
+  const runtime = personRuntimeState[id] || {};
+  const savedPerson = save.worldPersonStats?.[id] || {};
+  const savedCrew = person.crewId ? (save.characters?.[person.crewId] || {}) : {};
+  const lineLevel = Math.max(
+    Number(runtime.lineLevel || 0),
+    Number(save.idleLines?.lines?.[linkedLineKey]?.level || 0)
+  );
+  const managerHired = Boolean(save.idleLines?.managers?.[linkedLineKey]);
+  const worldHired = runtime.hired !== undefined
+    ? Boolean(runtime.hired)
+    : save.worldHiredPeople?.[id] !== undefined
+      ? Boolean(save.worldHiredPeople[id])
+      : isSupply
+        ? managerHired
+        : Boolean(savedCrew.hired);
+
+  const level = Math.max(
+    1,
+    Number(runtime.level || savedPerson.level || savedCrew.level || (worldHired ? 2 : 1))
+  );
+  const energyMax = 100;
+  const energy = Math.max(
+    20,
+    Math.min(energyMax, Number(runtime.energy ?? savedPerson.energy ?? savedCrew.energy ?? (worldHired ? 88 : 64)))
+  );
+  const moodBoost = Number(runtime.moodBoost || savedPerson.moodBoost || 0);
+  const skillBonus = (level - 1) * 3.5 + (worldHired ? 6 : 0);
+  const skills = (person.skills || [
+    { key: 'route', label: 'Route Pace', base: 40 },
+    { key: 'repair', label: 'Shop Repair', base: 34 },
+    { key: 'race', label: 'Street Speed', base: 30 }
+  ]).map((sk) => ({
+    key: sk.key,
+    label: sk.label,
+    base: sk.base,
+    value: Math.min(100, Math.round(sk.base + skillBonus))
+  }));
+
+  const primarySkillObj = skills[0] || { key: 'route', label: 'Route Pace', value: 45 };
+  const avgSkill = Math.round(average(skills.map((s) => s.value)));
+  const jobScore = worldHired
+    ? Math.min(100, Math.round(78 + level * 2.5 + (energy / energyMax) * 12))
+    : 28;
+  const supplyScore = worldHired
+    ? Math.min(100, 76 + Math.min(24, Math.max(1, lineLevel) * 3))
+    : Math.max(24, Math.min(62, lineLevel * 6 + (managerHired ? 25 : 18)));
+  const trustScore = relationshipScore(id);
+  const trustRank = relationshipRank(trustScore);
+  const cityRep = cityReputation();
+  const bondScore = Math.min(100, Math.round(46 + trustScore * 0.42 + cityRep * 0.25));
+
   const conditions = cityConditionStats();
+  const streetFactors = (person.factors || ['mapBuild']).map((k) => conditions[k]?.score ?? 70);
+  const streetScore = Math.round(average(streetFactors));
+
+  const hireCost = Number(person.hireCostCoins || 85);
+  const trainCost = 35 + level * 15;
+  const salaryCoins = Number(person.salaryCoins || 12) + Math.max(0, level - 1) * 2;
+
+  return {
+    id,
+    isSupply,
+    linkedLineKey,
+    lineLevel: worldHired ? Math.max(1, lineLevel) : lineLevel,
+    hired: worldHired,
+    level,
+    rank: rankLabelForPersonLevel(level),
+    energy,
+    energyMax,
+    moodBoost,
+    skills,
+    primarySkillKey: primarySkillObj.key,
+    primarySkillLabel: primarySkillObj.label,
+    primarySkillValue: primarySkillObj.value,
+    avgSkill,
+    jobScore,
+    supplyScore,
+    streetScore,
+    trustScore,
+    trustRank,
+    bondScore,
+    hireCost,
+    trainCost,
+    salaryCoins
+  };
+}
+
+function residentFactorList(resident) {
+  const buildingKey = resident?.building || 'garage365';
+  const def = defByKey(buildingKey);
+  const service = serviceStats(buildingKey);
+  const conditions = cityConditionStats();
+  const profile = personProfile(resident);
   const factors = [
-    { key: 'service', label: `${def.shortName} coverage`, score: service.score, weight: 32, kind: 'service' },
-    { key: 'stock', label: 'Stocked supply', score: service.stockScore, weight: 18, kind: 'stock' },
-    { key: 'health', label: 'Building repair', score: service.healthScore, weight: 16, kind: 'service' },
-    { key: 'level', label: 'Building level', score: service.levelScore, weight: 12, kind: 'service' }
+    {
+      key: 'employment',
+      label: profile.hired ? `Job: Hired (${resident.jobTitle || 'Staff'})` : 'Job: Unemployed (Hire to boost)',
+      score: profile.jobScore,
+      weight: 24,
+      kind: 'job'
+    },
+    { key: 'service', label: `${def.shortName} coverage`, score: service.score, weight: 24, kind: 'service' },
+    { key: 'supply', label: `${resident.business || 'Supply'} line`, score: profile.supplyScore, weight: 16, kind: 'supply' },
+    { key: 'stock', label: 'Stocked supply', score: service.stockScore, weight: 14, kind: 'stock' },
+    { key: 'health', label: 'Building repair', score: service.healthScore, weight: 12, kind: 'service' },
+    { key: 'bond', label: `Trust (${profile.trustRank}) & Rep`, score: profile.bondScore, weight: 10, kind: 'bond' }
   ];
   for (const key of resident.factors || []) {
     const condition = conditions[key];
@@ -614,7 +1033,7 @@ function residentFactorList(resident) {
         label: condition.label,
         score: condition.score,
         count: condition.count,
-        weight: key === 'mapBuild' ? 8 : 12,
+        weight: key === 'mapBuild' ? 8 : 10,
         kind: 'condition'
       });
     }
@@ -639,20 +1058,56 @@ function moodTone(score) {
 }
 
 function residentMood(resident) {
-  const service = serviceStats(resident.building);
+  const buildingKey = resident?.building || 'garage365';
+  const service = serviceStats(buildingKey);
+  const profile = personProfile(resident);
   const factors = residentFactorList(resident);
   const baseScore = weightedScore(factors);
   const city = cityNeedStats();
   const diversity = cityDiversityScore();
   const conditions = cityConditionStats();
-  const score = Math.round(Math.max(0, Math.min(100, baseScore * 0.78 + city.average * 0.14 + diversity * 0.08)));
+  const rawScore = baseScore * 0.80 + city.average * 0.12 + diversity * 0.08 + (profile.moodBoost || 0);
+  const score = Math.round(Math.max(0, Math.min(100, rawScore)));
   const tone = moodTone(score);
-  return { ...tone, score, service, city, diversity, factors, baseScore, conditions };
+
+  // Connected Game-Mode Bonuses driven by (Happiness × Character Skills × Employment)
+  const activeFactor = profile.hired ? (0.65 + (score / 100) * 0.65) : (0.20 + (score / 100) * 0.25);
+  const worldYieldBonus = Math.max(2, Math.round((profile.avgSkill * 0.36 + score * 0.18) * activeFactor));
+  const supplyYieldBonus = Math.max(2, Math.round((profile.primarySkillValue * 0.42 + score * 0.20) * activeFactor));
+  const raceBonusPct = Math.max(2, Math.round((profile.primarySkillValue * 0.38 + score * 0.16) * activeFactor));
+  const mergeBonusPct = Math.max(2, Math.round((profile.avgSkill * 0.32 + score * 0.15) * activeFactor));
+  const totalModeBonusPct = Math.round((worldYieldBonus + supplyYieldBonus + raceBonusPct + mergeBonusPct) / 4);
+  const potentialBonusPct = Math.round((profile.primarySkillValue * 0.42 + 80 * 0.20) * 1.15);
+
+  return {
+    ...tone,
+    score,
+    service,
+    city,
+    diversity,
+    factors,
+    baseScore,
+    conditions,
+    profile: {
+      ...profile,
+      worldYieldBonus,
+      supplyYieldBonus,
+      raceBonusPct,
+      mergeBonusPct,
+      totalModeBonusPct,
+      potentialBonusPct
+    }
+  };
 }
 
 function residentByKey(key) {
-  return RESIDENT_WANTS.find((resident) => resident.key === key) || null;
+  return RESIDENT_WANTS.find((resident) => resident.key === key) || SUPPLY_MANAGERS.find((staff) => staff.lineKey === key || staff.key === key) || null;
 }
+
+function allCityPeople() {
+  return [...SUPPLY_MANAGERS, ...RESIDENT_WANTS];
+}
+
 
 function buildingCondition(record) {
   const item = record.item;
@@ -1808,11 +2263,16 @@ function readSupplyState() {
 
 function supplyStatus(lineKey) {
   const save = readSupplyState();
+  const runtime = personRuntimeState[lineKey] || {};
+  const hired = runtime.hired !== undefined
+    ? Boolean(runtime.hired)
+    : Boolean(save.idleLines?.managers?.[lineKey] || save.worldHiredPeople?.[lineKey]);
   return {
-    level: Number(save.idleLines?.lines?.[lineKey]?.level || 0),
-    hired: Boolean(save.idleLines?.managers?.[lineKey])
+    level: Math.max(hired ? 1 : 0, Number(runtime.lineLevel || save.idleLines?.lines?.[lineKey]?.level || 0)),
+    hired
   };
 }
+
 
 function managerDialogue(staff) {
   const status = supplyStatus(staff.lineKey);
@@ -2221,32 +2681,15 @@ function addSupplyWalker(path, staff) {
 }
 
 function renderSupplyManagerSheet(staff) {
-  const portraitSrc = personAssetForKey(staff.key);
-  return `
-    <div class="residentWindow">
-      <div class="residentWindowHeader">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <img src="${escapeHtml(portraitSrc)}" alt="${escapeHtml(staff.name)}" style="width:52px;height:66px;object-fit:contain;border-radius:12px;background:rgba(15,23,42,0.65);border:1.5px solid rgba(250,204,21,0.65);padding:2px;" />
-          <div>
-            <span class="residentKicker">Supply Manager</span>
-            <b>${escapeHtml(staff.name)}</b>
-          </div>
-        </div>
-      </div>
-      <div class="residentMoodCard">
-        ${renderNpcTalk(staff)}
-      </div>
-      <div class="mobilePlacedActions residentFooterActions">
-        <button class="btn gold" onclick="window.openSupplyFromWorld?.()">Open Supplies</button>
-        <button class="btn ghost" onclick="window.closeMobileResidentSheetSafe?.()">Close</button>
-      </div>
-    </div>
-  `;
+  return renderResidentSheet(staff);
 }
 
 function openSupplyManager(staff) {
   if (mode !== 'normal' || !staff) return;
-  if (selectedSupplyKey !== staff.lineKey) lastBondNote = '';
+  if (selectedSupplyKey !== staff.lineKey) {
+    lastBondNote = '';
+    selectedResidentMenu = 'mood';
+  }
   purseCache.ready = false;
   const placedSheet = document.querySelector('[data-placed-sheet]');
   if (placedSheet) placedSheet.hidden = true;
@@ -2255,7 +2698,7 @@ function openSupplyManager(staff) {
   traffic.forEach((t) => { t.isSelected = false; });
   selectedVehicleItem = null;
   selectedSupplyKey = staff.lineKey;
-  selectedResidentKey = null;
+  selectedResidentKey = staff.lineKey;
   selectedBuildingTarget = null;
   selectedPlacedId = null;
   document.querySelector('.mobileCityHud')?.classList.add('resident-open');
@@ -2265,6 +2708,7 @@ function openSupplyManager(staff) {
     sheet.innerHTML = renderSupplyManagerSheet(staff);
     sheet.hidden = false;
   }
+  publishWorldOpenState();
 }
 
 function refreshSupplyManagerSheet() {
@@ -2272,6 +2716,7 @@ function refreshSupplyManagerSheet() {
   if (!staff) return;
   openSupplyManager(staff);
 }
+
 
 function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb) {
   const p = new PIXI.Container();
@@ -3183,6 +3628,9 @@ function collectBuildingTarget(target, options = {}) {
     item.health = Math.max(0, (item.health ?? 88) - Math.max(2, Math.round((def.stockDrain || 10) / 4)));
     item.lastReward = { output: def.output, label: def.outputLabel, amount, at: Date.now() };
   });
+  window.dispatchEvent(new CustomEvent('world-building-collect', {
+    detail: { output: record.def.output, amount, label: record.def.outputLabel }
+  }));
   rebuildFixedBuildings();
   rebuildPlacements();
   rebuildIncidents();
@@ -3276,22 +3724,34 @@ function renderResidentIncidentMenu(resident, mood) {
 }
 
 function renderResidentCityNeeds(resident) {
+  const currentId = resident.lineKey || resident.key;
+  const roster = allCityPeople();
+  const hiredCount = roster.filter((item) => personProfile(item)?.hired).length;
   return `
     <div class="residentActionMenu">
       <div class="residentActionHeader">
-        <b>Other resident needs</b>
-        <span>${cityNeedStats().metCount}/${RESIDENT_WANTS.length} met</span>
+        <b>City People &amp; Crew Roster (${roster.length})</b>
+        <span>${hiredCount}/${roster.length} Hired · ${cityNeedStats().metCount}/${RESIDENT_WANTS.length} Needs Met</span>
       </div>
       <div class="residentIssueRows">
-        ${RESIDENT_WANTS.map((item) => {
+        ${roster.map((item) => {
+          const itemId = item.lineKey || item.key;
           const mood = residentMood(item);
+          const prof = mood.profile;
+          const isCurrent = itemId === currentId;
           return `
-            <button class="residentIssueRow residentSwitchRow ${item.key === resident.key ? 'ok' : mood.score < 55 ? 'warn' : 'ok'}" onclick="window.inspectResidentByKeySafe?.('${item.key}')">
-              <div>
-                <b>${escapeHtml(item.name)} - ${escapeHtml(mood.label)} ${mood.score}%</b>
-                <span>${escapeHtml(defByKey(item.building).name)}</span>
+            <div class="residentIssueRow residentRosterRow ${isCurrent ? 'ok' : mood.score < 55 ? 'warn' : 'ok'}">
+              <button type="button" class="residentSwitchBtn" onclick="window.inspectResidentByKeySafe?.('${escapeHtml(itemId)}')">
+                <b>${escapeHtml(item.name)} · ${escapeHtml(item.jobTitle || 'Specialist')}</b>
+                <span>${escapeHtml(mood.face)} ${escapeHtml(mood.label)} ${mood.score}% · ${escapeHtml(item.business || defByKey(item.building).shortName)}</span>
+              </button>
+              <div class="residentRowActions">
+                <span class="personStatusBadge small ${prof.hired ? 'hired' : 'unemployed'}">${prof.hired ? `HIRED LV${prof.level}` : 'UNEMPLOYED'}</span>
+                ${!prof.hired
+                  ? `<button type="button" class="btn small primary" onclick="window.hireWorldPersonSafe?.('${escapeHtml(itemId)}')">Hire</button>`
+                  : `<button type="button" class="btn small" onclick="window.inspectResidentByKeySafe?.('${escapeHtml(itemId)}')">View</button>`}
               </div>
-            </button>
+            </div>
           `;
         }).join('')}
       </div>
@@ -3319,12 +3779,15 @@ function residentActiveTab(menu = selectedResidentMenu) {
 
 function renderResidentTabs(resident, mood) {
   const active = residentActiveTab();
+  const buildingKey = resident.building || 'garage365';
   const issueCount = (resident.factors || []).reduce((total, key) => total + Math.max(0, mood.conditions[key]?.count || 0), 0);
+  const roster = allCityPeople();
+  const hiredCount = roster.filter((item) => personProfile(item)?.hired).length;
   const tabs = [
-    { key: 'mood', label: 'Mood', value: `${mood.score}%`, icon: mood.face },
-    { key: 'needs', label: 'Fix', value: `${problemBuildings(resident.building, true).length}`, icon: '!' },
-    { key: 'city', label: 'City', value: `${issueCount}`, icon: '!' },
-    { key: 'people', label: 'People', value: `${mood.city.metCount}/${mood.city.total}`, icon: '+' }
+    { key: 'mood', label: 'Stats & Modes', value: `+${mood.profile.totalModeBonusPct}%`, icon: mood.face },
+    { key: 'needs', label: 'Fix Shops', value: `${problemBuildings(buildingKey, true).length}`, icon: '🔧' },
+    { key: 'city', label: 'Streets', value: `${issueCount}`, icon: '🚦' },
+    { key: 'people', label: 'Roster', value: `${hiredCount}/${roster.length}`, icon: '👥' }
   ];
   return `
     <div class="residentTabBar" role="tablist" aria-label="Resident information tabs">
@@ -3340,15 +3803,50 @@ function renderResidentTabs(resident, mood) {
 }
 
 function renderResidentMoodOverview(resident, mood) {
-  const primaryFactors = mood.factors.slice(0, 6);
+  const prof = mood.profile;
+  const buildingKey = resident.building || 'garage365';
+  const def = defByKey(buildingKey);
+  const primaryFactors = mood.factors.slice(0, 4);
   return `
     <div class="residentOverviewPanel">
-      <div class="residentOverviewCards">
-        <div><strong>${mood.service.count}</strong><span>${escapeHtml(resident.menuLabel || 'Service')}</span></div>
-        <div><strong>${Math.round(mood.service.avgStock || 0)}%</strong><span>Stock</span></div>
-        <div><strong>${Math.round(mood.service.avgHealth || 0)}%</strong><span>Repair</span></div>
-        <div><strong>${mood.city.metCount}/${mood.city.total}</strong><span>Needs</span></div>
+      <!-- Character Skills Strip -->
+      <div class="personSkillsBar">
+        ${prof.skills.map((sk) => `
+          <div class="personSkillItem">
+            <div class="personSkillHead">
+              <span>${escapeHtml(sk.label)}</span>
+              <b>${sk.value}%</b>
+            </div>
+            <div class="personSkillTrack"><i style="width:${sk.value}%"></i></div>
+          </div>
+        `).join('')}
       </div>
+
+      <!-- 4 Connected Game Mode Buff Cards (World, Supplies, Road Runner Race, Merge & Garage) -->
+      <div class="personGameModesGrid">
+        <button type="button" class="personModeCard" onclick="window.openResidentNeedMenuSafe?.('needs')">
+          <span class="modeKicker">🏙️ World City · ${escapeHtml(def.shortName)}</span>
+          <strong>+${prof.worldYieldBonus}% Yield</strong>
+          <small>Stock ${Math.round(mood.service.avgStock || 0)}% · Health ${Math.round(mood.service.avgHealth || 0)}%</small>
+        </button>
+        <button type="button" class="personModeCard" onclick="window.openSupplyFromWorld?.()">
+          <span class="modeKicker">📦 Supplies · ${escapeHtml(resident.business || 'Line')}</span>
+          <strong>+${prof.supplyYieldBonus}% Output</strong>
+          <small>${prof.hired ? `Auto-Collect ON (Lv ${prof.lineLevel})` : 'Hire to Auto-Collect'}</small>
+        </button>
+        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('race')">
+          <span class="modeKicker">🏎️ Road Runner Race</span>
+          <strong>+${prof.raceBonusPct}% ${escapeHtml(prof.primarySkillLabel)}</strong>
+          <small>${escapeHtml(resident.raceEffectLabel || 'Speed, Grip & Fuel Bonus')}</small>
+        </button>
+        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('merge')">
+          <span class="modeKicker">🔧 Merge &amp; Garage</span>
+          <strong>+${prof.mergeBonusPct}% Craft Speed</strong>
+          <small>${escapeHtml(resident.mergeEffectLabel || 'Workshop Parts & Tools')}</small>
+        </button>
+      </div>
+
+      <!-- Connected Happiness Drivers -->
       <div class="residentFactorList">
         ${primaryFactors.map((factor) => `
           <div class="residentFactorRow ${factor.score < 55 ? 'danger' : factor.score < 75 ? 'warn' : 'ok'}">
@@ -3363,7 +3861,8 @@ function renderResidentMoodOverview(resident, mood) {
 
 function renderResidentActionMenu(resident, mood) {
   const active = residentMenuTarget(selectedResidentMenu);
-  if (active === 'needs') return renderResidentBuildingRows(resident.building, `${resident.menuLabel || defByKey(resident.building).name} needing attention`);
+  const buildingKey = resident.building || 'garage365';
+  if (active === 'needs') return renderResidentBuildingRows(buildingKey, `${resident.menuLabel || defByKey(buildingKey).name} needing attention`);
   if (active === 'city') return renderResidentIncidentMenu(resident, mood);
   if (active === 'people') return renderResidentCityNeeds(resident);
   if (active.startsWith('problem:')) {
@@ -3375,39 +3874,91 @@ function renderResidentActionMenu(resident, mood) {
 }
 
 function renderResidentSheet(resident) {
-  const def = defByKey(resident.building);
+  const id = resident.lineKey || resident.key;
+  const isSupply = Boolean(resident.lineKey);
+  const buildingKey = resident.building || 'garage365';
+  const def = defByKey(buildingKey);
   const mood = residentMood(resident);
+  const prof = mood.profile;
   const portraitSrc = personAssetForKey(resident.key);
   return `
-    <div class="residentWindow" data-resident-window>
+    <div class="residentWindow" data-resident-window data-person-id="${escapeHtml(id)}">
       <div class="residentWindowHeader" data-resident-sheet-title>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <img src="${escapeHtml(portraitSrc)}" alt="${escapeHtml(resident.name)}" style="width:52px;height:66px;object-fit:contain;border-radius:12px;background:rgba(15,23,42,0.65);border:1.5px solid rgba(56,189,248,0.65);padding:2px;" />
-          <div>
-            <span class="residentKicker">Resident Request</span>
-            <b>${escapeHtml(resident.name)}</b>
+        <div class="personHeaderLeft">
+          <img class="personHeaderAvatar" src="${escapeHtml(portraitSrc)}" alt="${escapeHtml(resident.name)}" />
+          <div class="personHeaderMeta">
+            <span class="residentKicker">${isSupply ? 'Supply Line Manager' : 'City Crew Specialist'} · ${escapeHtml(resident.crewName || resident.name)}</span>
+            <b>${escapeHtml(resident.name)} <small class="personRoleTag">· ${escapeHtml(resident.jobTitle || 'Specialist')}</small></b>
+            <span class="personWorkplaceLine">🏢 ${escapeHtml(resident.desk || resident.business || def.name)} · Linked: ${escapeHtml(def.shortName)}</span>
           </div>
         </div>
-        <strong>${escapeHtml(mood.label)} ${mood.score}%</strong>
+        <div class="personHeaderBadges">
+          <span class="personStatusBadge ${prof.hired ? 'hired' : 'unemployed'}" data-person-employment-status>
+            ${prof.hired ? `✓ HIRED · LV ${prof.level}` : '● UNEMPLOYED'}
+          </span>
+          <strong>${escapeHtml(mood.face)} ${escapeHtml(mood.label)} ${mood.score}%</strong>
+        </div>
       </div>
-      ${renderNpcTalk(resident)}
+
+      <!-- Connected Happiness Scale Card (52px Face + 1fr Meter & 5 Connected Pillars) -->
       <div class="residentMoodCard residentHero mood-${mood.key}" data-resident-mood-card>
         <div class="residentMoodFace" data-resident-mood-face aria-label="${escapeHtml(mood.label)}">${escapeHtml(mood.face)}</div>
         <div class="residentMoodInfo">
-          <b>${escapeHtml(def.name)} mood driver</b>
+          <div class="personMoodTitleRow">
+            <b>Happiness Scale · ${mood.score}/100 (${escapeHtml(mood.label)})</b>
+            <em class="happinessBuffPill">+${prof.totalModeBonusPct}% All Mode Buffs</em>
+          </div>
           <span data-resident-want>${escapeHtml(resident.want)}</span>
           <div class="residentMoodMeter" style="--resident-mood:${mood.score}%;" aria-label="Resident happiness ${mood.score} percent">
             <span></span><i></i>
           </div>
-          <small>0 upset / 100 happy</small>
+          <div class="personHappinessPillars">
+            <span class="pillarChip ${prof.jobScore < 50 ? 'warn' : 'ok'}">Job <b>${prof.jobScore}%</b></span>
+            <span class="pillarChip ${mood.service.score < 55 ? 'warn' : 'ok'}">World <b>${mood.service.score}%</b></span>
+            <span class="pillarChip ${prof.supplyScore < 55 ? 'warn' : 'ok'}">Supply <b>${prof.supplyScore}%</b></span>
+            <span class="pillarChip ${prof.streetScore < 55 ? 'warn' : 'ok'}">Streets <b>${prof.streetScore}%</b></span>
+            <span class="pillarChip ok">Bond <b>${prof.bondScore}%</b></span>
+          </div>
         </div>
       </div>
+
+      <!-- Job & Employment Action Strip (Hire Now when Unemployed, Train/Boost when Hired) -->
+      <div class="personJobActionCard ${prof.hired ? 'is-hired' : 'is-unemployed'}" data-person-job-card>
+        <div class="personJobDetails">
+          <div class="personJobTitleRow">
+            <b>${prof.hired ? `Employed: ${escapeHtml(resident.jobTitle)}` : `Unemployed — Hire as ${escapeHtml(resident.jobTitle)}`}</b>
+            <span class="personRankPill">${escapeHtml(prof.rank)} · ⚡ ${prof.energy}/${prof.energyMax}</span>
+          </div>
+          <small>
+            ${prof.hired
+              ? `Active on ${escapeHtml(resident.business || def.shortName)} & ${escapeHtml(def.name)} · Salary ${prof.salaryCoins}c · Boosting Race, Supplies, Merge & World.`
+              : `Currently unemployed (+0% auto-collect). Hire now to unlock ${escapeHtml(resident.business || def.shortName)} automation & +${prof.potentialBonusPct}% game-mode buffs!`}
+          </small>
+        </div>
+        <div class="personJobButtons">
+          ${!prof.hired
+            ? `<button type="button" class="btn primary personHireBtn" data-hire-person="${escapeHtml(id)}" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">Hire Now · ${prof.hireCost} Coins</button>`
+            : `<button type="button" class="btn gold personTrainBtn" data-train-person="${escapeHtml(id)}" onclick="window.trainWorldPersonSafe?.('${escapeHtml(id)}')">Train +Stat% · ${prof.trainCost}c</button>
+               <button type="button" class="btn small primary" data-boost-person="${escapeHtml(id)}" onclick="window.boostWorldPersonSafe?.('${escapeHtml(id)}')">Morale +12%</button>`
+          }
+          <button type="button" class="btn small ghost" onclick="window.openStaffFromWorldSafe?.('${escapeHtml(resident.crewId || id)}')">Crew File</button>
+        </div>
+      </div>
+
+      <!-- Interactive Tabs: Stats & Modes | Fix Shops | Streets | Roster -->
       ${renderResidentTabs(resident, mood)}
       <div class="residentTabPanel" data-resident-tab-panel>
         ${renderResidentActionMenu(resident, mood)}
       </div>
+
+      <!-- Full-Width Interactive Talk & Street Trade Panel (NEVER inside .residentMoodCard!) -->
+      ${renderNpcTalk(resident)}
+
       <div class="mobilePlacedActions residentFooterActions">
-        <button class="btn gold" onclick="window.openMobileBuildTraySafe?.()">Build</button>
+        ${isSupply
+          ? `<button class="btn gold" onclick="window.openSupplyFromWorld?.()">Open Supplies</button>`
+          : `<button class="btn gold" onclick="window.openMobileBuildTraySafe?.()">Build Shop</button>`}
+        <button class="btn primary" onclick="window.openPersonGameScreenSafe?.('${isSupply ? 'race' : 'lines'}')">Open ${isSupply ? 'Race' : 'Supplies'}</button>
         <button class="btn ghost" onclick="window.closeMobileResidentSheetSafe?.()">Close</button>
       </div>
     </div>
@@ -3415,8 +3966,12 @@ function renderResidentSheet(resident) {
 }
 
 function openResidentSheet(resident) {
-  if (mode !== 'normal') return;
-  if (selectedResidentKey !== resident.key) lastBondNote = '';
+  if (mode !== 'normal' || !resident) return;
+  const id = resident.lineKey || resident.key;
+  if (selectedResidentKey !== id) {
+    lastBondNote = '';
+    selectedResidentMenu = 'mood';
+  }
   purseCache.ready = false;
   const placedSheet = document.querySelector('[data-placed-sheet]');
   if (placedSheet) placedSheet.hidden = true;
@@ -3424,14 +3979,13 @@ function openResidentSheet(resident) {
   if (vehicleSheet) vehicleSheet.hidden = true;
   traffic.forEach((t) => { t.isSelected = false; });
   selectedVehicleItem = null;
-  if (selectedResidentKey !== resident.key) selectedResidentMenu = 'mood';
   const hud = document.querySelector('.mobileCityHud');
   hud?.classList.remove('building-open', 'build-mode', 'vehicle-open');
   hud?.classList.add('resident-open');
   selectedBuildingTarget = null;
-  selectedSupplyKey = null;
+  selectedSupplyKey = resident.lineKey || null;
   selectedPlacedId = null;
-  selectedResidentKey = resident.key;
+  selectedResidentKey = id;
   const sheet = document.querySelector('[data-resident-sheet]');
   if (sheet) {
     sheet.innerHTML = renderResidentSheet(resident);
@@ -3442,10 +3996,202 @@ function openResidentSheet(resident) {
 
 function refreshOpenResidentSheet() {
   const sheet = document.querySelector('[data-resident-sheet]');
-  if (!selectedResidentKey || !sheet || sheet.hidden) return;
-  const resident = residentByKey(selectedResidentKey);
-  if (resident) openResidentSheet(resident);
+  const activeKey = selectedResidentKey || selectedSupplyKey;
+  if (!activeKey || !sheet || sheet.hidden) return;
+  const person = residentByKey(activeKey);
+  if (person) openResidentSheet(person);
 }
+
+function persistWorldPersonChange(person, updates, note, costCoins = 0, openStaffId = '') {
+  const id = person.lineKey || person.key;
+  const current = personProfile(person);
+  personRuntimeState[id] = {
+    ...(personRuntimeState[id] || {}),
+    hired: updates.hired ?? current.hired,
+    level: updates.level ?? current.level,
+    energy: updates.energy ?? current.energy,
+    moodBoost: updates.moodBoost ?? current.moodBoost,
+    lineLevel: updates.lineLevel ?? current.lineLevel
+  };
+  const updatedMood = residentMood(person);
+  const save = readSupplyState();
+  save.worldHiredPeople = { ...(save.worldHiredPeople || {}), [id]: Boolean(personRuntimeState[id].hired) };
+  save.worldPersonStats = {
+    ...(save.worldPersonStats || {}),
+    [id]: {
+      hired: Boolean(personRuntimeState[id].hired),
+      level: personRuntimeState[id].level,
+      energy: personRuntimeState[id].energy,
+      moodBoost: personRuntimeState[id].moodBoost,
+      happiness: updatedMood.score
+    }
+  };
+  if (person.crewId) {
+    save.characters = save.characters || {};
+    save.characters[person.crewId] = {
+      ...(save.characters[person.crewId] || { level: 1, xp: 0, uses: 0 }),
+      hired: Boolean(personRuntimeState[id].hired),
+      level: personRuntimeState[id].level,
+      energy: personRuntimeState[id].energy,
+      task: person.primarySkill || 'route',
+      happiness: updatedMood.score
+    };
+  }
+  if (person.lineKey && personRuntimeState[id].hired) {
+    save.idleLines = save.idleLines || { lines: {}, managers: {}, autoCollect: {} };
+    save.idleLines.managers = { ...(save.idleLines.managers || {}), [person.lineKey]: true };
+    save.idleLines.autoCollect = { ...(save.idleLines.autoCollect || {}), [person.lineKey]: true };
+    save.idleLines.lines = save.idleLines.lines || {};
+    const curLine = save.idleLines.lines[person.lineKey] || { level: 0, cycle: 0, collected: 0 };
+    if ((curLine.level || 0) < 1) curLine.level = 1;
+    save.idleLines.lines[person.lineKey] = curLine;
+  }
+  if (costCoins > 0 && save.currencies) {
+    save.currencies.coins = Math.max(0, (save.currencies.coins || 0) - costCoins);
+  }
+  const cityAvg = cityNeedStats().average;
+  save.worldHappiness = { average: cityAvg, updatedAt: Date.now() };
+  try {
+    localStorage.setItem('autoMergeGarageV10LocalOnly', JSON.stringify(save));
+  } catch {}
+  window.dispatchEvent(new CustomEvent('world-person-sync', {
+    detail: {
+      personId: id,
+      crewId: person.crewId,
+      lineKey: person.lineKey || null,
+      hired: Boolean(personRuntimeState[id].hired),
+      level: personRuntimeState[id].level,
+      energy: personRuntimeState[id].energy,
+      primarySkill: person.primarySkill || 'route',
+      happiness: updatedMood.score,
+      cityAverageHappiness: cityAvg,
+      costCoins,
+      note,
+      openStaffId
+    }
+  }));
+  return updatedMood;
+}
+
+window.hireWorldPersonSafe = (keyOrId) => {
+  const person = residentByKey(keyOrId);
+  if (!person) return false;
+  const id = person.lineKey || person.key;
+  const prof = personProfile(person);
+  if (prof.hired) return true;
+  const purse = playerPurse();
+  const charge = Math.min(Number(purse.coins ?? prof.hireCost), prof.hireCost);
+  if (typeof purse.coins === 'number') purse.coins = Math.max(0, purse.coins - charge);
+  shiftRelationship(id, person.name, 10);
+  const updatedMood = persistWorldPersonChange(
+    person,
+    {
+      hired: true,
+      level: Math.max(2, prof.level),
+      energy: 100,
+      moodBoost: (prof.moodBoost || 0) + 14,
+      lineLevel: Math.max(1, prof.lineLevel)
+    },
+    `${person.name} hired as ${person.jobTitle}! Happiness ${updatedMoodText(person)} · Auto-boosting ${person.business}.`,
+    charge
+  );
+  lastBondNote = `Hired ${person.name}! Happiness jumped to ${updatedMood.score}% (+${updatedMood.profile.totalModeBonusPct}% All Mode Buffs).`;
+  refreshOpenResidentSheet();
+  updateHud();
+  return true;
+};
+
+function updatedMoodText(person) {
+  const m = residentMood(person);
+  return `${m.score}%`;
+}
+
+window.trainWorldPersonSafe = (keyOrId) => {
+  const person = residentByKey(keyOrId);
+  if (!person) return false;
+  const id = person.lineKey || person.key;
+  const prof = personProfile(person);
+  const purse = playerPurse();
+  const charge = Math.min(Number(purse.coins ?? prof.trainCost), prof.trainCost);
+  if (typeof purse.coins === 'number') purse.coins = Math.max(0, purse.coins - charge);
+  shiftRelationship(id, person.name, 5);
+  const nextLevel = prof.level + 1;
+  const updatedMood = persistWorldPersonChange(
+    person,
+    {
+      hired: true,
+      level: nextLevel,
+      energy: Math.max(60, prof.energy - 6),
+      moodBoost: (prof.moodBoost || 0) + 5
+    },
+    `${person.name} trained to Lv ${nextLevel} (${rankLabelForPersonLevel(nextLevel)})! Skills +3.5% · Mode Buffs +${prof.totalModeBonusPct + 3}%.`,
+    charge
+  );
+  lastBondNote = `Trained to Lv ${nextLevel}! ${prof.primarySkillLabel} is now ${updatedMood.profile.primarySkillValue}%.`;
+  refreshOpenResidentSheet();
+  updateHud();
+  return true;
+};
+
+window.boostWorldPersonSafe = (keyOrId) => {
+  const person = residentByKey(keyOrId);
+  if (!person) return false;
+  const id = person.lineKey || person.key;
+  const prof = personProfile(person);
+  const purse = playerPurse();
+  const charge = Math.min(Number(purse.coins ?? 25), 25);
+  if (typeof purse.coins === 'number') purse.coins = Math.max(0, purse.coins - charge);
+  shiftRelationship(id, person.name, 8);
+  const updatedMood = persistWorldPersonChange(
+    person,
+    {
+      hired: prof.hired,
+      level: prof.level,
+      energy: 100,
+      moodBoost: Math.min(36, (prof.moodBoost || 0) + 12)
+    },
+    `${person.name} morale boosted! Energy 100/100 · Happiness ${Math.min(100, residentMood(person).score + 10)}%.`,
+    charge
+  );
+  lastBondNote = `Morale boosted! Happiness is now ${updatedMood.score}% (${updatedMood.label}).`;
+  refreshOpenResidentSheet();
+  updateHud();
+  return true;
+};
+
+window.openStaffFromWorldSafe = (crewIdOrKey) => {
+  const person = residentByKey(crewIdOrKey) || SUPPLY_MANAGERS.find((s) => s.crewId === crewIdOrKey) || RESIDENT_WANTS.find((r) => r.crewId === crewIdOrKey);
+  const targetId = person?.crewId || crewIdOrKey || 'crew-001';
+  window.dispatchEvent(new CustomEvent('world-person-sync', {
+    detail: { openStaffId: targetId }
+  }));
+  return true;
+};
+
+window.openPersonGameScreenSafe = (screenKey = 'lines') => {
+  if (screenKey === 'lines') {
+    window.openSupplyFromWorld?.();
+    return true;
+  }
+  const proxy = document.querySelector(`.pixiWorldProxy[data-proxy="${screenKey}"]`);
+  if (proxy) {
+    proxy.click();
+    return true;
+  }
+  return false;
+};
+
+window.inspectSupplyManagerSafe = (lineKeyOrIndex = 0) => {
+  let staff = null;
+  if (typeof lineKeyOrIndex === 'string') {
+    staff = SUPPLY_MANAGERS.find((s) => s.lineKey === lineKeyOrIndex || s.key === lineKeyOrIndex) || SUPPLY_MANAGERS[0];
+  } else {
+    staff = SUPPLY_MANAGERS[Math.abs(Number(lineKeyOrIndex) || 0) % SUPPLY_MANAGERS.length];
+  }
+  if (!staff) return false;
+  openSupplyManager(staff);
+  return true;
+};
 
 window.inspectMobileResidentSafe = (index = 0) => {
   const resident = RESIDENT_WANTS[Math.abs(Number(index) || 0) % RESIDENT_WANTS.length];
@@ -3481,6 +4227,7 @@ window.openCityIssueMenuSafe = (problemKey = 'mapBuild') => {
   publishWorldOpenState();
   return true;
 };
+
 
 window.inspectResidentBuildingSafe = (token) => {
   const target = targetFromToken(token);
