@@ -1,8 +1,9 @@
 import * as PIXI from 'pixi.js';
 import { WORLD_ASSET_LIST, WORLD_ASSETS, buildingAssetForKey, personAnimationFramesForKey, personAssetForKey, vehicleAssetForKey } from '../data/worldAssetMap.js';
 import { BUILD_COMMUNICATION_STORAGE_KEY, readBuildCommunicationState } from '../systems/buildCommunicationSystem.js';
+import { Three3DCityViewport } from './worldThree3dCity.js';
 
-const WORLD = { width: 960, height: 1720, startX: -175, startY: -20 };
+const WORLD = { width: 960, height: 1720, startX: -210, startY: -75 };
 const GRID = {
   size: 40,
   storageKey: '365_mobile_city_safe_buildings_v1',
@@ -268,6 +269,7 @@ const CITY_PROBLEM_DEFS = {
 };
 
 let app = null;
+let threeViewport = null;
 let mountedHost = null;
 let world = null;
 let traffic = [];
@@ -722,6 +724,7 @@ function html() {
           <div class="mobileMapTools">
             <button class="btn small primary" onclick="window.openMobileBuildTraySafe?.()">Build</button>
             <button class="btn small gold" data-expand-town-btn onclick="window.unlockNextTownPlotSafe?.()">Expand (<span data-town-expansion-count>${unlockedPlotCount()}/${TOWN_EXPANSION_PLOTS.length}</span>)</button>
+            <button class="btn small ghost" data-camera-angle-btn onclick="window.toggleCityCameraAngleSafe?.()">3D City</button>
             <button class="btn small ghost" onclick="window.centerMobileCitySafe?.()">Center</button>
           </div>
         </div>
@@ -1669,7 +1672,17 @@ function addTraffic(path, options) {
   vehicle.scale.y *= options.scale || 0.72;
   vehicle.zIndex = 100;
   world.addChild(vehicle);
-  traffic.push({ sprite: vehicle, path, speed: options.speed || 80, d: Math.random() * 600, wheelSpeed: (options.speed || 80) / 10 });
+  traffic.push({
+    sprite: vehicle,
+    path,
+    speed: options.speed || 80,
+    d: Math.random() * 600,
+    wheelSpeed: (options.speed || 80) / 10,
+    assetKey: options.assetKey || 'blueCar',
+    direction: options.direction || 'east',
+    towTargetKey: options.towTargetKey || '',
+    scale: options.scale || 0.78
+  });
 }
 
 function readSupplyState() {
@@ -2089,7 +2102,7 @@ function addSupplyWalker(path, staff) {
   makeClickable(p, () => openSupplyManager(staff));
   world.addChild(p);
   const startD = Math.random() * 800;
-  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 54, artBaseHeight: 70, walkFrame: 0, path, d: startD, speed: 40, staff };
+  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 54, artBaseHeight: 70, walkFrame: 0, path, d: startD, speed: 40, staff, onTap: () => openSupplyManager(staff) };
   updatePersonWalkVisual(walkerItem, pathPoint(path, startD));
   walkers.push(walkerItem);
 }
@@ -2163,7 +2176,7 @@ function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb) {
   makeClickable(p, () => openResidentSheet(resident));
   world.addChild(p);
   const startD = Math.random() * 800;
-  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 52, artBaseHeight: 68, walkFrame: 0, path, d: startD, speed: 46, resident };
+  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 52, artBaseHeight: 68, walkFrame: 0, path, d: startD, speed: 46, resident, onTap: () => openResidentSheet(resident) };
   updatePersonWalkVisual(walkerItem, pathPoint(path, startD));
   walkers.push(walkerItem);
 }
@@ -2339,16 +2352,119 @@ window.addEventListener('storage', (event) => {
   if (event.key === BUILD_COMMUNICATION_STORAGE_KEY) refreshBuildSync();
 });
 
+function sync3DBuildings() {
+  if (!threeViewport) return;
+  const fixedList = CITY_BUILDINGS.map((building) => {
+    const id = fixedId(building);
+    const target = buildingTargetForFixed(building);
+    const def = defByKey(building.type);
+    const state = fixedBuildingStates[id] || normalizeBuildingState({}, building.type);
+    const status = collectStatus(state, def);
+    const yieldAmt = buildingYield(state, def);
+    return {
+      x: building.x,
+      y: building.y,
+      w: building.w * GRID.size,
+      h: building.h * GRID.size,
+      type: building.type,
+      name: building.label,
+      level: state.level || 1,
+      ready: status.ready,
+      statusText: status.ready ? `READY +${yieldAmt}` : formatDuration(status.msLeft),
+      rotation: 0,
+      alpha: 1,
+      onTap: () => {
+        if (status.ready) collectBuildingTarget(target);
+        openFixedBuildingSheet(building);
+      }
+    };
+  });
+
+  const placedList = placedBuildings.map((item) => {
+    const def = defByKey(item.type);
+    const target = { kind: 'placed', id: item.id };
+    const fp = currentFootprint(def, item.rotation || 0);
+    const status = collectStatus(item, def);
+    const yieldAmt = buildingYield(item, def);
+    return {
+      x: item.x,
+      y: item.y,
+      w: fp.footprintW * GRID.size,
+      h: fp.footprintH * GRID.size,
+      type: item.type,
+      name: item.name,
+      level: item.level || 1,
+      ready: status.ready,
+      statusText: status.ready ? `READY +${yieldAmt}` : formatDuration(status.msLeft),
+      rotation: item.rotation || 0,
+      alpha: mode === 'moving' && movingBuilding?.id === item.id ? 0.35 : 1,
+      onTap: () => {
+        if (status.ready) collectBuildingTarget(target);
+        openPlacedSheet(item.id);
+      }
+    };
+  });
+
+  threeViewport.rebuildBuildings3D(fixedList, placedList);
+}
+
+function sync3DGrid() {
+  if (!threeViewport) return;
+  const visible = mode === 'placing' || mode === 'moving';
+  const cells = [];
+  if (visible) {
+    const cols = Math.floor(WORLD.width / GRID.size);
+    const rows = Math.floor(WORLD.height / GRID.size);
+    const def = selectedDef();
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const ok = canBuild(col, row, def);
+        const cell = gridRect(col, row);
+        cells.push({
+          x: cell.x,
+          y: cell.y,
+          w: GRID.size,
+          h: GRID.size,
+          ok,
+          onTap: ok ? () => previewPlacement(col, row) : null
+        });
+      }
+    }
+  }
+  let ghostDesc = null;
+  if (pendingPlacement) {
+    const def = defByKey(pendingPlacement.type);
+    const fp = currentFootprint(def, pendingPlacement.rotation || 0);
+    ghostDesc = {
+      x: pendingPlacement.x,
+      y: pendingPlacement.y,
+      w: fp.footprintW * GRID.size,
+      h: fp.footprintH * GRID.size,
+      type: def.key,
+      name: def.shortName,
+      level: 1,
+      ready: false,
+      statusText: 'PREVIEW',
+      rotation: pendingPlacement.rotation || 0,
+      alpha: 0.65
+    };
+  }
+  threeViewport.rebuildGrid3D(visible, cells, ghostDesc);
+}
+
 function clearGhost() {
   if (ghostLayer) ghostLayer.removeChildren();
+  sync3DGrid();
 }
 
 function drawGhost() {
-  clearGhost();
-  if (!pendingPlacement || !ghostLayer) return;
-  const def = defByKey(pendingPlacement.type);
-  const fp = currentFootprint(def, pendingPlacement.rotation || 0);
-  ghostLayer.addChild(buildingVisual({ x: pendingPlacement.x, y: pendingPlacement.y, wCells: fp.footprintW, hCells: fp.footprintH, type: def.key, name: def.shortName, alpha: 0.62, rotation: pendingPlacement.rotation || 0 }));
+  if (ghostLayer) ghostLayer.removeChildren();
+  if (pendingPlacement && ghostLayer) {
+    const def = defByKey(pendingPlacement.type);
+    const fp = currentFootprint(def, pendingPlacement.rotation || 0);
+    ghostLayer.addChild(buildingVisual({ x: pendingPlacement.x, y: pendingPlacement.y, wCells: fp.footprintW, hCells: fp.footprintH, type: def.key, name: def.shortName, alpha: 0.62, rotation: pendingPlacement.rotation || 0 }));
+  }
+  sync3DGrid();
 }
 
 function rebuildFixedBuildings() {
@@ -2375,6 +2491,7 @@ function rebuildFixedBuildings() {
     makeClickable(visual, () => openFixedBuildingSheet(building));
     fixedLayer.addChild(visual);
   }
+  sync3DBuildings();
 }
 
 function rebuildPlacements() {
@@ -2390,6 +2507,7 @@ function rebuildPlacements() {
     makeClickable(visual, () => openPlacedSheet(item.id));
     placementLayer.addChild(visual);
   }
+  sync3DBuildings();
 }
 
 // Expandable Town Unlockable Frontier Plots (Simpsons: Tapped Out / SimCity BuildIt / Town City style)
@@ -2499,6 +2617,10 @@ function rebuildExpansions() {
 
     expansionLayer.addChild(node);
   });
+
+  if (threeViewport) {
+    threeViewport.rebuildExpansions3D(TOWN_EXPANSION_PLOTS, isPlotUnlocked, (plotId) => window.unlockTownPlotSafe?.(plotId));
+  }
 }
 
 function focusWorldPoint(wx, wy) {
@@ -2592,6 +2714,7 @@ function rebuildIncidents() {
   world.addChild(incidentLayer);
   incidentAnims = [];
   activePotholePositions = [];
+  const incidentDescriptors3D = [];
 
   const conditions = cityConditionStats();
   for (const [key, positions] of Object.entries(CITY_ISSUE_MARKERS)) {
@@ -2604,6 +2727,14 @@ function rebuildIncidents() {
       marker.x = pos.x;
       marker.y = pos.y;
       marker.zIndex = pos.y + 900;
+
+      incidentDescriptors3D.push({
+        key,
+        x: pos.x,
+        y: pos.y,
+        score: condition.score,
+        onTap: () => window.openCityIssueMenuSafe?.(key)
+      });
 
       if (key === 'potholes') {
         activePotholePositions.push({ x: pos.x, y: pos.y });
@@ -2689,6 +2820,10 @@ function rebuildIncidents() {
       incidentLayer.addChild(marker);
     }
   }
+
+  if (threeViewport) {
+    threeViewport.rebuildIncidents3D(incidentDescriptors3D);
+  }
 }
 
 function rebuildGrid() {
@@ -2714,6 +2849,7 @@ function rebuildGrid() {
       gridLayer.addChild(g);
     }
   }
+  sync3DGrid();
 }
 
 function previewPlacement(col, row) {
@@ -3366,7 +3502,16 @@ window.centerMobileCitySafe = () => {
   if (!world) return;
   world.x = WORLD.startX;
   world.y = WORLD.startY;
+  if (threeViewport) threeViewport.zoom = 1.0;
   clamp();
+};
+
+window.toggleCityCameraAngleSafe = () => {
+  if (!threeViewport) return null;
+  const preset = threeViewport.cycleCameraPreset();
+  const btn = document.querySelector('[data-camera-angle-btn]');
+  if (btn && preset) btn.textContent = preset.label;
+  return preset?.id || null;
 };
 
 window.panMobileCitySafe = (x = 0, y = 0) => {
@@ -3486,7 +3631,11 @@ function setupCamera(host) {
   clamp();
   let dragging = false;
   let last = null;
-  host.addEventListener('pointerdown', (event) => { dragging = true; dragMoved = false; last = { x: event.clientX, y: event.clientY }; });
+  host.addEventListener('pointerdown', (event) => {
+    dragging = true;
+    dragMoved = false;
+    last = { x: event.clientX, y: event.clientY };
+  });
   window.addEventListener('pointermove', (event) => {
     if (!dragging || !last) return;
     const dx = event.clientX - last.x;
@@ -3497,15 +3646,34 @@ function setupCamera(host) {
     last = { x: event.clientX, y: event.clientY };
     clamp();
   });
-  window.addEventListener('pointerup', () => { dragging = false; last = null; setTimeout(() => { dragMoved = false; }, 90); });
+  window.addEventListener('pointerup', (event) => {
+    if (dragging && !dragMoved && threeViewport) {
+      threeViewport.handleTap(event.clientX, event.clientY);
+    }
+    dragging = false;
+    last = null;
+    setTimeout(() => { dragMoved = false; }, 90);
+  });
+  host.addEventListener('wheel', (event) => {
+    if (!threeViewport) return;
+    event.preventDefault();
+    const delta = event.deltaY > 0 ? 0.08 : -0.08;
+    threeViewport.zoom = Math.max(0.62, Math.min(1.45, threeViewport.zoom + delta));
+  }, { passive: false });
 }
 
 async function createApp(host) {
   if (app) try { app.destroy(true); } catch {}
+  if (threeViewport) {
+    try { threeViewport.destroy(); } catch {}
+    threeViewport = null;
+  }
   app = new PIXI.Application();
   await app.init({ resizeTo: host, backgroundColor: 0x153a50, antialias: true, preference: 'webgl', resolution: Math.min(devicePixelRatio || 1, 2), autoDensity: true, preserveDrawingBuffer: true });
   host.innerHTML = '';
+  app.canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;z-index:1;';
   host.appendChild(app.canvas);
+  threeViewport = new Three3DCityViewport(host, { WORLD, ROADS, GRID });
 }
 
 async function preloadPixiWorldAssets() {
@@ -3710,6 +3878,19 @@ async function mount(host) {
           inc.smokeB.scale.set(0.7 + sPhaseB * 0.9);
         }
       }
+    }
+
+    if (threeViewport) {
+      threeViewport.updateFrame({
+        dt,
+        clock: worldAnimClock,
+        worldPanX: world.x,
+        worldPanY: world.y,
+        traffic,
+        walkers,
+        pathPointFn: pathPoint,
+        potholes: activePotholePositions
+      });
     }
 
     statusRefreshTimer += dt;

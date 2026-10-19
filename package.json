@@ -22,7 +22,8 @@
     "lucide-static": "1.17.0",
     "phaser": "4.1.0",
     "pixi.js": "8.19.0",
-    "screenfull": "^6.0.2"
+    "screenfull": "^6.0.2",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
