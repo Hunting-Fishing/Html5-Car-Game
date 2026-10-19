@@ -790,19 +790,19 @@ function makeClickable(container, handler) {
 }
 
 function addBuildingStatusBadges(container, w, h, item, def, onCollect = null) {
-  if (!item) return;
+  if (!item) return null;
   container.sortableChildren = true;
   const status = collectStatus(item, def);
   const req = upgradeRequirement(item, def);
   const bubble = new PIXI.Container();
   bubble.x = w / 2;
-  bubble.y = -25;
+  bubble.y = -36;
   bubble.zIndex = 1000;
-  bubble.addChild(roundRect(-47, -18, 94, 36, 12, 0xf8fafc, { width: 3, color: status.ready ? 0x22c55e : 0x20384f }));
+  bubble.addChild(roundRect(-36, -12, 72, 24, 12, { color: 0x06131d, alpha: 0.90 }, { width: 2, color: status.ready ? 0x35e58a : 0x38bdf8, alpha: 0.95 }));
   const iconSrc = status.ready ? WORLD_ASSETS.ui.collectReady : req.met ? WORLD_ASSETS.ui.upgradeReady : WORLD_ASSETS.ui.collectTimer;
-  const icon = assetSprite(iconSrc, -28, 0, 28, 28, 1);
+  const icon = assetSprite(iconSrc, -21, 0, 18, 18, 1);
   if (icon) bubble.addChild(icon);
-  bubble.addChild(textLabel(status.ready ? 'Collect' : formatDuration(status.msLeft), 13, 1, 9, 0x082f49));
+  bubble.addChild(textLabel(status.ready ? 'Collect' : formatDuration(status.msLeft), 8, 0.5, 8.5, status.ready ? 0x8fffc2 : 0xe2e8f0));
   if (status.ready && onCollect) {
     bubble.eventMode = 'static';
     bubble.cursor = 'pointer';
@@ -817,22 +817,23 @@ function addBuildingStatusBadges(container, w, h, item, def, onCollect = null) {
   levelBadge.x = w - 9;
   levelBadge.y = h - 9;
   levelBadge.zIndex = 1001;
-  const levelIcon = assetSprite(WORLD_ASSETS.ui.levelBadge, 0, 0, 31, 24, 1);
+  const levelIcon = assetSprite(WORLD_ASSETS.ui.levelBadge, 0, 0, 28, 22, 1);
   if (levelIcon) levelBadge.addChild(levelIcon);
-  levelBadge.addChild(roundRect(-18, -10, 36, 20, 9, { color: 0x04111d, alpha: 0.78 }, { width: 1, color: 0x9fe8ff }));
-  levelBadge.addChild(textLabel(`Lv ${item.level || 1}`, 0, 0, 8, 0xffffff));
+  levelBadge.addChild(roundRect(-16, -9, 32, 18, 9, { color: 0x04111d, alpha: 0.84 }, { width: 1, color: 0x9fe8ff }));
+  levelBadge.addChild(textLabel(`Lv ${item.level || 1}`, 0, 0, 7.5, 0xffffff));
   container.addChild(levelBadge);
 
   if (req.met && !req.maxed) {
     const upgrade = new PIXI.Container();
     upgrade.x = w - 6;
-    upgrade.y = -7;
+    upgrade.y = -12;
     upgrade.zIndex = 1002;
-    const upgradeIcon = assetSprite(WORLD_ASSETS.ui.upgradeReady, 0, 0, 26, 26, 1);
+    const upgradeIcon = assetSprite(WORLD_ASSETS.ui.upgradeReady, 0, 0, 22, 22, 1);
     if (upgradeIcon) upgrade.addChild(upgradeIcon);
-    upgrade.addChild(textLabel('UP', 0, 1, 7, 0x092b16));
+    upgrade.addChild(textLabel('UP', 0, 1, 6.5, 0x092b16));
     container.addChild(upgrade);
   }
+  return bubble;
 }
 
 function buildingTargetForFixed(building) {
@@ -840,47 +841,46 @@ function buildingTargetForFixed(building) {
 }
 
 function drawGround() {
-  world.addChild(rect(0, 0, WORLD.width, WORLD.height, 0x70c25e));
+  world.addChild(rect(0, 0, WORLD.width, WORLD.height, 0x62b652));
   for (let y = 0; y < WORLD.height; y += 80) {
     for (let x = 0; x < WORLD.width; x += 80) {
-      world.addChild(rect(x, y, 80, 80, { color: (x / 80 + y / 80) % 2 ? 0x65b457 : 0x7bd069, alpha: 0.24 }));
-      const tile = assetSprite(WORLD_ASSETS.terrain.grassTile, x + 40, y + 40, 80, 80, 0.18);
+      world.addChild(rect(x, y, 80, 80, { color: (x / 80 + y / 80) % 2 ? 0x5aa94b : 0x6dc25b, alpha: 0.28 }));
+      const tile = assetSprite(WORLD_ASSETS.terrain.grassTile, x + 40, y + 40, 80, 80, 0.22);
       if (tile) world.addChild(tile);
     }
   }
 }
 
 function drawRoads() {
+  const segLen = 240;
   for (const road of ROADS.horizontal) {
-    world.addChild(rect(0, road.y - ROADS.sidewalk, WORLD.width, ROADS.sidewalk, 0xb9c1cc));
-    world.addChild(rect(0, road.y + ROADS.width, WORLD.width, ROADS.sidewalk, 0xb9c1cc));
-    const sidewalkTop = assetSprite(WORLD_ASSETS.terrain.sidewalk, WORLD.width / 2, road.y - ROADS.sidewalk / 2, WORLD.width, ROADS.sidewalk, 0.65);
-    const sidewalkBottom = assetSprite(WORLD_ASSETS.terrain.sidewalk, WORLD.width / 2, road.y + ROADS.width + ROADS.sidewalk / 2, WORLD.width, ROADS.sidewalk, 0.65);
-    if (sidewalkTop) world.addChild(sidewalkTop);
-    if (sidewalkBottom) world.addChild(sidewalkBottom);
-    world.addChild(rect(0, road.y, WORLD.width, ROADS.width, 0x202936, { width: 3, color: 0x111827 }));
-    const roadAsset = assetSprite(WORLD_ASSETS.terrain.roadHorizontal, WORLD.width / 2, road.y + ROADS.width / 2, WORLD.width, ROADS.width, 0.82);
-    if (roadAsset) world.addChild(roadAsset);
-    world.addChild(rect(0, road.y + ROADS.width / 2 - 2, WORLD.width, 4, { color: 0xf8fafc, alpha: 0.42 }));
-    world.addChild(textLabel(road.label, 100, road.y + 18, 10, 0xcbd5e1));
+    world.addChild(rect(0, road.y - ROADS.sidewalk, WORLD.width, ROADS.sidewalk, 0x94a3b8));
+    world.addChild(rect(0, road.y + ROADS.width, WORLD.width, ROADS.sidewalk, 0x94a3b8));
+    for (let sx = 0; sx < WORLD.width; sx += segLen) {
+      const wSeg = Math.min(segLen, WORLD.width - sx);
+      const cx = sx + wSeg / 2;
+      const swTop = assetSprite(WORLD_ASSETS.terrain.sidewalk, cx, road.y - ROADS.sidewalk / 2, wSeg, ROADS.sidewalk, 0.72);
+      const swBot = assetSprite(WORLD_ASSETS.terrain.sidewalk, cx, road.y + ROADS.width + ROADS.sidewalk / 2, wSeg, ROADS.sidewalk, 0.72);
+      if (swTop) world.addChild(swTop);
+      if (swBot) world.addChild(swBot);
+    }
+    world.addChild(rect(0, road.y, WORLD.width, ROADS.width, 0x1e293b, { width: 3, color: 0x0f172a }));
+    for (let sx = 0; sx < WORLD.width; sx += segLen) {
+      const wSeg = Math.min(segLen, WORLD.width - sx);
+      const roadSeg = assetSprite(WORLD_ASSETS.terrain.roadHorizontal, sx + wSeg / 2, road.y + ROADS.width / 2, wSeg, ROADS.width, 0.92);
+      if (roadSeg) world.addChild(roadSeg);
+    }
+    world.addChild(textLabel(road.label, 108, road.y + 16, 9.5, 0xe2e8f0));
   }
   for (const road of ROADS.vertical) {
-    world.addChild(rect(road.x - ROADS.sidewalk, 0, ROADS.sidewalk, WORLD.height, 0xb9c1cc));
-    world.addChild(rect(road.x + ROADS.width, 0, ROADS.sidewalk, WORLD.height, 0xb9c1cc));
-    const sidewalkLeft = assetSprite(WORLD_ASSETS.terrain.sidewalk, road.x - ROADS.sidewalk / 2, WORLD.height / 2, ROADS.sidewalk, WORLD.height, 0.65);
-    const sidewalkRight = assetSprite(WORLD_ASSETS.terrain.sidewalk, road.x + ROADS.width + ROADS.sidewalk / 2, WORLD.height / 2, ROADS.sidewalk, WORLD.height, 0.65);
-    if (sidewalkLeft) {
-      sidewalkLeft.rotation = Math.PI / 2;
-      world.addChild(sidewalkLeft);
+    world.addChild(rect(road.x - ROADS.sidewalk, 0, ROADS.sidewalk, WORLD.height, 0x94a3b8));
+    world.addChild(rect(road.x + ROADS.width, 0, ROADS.sidewalk, WORLD.height, 0x94a3b8));
+    world.addChild(rect(road.x, 0, ROADS.width, WORLD.height, 0x1e293b, { width: 3, color: 0x0f172a }));
+    for (let sy = 0; sy < WORLD.height; sy += segLen) {
+      const hSeg = Math.min(segLen, WORLD.height - sy);
+      const roadSeg = assetSprite(WORLD_ASSETS.terrain.roadVertical, road.x + ROADS.width / 2, sy + hSeg / 2, ROADS.width, hSeg, 0.92);
+      if (roadSeg) world.addChild(roadSeg);
     }
-    if (sidewalkRight) {
-      sidewalkRight.rotation = Math.PI / 2;
-      world.addChild(sidewalkRight);
-    }
-    world.addChild(rect(road.x, 0, ROADS.width, WORLD.height, 0x202936, { width: 3, color: 0x111827 }));
-    const roadAsset = assetSprite(WORLD_ASSETS.terrain.roadVertical, road.x + ROADS.width / 2, WORLD.height / 2, ROADS.width, WORLD.height, 0.82);
-    if (roadAsset) world.addChild(roadAsset);
-    world.addChild(rect(road.x + ROADS.width / 2 - 2, 0, 4, WORLD.height, { color: 0xf8fafc, alpha: 0.42 }));
   }
   drawCrosswalks();
 }
@@ -890,24 +890,240 @@ function drawCrosswalks() {
     for (const v of ROADS.vertical) {
       const cx = v.x + ROADS.width / 2;
       const cy = h.y + ROADS.width / 2;
-      const intersection = assetSprite(WORLD_ASSETS.terrain.roadIntersection, cx, cy, ROADS.width + ROADS.sidewalk * 2.2, ROADS.width + ROADS.sidewalk * 2.2, 0.96);
+      const intersection = assetSprite(WORLD_ASSETS.terrain.roadIntersection, cx, cy, ROADS.width + ROADS.sidewalk * 2.1, ROADS.width + ROADS.sidewalk * 2.1, 0.98);
       if (intersection) {
         intersection.zIndex = 4;
         world.addChild(intersection);
-      } else {
-        for (let i = 0; i < 5; i++) {
-          world.addChild(rect(v.x + 10 + i * 14, h.y + 8, 8, ROADS.width - 16, { color: 0xf8fafc, alpha: 0.78 }));
-          world.addChild(rect(v.x + 8, h.y + 10 + i * 14, ROADS.width - 16, 8, { color: 0xf8fafc, alpha: 0.78 }));
-        }
       }
     }
   }
 }
 
 let animatedBuildings = [];
+let animatedTrees = [];
 let incidentAnims = [];
 let activePotholePositions = [];
 let worldAnimClock = 0;
+let lastBuildingsStateSig = '';
+
+function makeIsoFanRotor(x, y, radius = 9, color = 0xcbd5e1) {
+  const rotor = new PIXI.Container();
+  rotor.x = x;
+  rotor.y = y;
+  rotor.scale.y = 0.62; // Isometric foreshortening
+  const g = new PIXI.Graphics();
+  g.circle(0, 0, radius).fill({ color: 0x0f172a, alpha: 0.72 }).stroke({ width: 1.5, color: 0x475569, alpha: 0.9 });
+  for (let i = 0; i < 6; i++) {
+    const a = (i * Math.PI) / 3;
+    g.moveTo(0, 0).lineTo(Math.cos(a) * (radius - 1.5), Math.sin(a) * (radius - 1.5)).stroke({ width: 2.2, color, alpha: 0.95 });
+  }
+  g.circle(0, 0, 2.5).fill({ color: 0x38bdf8, alpha: 0.95 });
+  rotor.addChild(g);
+  return rotor;
+}
+
+function attachClashBuildingRig(rigRoot, type, spriteSize) {
+  const s = spriteSize / 200;
+  const parts = {
+    rotors: [],
+    strobes: [],
+    holoSign: null,
+    liftCar: null,
+    weldingArc: null,
+    forklift: null,
+    searchlightA: null,
+    searchlightB: null,
+    turntableRing: null,
+    radarWave: null,
+    dynoFlame: null,
+    craneArm: null,
+    trackCar: null
+  };
+
+  const overlay = new PIXI.Container();
+  overlay.zIndex = 20;
+  rigRoot.addChild(overlay);
+
+  if (type === 'garage') {
+    // 1. Twin Rooftop Isometric HVAC Exhaust Fans
+    const f1 = makeIsoFanRotor(-8 * s, -69 * s, 7.5 * s, 0xe2e8f0);
+    const f2 = makeIsoFanRotor(7 * s, -61 * s, 7.5 * s, 0xe2e8f0);
+    overlay.addChild(f1, f2);
+    parts.rotors.push(f1, f2);
+
+    // 2. Animated Hydraulic Lift + Sports Car bobbing in Left Service Bay
+    const liftCar = new PIXI.Container();
+    liftCar.x = -38 * s;
+    liftCar.y = 8 * s;
+    const liftBeam = roundRect(-14 * s, 6 * s, 28 * s, 4 * s, 2, 0xfacc15, { width: 1, color: 0x0f172a });
+    const carGlow = circle(0, 0, 14 * s, { color: 0x38bdf8, alpha: 0.28 });
+    const bayCar = assetSprite(WORLD_ASSETS.vehicles.blueCar, 0, -2 * s, 36 * s, 18 * s, 0.95);
+    liftCar.addChild(carGlow, liftBeam);
+    if (bayCar) liftCar.addChild(bayCar);
+    overlay.addChild(liftCar);
+    parts.liftCar = { node: liftCar, baseY: 8 * s, amp: 4.5 * s };
+
+    // 3. Center & Right Bay Welding Arc Flash + Sparks
+    const weldingArc = new PIXI.Container();
+    weldingArc.x = -2 * s;
+    weldingArc.y = 28 * s;
+    const arcCore = circle(0, 0, 12 * s, { color: 0x38bdf8, alpha: 0.55 });
+    const arcCenter = circle(0, 0, 4.5 * s, { color: 0xffffff, alpha: 0.95 });
+    weldingArc.addChild(arcCore, arcCenter);
+    overlay.addChild(weldingArc);
+    parts.weldingArc = weldingArc;
+  } else if (type === 'partsHub' || type === 'partsWarehouse') {
+    // 1. Rooftop Ventilation Fan Bank
+    const fanCoords = [[-48, -46], [-32, -55], [-34, -38], [-18, -46]];
+    for (const [fx, fy] of fanCoords) {
+      const rotor = makeIsoFanRotor(fx * s, fy * s, 6.5 * s, 0x99f6e4);
+      overlay.addChild(rotor);
+      parts.rotors.push(rotor);
+    }
+
+    // 2. Animated Isometric Forklift patrolling the front loading dock
+    const forklift = new PIXI.Container();
+    forklift.x = -24 * s;
+    forklift.y = 44 * s;
+    const fkBody = new PIXI.Graphics();
+    fkBody.roundRect(-8 * s, -7 * s, 16 * s, 12 * s, 3).fill({ color: 0xf59e0b }).stroke({ width: 1.5, color: 0x0f172a });
+    fkBody.roundRect(-5 * s, -12 * s, 10 * s, 7 * s, 2).fill({ color: 0x1e293b });
+    // Pallet crate on forks
+    fkBody.roundRect(7 * s, -5 * s, 9 * s, 8 * s, 1.5).fill({ color: 0xfcd34d }).stroke({ width: 1, color: 0x78350f });
+    const fkBeacon = circle(0, -14 * s, 3 * s, { color: 0xfef08a, alpha: 0.95 });
+    forklift.addChild(fkBody, fkBeacon);
+    overlay.addChild(forklift);
+    parts.forklift = { node: forklift, baseX: -24 * s, baseY: 44 * s, rangeX: 22 * s, rangeY: 13 * s };
+  } else if (type === 'dealerShowroom') {
+    // 1. Rotating VIP Showroom Turntable Laser Ring
+    const turntableRing = new PIXI.Container();
+    turntableRing.x = -12 * s;
+    turntableRing.y = 22 * s;
+    turntableRing.scale.y = 0.56;
+    const tg = new PIXI.Graphics();
+    tg.circle(0, 0, 26 * s).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.82 });
+    tg.arc(0, 0, 26 * s, 0, Math.PI * 0.65).stroke({ width: 4, color: 0x35e58a, alpha: 0.95 });
+    tg.arc(0, 0, 26 * s, Math.PI, Math.PI * 1.65).stroke({ width: 4, color: 0x38bdf8, alpha: 0.95 });
+    turntableRing.addChild(tg);
+    overlay.addChild(turntableRing);
+    parts.turntableRing = turntableRing;
+
+    // 2. Dual Sweeping Rooftop Sky-Tracker Searchlights
+    const makeBeam = (bx, by) => {
+      const b = new PIXI.Container();
+      b.x = bx;
+      b.y = by;
+      const g = new PIXI.Graphics();
+      g.poly([0, 0, -18 * s, -48 * s, 18 * s, -48 * s]).fill({ color: 0xfef08a, alpha: 0.24 });
+      g.circle(0, 0, 4 * s).fill({ color: 0xffffff, alpha: 0.95 });
+      b.addChild(g);
+      return b;
+    };
+    const beamA = makeBeam(-54 * s, -42 * s);
+    const beamB = makeBeam(2 * s, -74 * s);
+    overlay.addChild(beamA, beamB);
+    parts.searchlightA = beamA;
+    parts.searchlightB = beamB;
+  } else if (type === 'towDispatch') {
+    // 1. Expanding Rooftop Satellite Radar Waves
+    const radarWave = new PIXI.Container();
+    radarWave.x = -22 * s;
+    radarWave.y = -56 * s;
+    const rg = new PIXI.Graphics();
+    rg.circle(0, 0, 18 * s).stroke({ width: 2, color: 0x38bdf8, alpha: 0.85 });
+    rg.circle(0, 0, 10 * s).stroke({ width: 1.5, color: 0x67e8f9, alpha: 0.95 });
+    radarWave.addChild(rg);
+    overlay.addChild(radarWave);
+    parts.radarWave = radarWave;
+
+    // 2. Dual Rooftop & Wrecker Emergency Strobe Beacons
+    const s1 = circle(-39 * s, -38 * s, 6 * s, { color: 0xf59e0b, alpha: 0.95 });
+    const s2 = circle(28 * s, -15 * s, 6 * s, { color: 0xef4444, alpha: 0.95 });
+    const s3 = circle(-3 * s, 16 * s, 5 * s, { color: 0xfacc15, alpha: 0.95 });
+    overlay.addChild(s1, s2, s3);
+    parts.strobes.push(s1, s2, s3);
+  } else if (type === 'tireRepair') {
+    // Giant Spinning 3D Rooftop Neon Tire & Alloy Rim Sign
+    const tireRotor = new PIXI.Container();
+    tireRotor.x = -12 * s;
+    tireRotor.y = -58 * s;
+    tireRotor.scale.x = 0.82;
+    const tg = new PIXI.Graphics();
+    tg.circle(0, 0, 18 * s).stroke({ width: 3, color: 0x38bdf8, alpha: 0.92 });
+    for (let i = 0; i < 5; i++) {
+      const a = (i * Math.PI * 2) / 5;
+      tg.moveTo(0, 0).lineTo(Math.cos(a) * 15 * s, Math.sin(a) * 15 * s).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.95 });
+    }
+    tg.circle(0, 0, 4 * s).fill({ color: 0xfef08a });
+    tireRotor.addChild(tg);
+    overlay.addChild(tireRotor);
+    parts.rotors.push(tireRotor);
+
+    // Rooftop AC fans
+    const f1 = makeIsoFanRotor(44 * s, -42 * s, 6 * s, 0x99f6e4);
+    const f2 = makeIsoFanRotor(56 * s, -35 * s, 6 * s, 0x99f6e4);
+    overlay.addChild(f1, f2);
+    parts.rotors.push(f1, f2);
+  } else if (type === 'privateShop') {
+    // 1. 4x Rooftop Exhaust Fans
+    for (const [fx, fy] of [[-46, -37], [-30, -47], [-14, -56], [2, -65]]) {
+      const r = makeIsoFanRotor(fx * s, fy * s, 6.5 * s, 0xc4b5fd);
+      overlay.addChild(r);
+      parts.rotors.push(r);
+    }
+    // 2. Dyno Car Twin Exhaust Flame Pop & Roller Glow
+    const dynoFlame = new PIXI.Container();
+    dynoFlame.x = -10 * s;
+    dynoFlame.y = 22 * s;
+    const fg = new PIXI.Graphics();
+    fg.circle(0, 0, 10 * s).fill({ color: 0x38bdf8, alpha: 0.65 });
+    fg.circle(-4 * s, 2 * s, 5 * s).fill({ color: 0xfacc15, alpha: 0.95 });
+    dynoFlame.addChild(fg);
+    overlay.addChild(dynoFlame);
+    parts.dynoFlame = dynoFlame;
+  } else if (type === 'salvageBlock') {
+    // Swinging Electromagnetic Crane Magnet & Electric Sparks
+    const craneArm = new PIXI.Container();
+    craneArm.x = 56 * s;
+    craneArm.y = 4 * s;
+    const cg = new PIXI.Graphics();
+    cg.circle(0, 8 * s, 10 * s).fill({ color: 0xf97316, alpha: 0.85 }).stroke({ width: 2, color: 0xfef08a });
+    cg.moveTo(-8 * s, 12 * s).lineTo(-12 * s, 20 * s).stroke({ width: 2, color: 0x38bdf8 });
+    cg.moveTo(8 * s, 12 * s).lineTo(12 * s, 20 * s).stroke({ width: 2, color: 0x38bdf8 });
+    craneArm.addChild(cg);
+    overlay.addChild(craneArm);
+    parts.craneArm = { node: craneArm, baseX: 56 * s, baseY: 4 * s };
+  } else if (type === 'testTrack') {
+    // 1. Rooftop AC Fans
+    const f1 = makeIsoFanRotor(-14 * s, -54 * s, 6.5 * s, 0xe2e8f0);
+    const f2 = makeIsoFanRotor(-2 * s, -48 * s, 6.5 * s, 0xe2e8f0);
+    overlay.addChild(f1, f2);
+    parts.rotors.push(f1, f2);
+
+    // 2. Starting Gantry Race Lights & Track Car Drift Smoke
+    const g1 = circle(-62 * s, -2 * s, 4.5 * s, { color: 0xef4444, alpha: 0.95 });
+    const g2 = circle(-54 * s, -6 * s, 4.5 * s, { color: 0x22c55e, alpha: 0.95 });
+    overlay.addChild(g1, g2);
+    parts.strobes.push(g1, g2);
+
+    const driftSmoke = circle(42 * s, 44 * s, 9 * s, { color: 0xe2e8f0, alpha: 0.55 });
+    overlay.addChild(driftSmoke);
+    parts.trackCar = { smoke: driftSmoke, baseX: 42 * s, baseY: 44 * s };
+  } else if (type === 'streetKiosk') {
+    // Floating Rotating 3D "365" Holo-Beacon on Kiosk Roof
+    const holo = new PIXI.Container();
+    holo.x = 12 * s;
+    holo.y = -32 * s;
+    const hg = new PIXI.Graphics();
+    hg.circle(0, 0, 14 * s).fill({ color: 0x35e58a, alpha: 0.22 }).stroke({ width: 2, color: 0x35e58a, alpha: 0.9 });
+    hg.circle(0, 0, 5 * s).fill({ color: 0x67e8f9, alpha: 0.95 });
+    holo.addChild(hg);
+    overlay.addChild(holo);
+    parts.holoSign = { node: holo, baseY: -32 * s };
+  }
+
+  return parts;
+}
 
 function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation = 0, buildingState = null, onCollect = null }) {
   const def = defByKey(type);
@@ -921,56 +1137,85 @@ function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation 
   c.alpha = alpha;
 
   const status = buildingState ? collectStatus(buildingState, def) : { ready: false };
-  c.addChild(roundRect(-6, h - 18, w + 12, 24, 12, { color: 0x020617, alpha: 0.42 }));
 
-  const glowRing = roundRect(
-    -4,
-    2,
-    w + 8,
-    h + 2,
-    18,
-    { color: status.ready ? 0x35e58a : 0x38bdf8, alpha: status.ready ? 0.16 : 0.06 },
-    { width: status.ready ? 2.5 : 1.5, color: status.ready ? 0x35e58a : 0x38bdf8, alpha: status.ready ? 0.65 : 0.28 }
-  );
-  glowRing.zIndex = 5;
-  c.addChild(glowRing);
+  // Isometric Diamond Ground Aura (NO square card box!)
+  const aura = new PIXI.Graphics();
+  const auraColor = status.ready ? 0x35e58a : 0x38bdf8;
+  aura.poly([
+    w / 2, h + 14,
+    w + 18, h / 2 + 8,
+    w / 2, -4,
+    -18, h / 2 + 8
+  ]).fill({ color: auraColor, alpha: status.ready ? 0.22 : 0.08 })
+    .stroke({ width: status.ready ? 2.5 : 1.2, color: auraColor, alpha: status.ready ? 0.78 : 0.28 });
+  aura.zIndex = 4;
+  c.addChild(aura);
 
-  const spriteSize = Math.max(134, w * 1.18, h * 1.18);
-  const art = assetSprite(buildingAssetForKey(type, name, buildingState?.level || 1), w / 2, h / 2 - 4, spriteSize, spriteSize, 1);
+  // Rigged Building Root (supports Clash-style squash & stretch bounce + animated mechanical sub-parts)
+  const rigRoot = new PIXI.Container();
+  rigRoot.sortableChildren = true;
+  rigRoot.x = w / 2;
+  rigRoot.y = h / 2 - 6;
+  rigRoot.zIndex = 10;
+  c.addChild(rigRoot);
+
+  const spriteSize = Math.max(156, w * 1.32, h * 1.32);
+  const art = assetSprite(buildingAssetForKey(type, name, buildingState?.level || 1), 0, 0, spriteSize, spriteSize, 1);
   if (art) {
     art.zIndex = 10;
     art.rotation = (Math.abs(Number(rotation) || 0) % 4) * Math.PI / 2;
-    c.addChild(art);
+    rigRoot.addChild(art);
   }
+
+  const rigParts = attachClashBuildingRig(rigRoot, type, spriteSize);
 
   const labelPlate = new PIXI.Container();
   labelPlate.zIndex = 30;
-  labelPlate.addChild(roundRect(4, h - 2, w - 8, 22, 11, { color: 0x04111d, alpha: 0.92 }, { width: 1.5, color: status.ready ? 0x35e58a : 0x334155, alpha: 0.85 }));
-  labelPlate.addChild(textLabel(name || def.shortName, w / 2, h + 9, 10, 0xf8fafc));
+  labelPlate.addChild(roundRect(8, h - 2, w - 16, 20, 10, { color: 0x04111d, alpha: 0.88 }, { width: 1.5, color: status.ready ? 0x35e58a : 0x38bdf8, alpha: 0.82 }));
+  labelPlate.addChild(textLabel(name || def.shortName, w / 2, h + 8, 9.5, 0xf8fafc));
   c.addChild(labelPlate);
 
-  addBuildingStatusBadges(c, w, h, buildingState, def, onCollect);
-  animatedBuildings.push({ container: c, art, glowRing, ready: status.ready, phase: (x * 0.013 + y * 0.017) % (Math.PI * 2) });
+  const animRecord = {
+    container: c,
+    rigRoot,
+    art,
+    glowRing: aura,
+    rigParts,
+    ready: status.ready,
+    bounceTimer: 0,
+    phase: (x * 0.013 + y * 0.017) % (Math.PI * 2)
+  };
+
+  c.on('pointertap', () => {
+    animRecord.bounceTimer = 0.42;
+  });
+
+  animRecord.collectBubble = addBuildingStatusBadges(c, w, h, buildingState, def, () => {
+    animRecord.bounceTimer = 0.55;
+    if (onCollect) onCollect();
+  });
+
+  animatedBuildings.push(animRecord);
   return c;
 }
 
 const VEHICLE_WHEEL_LAYOUT = {
-  compactCar: { wheelKey: 'wheelSport', rearX: -19, frontX: 19, wheelY: 9.5, size: 14.5 },
-  blueCar: { wheelKey: 'wheelGold', rearX: -20, frontX: 20, wheelY: 9.5, size: 15 },
-  yellowCar: { wheelKey: 'wheelSport', rearX: -20, frontX: 20, wheelY: 9.5, size: 14.5 },
-  rallyCar: { wheelKey: 'wheelGold', rearX: -20, frontX: 20, wheelY: 9.5, size: 15 },
-  jdmGtCoupe: { wheelKey: 'wheelGold', rearX: -20, frontX: 20, wheelY: 9.5, size: 15 },
-  greenTruck: { wheelKey: 'wheelTruck', rearX: -23, frontX: 24, wheelY: 11, size: 18 },
-  naMuscle: { wheelKey: 'wheelSport', rearX: -20, frontX: 21, wheelY: 9.5, size: 15.5 },
-  bajaSuv: { wheelKey: 'wheelTruck', rearX: -22, frontX: 23, wheelY: 11, size: 18 },
-  towTruck: { wheelKey: 'wheelTruck', rearX: -22, frontX: 24, wheelY: 10.5, size: 17 },
-  deliveryVan: { wheelKey: 'wheelTruck', rearX: -21, frontX: 22, wheelY: 10, size: 16 },
-  superCar: { wheelKey: 'wheelGold', rearX: -21, frontX: 21, wheelY: 10, size: 15.5 }
+  compactCar: { wheelKey: 'wheelSport', rearX: -27, frontX: 27, wheelY: 13, size: 15 },
+  blueCar: { wheelKey: 'wheelGold', rearX: -26, frontX: 27, wheelY: 13, size: 15.5 },
+  yellowCar: { wheelKey: 'wheelSport', rearX: -27, frontX: 27, wheelY: 13, size: 15.5 },
+  rallyCar: { wheelKey: 'wheelGold', rearX: -26, frontX: 27, wheelY: 13, size: 15.5 },
+  jdmGtCoupe: { wheelKey: 'wheelSport', rearX: -26, frontX: 27, wheelY: 13, size: 15.5 },
+  greenTruck: { wheelKey: 'wheelTruck', rearX: -30, frontX: 30, wheelY: 14, size: 20 },
+  naMuscle: { wheelKey: 'wheelSport', rearX: -27, frontX: 28, wheelY: 13, size: 16 },
+  bajaSuv: { wheelKey: 'wheelTruck', rearX: -27, frontX: 28, wheelY: 14, size: 19 },
+  towTruck: { wheelKey: 'wheelTruck', rearX: -25, frontX: 31, wheelY: 14.5, size: 17.5 },
+  deliveryVan: { wheelKey: 'wheelTruck', rearX: -27, frontX: 28, wheelY: 14, size: 16.5 },
+  superCar: { wheelKey: 'wheelSport', rearX: -27, frontX: 27, wheelY: 13, size: 16 }
 };
 
 function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', truck = false, assetKey = 'compactCar', towTargetKey = '' }) {
-  const bodyW = truck ? 60 : 52;
-  const bodyH = truck ? 27 : 24;
+  const bodyW = truck ? 62 : 54;
+  const bodyH = truck ? 31 : 27;
   const car = new PIXI.Container();
   car.sortableChildren = true;
   const wheels = [];
@@ -978,7 +1223,10 @@ function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', 
   chassis.sortableChildren = true;
   car.addChild(chassis);
 
-  const art = assetSprite(vehicleAssetForKey(assetKey), 0, 0, bodyW * 1.92, bodyH * 2.55, 1);
+  // Preserve exact 2:1 aspect ratio of our 320x160 cutout vehicle sprites
+  const spriteW = bodyW * 1.92;
+  const spriteH = spriteW * 0.5;
+  const art = assetSprite(vehicleAssetForKey(assetKey), 0, 0, spriteW, spriteH, 1);
   if (art) {
     art.zIndex = 10;
     chassis.addChild(art);
@@ -988,20 +1236,26 @@ function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', 
     chassis.addChild(roundRect(-bodyW / 2 + 8, -bodyH / 2 + 4, bodyW - 24, bodyH - 8, 5, accent, { width: 2, color: 0x172033 }));
   }
 
+  // Subtle rotating spoke-spin overlay aligned to each vehicle's wheel wells
   const wheelSpec = VEHICLE_WHEEL_LAYOUT[assetKey] || VEHICLE_WHEEL_LAYOUT.compactCar;
-  const wheelSrc = WORLD_ASSETS.vehicles[wheelSpec.wheelKey] || WORLD_ASSETS.vehicles.wheelSport;
   [wheelSpec.rearX, wheelSpec.frontX].forEach((wx) => {
-    const wheelSprite = assetSprite(wheelSrc, wx, wheelSpec.wheelY, wheelSpec.size, wheelSpec.size, 1);
-    if (wheelSprite) {
-      wheelSprite.zIndex = 20;
-      chassis.addChild(wheelSprite);
-      wheels.push(wheelSprite);
+    const spinRing = new PIXI.Graphics();
+    const r = wheelSpec.size * 0.36;
+    spinRing.circle(0, 0, r).stroke({ width: 1.4, color: 0xf8fafc, alpha: 0.45 });
+    for (let s = 0; s < 3; s++) {
+      const a = (s * Math.PI) / 3;
+      spinRing.moveTo(Math.cos(a) * -r, Math.sin(a) * -r).lineTo(Math.cos(a) * r, Math.sin(a) * r).stroke({ width: 1.5, color: 0xe2e8f0, alpha: 0.58 });
     }
+    spinRing.x = wx;
+    spinRing.y = wheelSpec.wheelY;
+    spinRing.zIndex = 20;
+    chassis.addChild(spinRing);
+    wheels.push(spinRing);
   });
 
   if (assetKey === 'towTruck') {
-    const strobeRed = circle(6, -15, 4.5, { color: 0xef4444, alpha: 0.85 });
-    const strobeAmber = circle(11, -15, 4.5, { color: 0xfacc15, alpha: 0.85 });
+    const strobeRed = circle(10, -17, 4.5, { color: 0xef4444, alpha: 0.85 });
+    const strobeAmber = circle(15, -17, 4.5, { color: 0xfacc15, alpha: 0.85 });
     strobeRed.zIndex = 28;
     strobeAmber.zIndex = 28;
     chassis.addChild(strobeRed);
@@ -1010,22 +1264,17 @@ function makeVehicle({ color = 0xf97316, accent = 0xffffff, direction = 'east', 
 
     if (towTargetKey) {
       const towCable = new PIXI.Graphics();
-      towCable.moveTo(-28, -4).lineTo(-56, 3).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.95 });
+      towCable.moveTo(-36, -6).lineTo(-64, 4).stroke({ width: 2.5, color: 0xfacc15, alpha: 0.95 });
       towCable.zIndex = 8;
       chassis.addChild(towCable);
 
       const towed = new PIXI.Container();
-      towed.x = -76;
+      towed.x = -88;
       towed.y = -2;
       towed.rotation = 0.14;
       towed.zIndex = 9;
-      const towedArt = assetSprite(vehicleAssetForKey(towTargetKey), 0, 0, 84, 52, 0.98);
+      const towedArt = assetSprite(vehicleAssetForKey(towTargetKey), 0, 0, 92, 46, 0.98);
       if (towedArt) towed.addChild(towedArt);
-      const towedWheelRear = assetSprite(WORLD_ASSETS.vehicles.wheelSport, -17, 8, 12.5, 12.5, 1);
-      if (towedWheelRear) {
-        towed.addChild(towedWheelRear);
-        wheels.push(towedWheelRear);
-      }
       chassis.addChild(towed);
     }
   }
@@ -1490,7 +1739,7 @@ window.replyToNpc = (id, choiceId) => {
   else if (selectedResidentKey) refreshOpenResidentSheet();
 };
 
-function createAnimatedPersonSprite(personKey, width = 44, height = 58) {
+function createAnimatedPersonSprite(personKey, width = 52, height = 68) {
   const frameSources = personAnimationFramesForKey(personKey);
   const firstSrc = frameSources[0] || personAssetForKey(personKey);
   if (!firstSrc) return { sprite: null, frameTextures: [] };
@@ -1508,18 +1757,18 @@ function updatePersonWalkVisual(item, point) {
   if (!item?.sprite) return;
   const facing = point?.facing || 1;
   if (item.art) {
-    const baseWidth = item.artBaseWidth || 44;
-    const baseHeight = item.artBaseHeight || 58;
+    const baseWidth = item.artBaseWidth || 52;
+    const baseHeight = item.artBaseHeight || 68;
     const strideCycle = (item.d || 0) * 0.14;
-    const bounceY = Math.abs(Math.sin(strideCycle)) * 2.6;
-    const lean = Math.sin(strideCycle) * 0.045 * facing;
+    const bounceY = Math.abs(Math.sin(strideCycle)) * 2.2;
+    const lean = Math.sin(strideCycle) * 0.035 * facing;
     item.art.width = baseWidth;
     item.art.height = baseHeight;
     item.art.y = 4 - bounceY;
     item.art.rotation = lean;
     item.art.scale.x = Math.abs(item.art.scale.x) * facing;
     if (item.frameTextures?.length) {
-      const frameIndex = Math.floor((item.d || 0) / 11) % item.frameTextures.length;
+      const frameIndex = Math.floor((item.d || 0) / 10) % item.frameTextures.length;
       if (item.walkFrame !== frameIndex) {
         item.walkFrame = frameIndex;
         item.art.texture = item.frameTextures[frameIndex];
@@ -1533,34 +1782,38 @@ function updatePersonWalkVisual(item, point) {
 function addSupplyWalker(path, staff) {
   const p = new PIXI.Container();
   p.sortableChildren = true;
-  p.addChild(roundRect(-12, -2, 24, 8, 4, { color: 0x04111d, alpha: 0.34 }));
-  const { sprite: art, frameTextures } = createAnimatedPersonSprite(staff.key, 44, 58);
+  p.addChild(roundRect(-14, -2, 28, 9, 4.5, { color: 0x04111d, alpha: 0.36 }));
+  const { sprite: art, frameTextures } = createAnimatedPersonSprite(staff.key, 54, 70);
   if (art) {
     art.zIndex = 10;
     p.addChild(art);
   }
-  const tag = textLabel(staff.name, 0, -64, 10, 0x1b1408);
-  const backing = roundRect(-36, -74, 72, 17, 8.5, 0xf6c445, { width: 1.5, color: 0x0f172a });
+  const tag = textLabel(staff.name, 0, -72, 9.5, 0x1b1408);
+  const backing = roundRect(-38, -81, 76, 17, 8.5, 0xf6c445, { width: 1.5, color: 0x0f172a });
   backing.zIndex = 20;
   tag.zIndex = 21;
   p.addChild(backing);
   p.addChild(tag);
-  p.scale.set(0.84);
+  p.scale.set(0.92);
   makeClickable(p, () => openSupplyManager(staff));
   world.addChild(p);
   const startD = Math.random() * 800;
-  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 44, artBaseHeight: 58, walkFrame: 0, path, d: startD, speed: 40, staff };
+  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 54, artBaseHeight: 70, walkFrame: 0, path, d: startD, speed: 40, staff };
   updatePersonWalkVisual(walkerItem, pathPoint(path, startD));
   walkers.push(walkerItem);
 }
 
 function renderSupplyManagerSheet(staff) {
+  const portraitSrc = personAssetForKey(staff.key);
   return `
     <div class="residentWindow">
       <div class="residentWindowHeader">
-        <div>
-          <span class="residentKicker">Supply Manager</span>
-          <b>${escapeHtml(staff.name)}</b>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img src="${escapeHtml(portraitSrc)}" alt="${escapeHtml(staff.name)}" style="width:52px;height:66px;object-fit:contain;border-radius:12px;background:rgba(15,23,42,0.65);border:1.5px solid rgba(250,204,21,0.65);padding:2px;" />
+          <div>
+            <span class="residentKicker">Supply Manager</span>
+            <b>${escapeHtml(staff.name)}</b>
+          </div>
         </div>
       </div>
       <div class="residentMoodCard">
@@ -1602,24 +1855,24 @@ function refreshSupplyManagerSheet() {
 function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb) {
   const p = new PIXI.Container();
   p.sortableChildren = true;
-  p.addChild(roundRect(-12, -2, 24, 8, 4, { color: 0x04111d, alpha: 0.34 }));
-  const { sprite: art, frameTextures } = createAnimatedPersonSprite(resident.key, 42, 56);
+  p.addChild(roundRect(-14, -2, 28, 9, 4.5, { color: 0x04111d, alpha: 0.36 }));
+  const { sprite: art, frameTextures } = createAnimatedPersonSprite(resident.key, 52, 68);
   if (art) {
     art.zIndex = 10;
     p.addChild(art);
   } else {
     p.addChild(roundRect(-8, -11, 16, 22, 7, shirt, { width: 2, color: 0x1e293b }));
   }
-  const bubble = assetSprite(WORLD_ASSETS.ui.wantBubble, 16, -58, 28, 16, 0.92);
+  const bubble = assetSprite(WORLD_ASSETS.ui.wantBubble, 18, -66, 28, 16, 0.92);
   if (bubble) {
     bubble.zIndex = 20;
     p.addChild(bubble);
   }
-  p.scale.set(0.82);
+  p.scale.set(0.90);
   makeClickable(p, () => openResidentSheet(resident));
   world.addChild(p);
   const startD = Math.random() * 800;
-  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 42, artBaseHeight: 56, walkFrame: 0, path, d: startD, speed: 46, resident };
+  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 52, artBaseHeight: 68, walkFrame: 0, path, d: startD, speed: 46, resident };
   updatePersonWalkVisual(walkerItem, pathPoint(path, startD));
   walkers.push(walkerItem);
 }
@@ -1907,12 +2160,8 @@ function rebuildIncidents() {
         activePotholePositions.push({ x: pos.x, y: pos.y });
         const ring = circle(0, 2, 26, { color: 0xf97316, alpha: 0.14 }, { width: 2, color: 0xf97316, alpha: 0.72 });
         marker.addChild(ring);
-        const crater = assetSprite(WORLD_ASSETS.props.potholeCrater, 0, 2, 58, 36, 0.98);
+        const crater = assetSprite(WORLD_ASSETS.props.potholeCrater, 0, 0, 66, 46, 0.98);
         if (crater) marker.addChild(crater);
-        const coneLeft = assetSprite(WORLD_ASSETS.props.roadCone, -24, -6, 18, 22, 0.96);
-        const coneRight = assetSprite(WORLD_ASSETS.props.roadCone, 24, 6, 18, 22, 0.96);
-        if (coneLeft) marker.addChild(coneLeft);
-        if (coneRight) marker.addChild(coneRight);
 
         const badge = new PIXI.Container();
         badge.y = -24;
@@ -1925,15 +2174,11 @@ function rebuildIncidents() {
         marker.addChild(ring);
 
         const towRig = new PIXI.Container();
-        towRig.x = -26;
+        towRig.x = -28;
         towRig.y = -2;
-        const towArt = assetSprite(WORLD_ASSETS.vehicles.towTruck, 0, 0, 74, 46, 1);
+        const towArt = assetSprite(WORLD_ASSETS.vehicles.towTruck, 0, 0, 84, 42, 1);
         if (towArt) towRig.addChild(towArt);
-        const towW1 = assetSprite(WORLD_ASSETS.vehicles.wheelTruck, -15, 7.5, 12, 12, 1);
-        const towW2 = assetSprite(WORLD_ASSETS.vehicles.wheelTruck, 16, 7.5, 12, 12, 1);
-        if (towW1) towRig.addChild(towW1);
-        if (towW2) towRig.addChild(towW2);
-        const strobe = circle(6, -12, 5, { color: 0xfacc15, alpha: 0.9 });
+        const strobe = circle(8, -14, 5, { color: 0xfacc15, alpha: 0.95 });
         towRig.addChild(strobe);
         marker.addChild(towRig);
 
@@ -1944,8 +2189,8 @@ function rebuildIncidents() {
         const broken = new PIXI.Container();
         broken.x = 28;
         broken.y = 2;
-        broken.rotation = -0.12;
-        const brokenArt = assetSprite(WORLD_ASSETS.props.brokenCar, 0, 0, 68, 42, 1);
+        broken.rotation = -0.10;
+        const brokenArt = assetSprite(WORLD_ASSETS.props.brokenCar, 0, 0, 72, 42, 1);
         if (brokenArt) broken.addChild(brokenArt);
         const hazardLight = circle(-22, 2, 4, { color: 0xf97316, alpha: 0.95 });
         broken.addChild(hazardLight);
@@ -2320,12 +2565,16 @@ function renderResidentActionMenu(resident, mood) {
 function renderResidentSheet(resident) {
   const def = defByKey(resident.building);
   const mood = residentMood(resident);
+  const portraitSrc = personAssetForKey(resident.key);
   return `
     <div class="residentWindow" data-resident-window>
       <div class="residentWindowHeader" data-resident-sheet-title>
-        <div>
-          <span class="residentKicker">Resident Request</span>
-          <b>${escapeHtml(resident.name)}</b>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img src="${escapeHtml(portraitSrc)}" alt="${escapeHtml(resident.name)}" style="width:52px;height:66px;object-fit:contain;border-radius:12px;background:rgba(15,23,42,0.65);border:1.5px solid rgba(56,189,248,0.65);padding:2px;" />
+          <div>
+            <span class="residentKicker">Resident Request</span>
+            <b>${escapeHtml(resident.name)}</b>
+          </div>
         </div>
         <strong>${escapeHtml(mood.label)} ${mood.score}%</strong>
       </div>
@@ -2672,6 +2921,20 @@ window.panMobileCitySafe = (x = 0, y = 0) => {
   clamp();
 };
 
+function computeBuildingsStateSig() {
+  const fixedSig = CITY_BUILDINGS.map((b) => {
+    const id = fixedId(b);
+    const st = fixedBuildingStates[id] || normalizeBuildingState({}, b.type);
+    const ready = collectStatus(st, defByKey(b.type)).ready ? 1 : 0;
+    return `${id}:${st.level || 1}:${ready}`;
+  }).join('|');
+  const placedSig = placedBuildings.map((b) => {
+    const ready = collectStatus(b, defByKey(b.type)).ready ? 1 : 0;
+    return `${b.id}:${b.x},${b.y},${b.rotation || 0}:${b.level || 1}:${ready}`;
+  }).join('|');
+  return `${mode}#${fixedSig}#${placedSig}`;
+}
+
 function buildWorld() {
   world = new PIXI.Container();
   world.sortableChildren = true;
@@ -2681,6 +2944,7 @@ function buildWorld() {
   incidentLayer = null;
   gridLayer = null;
   ghostLayer = null;
+  animatedTrees = [];
   loadPlaced();
   loadFixedBuildingStates();
   drawGround();
@@ -2697,23 +2961,30 @@ function buildWorld() {
   addTraffic(pathH(2, 'west'), { color: 0xfb923c, accent: 0xfef3c7, direction: 'west', truck: true, speed: 76, scale: 0.80, assetKey: 'bajaSuv' }); // NA Bronco Trophy 4x4 SUV
   addTraffic(pathH(3, 'west'), { color: 0x22d3ee, accent: 0xecfeff, direction: 'west', speed: 98, scale: 0.78, assetKey: 'superCar' }); // NA Mid-Engine V8 Supercar
   addTraffic(pathH(3, 'east'), { color: 0x60a5fa, accent: 0xede9fe, direction: 'east', speed: 82, scale: 0.76, assetKey: 'blueCar' });
-  addTraffic(pathV(0, 'south'), { color: 0xfacc15, accent: 0xe0f2fe, direction: 'south', truck: true, speed: 62, scale: 0.80, assetKey: 'towTruck', towTargetKey: 'compactCar' }); // Active Wrecker Tow Truck towing a JDM Hatch
-  addTraffic(pathV(0, 'north'), { color: 0xf8fafc, accent: 0xfef3c7, direction: 'north', speed: 80, scale: 0.76, assetKey: 'compactCar' }); // JDM Kei RS Turbo Hatch
-  addTraffic(pathV(1, 'north'), { color: 0x38bdf8, accent: 0xfffbeb, direction: 'north', truck: true, speed: 68, scale: 0.78, assetKey: 'deliveryVan' }); // NA 365 Fleet Transit Van
-  addTraffic(pathV(1, 'south'), { color: 0xfacc15, accent: 0xe0f2fe, direction: 'south', truck: true, speed: 64, scale: 0.78, assetKey: 'towTruck' });
+  addTraffic(pathH(1, 'east'), { color: 0xfacc15, accent: 0xe0f2fe, direction: 'east', truck: true, speed: 62, scale: 0.80, assetKey: 'towTruck', towTargetKey: 'compactCar' }); // Active Wrecker Tow Truck towing a JDM Hatch
+  addTraffic(pathH(0, 'west'), { color: 0xf8fafc, accent: 0xfef3c7, direction: 'west', speed: 80, scale: 0.76, assetKey: 'compactCar' }); // JDM Kei RS Turbo Hatch
+  addTraffic(pathH(2, 'east'), { color: 0x38bdf8, accent: 0xfffbeb, direction: 'east', truck: true, speed: 68, scale: 0.78, assetKey: 'deliveryVan' }); // NA 365 Fleet Transit Van
+  addTraffic(pathH(3, 'east'), { color: 0xfacc15, accent: 0xe0f2fe, direction: 'east', truck: true, speed: 64, scale: 0.78, assetKey: 'towTruck' });
 
   [
-    { key: 'tree', x: 390, y: 175, w: 58, h: 72 },
-    { key: 'tree', x: 605, y: 175, w: 56, h: 70 },
+    { key: 'tree', x: 390, y: 170, w: 66, h: 78 },
+    { key: 'tree', x: 608, y: 170, w: 64, h: 76 },
+    { key: 'tree', x: 390, y: 478, w: 64, h: 76 },
+    { key: 'tree', x: 608, y: 478, w: 64, h: 76 },
+    { key: 'tree', x: 390, y: 798, w: 64, h: 76 },
+    { key: 'tree', x: 608, y: 798, w: 64, h: 76 },
     { key: 'streetlight', x: 590, y: 330, w: 34, h: 64 },
     { key: 'streetlight', x: 220, y: 330, w: 34, h: 64 },
     { key: 'parkingSign', x: 370, y: 1010, w: 38, h: 60 },
     { key: 'roadCone', x: 505, y: 725, w: 34, h: 44 }
-  ].forEach((prop) => {
+  ].forEach((prop, idx) => {
     const sprite = assetSprite(WORLD_ASSETS.props[prop.key], prop.x, prop.y, prop.w, prop.h, 1);
     if (sprite) {
       sprite.zIndex = prop.y + 20;
       world.addChild(sprite);
+      if (prop.key === 'tree') {
+        animatedTrees.push({ sprite, phase: idx * 1.15, baseScaleX: sprite.scale.x, baseScaleY: sprite.scale.y });
+      }
     }
   });
 
@@ -2740,6 +3011,7 @@ function buildWorld() {
   rebuildPlacements();
   rebuildIncidents();
   rebuildGrid();
+  lastBuildingsStateSig = computeBuildingsStateSig();
   updateHud();
 }
 
@@ -2848,11 +3120,92 @@ async function mount(host) {
       item.sprite.zIndex = p.y + 45;
     }
 
+    for (const tree of animatedTrees) {
+      const sway = Math.sin(worldAnimClock * 2.2 + tree.phase) * 0.032;
+      tree.sprite.rotation = sway;
+    }
+
     for (const bItem of animatedBuildings) {
+      const t = worldAnimClock + bItem.phase;
       if (bItem.glowRing) {
         bItem.glowRing.alpha = bItem.ready
-          ? 0.55 + Math.sin(worldAnimClock * 4.2 + bItem.phase) * 0.35
-          : 0.22 + Math.sin(worldAnimClock * 2.1 + bItem.phase) * 0.08;
+          ? 0.58 + Math.sin(t * 4.2) * 0.32
+          : 0.28 + Math.sin(t * 2.1) * 0.08;
+      }
+      if (bItem.collectBubble) {
+        bItem.collectBubble.y = -36 + Math.sin(t * 3.1) * 3;
+      }
+
+      // Clash-of-Clans style breathing & tap/collect elastic squash-and-stretch bounce
+      if (bItem.rigRoot) {
+        if (bItem.bounceTimer > 0) {
+          bItem.bounceTimer = Math.max(0, bItem.bounceTimer - dt);
+          const prog = bItem.bounceTimer / 0.55;
+          const squash = Math.sin(prog * Math.PI * 3) * 0.11 * prog;
+          bItem.rigRoot.scale.set(1 + squash, 1 - squash);
+        } else {
+          const breathe = Math.sin(t * 2.4) * 0.012;
+          bItem.rigRoot.scale.set(1 + breathe, 1 - breathe);
+        }
+      }
+
+      const rp = bItem.rigParts;
+      if (rp) {
+        for (const rotor of rp.rotors) {
+          if (rotor.children?.[0]) rotor.children[0].rotation += dt * 7.5;
+          else rotor.rotation += dt * 7.5;
+        }
+        for (let sIdx = 0; sIdx < rp.strobes.length; sIdx++) {
+          const st = rp.strobes[sIdx];
+          st.alpha = Math.sin(t * 14 + sIdx * 2.1) > 0 ? 1 : 0.18;
+        }
+        if (rp.liftCar) {
+          rp.liftCar.node.y = rp.liftCar.baseY + Math.sin(t * 2.0) * rp.liftCar.amp;
+        }
+        if (rp.weldingArc) {
+          const sparkFlash = Math.sin(t * 23) * Math.cos(t * 17) > 0.35;
+          rp.weldingArc.alpha = sparkFlash ? 0.95 : 0.08;
+          rp.weldingArc.scale.set(sparkFlash ? 1.15 : 0.7);
+        }
+        if (rp.forklift) {
+          const fkCycle = Math.sin(t * 1.35);
+          rp.forklift.node.x = rp.forklift.baseX + fkCycle * rp.forklift.rangeX;
+          rp.forklift.node.y = rp.forklift.baseY + fkCycle * rp.forklift.rangeY;
+          rp.forklift.node.scale.x = Math.cos(t * 1.35) >= 0 ? 1 : -1;
+        }
+        if (rp.turntableRing) {
+          rp.turntableRing.children[0].rotation += dt * 2.2;
+        }
+        if (rp.searchlightA && rp.searchlightB) {
+          rp.searchlightA.rotation = Math.sin(t * 1.6) * 0.38;
+          rp.searchlightB.rotation = -Math.sin(t * 1.4 + 0.8) * 0.38;
+        }
+        if (rp.radarWave) {
+          const waveProg = (t * 0.85) % 1;
+          rp.radarWave.scale.set(0.45 + waveProg * 0.95);
+          rp.radarWave.alpha = (1 - waveProg) * 0.88;
+        }
+        if (rp.dynoFlame) {
+          const backfire = Math.sin(t * 19) > 0.55;
+          rp.dynoFlame.alpha = backfire ? 0.95 : 0.12;
+          rp.dynoFlame.scale.set(backfire ? 1.25 : 0.65);
+        }
+        if (rp.craneArm) {
+          rp.craneArm.node.x = rp.craneArm.baseX + Math.sin(t * 1.5) * 5;
+          rp.craneArm.node.y = rp.craneArm.baseY + Math.cos(t * 3.0) * 4;
+          rp.craneArm.node.rotation = Math.sin(t * 1.5) * 0.18;
+        }
+        if (rp.trackCar) {
+          const smokeProg = (t * 1.6) % 1;
+          rp.trackCar.smoke.x = rp.trackCar.baseX - smokeProg * 14;
+          rp.trackCar.smoke.y = rp.trackCar.baseY - smokeProg * 10;
+          rp.trackCar.smoke.alpha = (1 - smokeProg) * 0.62;
+          rp.trackCar.smoke.scale.set(0.6 + smokeProg * 0.9);
+        }
+        if (rp.holoSign) {
+          rp.holoSign.node.y = rp.holoSign.baseY + Math.sin(t * 3.2) * 3.5;
+          rp.holoSign.node.scale.x = Math.cos(t * 2.4);
+        }
       }
     }
 
@@ -2899,9 +3252,13 @@ async function mount(host) {
     if (statusRefreshTimer >= 2) {
       statusRefreshTimer = 0;
       if (mode === 'normal') {
-        rebuildFixedBuildings();
-        rebuildPlacements();
-        rebuildIncidents();
+        const nextSig = computeBuildingsStateSig();
+        if (nextSig !== lastBuildingsStateSig) {
+          lastBuildingsStateSig = nextSig;
+          rebuildFixedBuildings();
+          rebuildPlacements();
+          rebuildIncidents();
+        }
         if (selectedBuildingTarget) openBuildingSheet(selectedBuildingTarget, true);
         else if (selectedSupplyKey) refreshSupplyManagerSheet();
         else refreshOpenResidentSheet();
