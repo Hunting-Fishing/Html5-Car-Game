@@ -163,6 +163,44 @@ function rarityFor(level) {
   return 'common';
 }
 
+function richdomTierFor(level, promotions = 0) {
+  const score = (level || 1) + (promotions || 0) * 8;
+  if (score >= 18) return { code: 'SSR', cls: 'ssr' };
+  if (score >= 6) return { code: 'SR', cls: 'sr' };
+  return { code: 'R', cls: 'r' };
+}
+
+function richdomTycoonBuffs(view) {
+  const lvl = view?.level || 1;
+  const promo = view?.promotions || 0;
+  const primarySkill = view?.skills?.[0]?.value || 5;
+  const cycleReduction = Math.min(35, +(2.5 + lvl * 0.65 + promo * 2.0).toFixed(1));
+  const upgradeDiscount = Math.min(25, +(1.0 + lvl * 0.4 + promo * 1.5).toFixed(1));
+  const incomeBoost = Math.min(120, +(8.0 + primarySkill * 0.6 + lvl * 1.4 + promo * 5.0).toFixed(1));
+  return { cycleReduction, upgradeDiscount, incomeBoost };
+}
+
+function renderRichdomBuffBox(view) {
+  if (!view) return '';
+  const stars = starsFor(view.level);
+  const tier = richdomTierFor(view.level, view.promotions);
+  const buffs = richdomTycoonBuffs(view);
+  return `
+    <div class="richdomManagerBuffBox">
+      <div class="richdomManagerBuffHead">
+        <span class="richdomTierBadge ${tier.cls}">${tier.code}</span>
+        <span class="richdomStarRow" aria-label="${stars} stars">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</span>
+        <span class="richdomBuffCategory">Building · Business</span>
+      </div>
+      <div class="richdomBuffRows">
+        <div><span>Income cycle reduced</span><b>-${buffs.cycleReduction}%</b></div>
+        <div><span>Building upgrade cost reduced</span><b>-${buffs.upgradeDiscount}%</b></div>
+        <div><span>Business income increased</span><b>+${buffs.incomeBoost}%</b></div>
+      </div>
+    </div>
+  `;
+}
+
 function formatPct(value) {
   return `${Number(value).toFixed(2)}%`;
 }
@@ -288,10 +326,18 @@ function renderAssignCard(view, managerId) {
   const selected = view.id === selectedStaff ? 'selected' : '';
   const lead = view.id === managerId ? 'manager' : '';
   const first = view.name.split(' ')[0];
-  const badge = lead ? '<span class="assignRole">MGR</span>' : view.hired ? '<span class="assignRole hired">Hired</span>' : '';
+  const stars = starsFor(view.level);
+  const tier = richdomTierFor(view.level, view.promotions);
+  const badge = lead
+    ? '<span class="assignRole workingRibbon">Working</span>'
+    : view.hired
+      ? '<span class="assignRole hired">Hired</span>'
+      : '';
   return `<div class="assignCard ${rarityFor(view.level)} ${selected} ${lead} ${view.hired ? '' : 'open'}" role="button" tabindex="0" data-action="selectStaff" data-staff="${view.id}">
+    <span class="richdomCardTier ${tier.cls}">${tier.code}</span>
     ${renderAvatar(view, 'assignFace')}
-    <span class="assignName">${first}</span>
+    <span class="assignName">${first} <small>Lv.${view.level}</small></span>
+    <span class="richdomCardStars">${'★'.repeat(stars)}</span>
     ${badge}
     <span class="assignFoot">${renderBars(view, true)}</span>
   </div>`;
@@ -320,7 +366,7 @@ function renderDock(state, view, managerId) {
   const promote = view.hired ? `<button class="btn small promote" data-action="promoteCrew" data-staff="${view.id}" ${view.promoCost && canAfford(state, view.promoCost) ? '' : 'disabled'}>${view.promoCost ? `Promote ${costToText(view.promoCost)}` : 'Partner'}</button>` : '';
   const panes = view.hired ? `<nav class="staffPanes">${renderPaneNav()}</nav>` : '';
   const overview = staffPane === 'overview' || !view.hired
-    ? `<div class="paneBody">${renderBars(view)}
+    ? `<div class="paneBody">${renderRichdomBuffBox(view)}${renderBars(view)}
       ${view.lastChange ? `<em class="staffDelta">${view.lastChange}</em>` : ''}
       ${renderSalary(view)}
       <p class="payNote">${card}</p>
@@ -347,7 +393,7 @@ function renderDock(state, view, managerId) {
       <button type="button" class="staffPopX" data-action="closeStaffSheet" aria-label="Close">×</button>
       <div class="staffPopHead">
         ${renderAvatar(view, 'assignDockFace')}
-        <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${view.promotions ? ` · ${grade}` : ''}${view.hired ? '' : ' · Not hired'}${isLead ? ' · Manager' : ''}</span></div>
+        <div><b>${view.name}</b><span>${view.role} · Lv ${view.level} ${view.rank}${view.promotions ? ` · ${grade}` : ''}${view.hired ? '' : ' · Not hired'}${isLead ? ' · Working Manager' : ''}</span></div>
       </div>
       ${panes}
       ${overview}

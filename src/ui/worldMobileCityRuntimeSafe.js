@@ -2621,11 +2621,19 @@ function sidewalkX(roadIndex, side) {
   return side === 'west' ? road.x - ROADS.sidewalk / 2 : road.x + ROADS.width + ROADS.sidewalk / 2;
 }
 
-function blockLoop(hIndex, vIndex) {
+function blockLoop(hIndex, colIndex = 1) {
   const top = sidewalkY(hIndex, 'south');
   const bottom = sidewalkY(Math.min(hIndex + 1, ROADS.horizontal.length - 1), 'north');
-  const left = sidewalkX(vIndex, 'east');
-  const right = sidewalkX(Math.min(vIndex + 1, ROADS.vertical.length - 1), 'west');
+  const left = colIndex === 0
+    ? 48
+    : colIndex === 1
+      ? sidewalkX(0, 'east')
+      : sidewalkX(1, 'east');
+  const right = colIndex === 0
+    ? sidewalkX(0, 'west')
+    : colIndex === 1
+      ? sidewalkX(1, 'west')
+      : WORLD.width - 48;
   return [
     { x: left, y: top },
     { x: right, y: top },
@@ -3113,7 +3121,7 @@ function updatePersonWalkVisual(item, point) {
   }
 }
 
-function addSupplyWalker(path, staff) {
+function addSupplyWalker(path, staff, customStartD = null) {
   const p = new PIXI.Container();
   p.sortableChildren = true;
   p.addChild(roundRect(-14, -2, 28, 9, 4.5, { color: 0x04111d, alpha: 0.36 }));
@@ -3129,10 +3137,24 @@ function addSupplyWalker(path, staff) {
   p.addChild(backing);
   p.addChild(tag);
   p.scale.set(0.92);
-  makeClickable(p, () => openSupplyManager(staff));
+  makeClickable(p, () => openResidentSheet(staff));
   world.addChild(p);
-  const startD = Math.random() * 800;
-  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 54, artBaseHeight: 70, walkFrame: 0, path, d: startD, speed: 40, staff, onTap: () => openSupplyManager(staff) };
+  const startD = typeof customStartD === 'number' ? customStartD : Math.random() * 800;
+  const walkerItem = {
+    sprite: p,
+    art,
+    frameTextures,
+    artBaseWidth: 54,
+    artBaseHeight: 70,
+    walkFrame: 0,
+    path,
+    d: startD,
+    speed: 40,
+    staff,
+    personId: staff.lineKey || staff.key,
+    isSelected: false,
+    onTap: () => openResidentSheet(staff)
+  };
   updatePersonWalkVisual(walkerItem, pathPoint(path, startD));
   walkers.push(walkerItem);
 }
@@ -3142,40 +3164,16 @@ function renderSupplyManagerSheet(staff) {
 }
 
 function openSupplyManager(staff) {
-  if (mode !== 'normal' || !staff) return;
-  if (selectedSupplyKey !== staff.lineKey) {
-    lastBondNote = '';
-    selectedResidentMenu = 'mood';
-  }
-  purseCache.ready = false;
-  const placedSheet = document.querySelector('[data-placed-sheet]');
-  if (placedSheet) placedSheet.hidden = true;
-  const vehicleSheet = document.querySelector('[data-vehicle-sheet]');
-  if (vehicleSheet) vehicleSheet.hidden = true;
-  traffic.forEach((t) => { t.isSelected = false; });
-  selectedVehicleItem = null;
-  selectedSupplyKey = staff.lineKey;
-  selectedResidentKey = staff.lineKey;
-  selectedBuildingTarget = null;
-  selectedPlacedId = null;
-  document.querySelector('.mobileCityHud')?.classList.add('resident-open');
-  document.querySelector('.mobileCityHud')?.classList.remove('building-open', 'vehicle-open');
-  const sheet = document.querySelector('[data-resident-sheet]');
-  if (sheet) {
-    sheet.innerHTML = renderSupplyManagerSheet(staff);
-    sheet.hidden = false;
-  }
-  publishWorldOpenState();
+  openResidentSheet(staff);
 }
 
 function refreshSupplyManagerSheet() {
   const staff = supplyManagerByLine(selectedSupplyKey);
   if (!staff) return;
-  openSupplyManager(staff);
+  openResidentSheet(staff, true);
 }
 
-
-function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb) {
+function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb, customStartD = null) {
   const p = new PIXI.Container();
   p.sortableChildren = true;
   p.addChild(roundRect(-14, -2, 28, 9, 4.5, { color: 0x04111d, alpha: 0.36 }));
@@ -3194,8 +3192,22 @@ function addWalker(path, resident = RESIDENT_WANTS[0], shirt = 0x2563eb) {
   p.scale.set(0.90);
   makeClickable(p, () => openResidentSheet(resident));
   world.addChild(p);
-  const startD = Math.random() * 800;
-  const walkerItem = { sprite: p, art, frameTextures, artBaseWidth: 52, artBaseHeight: 68, walkFrame: 0, path, d: startD, speed: 46, resident, onTap: () => openResidentSheet(resident) };
+  const startD = typeof customStartD === 'number' ? customStartD : Math.random() * 800;
+  const walkerItem = {
+    sprite: p,
+    art,
+    frameTextures,
+    artBaseWidth: 52,
+    artBaseHeight: 68,
+    walkFrame: 0,
+    path,
+    d: startD,
+    speed: 46,
+    resident,
+    personId: resident.lineKey || resident.key,
+    isSelected: false,
+    onTap: () => openResidentSheet(resident)
+  };
   updatePersonWalkVisual(walkerItem, pathPoint(path, startD));
   walkers.push(walkerItem);
 }
@@ -3754,12 +3766,35 @@ function rebuildIncidents() {
       marker.y = pos.y;
       marker.zIndex = pos.y + 900;
 
+      const roadsideVehicleModels = ['mustangFastback', 'towTruck', 'rx7Spirit', 'silviaS15'];
+      const handleIncidentTap = () => {
+        if (key === 'vehicleBreakdowns' || key === 'stuckVehicles') {
+          const modelKey = roadsideVehicleModels[i % roadsideVehicleModels.length] || 'towTruck';
+          const liveMatch = traffic.find((t) => t.assetKey === modelKey) || traffic[0];
+          openVehicleInspector({
+            ...(liveMatch || {}),
+            assetKey: modelKey,
+            direction: 'west',
+            speed: 0,
+            currentSpeed: 0,
+            isBraking: true,
+            isRoadsideIncident: true,
+            incidentKey: key,
+            incidentScore: condition.score,
+            roadsideX: pos.x,
+            roadsideY: pos.y
+          });
+          return;
+        }
+        window.openCityIssueMenuSafe?.(key);
+      };
+
       incidentDescriptors3D.push({
         key,
         x: pos.x,
         y: pos.y,
         score: condition.score,
-        onTap: () => window.openCityIssueMenuSafe?.(key)
+        onTap: handleIncidentTap
       });
 
       if (key === 'potholes') {
@@ -3842,7 +3877,7 @@ function rebuildIncidents() {
         incidentAnims.push({ type: 'signal', marker, ring, phase: i * 1.1 });
       }
 
-      makeClickable(marker, () => window.openCityIssueMenuSafe?.(key));
+      makeClickable(marker, handleIncidentTap);
       incidentLayer.addChild(marker);
     }
   }
@@ -4436,12 +4471,13 @@ function openBuildingSheet(target, refresh = false) {
   const vehicleSheet = document.querySelector('[data-vehicle-sheet]');
   if (vehicleSheet) vehicleSheet.hidden = true;
   traffic.forEach((t) => { t.isSelected = false; });
+  walkers.forEach((w) => { w.isSelected = false; });
   selectedVehicleItem = null;
   selectedBuildingTarget = target;
   selectedPlacedId = target.kind === 'placed' ? target.id : null;
   selectedResidentKey = null;
   selectedSupplyKey = null;
-  selectedResidentMenu = 'mood';
+  selectedResidentMenu = 'job';
   if (isNewSelection && !refresh) {
     lastBuildingActionNote = '';
     focusBuildingTargetOnMap(target);
@@ -4452,63 +4488,270 @@ function openBuildingSheet(target, refresh = false) {
   hud?.classList.add('building-open');
   const sheet = document.querySelector('[data-placed-sheet]');
   if (sheet) {
-    const prevScroll = sheet.scrollTop;
     sheet.innerHTML = renderBuildingSheet(target);
     sheet.hidden = false;
-    sheet.scrollTop = refresh ? prevScroll : 0;
   }
   publishWorldOpenState();
+}
+
+let selectedVehicleTab = 'telemetry';
+let lastVehicleActionNote = '';
+const vehicleRuntimeUpgrades = {};
+
+function vehicleUpgradeState(assetKey) {
+  if (!vehicleRuntimeUpgrades[assetKey]) {
+    vehicleRuntimeUpgrades[assetKey] = { tuneStage: 1, hpBonus: 0, polished: false };
+  }
+  return vehicleRuntimeUpgrades[assetKey];
+}
+
+function renderVehicleTelemetryTab(trafficItem, spec, upState, speedKmh, statusText) {
+  const roadList = trafficItem?.roadAxis === 'v' ? ROADS.vertical : ROADS.horizontal;
+  const roadObj = roadList?.[trafficItem?.roadIndex || 0] || ROADS.horizontal[0];
+  const roadLabel = roadObj?.label || 'Dealer / Factory Ave';
+  const dirLabel = String(trafficItem?.direction || 'east').toUpperCase();
+  const isRoadside = Boolean(trafficItem?.isRoadsideIncident);
+
+  return `
+    <div class="vehicleTabPane" data-vehicle-tab-pane="telemetry">
+      <div class="vehicleTelemetryGrid">
+        <div class="vTelCard">
+          <span>⚙️ Powerplant</span>
+          <strong>${escapeHtml(spec.engine || 'Twin-Turbo I6')}</strong>
+          <small>Stage ${upState.tuneStage} ECU Map</small>
+        </div>
+        <div class="vTelCard">
+          <span>🛞 Drivetrain</span>
+          <strong>${escapeHtml(spec.drivetrain || 'AWD')}</strong>
+          <small>${upState.polished ? '✨ Ceramic Coated' : 'Street Spec Tires'}</small>
+        </div>
+        <div class="vTelCard">
+          <span>⚡ Live Speed</span>
+          <strong class="${speedKmh > 10 ? 'tone-green' : 'tone-yellow'}">${speedKmh} km/h</strong>
+          <small>${trafficItem?.isBraking ? '🔴 Brake Lights ON' : '🟢 Cruise Throttle'}</small>
+        </div>
+        <div class="vTelCard">
+          <span>📍 Street GPS</span>
+          <strong class="tone-cyan">${escapeHtml(dirLabel)} · ${escapeHtml(roadLabel.split('/')[0].trim())}</strong>
+          <small>${isRoadside ? '🚨 Roadside Recovery' : 'Active 3D Signal Sync'}</small>
+        </div>
+      </div>
+
+      <div class="vehicleLiveStatusBanner ${isRoadside ? 'is-incident' : trafficItem?.isBraking ? 'is-braking' : 'is-cruising'}">
+        <div class="vLiveStatusText">
+          <b>${isRoadside ? '🚨 Roadside Breakdown / Tow Recovery Active' : '📡 Live 365 Street Telemetry'}</b>
+          <span>${escapeHtml(statusText)} · ${upState.hpBonus > 0 ? `+${upState.hpBonus} Dyno HP Tuned` : 'Factory 365 Street Spec'}</span>
+        </div>
+        <div class="vLiveStatusBtns">
+          ${isRoadside ? `
+            <button type="button" class="btn small gold" onclick="window.clearRoadsideVehicleSafe?.()">🚨 Dispatch Tow (+40c)</button>
+          ` : `
+            <button type="button" class="btn small primary" onclick="window.toggleCityCameraAngleSafe?.()">🎥 3D Angle</button>
+          `}
+          <button type="button" class="btn small" onclick="window.zoomMobileCityInSafe?.()">🔍 Zoom Car</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderVehicleDynoTab(trafficItem, spec, upState, totalHp) {
+  const baseHpNum = parseInt(String(spec.hp || '420'), 10) || 420;
+  const speedPct = Math.min(100, Math.round((baseHpNum + upState.hpBonus) / 7.5));
+  const accelPct = Math.min(100, Math.round(62 + upState.tuneStage * 8 + (spec.drivetrain?.includes('AWD') ? 12 : 6)));
+  const gripPct = Math.min(100, Math.round(68 + (upState.polished ? 12 : 0) + (spec.spoiler ? 10 : 4)));
+  const aeroPct = Math.min(100, Math.round(64 + upState.tuneStage * 7 + (spec.underglow ? 12 : 5)));
+
+  return `
+    <div class="vehicleTabPane" data-vehicle-tab-pane="dyno">
+      <div class="vehicleDynoBars">
+        <div class="vDynoBarItem">
+          <div class="vDynoHead"><span>Top Speed</span><b>${speedPct}%</b></div>
+          <div class="vDynoTrack"><i style="width:${speedPct}%"></i></div>
+        </div>
+        <div class="vDynoBarItem">
+          <div class="vDynoHead"><span>Acceleration</span><b>${accelPct}%</b></div>
+          <div class="vDynoTrack"><i style="width:${accelPct}%"></i></div>
+        </div>
+        <div class="vDynoBarItem">
+          <div class="vDynoHead"><span>Corner Grip</span><b>${gripPct}%</b></div>
+          <div class="vDynoTrack"><i style="width:${gripPct}%"></i></div>
+        </div>
+        <div class="vDynoBarItem">
+          <div class="vDynoHead"><span>Aero &amp; Drift</span><b>${aeroPct}%</b></div>
+          <div class="vDynoTrack"><i style="width:${aeroPct}%"></i></div>
+        </div>
+      </div>
+
+      <div class="vehicleTuneActionsCard">
+        <div class="vTuneInfo">
+          <b>🔧 365 Dyno &amp; Showroom Upgrade Bay · Stage ${upState.tuneStage} (${totalHp} HP)</b>
+          <small>Upgrade this fleet vehicle on the street to boost City Reputation and Showroom prestige.</small>
+        </div>
+        <div class="vTuneBtns">
+          <button type="button" class="btn small gold" onclick="window.tuneSelectedVehicleSafe?.()">
+            ⚡ ECU Tune +25 HP (35c)
+          </button>
+          <button type="button" class="btn small primary" onclick="window.polishSelectedVehicleSafe?.()">
+            ✨ Detail Polish +30c Rep
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderVehicleFleetTab(trafficItem, spec) {
+  const curKey = trafficItem?.assetKey || 'skylineR34';
+  const fleetQuickList = [
+    { key: 'skylineR34', label: 'R34 Skyline' },
+    { key: 'mustangFastback', label: 'Mustang V8' },
+    { key: 'rx7Spirit', label: 'RX-7 FD3S' },
+    { key: 'silviaS15', label: 'Silvia S15' },
+    { key: 'pajeroEvo', label: 'Pajero 4x4' },
+    { key: 'superCar', label: 'Apex V10' }
+  ];
+
+  return `
+    <div class="vehicleTabPane" data-vehicle-tab-pane="fleet">
+      <div class="personGameModesGrid">
+        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('race')">
+          <span class="modeKicker">🏎️ Road Runner Route</span>
+          <strong>Race ${escapeHtml(spec.market || 'Street')} Class</strong>
+          <small>Launch side-scroll route run with ${escapeHtml(spec.name || curKey)}</small>
+        </button>
+        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('garage')">
+          <span class="modeKicker">🏢 365 Garage &amp; Showroom</span>
+          <strong>+12% VIP Showcase</strong>
+          <small>Open Workshop Floor &amp; Dyno Bays</small>
+        </button>
+      </div>
+
+      <div class="vehicleQuickFleetBlock">
+        <div class="vQuickFleetHead">
+          <span>🚗 Switch Active 3D Street Vehicle (${traffic.length} on Map)</span>
+          <small>Tap any model to lock camera</small>
+        </div>
+        <div class="vQuickFleetPills">
+          ${fleetQuickList.map((f) => `
+            <button type="button" class="vFleetPill ${f.key === curKey ? 'active' : ''}" onclick="window.inspectMobileCityVehicleSafe?.('${f.key}')">
+              ${escapeHtml(f.label)}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderVehicleSheet(trafficItem) {
   const key = trafficItem?.assetKey || 'skylineR34';
   const spec = VEHICLE_SPECS[key] || VEHICLE_SPECS.skylineR34;
+  const upState = vehicleUpgradeState(key);
+  const baseHpNum = parseInt(String(spec.hp || '420'), 10) || 420;
+  const totalHp = baseHpNum + (upState.hpBonus || 0);
   const speedKmh = Math.round((trafficItem?.currentSpeed ?? trafficItem?.speed ?? 80) * 1.15);
-  const statusText = trafficItem?.isBraking
-    ? 'Yielding at Intersection / Traffic Queue'
-    : speedKmh <= 5
-      ? 'Stopped at Red Signal'
-      : `Cruising ${String(trafficItem?.direction || 'east').toUpperCase()} Avenue`;
+  const isRoadside = Boolean(trafficItem?.isRoadsideIncident);
+  const statusText = isRoadside
+    ? 'Roadside Tow Recovery in Progress'
+    : trafficItem?.isBraking
+      ? 'Yielding at Intersection / Traffic Queue'
+      : speedKmh <= 5
+        ? 'Stopped at Red Signal'
+        : `Cruising ${String(trafficItem?.direction || 'east').toUpperCase()} Avenue`;
+
   const paintHex = `#${Number(spec.body || spec.bodyColor || 0x0284c7).toString(16).padStart(6, '0')}`;
   const trimHex = `#${Number(spec.trim || spec.accentColor || 0x38bdf8).toString(16).padStart(6, '0')}`;
+  const activeTab = ['telemetry', 'dyno', 'fleet'].includes(selectedVehicleTab) ? selectedVehicleTab : 'telemetry';
+  const badgeCode = (spec.name || key).slice(0, 3).toUpperCase();
+
+  let tabBody = '';
+  if (activeTab === 'dyno') {
+    tabBody = renderVehicleDynoTab(trafficItem, spec, upState, totalHp);
+  } else if (activeTab === 'fleet') {
+    tabBody = renderVehicleFleetTab(trafficItem, spec);
+  } else {
+    tabBody = renderVehicleTelemetryTab(trafficItem, spec, upState, speedKmh, statusText);
+  }
+
   return `
-    <div class="mobileTrayTitle" data-vehicle-sheet-title>
-      <span>365 Street Fleet Inspector</span>
-      <span>${escapeHtml(spec.market || '365 Custom')}</span>
-    </div>
-    <div class="mobileBuildingHero vehicleInspectorHero">
-      <div class="vehiclePaintSwatch" style="--swatch-main:${paintHex};--swatch-trim:${trimHex}">
-        <span>365</span>
+    <div class="vehicleWindow" data-vehicle-window data-vehicle-key="${escapeHtml(key)}">
+      <div class="vehicleWindowHeader" data-vehicle-sheet-title>
+        <button type="button" class="inspectorCycleBtn" onclick="window.cycleMobileVehicleSafe?.(-1)" title="Previous Vehicle">◀</button>
+        <div class="vehiclePaintSwatch" style="--swatch-main:${paintHex};--swatch-trim:${trimHex}">
+          <span>${escapeHtml(badgeCode)}</span>
+          <small>STG ${upState.tuneStage}</small>
+        </div>
+        <div class="vehicleHeaderMain">
+          <div class="vehicleKickerRow">
+            <span class="vehicleMarketPill">${escapeHtml(spec.market || '365 Custom')}</span>
+            <span class="vehicleStatePill ${isRoadside ? 'warn' : speedKmh > 10 ? 'ok' : 'wait'}">
+              ${isRoadside ? '🚨 TOW OPS' : speedKmh > 10 ? `🟢 ${speedKmh} KM/H` : '🔴 SIGNAL STOP'}
+            </span>
+          </div>
+          <b class="vehicleTitleName">${escapeHtml(spec.name || spec.label || key)}</b>
+          <span class="vehicleSubStatus">${escapeHtml(statusText)}</span>
+        </div>
+        <div class="vehicleHeaderRight">
+          <div class="vehicleHpOrb">
+            <span>POWER</span>
+            <strong>${totalHp}</strong>
+            <small>HP</small>
+          </div>
+          <button type="button" class="inspectorCycleBtn" onclick="window.cycleMobileVehicleSafe?.(1)" title="Next Vehicle">▶</button>
+          <button type="button" class="buildingCloseX" onclick="window.closeMobileVehicleSheetSafe?.()" title="Close">✕</button>
+        </div>
       </div>
-      <div>
-        <b>${escapeHtml(spec.name || spec.label || key)}</b>
-        <small>${escapeHtml(statusText)}</small>
+
+      ${lastVehicleActionNote ? `
+        <div class="buildingFeedbackBanner">
+          <span>✨ ${escapeHtml(lastVehicleActionNote)}</span>
+        </div>
+      ` : ''}
+
+      <div class="residentTabBar vehicleTabBar" role="tablist">
+        <button type="button" class="residentTab ${activeTab === 'telemetry' ? 'active' : ''}" onclick="window.openVehicleTabSafe?.('telemetry')">
+          <b>🏎️</b>
+          <span>Telemetry</span>
+          <small>${speedKmh} km/h</small>
+        </button>
+        <button type="button" class="residentTab ${activeTab === 'dyno' ? 'active' : ''}" onclick="window.openVehicleTabSafe?.('dyno')">
+          <b>🔧</b>
+          <span>Dyno &amp; Tune</span>
+          <small>${totalHp} HP</small>
+        </button>
+        <button type="button" class="residentTab ${activeTab === 'fleet' ? 'active' : ''}" onclick="window.openVehicleTabSafe?.('fleet')">
+          <b>🌐</b>
+          <span>Fleet &amp; Race</span>
+          <small>${traffic.length} Cars</small>
+        </button>
       </div>
-      <div class="mobileBuildingLevel"><span>HP</span><strong>${escapeHtml(spec.hp || '400')}</strong></div>
-    </div>
-    <div class="mobileBuildingStatsGrid">
-      <div><strong>${escapeHtml(spec.engine || 'Twin-Turbo')}</strong><span>Powerplant</span></div>
-      <div><strong>${escapeHtml(spec.drivetrain || 'AWD')}</strong><span>Drivetrain</span></div>
-      <div><strong>${speedKmh} km/h</strong><span>Live Speed</span></div>
-    </div>
-    <div class="mobileBuildingBonus">
-      <img src="${WORLD_ASSETS.ui.bonusBadge}" alt="" loading="eager">
-      <span><b>365 Garage Spec</b>Custom clearcoat finish, active brake/turn telemetry & street-tuned suspension.</span>
-    </div>
-    <div class="mobilePlacedActions mobileBuildingActions">
-      <button class="btn primary" onclick="window.zoomMobileCityInSafe?.()">Zoom Street View</button>
-      <button class="btn ghost" onclick="window.closeMobileVehicleSheetSafe?.()">Close</button>
+
+      <div class="residentTabPanel vehicleTabPanel" data-vehicle-tab-panel>
+        ${tabBody}
+      </div>
+
+      <div class="mobilePlacedActions residentFooterActions">
+        <button type="button" class="btn gold" onclick="window.tuneSelectedVehicleSafe?.()">⚡ Tune +25 HP (35c)</button>
+        <button type="button" class="btn primary" onclick="window.zoomMobileCityInSafe?.()">🔍 Street Zoom</button>
+        <button type="button" class="btn ghost" onclick="window.closeMobileVehicleSheetSafe?.()">Close</button>
+      </div>
     </div>
   `;
 }
 
-function openVehicleInspector(trafficItem) {
+function openVehicleInspector(trafficItem, refresh = false) {
   if (mode !== 'normal' || !trafficItem) return;
   const residentSheet = document.querySelector('[data-resident-sheet]');
   if (residentSheet) residentSheet.hidden = true;
   const placedSheet = document.querySelector('[data-placed-sheet]');
   if (placedSheet) placedSheet.hidden = true;
+  if (!refresh && selectedVehicleItem !== trafficItem) {
+    lastVehicleActionNote = '';
+    selectedVehicleTab = 'telemetry';
+  }
   traffic.forEach((t) => { t.isSelected = t === trafficItem; });
+  walkers.forEach((w) => { w.isSelected = false; });
   selectedVehicleItem = trafficItem;
   selectedBuildingTarget = null;
   selectedPlacedId = null;
@@ -4523,10 +4766,86 @@ function openVehicleInspector(trafficItem) {
     sheet.innerHTML = renderVehicleSheet(trafficItem);
     sheet.hidden = false;
   }
-  const pt = pathPoint(trafficItem.path, trafficItem.d);
-  if (pt) focusWorldPoint(pt.x, pt.y);
+  if (!refresh) {
+    if (typeof trafficItem.roadsideX === 'number' && typeof trafficItem.roadsideY === 'number') {
+      focusWorldPoint(trafficItem.roadsideX, trafficItem.roadsideY);
+    } else if (trafficItem.path) {
+      const pt = pathPoint(trafficItem.path, trafficItem.d);
+      if (pt) focusWorldPoint(pt.x, pt.y);
+    }
+  }
   publishWorldOpenState();
 }
+
+window.openVehicleTabSafe = (tabKey = 'telemetry') => {
+  selectedVehicleTab = ['telemetry', 'dyno', 'fleet'].includes(tabKey) ? tabKey : 'telemetry';
+  if (selectedVehicleItem) openVehicleInspector(selectedVehicleItem, true);
+  return selectedVehicleTab;
+};
+
+window.cycleMobileVehicleSafe = (delta = 1) => {
+  if (!traffic.length) return false;
+  const curIdx = Math.max(0, traffic.indexOf(selectedVehicleItem));
+  const nextIdx = ((curIdx + (Number(delta) || 1)) % traffic.length + traffic.length) % traffic.length;
+  openVehicleInspector(traffic[nextIdx]);
+  return true;
+};
+
+window.tuneSelectedVehicleSafe = () => {
+  if (!selectedVehicleItem) return false;
+  const key = selectedVehicleItem.assetKey || 'skylineR34';
+  const spec = VEHICLE_SPECS[key] || VEHICLE_SPECS.skylineR34;
+  const up = vehicleUpgradeState(key);
+  up.tuneStage += 1;
+  up.hpBonus += 25;
+  if (typeof selectedVehicleItem.speed === 'number' && selectedVehicleItem.speed > 0) {
+    selectedVehicleItem.speed = Math.min(135, Math.round(selectedVehicleItem.speed * 1.08));
+    selectedVehicleItem.currentSpeed = selectedVehicleItem.speed;
+  }
+  reputationCache = Math.min(100, cityReputation() + 2);
+  lastVehicleActionNote = `Tuned ${spec.name || key} to Stage ${up.tuneStage} (+25 HP & +2 City Rep)!`;
+  dispatchWorldBuildingSync({ costCoins: 35, note: lastVehicleActionNote });
+  openVehicleInspector(selectedVehicleItem, true);
+  updateHud();
+  return true;
+};
+
+window.polishSelectedVehicleSafe = () => {
+  if (!selectedVehicleItem) return false;
+  const key = selectedVehicleItem.assetKey || 'skylineR34';
+  const spec = VEHICLE_SPECS[key] || VEHICLE_SPECS.skylineR34;
+  const up = vehicleUpgradeState(key);
+  up.polished = true;
+  reputationCache = Math.min(100, cityReputation() + 3);
+  lastVehicleActionNote = `Detailed ${spec.name || key}! Earned +30 Showcase Coins & +3 City Rep.`;
+  dispatchWorldBuildingSync({ rewardCurrencies: { coins: 10 }, note: lastVehicleActionNote });
+  openVehicleInspector(selectedVehicleItem, true);
+  updateHud();
+  return true;
+};
+
+window.clearRoadsideVehicleSafe = () => {
+  if (!selectedVehicleItem) return false;
+  const supportRecords = problemBuildings(['towDispatch', 'privateShop'], false);
+  if (supportRecords[0]) {
+    updateBuildingRecord(supportRecords[0].target, (item) => {
+      item.stock = 100;
+      item.health = 100;
+    });
+  }
+  selectedVehicleItem.isRoadsideIncident = false;
+  selectedVehicleItem.speed = 86;
+  selectedVehicleItem.currentSpeed = 86;
+  selectedVehicleItem.isBraking = false;
+  lastVehicleActionNote = 'Dispatched 365 Heavy Wrecker! Roadside cleared (+40 Coins).';
+  dispatchWorldBuildingSync({ rewardCurrencies: { coins: 40 }, note: lastVehicleActionNote });
+  rebuildFixedBuildings();
+  rebuildPlacements();
+  rebuildIncidents();
+  openVehicleInspector(selectedVehicleItem, true);
+  updateHud();
+  return true;
+};
 
 function targetMatches(a, b) {
   return Boolean(a && b && a.kind === b.kind && a.id === b.id);
@@ -4582,149 +4901,35 @@ function openFixedBuildingSheet(building) {
   openBuildingSheet(buildingTargetForFixed(building));
 }
 
-function renderResidentBuildingRows(type, title) {
-  const records = problemBuildings(type, false);
-  const poor = records.filter((record) => record.condition.poor);
-  const visible = (poor.length ? poor : records).slice(0, 6);
-  if (!visible.length) {
-    return `
-      <div class="residentActionMenu">
-        <b>${escapeHtml(title)}</b>
-        <p>No matching building exists yet. Build one to satisfy this resident.</p>
-        <button class="btn gold" onclick="window.openMobileBuildTraySafe?.()">Build</button>
-      </div>
-    `;
-  }
-  return `
-    <div class="residentActionMenu">
-      <div class="residentActionHeader">
-        <b>${escapeHtml(title)}</b>
-        <span>${poor.length ? `${poor.length} need work` : 'All stable'}</span>
-      </div>
-      <div class="residentBuildingRows">
-        ${visible.map((record) => {
-          const token = targetToken(record.target);
-          const condition = record.condition;
-          return `
-            <div class="residentBuildingRow ${condition.poor ? 'poor' : 'stable'}">
-              <div>
-                <b>${escapeHtml(record.label)}</b>
-                <span>${escapeHtml(record.def.name)} - ${escapeHtml(condition.reasons.join(' / '))}</span>
-                <small>Health ${condition.health}% / Stock ${condition.stock}% / Score ${condition.score}%</small>
-              </div>
-              <div class="residentRowActions">
-                <button class="btn small" onclick="window.inspectResidentBuildingSafe?.('${token}')">Inspect</button>
-                <button class="btn small primary" onclick="window.repairResidentBuildingSafe?.('${token}')" ${condition.health >= 100 ? 'disabled' : ''}>Repair</button>
-                <button class="btn small gold" onclick="window.restockResidentBuildingSafe?.('${token}')" ${condition.stock >= 100 ? 'disabled' : ''}>Restock</button>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `;
-}
-
-function renderResidentIncidentMenu(resident, mood) {
-  const activeKeys = new Set(['mapBuild', ...(resident.factors || [])]);
-  const rows = Object.values(mood.conditions)
-    .filter((condition) => activeKeys.has(condition.key) || condition.count > 0)
-    .sort((a, b) => (b.count - a.count) || (a.score - b.score));
-  return `
-    <div class="residentActionMenu">
-      <div class="residentActionHeader">
-        <b>City problems affecting ${escapeHtml(resident.name)}</b>
-        <span>${rows.filter((row) => row.score < 70).length} strained</span>
-      </div>
-      <div class="residentIssueRows">
-        ${rows.map((condition) => {
-          const problem = CITY_PROBLEM_DEFS[condition.key] || CITY_PROBLEM_DEFS.mapBuild;
-          return `
-            <div class="residentIssueRow ${condition.score < 55 ? 'danger' : condition.score < 75 ? 'warn' : 'ok'}">
-              <div>
-                <b>${escapeHtml(problem.label)} ${condition.score}%</b>
-                <span>${condition.key === 'mapBuild' ? `${condition.count} city buildings active` : `${condition.count} active issue${condition.count === 1 ? '' : 's'}`}</span>
-                <small>${escapeHtml(problem.help)}</small>
-              </div>
-              <button class="btn small" onclick="window.openResidentProblemBuildingsSafe?.('${condition.key}')">${escapeHtml(defByKey(problem.type).shortName)}</button>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `;
-}
-
-function renderResidentCityNeeds(resident) {
-  const currentId = resident.lineKey || resident.key;
-  const roster = allCityPeople();
-  const hiredCount = roster.filter((item) => personProfile(item)?.hired).length;
-  return `
-    <div class="residentActionMenu">
-      <div class="residentActionHeader">
-        <b>City People &amp; Crew Roster (${roster.length})</b>
-        <span>${hiredCount}/${roster.length} Hired · ${cityNeedStats().metCount}/${RESIDENT_WANTS.length} Needs Met</span>
-      </div>
-      <div class="residentIssueRows">
-        ${roster.map((item) => {
-          const itemId = item.lineKey || item.key;
-          const mood = residentMood(item);
-          const prof = mood.profile;
-          const isCurrent = itemId === currentId;
-          return `
-            <div class="residentIssueRow residentRosterRow ${isCurrent ? 'ok' : mood.score < 55 ? 'warn' : 'ok'}">
-              <button type="button" class="residentSwitchBtn" onclick="window.inspectResidentByKeySafe?.('${escapeHtml(itemId)}')">
-                <b>${escapeHtml(item.name)} · ${escapeHtml(item.jobTitle || 'Specialist')}</b>
-                <span>${escapeHtml(mood.face)} ${escapeHtml(mood.label)} ${mood.score}% · ${escapeHtml(item.business || defByKey(item.building).shortName)}</span>
-              </button>
-              <div class="residentRowActions">
-                <span class="personStatusBadge small ${prof.hired ? 'hired' : 'unemployed'}">${prof.hired ? `HIRED LV${prof.level}` : 'UNEMPLOYED'}</span>
-                ${!prof.hired
-                  ? `<button type="button" class="btn small primary" onclick="window.hireWorldPersonSafe?.('${escapeHtml(itemId)}')">Hire</button>`
-                  : `<button type="button" class="btn small" onclick="window.inspectResidentByKeySafe?.('${escapeHtml(itemId)}')">View</button>`}
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `;
-}
-
-function residentMenuTarget(menu = 'mood') {
-  const key = String(menu || 'mood');
-  if (key === 'overview') return 'mood';
-  if (key === 'service' || key === 'stock') return 'needs';
-  if (key === 'incidents') return 'city';
-  if (key === 'people') return 'people';
-  if (key.startsWith('problem:')) return key;
-  if (key === 'city') return 'city';
-  if (key === 'needs') return 'needs';
-  return 'mood';
+function residentMenuTarget(menu = 'job') {
+  const key = String(menu || 'job');
+  if (key === 'job' || key === 'skills') return 'job';
+  if (key === 'mood' || key === 'overview' || key === 'needs' || key === 'service' || key === 'stock' || key === 'city' || key === 'incidents' || key.startsWith('problem:')) return 'mood';
+  if (key === 'modes' || key === 'people' || key === 'roster') return 'modes';
+  if (key === 'talk' || key === 'trade') return 'talk';
+  return 'job';
 }
 
 function residentActiveTab(menu = selectedResidentMenu) {
-  const target = residentMenuTarget(menu);
-  if (target.startsWith('problem:')) return 'city';
-  return target;
+  return residentMenuTarget(menu);
 }
 
 function renderResidentTabs(resident, mood) {
   const active = residentActiveTab();
-  const buildingKey = resident.building || 'garage365';
-  const issueCount = (resident.factors || []).reduce((total, key) => total + Math.max(0, mood.conditions[key]?.count || 0), 0);
-  const roster = allCityPeople();
-  const hiredCount = roster.filter((item) => personProfile(item)?.hired).length;
+  const id = resident.lineKey || resident.key;
+  const prof = mood.profile;
+  const relScore = relationshipScore(id);
+  const relRank = relationshipRank(relScore);
   const tabs = [
-    { key: 'mood', label: 'Stats & Modes', value: `+${mood.profile.totalModeBonusPct}%`, icon: mood.face },
-    { key: 'needs', label: 'Fix Shops', value: `${problemBuildings(buildingKey, true).length}`, icon: '🔧' },
-    { key: 'city', label: 'Streets', value: `${issueCount}`, icon: '🚦' },
-    { key: 'people', label: 'Roster', value: `${hiredCount}/${roster.length}`, icon: '👥' }
+    { key: 'job', label: 'Job & Skills', value: prof.hired ? `LV ${prof.level}` : 'HIRE NOW', icon: '🪪' },
+    { key: 'mood', label: 'Happiness', value: `${mood.score}%`, icon: mood.face },
+    { key: 'modes', label: 'Mode Perks', value: `+${prof.totalModeBonusPct}%`, icon: '⚡' },
+    { key: 'talk', label: 'Talk & Trade', value: `${relRank} ${relScore}`, icon: '💬' }
   ];
   return `
     <div class="residentTabBar" role="tablist" aria-label="Resident information tabs">
       ${tabs.map((tab) => `
-        <button class="residentTab ${active === tab.key ? 'active' : ''}" role="tab" aria-selected="${active === tab.key}" onclick="window.openResidentNeedMenuSafe?.('${tab.key}')">
+        <button type="button" class="residentTab ${active === tab.key ? 'active' : ''}" role="tab" aria-selected="${active === tab.key}" onclick="window.openResidentNeedMenuSafe?.('${tab.key}')">
           <b>${escapeHtml(tab.icon)}</b>
           <span>${escapeHtml(tab.label)}</span>
           <small>${escapeHtml(tab.value)}</small>
@@ -4734,14 +4939,42 @@ function renderResidentTabs(resident, mood) {
   `;
 }
 
-function renderResidentMoodOverview(resident, mood) {
+function renderResidentJobTab(resident, mood) {
+  const id = resident.lineKey || resident.key;
   const prof = mood.profile;
   const buildingKey = resident.building || 'garage365';
   const def = defByKey(buildingKey);
-  const primaryFactors = mood.factors.slice(0, 4);
+  const records = problemBuildings(buildingKey, false);
+  const primaryRecord = records[0] || allBuildingRecords()[0];
+  const bToken = primaryRecord ? targetToken(primaryRecord.target) : '';
+  const bCond = primaryRecord?.condition || { health: 90, stock: 85, score: 88 };
+
   return `
-    <div class="residentOverviewPanel">
-      <!-- Character Skills Strip -->
+    <div class="residentTabPane" data-resident-tab-pane="job">
+      <!-- Whiteout Survival / Kingshot Survivor Job Assignment Card -->
+      <div class="personJobActionCard ${prof.hired ? 'is-hired' : 'is-unemployed'}" data-person-job-card>
+        <div class="personJobDetails">
+          <div class="personJobTitleRow">
+            <b>${prof.hired ? `✓ Employed: ${escapeHtml(resident.jobTitle)}` : `● Unemployed — Hire as ${escapeHtml(resident.jobTitle)}`}</b>
+            <span class="personRankPill">${escapeHtml(prof.rank)} · ⚡ ${prof.energy}/${prof.energyMax}</span>
+          </div>
+          <small>
+            ${prof.hired
+              ? `Assigned to ${escapeHtml(resident.business || def.shortName)} & ${escapeHtml(def.name)} · Salary ${prof.salaryCoins}c · +${prof.totalModeBonusPct}% All Mode Buffs.`
+              : `Unemployed (+0% automation). Hire now to automate ${escapeHtml(resident.business || def.shortName)} & unlock +${prof.potentialBonusPct}% game-mode buffs!`}
+          </small>
+        </div>
+        <div class="personJobButtons">
+          ${!prof.hired
+            ? `<button type="button" class="btn primary personHireBtn" data-hire-person="${escapeHtml(id)}" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">✅ Hire Now · ${prof.hireCost} Coins</button>`
+            : `<button type="button" class="btn gold personTrainBtn" data-train-person="${escapeHtml(id)}" onclick="window.trainWorldPersonSafe?.('${escapeHtml(id)}')">⬆️ Train Lv ${prof.level + 1} (${prof.trainCost}c)</button>
+               <button type="button" class="btn small primary" data-boost-person="${escapeHtml(id)}" onclick="window.boostWorldPersonSafe?.('${escapeHtml(id)}')">⚡ Morale +12%</button>`
+          }
+          <button type="button" class="btn small ghost" onclick="window.openStaffFromWorldSafe?.('${escapeHtml(resident.crewId || id)}')">📋 Crew File</button>
+        </div>
+      </div>
+
+      <!-- 3 Core Specialist Skill Bars -->
       <div class="personSkillsBar">
         ${prof.skills.map((sk) => `
           <div class="personSkillItem">
@@ -4754,85 +4987,38 @@ function renderResidentMoodOverview(resident, mood) {
         `).join('')}
       </div>
 
-      <!-- 4 Connected Game Mode Buff Cards (World, Supplies, Road Runner Race, Merge & Garage) -->
-      <div class="personGameModesGrid">
-        <button type="button" class="personModeCard" onclick="window.openResidentNeedMenuSafe?.('needs')">
-          <span class="modeKicker">🏙️ World City · ${escapeHtml(def.shortName)}</span>
-          <strong>+${prof.worldYieldBonus}% Yield</strong>
-          <small>Stock ${Math.round(mood.service.avgStock || 0)}% · Health ${Math.round(mood.service.avgHealth || 0)}%</small>
-        </button>
-        <button type="button" class="personModeCard" onclick="window.openSupplyFromWorld?.()">
-          <span class="modeKicker">📦 Supplies · ${escapeHtml(resident.business || 'Line')}</span>
-          <strong>+${prof.supplyYieldBonus}% Output</strong>
-          <small>${prof.hired ? `Auto-Collect ON (Lv ${prof.lineLevel})` : 'Hire to Auto-Collect'}</small>
-        </button>
-        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('race')">
-          <span class="modeKicker">🏎️ Road Runner Race</span>
-          <strong>+${prof.raceBonusPct}% ${escapeHtml(prof.primarySkillLabel)}</strong>
-          <small>${escapeHtml(resident.raceEffectLabel || 'Speed, Grip & Fuel Bonus')}</small>
-        </button>
-        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('merge')">
-          <span class="modeKicker">🔧 Merge &amp; Garage</span>
-          <strong>+${prof.mergeBonusPct}% Craft Speed</strong>
-          <small>${escapeHtml(resident.mergeEffectLabel || 'Workshop Parts & Tools')}</small>
-        </button>
-      </div>
-
-      <!-- Connected Happiness Drivers -->
-      <div class="residentFactorList">
-        ${primaryFactors.map((factor) => `
-          <div class="residentFactorRow ${factor.score < 55 ? 'danger' : factor.score < 75 ? 'warn' : 'ok'}">
-            <span>${escapeHtml(factor.label)}</span>
-            <b>${Math.round(factor.score || 0)}%</b>
-          </div>
-        `).join('')}
+      <!-- Assigned Workplace Quick Bar -->
+      <div class="personWorkplaceStrip">
+        <div class="pwInfo">
+          <b>🏢 Workplace: ${escapeHtml(primaryRecord?.label || def.name)}</b>
+          <span>Stock ${bCond.stock}% · Health ${bCond.health}% · Service ${bCond.score}%</span>
+        </div>
+        <div class="pwActions">
+          ${bToken ? `
+            <button type="button" class="btn small" onclick="window.inspectResidentBuildingSafe?.('${bToken}')">Inspect</button>
+            <button type="button" class="btn small gold" onclick="window.restockResidentBuildingSafe?.('${bToken}')" ${bCond.stock >= 100 ? 'disabled' : ''}>Restock</button>
+            <button type="button" class="btn small primary" onclick="window.repairResidentBuildingSafe?.('${bToken}')" ${bCond.health >= 100 ? 'disabled' : ''}>Repair</button>
+          ` : `
+            <button type="button" class="btn small gold" onclick="window.openMobileBuildTraySafe?.()">Build ${escapeHtml(def.shortName)}</button>
+          `}
+        </div>
       </div>
     </div>
   `;
 }
 
-function renderResidentActionMenu(resident, mood) {
-  const active = residentMenuTarget(selectedResidentMenu);
-  const buildingKey = resident.building || 'garage365';
-  if (active === 'needs') return renderResidentBuildingRows(buildingKey, `${resident.menuLabel || defByKey(buildingKey).name} needing attention`);
-  if (active === 'city') return renderResidentIncidentMenu(resident, mood);
-  if (active === 'people') return renderResidentCityNeeds(resident);
-  if (active.startsWith('problem:')) {
-    const problemKey = active.slice('problem:'.length);
-    const problem = CITY_PROBLEM_DEFS[problemKey] || CITY_PROBLEM_DEFS.mapBuild;
-    return renderResidentBuildingRows(problem.types?.length ? problem.types : problem.type, `${problem.label} support buildings`);
-  }
-  return renderResidentMoodOverview(resident, mood);
-}
-
-function renderResidentSheet(resident) {
+function renderResidentHappinessTab(resident, mood) {
   const id = resident.lineKey || resident.key;
-  const isSupply = Boolean(resident.lineKey);
+  const prof = mood.profile;
   const buildingKey = resident.building || 'garage365';
   const def = defByKey(buildingKey);
-  const mood = residentMood(resident);
-  const prof = mood.profile;
-  const portraitSrc = personAssetForKey(resident.key);
-  return `
-    <div class="residentWindow" data-resident-window data-person-id="${escapeHtml(id)}">
-      <div class="residentWindowHeader" data-resident-sheet-title>
-        <div class="personHeaderLeft">
-          <img class="personHeaderAvatar" src="${escapeHtml(portraitSrc)}" alt="${escapeHtml(resident.name)}" />
-          <div class="personHeaderMeta">
-            <span class="residentKicker">${isSupply ? 'Supply Line Manager' : 'City Crew Specialist'} · ${escapeHtml(resident.crewName || resident.name)}</span>
-            <b>${escapeHtml(resident.name)} <small class="personRoleTag">· ${escapeHtml(resident.jobTitle || 'Specialist')}</small></b>
-            <span class="personWorkplaceLine">🏢 ${escapeHtml(resident.desk || resident.business || def.name)} · Linked: ${escapeHtml(def.shortName)}</span>
-          </div>
-        </div>
-        <div class="personHeaderBadges">
-          <span class="personStatusBadge ${prof.hired ? 'hired' : 'unemployed'}" data-person-employment-status>
-            ${prof.hired ? `✓ HIRED · LV ${prof.level}` : '● UNEMPLOYED'}
-          </span>
-          <strong>${escapeHtml(mood.face)} ${escapeHtml(mood.label)} ${mood.score}%</strong>
-        </div>
-      </div>
+  const records = problemBuildings(buildingKey, false);
+  const topShop = records.find((r) => r.condition.poor) || records[0];
+  const shopToken = topShop ? targetToken(topShop.target) : '';
 
-      <!-- Connected Happiness Scale Card (52px Face + 1fr Meter & 5 Connected Pillars) -->
+  return `
+    <div class="residentTabPane" data-resident-tab-pane="mood">
+      <!-- RollerCoaster Tycoon / Whiteout Survival Connected Happiness Scale Card -->
       <div class="residentMoodCard residentHero mood-${mood.key}" data-resident-mood-card>
         <div class="residentMoodFace" data-resident-mood-face aria-label="${escapeHtml(mood.label)}">${escapeHtml(mood.face)}</div>
         <div class="residentMoodInfo">
@@ -4854,55 +5040,203 @@ function renderResidentSheet(resident) {
         </div>
       </div>
 
-      <!-- Job & Employment Action Strip (Hire Now when Unemployed, Train/Boost when Hired) -->
-      <div class="personJobActionCard ${prof.hired ? 'is-hired' : 'is-unemployed'}" data-person-job-card>
-        <div class="personJobDetails">
-          <div class="personJobTitleRow">
-            <b>${prof.hired ? `Employed: ${escapeHtml(resident.jobTitle)}` : `Unemployed — Hire as ${escapeHtml(resident.jobTitle)}`}</b>
-            <span class="personRankPill">${escapeHtml(prof.rank)} · ⚡ ${prof.energy}/${prof.energyMax}</span>
+      <!-- 2 Compact Actionable Need Cards (Zero Scroll) -->
+      <div class="personMoodFixGrid">
+        <div class="personMoodFixCard">
+          <div>
+            <b>🏪 ${escapeHtml(topShop?.label || def.name)}</b>
+            <small>${topShop ? `Stock ${topShop.condition.stock}% · Health ${topShop.condition.health}%` : 'Build shop to satisfy need'}</small>
           </div>
-          <small>
-            ${prof.hired
-              ? `Active on ${escapeHtml(resident.business || def.shortName)} & ${escapeHtml(def.name)} · Salary ${prof.salaryCoins}c · Boosting Race, Supplies, Merge & World.`
-              : `Currently unemployed (+0% auto-collect). Hire now to unlock ${escapeHtml(resident.business || def.shortName)} automation & +${prof.potentialBonusPct}% game-mode buffs!`}
-          </small>
+          <div class="pmFixBtns">
+            ${shopToken ? `
+              <button type="button" class="btn small gold" onclick="window.restockResidentBuildingSafe?.('${shopToken}')">📦 Restock</button>
+              <button type="button" class="btn small primary" onclick="window.repairResidentBuildingSafe?.('${shopToken}')">🔧 Repair</button>
+            ` : `
+              <button type="button" class="btn small gold" onclick="window.openMobileBuildTraySafe?.()">🏗️ Build</button>
+            `}
+          </div>
         </div>
-        <div class="personJobButtons">
-          ${!prof.hired
-            ? `<button type="button" class="btn primary personHireBtn" data-hire-person="${escapeHtml(id)}" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">Hire Now · ${prof.hireCost} Coins</button>`
-            : `<button type="button" class="btn gold personTrainBtn" data-train-person="${escapeHtml(id)}" onclick="window.trainWorldPersonSafe?.('${escapeHtml(id)}')">Train +Stat% · ${prof.trainCost}c</button>
-               <button type="button" class="btn small primary" data-boost-person="${escapeHtml(id)}" onclick="window.boostWorldPersonSafe?.('${escapeHtml(id)}')">Morale +12%</button>`
-          }
-          <button type="button" class="btn small ghost" onclick="window.openStaffFromWorldSafe?.('${escapeHtml(resident.crewId || id)}')">Crew File</button>
+        <div class="personMoodFixCard">
+          <div>
+            <b>⚡ Personal Morale &amp; Energy</b>
+            <small>Energy ${prof.energy}/100 · ${prof.hired ? 'Employed Bonus Active' : 'Unemployed (-28 Happy)'}</small>
+          </div>
+          <div class="pmFixBtns">
+            ${!prof.hired ? `
+              <button type="button" class="btn small primary" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">Hire (${prof.hireCost}c)</button>
+            ` : `
+              <button type="button" class="btn small primary" onclick="window.boostWorldPersonSafe?.('${escapeHtml(id)}')">Morale +12%</button>
+            `}
+          </div>
         </div>
-      </div>
-
-      <!-- Interactive Tabs: Stats & Modes | Fix Shops | Streets | Roster -->
-      ${renderResidentTabs(resident, mood)}
-      <div class="residentTabPanel" data-resident-tab-panel>
-        ${renderResidentActionMenu(resident, mood)}
-      </div>
-
-      <!-- Full-Width Interactive Talk & Street Trade Panel (NEVER inside .residentMoodCard!) -->
-      ${renderNpcTalk(resident)}
-
-      <div class="mobilePlacedActions residentFooterActions">
-        ${isSupply
-          ? `<button class="btn gold" onclick="window.openSupplyFromWorld?.()">Open Supplies</button>`
-          : `<button class="btn gold" onclick="window.openMobileBuildTraySafe?.()">Build Shop</button>`}
-        <button class="btn primary" onclick="window.openPersonGameScreenSafe?.('${isSupply ? 'race' : 'lines'}')">Open ${isSupply ? 'Race' : 'Supplies'}</button>
-        <button class="btn ghost" onclick="window.closeMobileResidentSheetSafe?.()">Close</button>
       </div>
     </div>
   `;
 }
 
-function openResidentSheet(resident) {
+function renderResidentModesTab(resident, mood) {
+  const currentId = resident.lineKey || resident.key;
+  const prof = mood.profile;
+  const buildingKey = resident.building || 'garage365';
+  const def = defByKey(buildingKey);
+  const roster = allCityPeople();
+  const records = problemBuildings(buildingKey, false);
+  const firstToken = records[0] ? targetToken(records[0].target) : '';
+
+  return `
+    <div class="residentTabPane" data-resident-tab-pane="modes">
+      <!-- 2x2 Connected Game Mode Synergy Grid -->
+      <div class="personGameModesGrid">
+        <button type="button" class="personModeCard" onclick="${firstToken ? `window.inspectResidentBuildingSafe?.('${firstToken}')` : `window.openMobileBuildTraySafe?.()`}">
+          <span class="modeKicker">🏙️ World City · ${escapeHtml(def.shortName)}</span>
+          <strong>+${prof.worldYieldBonus}% Shop Yield</strong>
+          <small>Stock ${Math.round(mood.service.avgStock || 0)}% · Health ${Math.round(mood.service.avgHealth || 0)}%</small>
+        </button>
+        <button type="button" class="personModeCard" onclick="window.openSupplyFromWorld?.()">
+          <span class="modeKicker">📦 Supplies · ${escapeHtml(resident.business || 'Line')}</span>
+          <strong>+${prof.supplyYieldBonus}% Line Output</strong>
+          <small>${prof.hired ? `Auto-Collect ON (Lv ${prof.lineLevel})` : 'Hire to Auto-Collect'}</small>
+        </button>
+        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('race')">
+          <span class="modeKicker">🏎️ Road Runner Race</span>
+          <strong>+${prof.raceBonusPct}% ${escapeHtml(prof.primarySkillLabel)}</strong>
+          <small>${escapeHtml(resident.raceEffectLabel || 'Speed, Grip & Fuel Bonus')}</small>
+        </button>
+        <button type="button" class="personModeCard" onclick="window.openPersonGameScreenSafe?.('merge')">
+          <span class="modeKicker">🔧 Merge &amp; Garage</span>
+          <strong>+${prof.mergeBonusPct}% Craft Speed</strong>
+          <small>${escapeHtml(resident.mergeEffectLabel || 'Workshop Parts & Tools')}</small>
+        </button>
+      </div>
+
+      <!-- Compact 12-Person Quick Switcher Pill Grid (Zero Scroll) -->
+      <div class="personQuickRosterBlock">
+        <div class="pqHead">
+          <span>👥 Quick Crew Switcher (${roster.filter((p) => personProfile(p)?.hired).length}/${roster.length} Hired)</span>
+          <small>Tap any specialist to inspect</small>
+        </div>
+        <div class="personQuickRosterPills">
+          ${roster.slice(0, 8).map((item) => {
+            const itemId = item.lineKey || item.key;
+            const pProf = personProfile(item);
+            return `
+              <button type="button" class="pqPill ${itemId === currentId ? 'active' : ''} ${pProf.hired ? 'hired' : 'unemployed'}" onclick="window.inspectResidentByKeySafe?.('${escapeHtml(itemId)}')">
+                <span class="pqDot"></span>
+                <b>${escapeHtml(item.name)}</b>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderResidentTalkTab(resident) {
+  const id = resident.lineKey || resident.key;
+  const node = currentNpcNode(resident);
+  const score = relationshipScore(id);
+  const rank = relationshipRank(score);
+  const replies = (node.choices || []).slice(0, 4).map((choice) => (
+    `<button type="button" class="btn small" onclick="window.replyToNpc?.('${id}','${choice.id}')">${escapeHtml(choice.label)}</button>`
+  )).join('');
+  const market = renderNpcMarket(resident);
+
+  return `
+    <div class="residentTabPane" data-resident-tab-pane="talk">
+      <div class="npcTalk compactTalkTab">
+        <div class="npcBond">
+          <b>🤝 Trust Rank: ${escapeHtml(rank)}</b>
+          <span><i style="width:${score}%"></i></span>
+          <small>${score}/100</small>
+        </div>
+        <p class="npcSpeechBubble">"${escapeHtml(spokenText(node, score))}"</p>
+        <div class="npcReplies">${replies}</div>
+        <div class="npcTradeSection">
+          <span class="npcTradeKicker">🛒 Street Barter &amp; Resource Favor</span>
+          ${market}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderResidentActionMenu(resident, mood) {
+  const active = residentActiveTab(selectedResidentMenu);
+  if (active === 'mood') return renderResidentHappinessTab(resident, mood);
+  if (active === 'modes') return renderResidentModesTab(resident, mood);
+  if (active === 'talk') return renderResidentTalkTab(resident, mood);
+  return renderResidentJobTab(resident, mood);
+}
+
+function renderResidentSheet(resident) {
+  const id = resident.lineKey || resident.key;
+  const isSupply = Boolean(resident.lineKey);
+  const buildingKey = resident.building || 'garage365';
+  const def = defByKey(buildingKey);
+  const mood = residentMood(resident);
+  const prof = mood.profile;
+  const portraitSrc = personAssetForKey(resident.key);
+  const rarityTag = prof.level >= 4 ? 'SSR' : isSupply ? 'SR' : 'R';
+
+  return `
+    <div class="residentWindow" data-resident-window data-person-id="${escapeHtml(id)}">
+      <div class="residentWindowHeader" data-resident-sheet-title>
+        <button type="button" class="inspectorCycleBtn" onclick="window.cycleWorldPersonSafe?.(-1)" title="Previous Person">◀</button>
+        <div class="personHeroFrame rarity-${rarityTag.toLowerCase()}">
+          <img class="personHeaderAvatar" src="${escapeHtml(portraitSrc)}" alt="${escapeHtml(resident.name)}" />
+          <span class="personRarityTag">${rarityTag}</span>
+        </div>
+        <div class="personHeaderMeta">
+          <div class="personHeaderKickerRow">
+            <span class="residentKicker">${isSupply ? 'SUPPLY MANAGER' : 'CITY SPECIALIST'}</span>
+            <span class="personStatusBadge ${prof.hired ? 'hired' : 'unemployed'}" data-person-employment-status>
+              ${prof.hired ? `✓ HIRED · LV ${prof.level}` : '● UNEMPLOYED'}
+            </span>
+          </div>
+          <b class="personTitleName">${escapeHtml(resident.name)} <small class="personRoleTag">· ${escapeHtml(resident.jobTitle || 'Specialist')}</small></b>
+          <span class="personWorkplaceLine">🏢 ${escapeHtml(resident.desk || resident.business || def.name)} · Linked: ${escapeHtml(def.shortName)}</span>
+        </div>
+        <div class="personHeaderRight">
+          <div class="personMoodOrb mood-${mood.key}" onclick="window.openResidentNeedMenuSafe?.('mood')" title="View Happiness Scale">
+            <span>${escapeHtml(mood.face)}</span>
+            <strong>${mood.score}%</strong>
+          </div>
+          <button type="button" class="inspectorCycleBtn" onclick="window.cycleWorldPersonSafe?.(1)" title="Next Person">▶</button>
+          <button type="button" class="buildingCloseX" onclick="window.closeMobileResidentSheetSafe?.()" title="Close">✕</button>
+        </div>
+      </div>
+
+      ${lastBondNote ? `
+        <div class="buildingFeedbackBanner">
+          <span>✨ ${escapeHtml(lastBondNote)}</span>
+        </div>
+      ` : ''}
+
+      <!-- 4 Zero-Scroll Mobile Tycoon Tabs: Job & Skills | Happiness | Mode Perks | Talk & Trade -->
+      ${renderResidentTabs(resident, mood)}
+
+      <div class="residentTabPanel" data-resident-tab-panel>
+        ${renderResidentActionMenu(resident, mood)}
+      </div>
+
+      <div class="mobilePlacedActions residentFooterActions">
+        ${!prof.hired
+          ? `<button type="button" class="btn primary" onclick="window.hireWorldPersonSafe?.('${escapeHtml(id)}')">✅ Hire Now (${prof.hireCost}c)</button>`
+          : `<button type="button" class="btn gold" onclick="window.trainWorldPersonSafe?.('${escapeHtml(id)}')">⬆️ Train Lv ${prof.level + 1} (${prof.trainCost}c)</button>`}
+        <button type="button" class="btn primary" onclick="window.openPersonGameScreenSafe?.('${isSupply ? 'lines' : 'race'}')">Open ${isSupply ? 'Supplies' : 'Race'}</button>
+        <button type="button" class="btn ghost" onclick="window.closeMobileResidentSheetSafe?.()">Close</button>
+      </div>
+    </div>
+  `;
+}
+
+function openResidentSheet(resident, refresh = false) {
   if (mode !== 'normal' || !resident) return;
   const id = resident.lineKey || resident.key;
-  if (selectedResidentKey !== id) {
+  if (selectedResidentKey !== id && !refresh) {
     lastBondNote = '';
-    selectedResidentMenu = 'mood';
+    selectedResidentMenu = 'job';
   }
   purseCache.ready = false;
   const placedSheet = document.querySelector('[data-placed-sheet]');
@@ -4911,6 +5245,10 @@ function openResidentSheet(resident) {
   if (vehicleSheet) vehicleSheet.hidden = true;
   traffic.forEach((t) => { t.isSelected = false; });
   selectedVehicleItem = null;
+  walkers.forEach((w) => {
+    const wId = w.personId || w.staff?.lineKey || w.resident?.key;
+    w.isSelected = wId === id;
+  });
   const hud = document.querySelector('.mobileCityHud');
   hud?.classList.remove('building-open', 'build-mode', 'vehicle-open');
   hud?.classList.add('resident-open');
@@ -4918,20 +5256,38 @@ function openResidentSheet(resident) {
   selectedSupplyKey = resident.lineKey || null;
   selectedPlacedId = null;
   selectedResidentKey = id;
+  sync3DBuildings();
   const sheet = document.querySelector('[data-resident-sheet]');
   if (sheet) {
     sheet.innerHTML = renderResidentSheet(resident);
     sheet.hidden = false;
   }
+  if (!refresh) {
+    const walkerMatch = walkers.find((w) => (w.personId || w.staff?.lineKey || w.resident?.key) === id);
+    if (walkerMatch?.path) {
+      const pt = pathPoint(walkerMatch.path, walkerMatch.d);
+      if (pt) focusWorldPoint(pt.x, pt.y);
+    }
+  }
   publishWorldOpenState();
 }
+
+window.cycleWorldPersonSafe = (delta = 1) => {
+  const roster = allCityPeople();
+  if (!roster.length) return false;
+  const currentId = selectedResidentKey || selectedSupplyKey || roster[0].key;
+  const curIdx = Math.max(0, roster.findIndex((p) => (p.lineKey || p.key) === currentId));
+  const nextIdx = ((curIdx + (Number(delta) || 1)) % roster.length + roster.length) % roster.length;
+  openResidentSheet(roster[nextIdx]);
+  return true;
+};
 
 function refreshOpenResidentSheet() {
   const sheet = document.querySelector('[data-resident-sheet]');
   const activeKey = selectedResidentKey || selectedSupplyKey;
   if (!activeKey || !sheet || sheet.hidden) return;
   const person = residentByKey(activeKey);
-  if (person) openResidentSheet(person);
+  if (person) openResidentSheet(person, true);
 }
 
 function persistWorldPersonChange(person, updates, note, costCoins = 0, openStaffId = '') {
@@ -5331,9 +5687,10 @@ window.closeMobileBuildingSheetSafe = () => {
 window.closeMobileResidentSheetSafe = () => {
   const sheet = document.querySelector('[data-resident-sheet]');
   if (sheet) sheet.hidden = true;
+  walkers.forEach((w) => { w.isSelected = false; });
   selectedResidentKey = null;
   selectedSupplyKey = null;
-  selectedResidentMenu = 'mood';
+  selectedResidentMenu = 'job';
   document.querySelector('.mobileCityHud')?.classList.remove('resident-open');
   publishWorldOpenState();
 };
@@ -5803,18 +6160,22 @@ function buildWorld() {
     }
   });
 
-  addWalker(blockLoop(0, 0), RESIDENT_WANTS[0], 0x2563eb);
-  addWalker(blockLoop(0, 1), RESIDENT_WANTS[1], 0x16a34a);
-  addWalker(blockLoop(1, 0), RESIDENT_WANTS[2], 0xf97316);
-  addWalker(blockLoop(1, 1), RESIDENT_WANTS[3], 0x7c3aed);
-  addWalker(blockLoop(2, 0), RESIDENT_WANTS[4], 0x38bdf8);
-  addWalker(blockLoop(2, 1), RESIDENT_WANTS[5], 0xfacc15);
-  addWalker(avenueLoop(0, 'north'), RESIDENT_WANTS[0], 0x2563eb);
-  addWalker(avenueLoop(1, 'south'), RESIDENT_WANTS[2], 0xf97316);
-  addWalker(avenueLoop(3, 'north'), RESIDENT_WANTS[4], 0x38bdf8);
+  addWalker(blockLoop(0, 0), RESIDENT_WANTS[0], 0x2563eb, 45);
+  addWalker(blockLoop(0, 2), RESIDENT_WANTS[1], 0x16a34a, 140);
+  addWalker(blockLoop(1, 0), RESIDENT_WANTS[2], 0xf97316, 95);
+  addWalker(blockLoop(1, 1), RESIDENT_WANTS[3], 0x7c3aed, 220);
+  addWalker(blockLoop(2, 0), RESIDENT_WANTS[4], 0x38bdf8, 130);
+  addWalker(blockLoop(2, 2), RESIDENT_WANTS[5], 0xfacc15, 185);
+  addWalker(avenueLoop(0, 'north'), RESIDENT_WANTS[0], 0x2563eb, 340);
+  addWalker(avenueLoop(1, 'south'), RESIDENT_WANTS[2], 0xf97316, 480);
+  addWalker(avenueLoop(3, 'north'), RESIDENT_WANTS[4], 0x38bdf8, 610);
   SUPPLY_MANAGERS.forEach((staff, index) => {
-    const path = index < 3 ? blockLoop(index, index % 2) : avenueLoop(index % ROADS.horizontal.length, index % 2 ? 'south' : 'north');
-    addSupplyWalker(path, staff);
+    const blockCol = index % 3;
+    const blockRow = Math.min(2, Math.floor(index / 2));
+    const path = index < 4
+      ? blockLoop(blockRow, blockCol)
+      : avenueLoop(index % ROADS.horizontal.length, index % 2 ? 'south' : 'north');
+    addSupplyWalker(path, staff, 85 + index * 145);
   });
 
   placementLayer = new PIXI.Container();
@@ -5924,7 +6285,10 @@ async function preloadPixiWorldAssets() {
   if (pixiWorldAssetsLoaded) return;
   pixiWorldAssetsLoaded = true;
   try {
-    await PIXI.Assets.load(WORLD_ASSET_LIST.map((item) => item.src));
+    await Promise.race([
+      PIXI.Assets.load(WORLD_ASSET_LIST.map((item) => item.src)),
+      new Promise((resolve) => setTimeout(resolve, 550))
+    ]);
   } catch (error) {
     console.warn('[365 World] Some override assets could not be preloaded; fallback shapes will remain visible.', error);
   }

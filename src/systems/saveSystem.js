@@ -1,4 +1,5 @@
 import { defaultState } from '../state/defaultState.js';
+import { IDLE_LINES } from '../data/gameData.js';
 
 const SAVE_KEY = 'autoMergeGarageV11LocalOnly';
 const OLD_SAVE_KEY = 'autoMergeGarageV10LocalOnly';
@@ -98,20 +99,43 @@ function applyOfflineProgress(state) {
   const idleDriver = state.upgrades?.idleDriver || 1;
   const hubBonus = 1 + (state.buildings?.companionHub || 0) * 0.15;
   const lotBonus = 1 + Object.keys(state.lot?.owned || {}).length * 0.03;
-  const coins = Math.floor(seconds * 0.08 * idleDriver * hubBonus * lotBonus);
+  let coins = Math.floor(seconds * 0.08 * idleDriver * hubBonus * lotBonus);
   const meters = Math.floor(seconds * 0.35 * idleDriver * hubBonus);
-  const parts = Math.floor(seconds / 180);
+  let parts = Math.floor(seconds / 180);
+  const lineGains = {};
+  let managerCount = 0;
+
+  for (const line of IDLE_LINES) {
+    const lineState = state.idleLines?.lines?.[line.key];
+    const hasMgr = Boolean(state.idleLines?.managers?.[line.key]);
+    const autoOn = state.idleLines?.autoCollect?.[line.key] !== false;
+    if (lineState?.level > 0 && hasMgr && autoOn) {
+      managerCount += 1;
+      const cycleSec = Math.max(1.2, (line.baseCycleMs || 4000) / 1000);
+      const cycles = Math.floor((seconds * 0.65) / cycleSec);
+      const yieldPerCycle = Math.max(1, Math.round((line.baseIncome || 1) * lineState.level * hubBonus));
+      const gain = cycles * yieldPerCycle;
+      if (gain > 0) {
+        lineGains[line.output] = (lineGains[line.output] || 0) + gain;
+        state.currencies[line.output] = (state.currencies[line.output] || 0) + gain;
+      }
+    }
+  }
+
   if (coins > 0) state.currencies.coins = (state.currencies.coins || 0) + coins;
   if (parts > 0) state.currencies.parts = (state.currencies.parts || 0) + parts;
+  coins += lineGains.coins || 0;
+  parts += lineGains.parts || 0;
+
   state.race.lifetimeMeters = (state.race.lifetimeMeters || 0) + meters;
   state.race.fuel = Math.min(100 + (state.upgrades?.fuelPlan || 0) * 10, (state.race.fuel || 0) + Math.floor(seconds / 90));
   state.race.condition = Math.min(100 + (state.upgrades?.pitKit || 0) * 8, (state.race.condition || 0) + Math.floor(seconds / 120));
   state.race.heat = Math.max(0, (state.race.heat || 0) - Math.floor(seconds / 100));
-  // Partial energy regen offline
   if (state.merge) {
     const energyGain = Math.min(state.merge.maxEnergy || 50, (state.merge.energy || 0) + seconds * (state.merge.energyRegen || 0.08));
     state.merge.energy = energyGain;
   }
-  state.pendingOffline = { seconds, coins, parts, meters };
+  state.pendingOffline = { seconds, coins, parts, meters, managerCount, lineGains };
   state.lastTickAt = now;
 }
+

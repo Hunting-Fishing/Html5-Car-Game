@@ -255,28 +255,54 @@ function renderManagerRequirement(state, line, level, managerOwned, managerCost,
   `;
 }
 
+function lineStarsForLevel(level) {
+  if (level >= 50) return 5;
+  if (level >= 25) return 4;
+  if (level >= 10) return 3;
+  if (level >= 5) return 2;
+  return level > 0 ? 1 : 0;
+}
+
+function renderLineStarDots(level) {
+  const stars = lineStarsForLevel(level);
+  if (!stars) return '';
+  return `<span class="richdomLineStars" aria-label="${stars} stars">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</span>`;
+}
+
+function formatRichdomCycleSec(cycleMs) {
+  return `${(Math.max(100, cycleMs) / 1000).toFixed(2)}s`;
+}
+
 function renderCapitalistLine(state, item) {
-  const { line, current, unlocked, level, cycleMs, income, collectReady, managerOwned, autoEnabled } = item;
+  const { line, current, unlocked, level, cycleMs, income, collectReady, managerOwned, autoEnabled, nextMilestone } = item;
   const qty = state.idleLines.buyQty || 1;
   const quote = unlocked ? quoteLineUpgrade(state, line, qty) : null;
   const progress = unlocked ? Math.min(100, Math.round((current.cycle / Math.max(1, cycleMs)) * 100)) : 0;
   const guideTarget = line.key === 'streetRoute' && !state.objectives?.idleLineUpgrade ? ' data-guide-target="upgradeStreetRoute"' : '';
   const running = managerOwned && autoEnabled;
-  const barLabel = !unlocked ? 'Locked' : collectReady && !running ? 'Collect' : `+${fmt(income)}`;
+  const cycleText = unlocked ? `⏱ ${formatRichdomCycleSec(cycleMs)}` : '';
+  const barLabel = !unlocked
+    ? 'Locked'
+    : collectReady && !running
+      ? `Collect +${fmt(income)}`
+      : `${cycleText} · +${fmt(income)} ${line.outputLabel}`;
+  const milestoneHint = unlocked && nextMilestone
+    ? ` · Lv ${nextMilestone.level} ${nextMilestone.type === 'incomeMultiplier' ? `x${nextMilestone.value}` : 'Speed+'}`
+    : '';
   const canHire = unlocked && !managerOwned && level >= line.manager.unlockLevel && canAfford(state, item.managerCost);
   const managerLabel = managerOwned
-    ? `<b>${line.manager.name.split(' ')[0]}</b><small>${autoEnabled ? 'Auto' : 'Off'}</small>`
+    ? `<b>${line.manager.name.split(' ')[0]}</b><small>${autoEnabled ? 'Working' : 'Off'}</small>`
     : canHire
       ? `<b>Hire</b><small>${costToText(item.managerCost)}</small>`
       : `<b>Lv ${line.manager.unlockLevel}</b><small>Mgr</small>`;
   return `
-    <article class="adcapRow ${unlocked ? '' : 'lockedLine'}" data-line-key="${line.key}">
-      <div class="adcapIcon">${renderLineIcon(line)}<b>${level}</b></div>
+    <article class="adcapRow richdomProfitRow ${unlocked ? '' : 'lockedLine'}" data-line-key="${line.key}">
+      <div class="adcapIcon">${renderLineIcon(line)}<b>${level}</b>${renderLineStarDots(level)}</div>
       <button class="adcapBuy" data-action="upgradeLine" data-line="${line.key}"${guideTarget} ${quote?.affordable ? '' : 'disabled'}>
         <b>${line.name}</b>
-        <small>${unlocked ? `${qty === 'max' ? `x${quote.count || 1}` : `x${qty}`} ${costToText(quote.cost)}` : unlockText(line)}</small>
+        <small>${unlocked ? `${qty === 'max' ? `x${quote.count || 1}` : `x${qty}`} ${costToText(quote.cost)}${milestoneHint}` : unlockText(line)}</small>
       </button>
-      <button class="adcapTrack ${collectReady && !running ? 'ready' : ''} ${running ? 'auto' : ''}" data-action="collectLine" data-line="${line.key}" ${collectReady && !running ? '' : 'disabled'}>
+      <button class="adcapTrack richdomProfitTrack ${collectReady && !running ? 'ready' : ''} ${running ? 'auto' : ''}" data-action="collectLine" data-line="${line.key}" ${collectReady && !running ? '' : 'disabled'}>
         <span class="adcapFill" data-line-progress style="width:${progress}%"></span>
         <em>${barLabel}</em>
       </button>
@@ -295,6 +321,7 @@ export function updateLineBars(state) {
     if (!line || !isLineUnlocked(state, line)) return;
     const current = getLineState(state, line.key);
     const cycleMs = getLineCycleMs(state, line);
+    const income = getLineIncome(state, line);
     const progress = Math.min(100, (current.cycle / Math.max(1, cycleMs)) * 100);
     const fill = row.querySelector('[data-line-progress]');
     const label = row.querySelector('.adcapTrack em');
@@ -302,7 +329,13 @@ export function updateLineBars(state) {
     const canCollect = canCollectLine(state, line) && !running;
     if (canCollect) ready += 1;
     if (fill) fill.style.width = `${progress}%`;
-    if (label) label.textContent = !isLineUnlocked(state, line) ? 'Locked' : canCollect ? 'Collect' : `+${fmt(getLineIncome(state, line))}`;
+    if (label) {
+      label.textContent = !isLineUnlocked(state, line)
+        ? 'Locked'
+        : canCollect
+          ? `Collect +${fmt(income)}`
+          : `⏱ ${formatRichdomCycleSec(cycleMs)} · +${fmt(income)} ${line.outputLabel}`;
+    }
     const track = row.querySelector('.adcapTrack');
     track?.classList.toggle('ready', canCollect);
     track?.classList.toggle('auto', running);

@@ -1300,59 +1300,158 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
   display: none !important;
 }
 
-#screen-world .mobileCityHud.resident-open {
-  max-height: calc(100% - 10px);
-  overflow-y: auto;
+/* Strictly ZERO scrollbars on any World Inspector modal or tab panel */
+#screen-world .mobileCityHud,
+#screen-world .mobileCityHud.resident-open,
+#screen-world .mobileCityHud.building-open,
+#screen-world .mobileCityHud.vehicle-open,
+#screen-world .mobileResidentSheet,
+#screen-world .mobileVehicleSheet,
+#screen-world .mobilePlacedSheet,
+#screen-world .residentWindow,
+#screen-world .vehicleWindow,
+#screen-world .buildingWindow,
+#screen-world .residentTabPanel,
+#screen-world .vehicleTabPanel,
+#screen-world .buildingTabContent,
+#screen-world .residentBuildingRows,
+#screen-world .residentIssueRows,
+#screen-world .buildingDistrictList {
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
-#screen-world .mobileCityHud.resident-open .mobileResidentSheet {
-  max-height: 78vh;
-  overflow-y: auto;
-  padding: 6px;
-  border-radius: 16px;
+#screen-world .mobileCityHud::-webkit-scrollbar,
+#screen-world .mobileResidentSheet::-webkit-scrollbar,
+#screen-world .mobileVehicleSheet::-webkit-scrollbar,
+#screen-world .mobilePlacedSheet::-webkit-scrollbar,
+#screen-world .residentTabPanel::-webkit-scrollbar,
+#screen-world .vehicleTabPanel::-webkit-scrollbar,
+#screen-world .buildingTabContent::-webkit-scrollbar,
+#screen-world .buildingDistrictList::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-#screen-world .residentWindow {
+#screen-world .mobileCityHud.resident-open .mobileResidentSheet,
+#screen-world .mobileCityHud.vehicle-open .mobileVehicleSheet {
+  max-height: none !important;
+  overflow: hidden !important;
+  padding: 7px 8px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(8, 34, 54, 0.98) 0%, rgba(3, 14, 24, 0.99) 100%) !important;
+  border: 2px solid rgba(56, 189, 248, 0.46) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+#screen-world .residentWindow,
+#screen-world .vehicleWindow {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 5px;
+  overflow: hidden !important;
 }
 
-#screen-world .residentWindowHeader {
-  display: flex;
+#screen-world .residentWindowHeader,
+#screen-world .vehicleWindowHeader {
+  display: grid;
+  grid-template-columns: auto 48px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 7px;
   padding: 6px 8px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(16, 62, 96, 0.94) 0%, rgba(5, 21, 36, 0.96) 100%);
+  border: 1.5px solid rgba(125, 211, 252, 0.34);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-#screen-world .personHeaderLeft {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1 1 auto;
+#screen-world .inspectorCycleBtn {
+  width: 26px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid rgba(125, 211, 252, 0.38);
+  background: linear-gradient(180deg, rgba(30, 88, 136, 0.88), rgba(10, 34, 56, 0.94));
+  color: #e0f2fe;
+  font-size: 11px;
+  font-weight: 1000;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 0 rgba(0, 0, 0, 0.28);
 }
 
-#screen-world .personHeaderAvatar {
-  width: 44px;
-  height: 54px;
-  object-fit: contain;
-  border-radius: 11px;
-  background: rgba(15, 23, 42, 0.78);
-  border: 1.5px solid rgba(56, 189, 248, 0.68);
-  padding: 2px;
+#screen-world .inspectorCycleBtn:hover {
+  border-color: #facc15;
+  color: #fef08a;
+}
+
+#screen-world .personHeroFrame {
+  position: relative;
+  width: 48px;
+  height: 52px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.35), rgba(6, 18, 32, 0.95));
+  border: 2px solid #38bdf8;
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
 }
 
-#screen-world .personHeaderMeta {
-  min-width: 0;
-  display: grid;
-  gap: 1px;
+#screen-world .personHeroFrame.rarity-ssr {
+  border-color: #facc15;
+  background: radial-gradient(circle at 50% 30%, rgba(250, 204, 21, 0.35), rgba(30, 20, 6, 0.95));
 }
 
-#screen-world .personHeaderMeta b {
+#screen-world .personHeroFrame.rarity-sr {
+  border-color: #a855f7;
+  background: radial-gradient(circle at 50% 30%, rgba(168, 85, 247, 0.35), rgba(24, 10, 42, 0.95));
+}
+
+#screen-world .personHeaderAvatar {
+  width: 42px;
+  height: 46px;
+  object-fit: contain;
+}
+
+#screen-world .personRarityTag {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fde047, #eab308);
+  color: #1e1b4b;
+  font-size: 6.5px;
+  font-weight: 1000;
+  letter-spacing: 0.04em;
+  border: 1px solid #ffffff;
+}
+
+#screen-world .personHeaderMeta,
+#screen-world .vehicleHeaderMain {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+#screen-world .personHeaderKickerRow,
+#screen-world .vehicleKickerRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+#screen-world .personTitleName,
+#screen-world .vehicleTitleName {
+  display: block;
+  color: #ffffff;
   font-size: 12px;
+  font-weight: 1000;
   line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
@@ -1361,46 +1460,82 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
 
 #screen-world .personRoleTag {
   color: #fde68a;
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 900;
 }
 
-#screen-world .personWorkplaceLine {
+#screen-world .personWorkplaceLine,
+#screen-world .vehicleSubStatus {
   display: block;
   color: #bae6fd;
-  font-size: 8.5px;
+  font-size: 8px;
   font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-#screen-world .personHeaderBadges {
+#screen-world .personHeaderRight,
+#screen-world .vehicleHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+#screen-world .personMoodOrb,
+#screen-world .vehicleHpOrb {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 2px 5px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.25), rgba(4, 47, 36, 0.92));
+  border: 1.5px solid #35e58a;
+  cursor: pointer;
+}
+
+#screen-world .vehicleHpOrb {
+  background: linear-gradient(180deg, rgba(250, 204, 21, 0.24), rgba(52, 32, 6, 0.92));
+  border-color: #facc15;
+  cursor: default;
+}
+
+#screen-world .personMoodOrb span {
+  font-size: 13px;
+  line-height: 1;
+}
+
+#screen-world .personMoodOrb strong,
+#screen-world .vehicleHpOrb strong {
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 1000;
+  line-height: 1.05;
+}
+
+#screen-world .vehicleHpOrb span,
+#screen-world .vehicleHpOrb small {
+  color: #fef08a;
+  font-size: 6px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 #screen-world .personStatusBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 999px;
-  font-size: 8.5px;
+  font-size: 7.2px;
   font-weight: 1000;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 0 rgba(0,0,0,0.25);
-}
-
-#screen-world .personStatusBadge.small {
-  padding: 3px 7px;
-  font-size: 7.5px;
-  height: 22px;
 }
 
 #screen-world .personStatusBadge.hired {
@@ -1415,80 +1550,49 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
   border: 1px solid #fed7aa;
 }
 
-#screen-world .personMoodTitleRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
+/* Fixed-Height Zero-Scroll Tab Stage for People & Vehicle Inspectors */
+#screen-world .residentTabPanel,
+#screen-world .vehicleTabPanel {
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow: hidden !important;
+  padding: 6px;
+  border-radius: 14px;
+  background: rgba(2, 12, 22, 0.56);
+  border: 1px solid rgba(125, 211, 252, 0.18);
 }
 
-#screen-world .happinessBuffPill {
-  display: inline-block;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(53, 229, 138, 0.2);
-  border: 1px solid rgba(53, 229, 138, 0.55);
-  color: #86efac;
-  font-style: normal;
-  font-size: 8px;
-  font-weight: 1000;
-  white-space: nowrap;
-}
-
-#screen-world .personHappinessPillars {
+#screen-world .residentTabPane,
+#screen-world .vehicleTabPane {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 4px;
-  margin-top: 5px;
+  gap: 5px;
+  overflow: hidden !important;
 }
 
-#screen-world .pillarChip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 2px 5px;
-  border-radius: 7px;
-  background: rgba(4, 17, 29, 0.65);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  color: #cbd5e1;
-  font-size: 7.5px;
-  font-weight: 800;
+#screen-world .vehicleTabBar {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 }
 
-#screen-world .pillarChip.ok {
-  border-color: rgba(53, 229, 138, 0.42);
-}
-
-#screen-world .pillarChip.warn {
-  border-color: rgba(251, 146, 60, 0.65);
-  background: rgba(124, 45, 18, 0.35);
-}
-
-#screen-world .pillarChip b {
-  display: inline !important;
-  color: #ffffff;
-  font-size: 8px;
-}
-
-/* Job & Employment Action Strip (Full-Width Stacked Card) */
+/* Tab 1 (Job & Skills): Job Card + 3 Skill Gauges + Workplace Strip */
 #screen-world .personJobActionCard {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 7px 9px;
-  border-radius: 14px;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: 12px;
   background: linear-gradient(135deg, rgba(15, 39, 62, 0.92), rgba(6, 19, 32, 0.95));
   border: 1.5px solid rgba(56, 189, 248, 0.35);
 }
 
 #screen-world .personJobActionCard.is-unemployed {
-  background: linear-gradient(135deg, rgba(67, 26, 12, 0.78), rgba(15, 23, 42, 0.95));
-  border-color: rgba(251, 146, 60, 0.68);
+  background: linear-gradient(135deg, rgba(67, 26, 12, 0.82), rgba(15, 23, 42, 0.95));
+  border-color: rgba(251, 146, 60, 0.72);
 }
 
 #screen-world .personJobActionCard.is-hired {
-  background: linear-gradient(135deg, rgba(6, 56, 40, 0.72), rgba(9, 28, 44, 0.95));
-  border-color: rgba(53, 229, 138, 0.55);
+  background: linear-gradient(135deg, rgba(6, 56, 40, 0.78), rgba(9, 28, 44, 0.95));
+  border-color: rgba(53, 229, 138, 0.58);
 }
 
 #screen-world .personJobDetails {
@@ -1502,53 +1606,46 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  flex-wrap: wrap;
 }
 
 #screen-world .personJobTitleRow b {
   color: #ffffff;
-  font-size: 10.5px;
+  font-size: 9.8px;
 }
 
 #screen-world .personRankPill {
   display: inline-flex;
   align-items: center;
-  padding: 2px 7px;
+  padding: 1.5px 6px;
   border-radius: 999px;
   background: rgba(56, 189, 248, 0.22);
   border: 1px solid rgba(56, 189, 248, 0.45);
   color: #bae6fd;
-  font-size: 8px;
+  font-size: 7.5px;
   font-weight: 900;
   white-space: nowrap;
 }
 
 #screen-world .personJobDetails small {
   color: #cbd5e1;
-  font-size: 8.5px;
-  line-height: 1.2;
+  font-size: 7.8px;
+  line-height: 1.18;
 }
 
 #screen-world .personJobButtons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  display: flex;
+  align-items: center;
   gap: 5px;
   width: 100%;
 }
 
 #screen-world .personJobButtons .btn {
-  min-height: 28px !important;
-  padding: 4px 8px !important;
-  font-size: 9px !important;
+  flex: 1 1 auto;
+  min-height: 26px !important;
+  padding: 3px 7px !important;
+  font-size: 8.2px !important;
   font-weight: 1000 !important;
   white-space: nowrap;
-}
-
-/* Character Skills & Connected Game Modes inside Tab Panel */
-#screen-world .residentTabPanel {
-  min-height: 155px;
-  max-height: 205px;
-  overflow-y: auto;
 }
 
 #screen-world .personSkillsBar {
@@ -1558,9 +1655,9 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
 }
 
 #screen-world .personSkillItem {
-  padding: 5px 6px;
+  padding: 4px 6px;
   border-radius: 10px;
-  background: rgba(3, 16, 26, 0.58);
+  background: rgba(3, 16, 26, 0.68);
   border: 1px solid rgba(125, 211, 252, 0.22);
 }
 
@@ -1574,7 +1671,7 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
 
 #screen-world .personSkillHead span {
   color: #bae6fd;
-  font-size: 7.5px;
+  font-size: 7px;
   font-weight: 900;
   text-transform: uppercase;
   white-space: nowrap;
@@ -1584,7 +1681,7 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
 
 #screen-world .personSkillHead b {
   color: #ffffff;
-  font-size: 9px;
+  font-size: 8.5px;
 }
 
 #screen-world .personSkillTrack {
@@ -1601,6 +1698,133 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
   background: linear-gradient(90deg, #38bdf8, #35e58a);
 }
 
+#screen-world .personWorkplaceStrip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 11px;
+  background: rgba(4, 20, 34, 0.84);
+  border: 1px solid rgba(56, 189, 248, 0.26);
+}
+
+#screen-world .pwInfo b {
+  display: block;
+  color: #ffffff;
+  font-size: 8.8px;
+}
+
+#screen-world .pwInfo span {
+  display: block;
+  color: #93c5fd;
+  font-size: 7.4px;
+}
+
+#screen-world .pwActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+#screen-world .pwActions .btn.small,
+#screen-world .pmFixBtns .btn.small {
+  min-height: 23px !important;
+  padding: 2px 6px !important;
+  font-size: 7.5px !important;
+}
+
+/* Tab 2 (Happiness Scale & Actionable Needs) */
+#screen-world .personMoodTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+#screen-world .happinessBuffPill {
+  display: inline-block;
+  padding: 1.5px 6px;
+  border-radius: 999px;
+  background: rgba(53, 229, 138, 0.2);
+  border: 1px solid rgba(53, 229, 138, 0.55);
+  color: #86efac;
+  font-style: normal;
+  font-size: 7.5px;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+
+#screen-world .personHappinessPillars {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 4px;
+}
+
+#screen-world .pillarChip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: rgba(4, 17, 29, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+  font-size: 7px;
+  font-weight: 800;
+}
+
+#screen-world .pillarChip.ok {
+  border-color: rgba(53, 229, 138, 0.42);
+}
+
+#screen-world .pillarChip.warn {
+  border-color: rgba(251, 146, 60, 0.65);
+  background: rgba(124, 45, 18, 0.35);
+}
+
+#screen-world .pillarChip b {
+  display: inline !important;
+  color: #ffffff;
+  font-size: 7.5px;
+}
+
+#screen-world .personMoodFixGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+#screen-world .personMoodFixCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 5px 7px;
+  border-radius: 10px;
+  background: rgba(4, 18, 30, 0.82);
+  border: 1px solid rgba(125, 211, 252, 0.22);
+}
+
+#screen-world .personMoodFixCard b {
+  display: block;
+  color: #ffffff;
+  font-size: 8.5px;
+}
+
+#screen-world .personMoodFixCard small {
+  display: block;
+  color: #cbd5e1;
+  font-size: 7.2px;
+}
+
+#screen-world .pmFixBtns {
+  display: flex;
+  gap: 4px;
+}
+
+/* Tab 3 (Mode Perks & Quick Crew Switcher) */
 #screen-world .personGameModesGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1611,113 +1835,329 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
   display: grid;
   gap: 1px;
   padding: 5px 7px;
-  border-radius: 11px;
-  background: linear-gradient(180deg, rgba(14, 52, 79, 0.72), rgba(5, 22, 36, 0.85));
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(14, 52, 79, 0.78), rgba(5, 22, 36, 0.90));
   border: 1px solid rgba(56, 189, 248, 0.28);
   color: #ffffff;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  transition: transform 0.12s ease, border-color 0.12s ease;
-}
-
-#screen-world .personModeCard:hover {
-  border-color: rgba(250, 204, 21, 0.65);
-  transform: translateY(-1px);
 }
 
 #screen-world .personModeCard .modeKicker {
   color: #93c5fd;
-  font-size: 7.5px;
+  font-size: 7px;
   font-weight: 900;
   text-transform: uppercase;
 }
 
 #screen-world .personModeCard strong {
   color: #4ade80;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 1000;
 }
 
 #screen-world .personModeCard small {
   color: #cbd5e1;
-  font-size: 7.5px;
-  line-height: 1.15;
+  font-size: 7.2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-#screen-world .residentRosterRow {
+#screen-world .personQuickRosterBlock,
+#screen-world .vehicleQuickFleetBlock {
+  display: grid;
+  gap: 4px;
+  padding: 5px 7px;
+  border-radius: 10px;
+  background: rgba(3, 15, 26, 0.76);
+  border: 1px solid rgba(125, 211, 252, 0.20);
+}
+
+#screen-world .pqHead,
+#screen-world .vQuickFleetHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 5px 8px;
+  gap: 4px;
 }
 
-#screen-world .residentRosterRow .residentRowActions {
+#screen-world .pqHead span,
+#screen-world .vQuickFleetHead span {
+  color: #fef08a;
+  font-size: 7.5px;
+  font-weight: 900;
+}
+
+#screen-world .pqHead small,
+#screen-world .vQuickFleetHead small {
+  color: #93c5fd;
+  font-size: 6.8px;
+}
+
+#screen-world .personQuickRosterPills {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#screen-world .pqPill,
+#screen-world .vFleetPill {
   display: flex;
   align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
-#screen-world .residentRosterRow .residentRowActions .btn {
-  min-height: 24px !important;
-  padding: 2px 8px !important;
-  font-size: 8px !important;
-}
-
-#screen-world .residentSwitchBtn {
-  background: none;
-  border: 0;
-  padding: 0;
-  color: inherit;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 5px;
+  border-radius: 8px;
+  background: rgba(12, 38, 62, 0.84);
+  border: 1px solid rgba(125, 211, 252, 0.25);
+  color: #e2e8f0;
   font-family: inherit;
-  text-align: left;
+  font-size: 7.5px;
+  font-weight: 900;
   cursor: pointer;
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-#screen-world .residentSwitchBtn b,
-#screen-world .residentSwitchBtn span {
-  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Full-width compact NPC Talk & Trade panel inside World popup */
-#screen-world .residentWindow > .npcTalk {
-  width: 100%;
-  margin: 0;
-  padding: 7px 9px;
-  border-radius: 14px;
-  background: rgba(3, 15, 26, 0.65);
-  border: 1px solid rgba(125, 211, 252, 0.22);
+#screen-world .pqPill.active,
+#screen-world .vFleetPill.active {
+  background: linear-gradient(180deg, #ffd166, #f59e0b);
+  color: #1e1b4b;
+  border-color: #ffffff;
+}
+
+#screen-world .pqDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fb923c;
+  flex-shrink: 0;
+}
+
+#screen-world .pqPill.hired .pqDot {
+  background: #4ade80;
+}
+
+/* Tab 4 (Talk & Trade inside Tab Panel) */
+#screen-world .compactTalkTab {
   display: grid;
   gap: 5px;
+  padding: 5px 7px;
+  border-radius: 11px;
+  background: rgba(3, 15, 26, 0.72);
+  border: 1px solid rgba(125, 211, 252, 0.22);
 }
 
-#screen-world .residentWindow > .npcTalk p {
+#screen-world .compactTalkTab .npcBond {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#screen-world .compactTalkTab .npcBond b {
+  white-space: nowrap;
+  font-size: 8.8px;
+  color: #fde68a;
+}
+
+#screen-world .compactTalkTab .npcBond span {
+  flex: 1 1 auto;
+}
+
+#screen-world .npcSpeechBubble {
   margin: 0;
-  font-size: 9.5px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  background: rgba(14, 48, 76, 0.65);
+  border-left: 3px solid #38bdf8;
+  color: #f8fafc;
+  font-size: 8.5px;
   line-height: 1.25;
-  color: #f1f5f9;
 }
 
-#screen-world .residentWindow > .npcTalk .npcReplies {
+#screen-world .compactTalkTab .npcReplies {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
 }
 
-#screen-world .residentWindow > .npcTalk .npcReplies .btn {
-  min-height: 26px;
-  padding: 4px 7px;
-  font-size: 8.5px;
+#screen-world .compactTalkTab .npcReplies .btn.small {
+  min-height: 24px !important;
+  padding: 2px 5px !important;
+  font-size: 7.4px !important;
+}
+
+#screen-world .npcTradeSection {
+  display: grid;
+  gap: 3px;
+}
+
+#screen-world .npcTradeKicker {
+  color: #fde68a;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* Single-Row 3-Button Footer Dock for People & Vehicle Inspectors */
+#screen-world .residentFooterActions {
+  display: grid !important;
+  grid-template-columns: 1.25fr 1fr 0.75fr !important;
+  gap: 6px !important;
+  margin-top: 1px;
+}
+
+#screen-world .residentFooterActions .btn {
+  min-height: 30px !important;
+  padding: 4px 8px !important;
+  font-size: 9px !important;
+  white-space: nowrap;
+}
+
+/* Vehicle Inspector Specific Styles */
+#screen-world .vehicleMarketPill,
+#screen-world .vehicleStatePill {
+  padding: 1.5px 6px;
+  border-radius: 999px;
+  font-size: 6.8px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+#screen-world .vehicleMarketPill {
+  background: rgba(56, 189, 248, 0.22);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #bae6fd;
+}
+
+#screen-world .vehicleStatePill.ok {
+  background: rgba(34, 197, 94, 0.22);
+  border: 1px solid #4ade80;
+  color: #86efac;
+}
+
+#screen-world .vehicleStatePill.wait,
+#screen-world .vehicleStatePill.warn {
+  background: rgba(245, 158, 11, 0.24);
+  border: 1px solid #facc15;
+  color: #fef08a;
+}
+
+#screen-world .vehicleTelemetryGrid,
+#screen-world .vehicleDynoBars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+#screen-world .vTelCard,
+#screen-world .vDynoBarItem {
+  padding: 5px 7px;
+  border-radius: 10px;
+  background: rgba(4, 18, 30, 0.82);
+  border: 1px solid rgba(125, 211, 252, 0.22);
+  display: grid;
+  gap: 1.5px;
+}
+
+#screen-world .vTelCard span,
+#screen-world .vDynoHead span {
+  color: #93c5fd;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+#screen-world .vTelCard strong {
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 1000;
+}
+
+#screen-world .vTelCard small {
+  color: #cbd5e1;
+  font-size: 7px;
+}
+
+#screen-world .vDynoHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#screen-world .vDynoHead b {
+  color: #4ade80;
+  font-size: 8.2px;
+}
+
+#screen-world .vDynoTrack {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  overflow: hidden;
+}
+
+#screen-world .vDynoTrack i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38bdf8, #35e58a);
+}
+
+#screen-world .vehicleLiveStatusBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 6px 8px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, rgba(12, 46, 72, 0.86), rgba(4, 18, 30, 0.94));
+  border: 1px solid rgba(56, 189, 248, 0.32);
+}
+
+#screen-world .vehicleTuneActionsCard {
+  display: grid;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, rgba(12, 46, 72, 0.86), rgba(4, 18, 30, 0.94));
+  border: 1px solid rgba(56, 189, 248, 0.32);
+}
+
+#screen-world .vLiveStatusText b,
+#screen-world .vTuneInfo b {
+  display: block;
+  color: #ffffff;
+  font-size: 8.8px;
+}
+
+#screen-world .vLiveStatusText span,
+#screen-world .vTuneInfo small {
+  display: block;
+  color: #bae6fd;
+  font-size: 7.4px;
+}
+
+#screen-world .vLiveStatusBtns {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+#screen-world .vTuneBtns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  width: 100%;
+}
+
+#screen-world .vQuickFleetPills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
 }
 
 /* ==========================================================================
@@ -1725,10 +2165,9 @@ html.firstSessionGuideActive #screen-world .mobileCityHud:not(.build-mode):not(.
    ========================================================================== */
 
 #screen-world .mobilePlacedSheet {
-  max-height: min(62vh, 535px) !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding: 8px 9px !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  padding: 7px 8px !important;
   border-radius: 18px !important;
   background: linear-gradient(180deg, rgba(8, 34, 54, 0.98) 0%, rgba(3, 14, 24, 0.99) 100%) !important;
   border: 2px solid rgba(56, 189, 248, 0.45) !important;

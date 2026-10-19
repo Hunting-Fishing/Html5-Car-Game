@@ -1,6 +1,8 @@
 import { ScreenFrame } from '../components/ScreenFrame.js';
 import { SubTabBar } from '../components/SubTabBar.js';
 import { getObjectiveList } from '../../systems/objectiveSystem.js';
+import { getTotalIdlePerMinute } from '../../systems/idleLineSystem.js';
+import { fmt } from '../../systems/economySystem.js';
 import { UI_ICONS } from '../../data/uiIconMap.js';
 
 function recommendedActionForObjective(objective) {
@@ -15,6 +17,36 @@ function nextTitle(objective) {
   return objective?.title || 'Stage map is open';
 }
 
+function formatAwayDuration(seconds = 0) {
+  const mins = Math.max(1, Math.round(seconds / 60));
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  const rem = mins % 60;
+  return rem ? `${hrs}h ${rem}m` : `${hrs}h`;
+}
+
+function renderRichdomWelcomeBack(pending) {
+  if (!pending?.coins && !pending?.parts) return '';
+  const duration = formatAwayDuration(pending.seconds || 60);
+  const mgrNote = pending.managerCount
+    ? `${pending.managerCount} Elite Manager${pending.managerCount === 1 ? '' : 's'} working`
+    : 'Offline Empire Income';
+  const extraParts = pending.parts ? ` · +${fmt(pending.parts)} Parts` : '';
+  return `
+    <section class="adcapRow richdomWelcomeCard" aria-label="Welcome Back Offline Rewards">
+      <div class="adcapIcon"><img src="${UI_ICONS.coin}" alt=""></div>
+      <button class="adcapBuy" data-action="claimOffline">
+        <b>WELCOME BACK!</b>
+        <small>+${fmt(pending.coins || 0)} Coins${extraParts}</small>
+      </button>
+      <div class="adcapTrack richdomWelcomeTrack">
+        <em>⏱ ${duration} · ${mgrNote}</em>
+      </div>
+      <button class="adcapManager richdomCollectBtn" data-action="claimOffline"><b>COLLECT</b></button>
+    </section>
+  `;
+}
+
 function tile(screen, icon, title, detail) {
   return `<button class="homeTile" type="button" data-action="screen" data-screen="${screen}"><img src="${icon}" alt=""><b>${title}</b><small>${detail}</small></button>`;
 }
@@ -23,13 +55,16 @@ export function renderHubScreen(state) {
   const objectives = getObjectiveList(state);
   const next = objectives.find((item) => !item.done);
   const recommended = recommendedActionForObjective(next);
-  const away = state.pendingOffline?.coins
-    ? `<section class="adcapRow"><div class="adcapIcon"><img src="${UI_ICONS.coin}" alt=""></div><button class="adcapBuy" data-action="claimOffline"><b>Collect</b><small>+${state.pendingOffline.coins} coins</small></button><div class="adcapTrack"><em>Away ${Math.max(1, Math.round((state.pendingOffline.seconds || 0) / 60))}m</em></div><button class="adcapManager" data-action="claimOffline"><b>Pay</b></button></section>`
-    : '';
+  const away = renderRichdomWelcomeBack(state.pendingOffline);
+  const totals = getTotalIdlePerMinute(state);
+  const rateEntries = Object.entries(totals);
+  const empireRate = rateEntries.length
+    ? rateEntries.slice(0, 3).map(([res, val]) => `+${fmt(val)} ${res}/m`).join(' · ')
+    : 'Hire Managers in Supplies for 24/7 idle income';
 
   return ScreenFrame({
     title: 'Home',
-    subtitle: 'Collect, then pick where to work.',
+    subtitle: `Empire Rate: ${empireRate}`,
     badge: `Stage ${state.stage || 1}`,
     className: 'hubMobileHome',
     body: `
@@ -60,3 +95,4 @@ export function renderHubScreen(state) {
     `
   });
 }
+

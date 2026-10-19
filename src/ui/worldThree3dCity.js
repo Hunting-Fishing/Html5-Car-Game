@@ -98,6 +98,13 @@ function makeMarqueeSignTexture(titleText, subText = '365 AUTO WORLD', accentHex
   return tex;
 }
 
+export const HITBOX_MAT = new THREE.MeshBasicMaterial({
+  color: 0xffffff,
+  transparent: true,
+  opacity: 0,
+  depthWrite: false
+});
+
 export function makeLabelSprite(lines, {
   bgColor = 'rgba(6, 19, 29, 0.92)',
   borderColor = '#38bdf8',
@@ -105,7 +112,8 @@ export function makeLabelSprite(lines, {
   subColor = '#fef08a',
   width = 160,
   height = 42,
-  scale = 0.38
+  scale = 0.38,
+  clickable = false
 } = {}) {
   const canvas = document.createElement('canvas');
   canvas.width = width * 2;
@@ -144,6 +152,9 @@ export function makeLabelSprite(lines, {
   const sprite = new THREE.Sprite(mat);
   sprite.scale.set(width * scale, height * scale, 1);
   sprite.renderOrder = 999;
+  if (!clickable) {
+    sprite.raycast = () => {};
+  }
   return sprite;
 }
 
@@ -951,6 +962,24 @@ export function create3DVehicle({ assetKey = 'skylineR34', direction = 'east', t
     root.add(modelTag);
   }
 
+  // Generous 3D Click Hitbox + Selection Ring for Vehicle
+  const hitbox = new THREE.Mesh(
+    new THREE.BoxGeometry(length + 14, 24, width + 14),
+    HITBOX_MAT
+  );
+  hitbox.position.set(0, 11, 0);
+  root.add(hitbox);
+
+  const selectionRing = new THREE.Mesh(
+    new THREE.RingGeometry(Math.max(length, width) * 0.48, Math.max(length, width) * 0.62, 28),
+    new THREE.MeshBasicMaterial({ color: 0x35e58a, side: THREE.DoubleSide, transparent: true, opacity: 0.92 })
+  );
+  selectionRing.rotation.x = -Math.PI / 2;
+  selectionRing.position.set(0, 0.8, 0);
+  selectionRing.visible = false;
+  selectionRing.raycast = () => {};
+  root.add(selectionRing);
+
   if (direction === 'east') root.rotation.y = 0;
   else if (direction === 'west') root.rotation.y = Math.PI;
   else if (direction === 'south') root.rotation.y = -Math.PI / 2;
@@ -964,6 +993,7 @@ export function create3DVehicle({ assetKey = 'skylineR34', direction = 'east', t
   root._turnMat = turnMat;
   root._turnSignals = turnSignals;
   root._modelTag = modelTag;
+  root._selectionRing = selectionRing;
   root._spec = spec;
   root._assetKey = assetKey;
   return root;
@@ -1143,6 +1173,24 @@ export function create3DPerson({ personKey = 'residentBlue', label = '', isStaff
     root.add(tag);
   }
 
+  // Generous 3D Click Hitbox + Selection Ring for Person
+  const hitbox = new THREE.Mesh(
+    new THREE.BoxGeometry(24, 34, 24),
+    HITBOX_MAT
+  );
+  hitbox.position.set(0, 15, 0);
+  root.add(hitbox);
+
+  const selectionRing = new THREE.Mesh(
+    new THREE.RingGeometry(8.5, 12.2, 24),
+    new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide, transparent: true, opacity: 0.95 })
+  );
+  selectionRing.rotation.x = -Math.PI / 2;
+  selectionRing.position.set(0, 0.4, 0);
+  selectionRing.visible = false;
+  selectionRing.raycast = () => {};
+  root.add(selectionRing);
+
   root._bodyRoot = bodyRoot;
   root._leftLeg = leftLegPivot;
   root._rightLeg = rightLegPivot;
@@ -1150,6 +1198,7 @@ export function create3DPerson({ personKey = 'residentBlue', label = '', isStaff
   root._rightArm = rightArmPivot;
   root._torso = torsoPivot;
   root._head = headPivot;
+  root._selectionRing = selectionRing;
   return root;
 }
 
@@ -2269,18 +2318,43 @@ export class Three3DCityViewport {
       -((clientY - rect.top) / rect.height) * 2 + 1
     );
     this.raycaster.setFromCamera(ndc, this.camera);
-    const hits = this.raycaster.intersectObjects(this.interactiveTargets, true);
-    for (const hit of hits) {
-      let curr = hit.object;
-      while (curr) {
-        if (typeof curr.userData?.onTap === 'function') {
-          curr.userData.onTap();
-          return true;
+
+    const invokeFirstTap = (objects) => {
+      if (!objects || !objects.length) return false;
+      const hits = this.raycaster.intersectObjects(objects, true);
+      for (const hit of hits) {
+        let curr = hit.object;
+        while (curr) {
+          if (typeof curr.userData?.onTap === 'function') {
+            curr.userData.onTap();
+            return true;
+          }
+          curr = curr.parent;
         }
-        curr = curr.parent;
       }
+      return false;
+    };
+
+    if (this.gridLayer.visible) {
+      if (invokeFirstTap(this.gridLayer.children)) return true;
     }
-    return false;
+
+    // Priority 1: Walking People & Street Vehicles (never let buildings or road markers swallow taps on people/cars!)
+    if (invokeFirstTap([...this.walkerLayer.children, ...this.trafficLayer.children])) {
+      return true;
+    }
+
+    // Priority 2: Buildings, Expansions & Roadside Incidents
+    if (invokeFirstTap([
+      ...this.fixedBuildingLayer.children,
+      ...this.placedBuildingLayer.children,
+      ...this.expansionLayer.children,
+      ...this.incidentLayer.children
+    ])) {
+      return true;
+    }
+
+    return invokeFirstTap(this.interactiveTargets);
   }
 
   buildStatic3DCity() {
@@ -2683,6 +2757,13 @@ export class Three3DCityViewport {
       if (mesh3d._modelTag) {
         mesh3d._modelTag.visible = Boolean(this.zoom <= 0.88 || preset.id === 'street3d' || item.isSelected);
       }
+      if (mesh3d._selectionRing) {
+        mesh3d._selectionRing.visible = Boolean(item.isSelected);
+        if (item.isSelected) {
+          const sPulse = 1 + Math.sin(clock * 5.0) * 0.08;
+          mesh3d._selectionRing.scale.set(sPulse, sPulse, 1);
+        }
+      }
 
       const pNow = pathPointFn(item.path, item.d);
       const pNext = pathPointFn(item.path, item.d + 6);
@@ -2763,6 +2844,14 @@ export class Three3DCityViewport {
         if (item.onTap) this.registerClickable(person3d, item.onTap);
         this.walkerLayer.add(person3d);
         this.walkerMeshes.set(item, person3d);
+      }
+
+      if (person3d._selectionRing) {
+        person3d._selectionRing.visible = Boolean(item.isSelected);
+        if (item.isSelected) {
+          const pPulse = 1 + Math.sin(clock * 5.0) * 0.10;
+          person3d._selectionRing.scale.set(pPulse, pPulse, 1);
+        }
       }
 
       const pNow = pathPointFn(item.path, item.d);
