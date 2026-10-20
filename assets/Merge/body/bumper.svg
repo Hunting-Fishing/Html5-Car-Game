@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2e8f0"/><stop offset="1" stop-color="#475569"/></linearGradient></defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#g)" stroke="#08131c" stroke-width="3"/>
+  <path d="M12 28h40v8c0 6-6 8-20 8S12 42 12 36z" fill="#1e293b"/>
+  <text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#08131c">BMP</text>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bae6fd"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#g)" stroke="#08131c" stroke-width="3"/>
+  <rect x="18" y="22" width="22" height="14" rx="3" fill="#0c4a6e"/><rect x="40" y="26" width="8" height="6" fill="#111"/>
+  <text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#08131c">MIR</text>
+</svg>

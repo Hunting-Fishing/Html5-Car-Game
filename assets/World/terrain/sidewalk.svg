@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 36" width="160" height="36" role="img" aria-label="City sidewalk pavers">
+  <defs>
+    <linearGradient id="paverGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e2e8f0"/>
+      <stop offset="50%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#b4c2d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="36" fill="url(#paverGrad)"/>
+  <!-- Top & Bottom Bevel Highlights -->
+  <rect x="0" y="0" width="160" height="2" fill="#f8fafc" opacity="0.85"/>
+  <rect x="0" y="34" width="160" height="2" fill="#64748b" opacity="0.55"/>
+  <!-- Seamless 32px Paver Grid Joints (32, 64, 96, 128, 160) -->
+  <path d="M0 18 H160 M32 0 V36 M64 0 V36 M96 0 V36 M128 0 V36" stroke="#64748b" stroke-width="1.1" opacity="0.42"/>
+  <path d="M0 19.2 H160 M33.2 0 V36 M65.2 0 V36 M97.2 0 V36 M129.2 0 V36" stroke="#f8fafc" stroke-width="0.8" opacity="0.6"/>
+  <!-- Subtle Stone Speckles -->
+  <circle cx="16" cy="9" r="1" fill="#64748b" opacity="0.28"/>
+  <circle cx="48" cy="26" r="1.1" fill="#64748b" opacity="0.28"/>
+  <circle cx="80" cy="11" r="0.9" fill="#f8fafc" opacity="0.6"/>
+  <circle cx="112" cy="25" r="1" fill="#64748b" opacity="0.28"/>
+  <circle cx="144" cy="10" r="0.9" fill="#64748b" opacity="0.28"/>
+</svg>

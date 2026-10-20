@@ -1,0 +1,1 @@
+This file marks the merge asset placeholder setup. Placeholder SVG item files are generated through the merge asset tree setup.

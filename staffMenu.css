@@ -1,0 +1,372 @@
+.bottomNav { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; align-items: end !important; }
+.bottomNav .tab span { display: none !important; }
+.bottomNav .tab.active { min-height: 92px !important; }
+.bottomNav .tab.active > span { display: block !important; font-size: 13px !important; font-weight: 900 !important; color: #1a1206 !important; }
+.bottomNav .iconEmojiFallback,
+.bottomNav .tabIconFallback { display: none !important; }
+#screen-profile .gameMenuTabs { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+#screen-profile .gameMenuTabs button { font-size: 10px; min-height: 48px; }
+#screen-staff .staffTabs { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+#screen-staff.active { overflow-y: auto !important; padding-bottom: 12px !important; background: #071722; }
+#screen-staff .staffTabs button { font-size: 12px; letter-spacing: .02em; }
+#screen-staff .assignList { display: grid; gap: 8px; }
+#screen-staff .assignDesk {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 14px;
+  background: #10283c;
+  border-left: 4px solid #3a2468;
+}
+#screen-staff .assignDesk.service { border-left-color: #2f7dff; }
+#screen-staff .assignDesk.parts { border-left-color: #e0a325; }
+#screen-staff .assignDesk.drive { border-left-color: #3ddc84; }
+#screen-staff .assignDesk .salarySlide,
+#screen-staff .assignDesk .assignGrid { grid-column: 1 / -1; }
+#screen-staff .salarySlide { display: grid; gap: 3px; }
+#screen-staff .salarySlide span { color: #9fd8ff; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .salarySlide b { color: #fff; font-size: 12px; letter-spacing: 0; text-transform: none; }
+#screen-staff .salarySlide small { color: #d5e7f2; font-size: 11px; }
+#screen-staff .taskRow { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+#screen-staff .taskRow > span { width: 100%; color: #9fd8ff; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .taskNote { grid-column: 1 / -1; margin: 0; color: #d5e7f2; font-size: 12px; }
+#screen-staff .taskBtn { min-height: 36px; border: 1px solid #3d6d88; border-radius: 10px; padding: 4px 8px; background: #123044; color: #fff; font-size: 11px; font-weight: 800; }
+#screen-staff .taskBtn small { display: block; color: #9fd8ff; font-size: 9px; font-weight: 700; }
+#screen-staff .treeLine { width: 100%; display: grid; gap: 4px; }
+#screen-staff .treeLine b { color: #fff; font-size: 12px; }
+#screen-staff .treeNodes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+#screen-staff .treeNode:disabled { opacity: .5; }
+#screen-staff .taskBtn.on { border-color: #7dffb2; background: #14543a; }
+#screen-staff .taskRow > small { width: 100%; color: #d5e7f2; font-size: 11px; }
+#screen-staff .assignLead {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+#screen-staff .assignLead b { display: block; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .assignLead small { display: block; color: #d5e7f2; font-size: 12px; line-height: 1.3; }
+#screen-staff .assignLead small.assignBonus { color: #7dffb2; font-weight: 800; }
+#screen-staff .statBars { display: grid; gap: 6px; width: 100%; margin-top: 2px; }
+#screen-staff .statBar {
+  --bar: #3aa86a;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 44px;
+  gap: 8px;
+  align-items: center;
+  color: #9eb4c4;
+  font-size: 10px;
+  font-weight: 600;
+}
+#screen-staff .statBar span {
+  color: #8ea6b6;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+#screen-staff .statBar i {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .08);
+}
+#screen-staff .statBar b {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--bar);
+}
+#screen-staff .statBar b::after { content: none; }
+#screen-staff .statBar em {
+  color: #f4f7fa;
+  font-style: normal;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+}
+#screen-staff .statBar.energy { --bar: #3cba78; }
+#screen-staff .statBar.race { --bar: #e15b68; }
+#screen-staff .statBar.grip { --bar: #e0b34a; }
+#screen-staff .statBar.fuel { --bar: #4c93e0; }
+#screen-staff .statBar.repair { --bar: #a98ae0; }
+#screen-staff .statBar.parts { --bar: #d7a441; }
+#screen-staff .statBar.route { --bar: #3cba78; }
+#screen-staff .statBar.tow { --bar: #e08a45; }
+#screen-staff .statBar.sales { --bar: #c47ad8; }
+#screen-staff .statBars.compact { gap: 4px; }
+#screen-staff .statBars.compact .statBar { grid-template-columns: 32px minmax(0, 1fr); gap: 5px; }
+#screen-staff .statBars.compact .statBar span { font-size: 8px; letter-spacing: .04em; }
+#screen-staff .statBars.compact .statBar i { height: 4px; }
+#screen-staff .staffPopCard .statBar span { display: block; font-size: 9px; color: #8ea6b6; }
+#screen-staff .staffPopCard .statBar em { display: block; font-size: 11px; color: #f4f7fa; }
+#screen-staff .assignLead > span { min-width: 0; }
+#screen-staff .assignDock .statBars { grid-column: 1 / -1; }
+#screen-staff .assignStats span {
+  padding: 4px 2px;
+  border-radius: 8px;
+  background: #071722;
+  text-align: center;
+}
+#screen-staff .assignStats b { display: block; color: #fff; font-size: 13px; }
+#screen-staff .assignStats small { color: #9fd8ff; font-size: 9px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .assignChange {
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: #f6c445;
+  color: #1b1408;
+  font-size: 12px;
+  font-weight: 800;
+}
+#screen-staff .assignDesk.picking .assignCard { outline: 2px dashed #f6c445; outline-offset: 1px; }
+#screen-staff .assignCard.manager { box-shadow: inset 0 0 0 2px #7dffb2; }
+#screen-staff .assignRole.hired { background: #1f8f4e; }
+#screen-staff .assignCard.open { opacity: .72; }
+#screen-staff .assignLead.vacant { color: #d5e7f2; }
+#screen-staff .assignRole {
+  position: absolute;
+  top: 20px;
+  right: 4px;
+  padding: 1px 4px;
+  border-radius: 6px;
+  background: #f6c445;
+  color: #1b1408;
+  font-size: 9px;
+  font-weight: 800;
+}
+#screen-staff .assignPct { color: #7dffb2; font-size: 13px; font-weight: 800; }
+#screen-staff .assignRate { color: #9fd8ff; font-size: 12px; font-weight: 800; }
+#screen-staff .assignGrid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+#screen-staff .assignCard {
+  position: relative;
+  display: grid !important;
+  grid-template-rows: 132px auto;
+  min-width: 0;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 3px solid #3ddc84 !important;
+  border-radius: 14px !important;
+  background: #143526 !important;
+  color: #fff;
+  text-align: center;
+}
+#screen-staff .assignCard.rare { border-color: #f6c445 !important; background: #3a3012 !important; }
+#screen-staff .assignCard.epic { border-color: #c59bff !important; background: #2c1848 !important; }
+#screen-staff .assignCard.selected { box-shadow: 0 0 0 2px #fff; }
+#screen-staff .assignFace {
+  width: 100%;
+  height: 132px;
+  object-fit: cover;
+  object-position: center 12%;
+  background: #24143f;
+}
+#screen-staff .assignName {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#screen-staff .assignFoot {
+  display: grid;
+  gap: 1px;
+  padding: 4px 3px 6px;
+  background: rgba(6, 16, 28, .78);
+}
+#screen-staff .assignFoot b { color: #fff; font-size: 11px; }
+#screen-staff .assignStars { color: #f6c445; font-size: 9px; letter-spacing: -0.5px; }
+#screen-staff .assignFoot em { color: #7dffb2; font-size: 11px; font-style: normal; font-weight: 800; }
+#screen-staff .staffPop {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: block;
+  margin: 0 0 8px;
+  padding: 0;
+}
+#screen-staff .staffPopBack { display: none; }
+#screen-staff:has(.staffPop) { overflow: auto !important; }
+#screen-staff .staffPop {
+  position: sticky !important;
+  top: 0 !important;
+  inset: auto !important;
+  z-index: 4;
+  display: block !important;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0 0 8px !important;
+  overflow: visible !important;
+  background: #07141f;
+}
+#screen-staff .staffPopCard {
+  position: relative;
+  z-index: 1;
+  display: flex !important;
+  flex-direction: column;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  gap: 8px;
+  padding: 12px;
+  border: 4px solid #f7fbff;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #59b7ff 0%, #1f78d8 100%);
+  color: #fff;
+  box-shadow: 0 6px 0 #1459a0, inset 0 2px 0 rgba(255, 255, 255, .5);
+}
+#screen-staff .staffPopHead { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; align-items: center; }
+#screen-staff .staffPopCard .assignDockFace { width: 72px; height: 72px; }
+#screen-staff .staffPanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+#screen-staff .paneBtn {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  min-height: 52px;
+  padding: 6px 4px 8px;
+  border: 3px solid #163e68;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #2f74b8, #1a568f);
+  color: #eef7ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 3px 0 #0e3a66;
+}
+#screen-staff .paneBtn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#screen-staff .paneBtn b { font-size: 11px; font-weight: 800; }
+#screen-staff .paneBtn.on { color: #6a3b08; border-color: #fff6d0; background: linear-gradient(180deg, #ffe57a, #f0a31a); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 3px 0 #c47a10; }
+#screen-staff .staffPopHead .assignDockFace { width: 68px; height: 68px; border: 3px solid #fff; border-radius: 18px; background: #8fd0ff; box-shadow: 0 3px 0 #1459a0; }
+#screen-staff .staffPopHead b { color: #fff; text-shadow: 0 2px 0 rgba(16, 70, 130, .35); }
+#screen-staff .staffPopHead span { color: #e7f6ff !important; }
+#screen-staff .payNote { margin: 0; color: #f3fbff; font-size: 11px; }
+#screen-staff .staffPopCard .statBar { background: rgba(255, 255, 255, .2); border: 0; }
+#screen-staff .staffPopCard .statBar span,
+#screen-staff .staffPopCard .statBar em { color: #fff; }
+#screen-staff .staffPopCard .statBar i { background: rgba(8, 40, 90, .28); }
+#screen-staff .paneBody .assignDockActions { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 8px; margin-top: 0; }
+#screen-staff .paneBody .assignDockActions .btn { min-width: 0; min-height: 42px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 3px solid #fff; border-radius: 14px; font-weight: 800; }
+#screen-staff .paneBody .btn.primary { background: linear-gradient(180deg, #ffe14a, #f5a623) !important; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .75), 0 4px 0 #c47a10 !important; color: #6a3208 !important; }
+#screen-staff .paneBody .btn.ghost { background: linear-gradient(180deg, #7eb6ef, #3b86d4); box-shadow: 0 4px 0 #1d5fa6; color: #fff; }
+#screen-staff .paneBody .btn.red { background: linear-gradient(180deg, #ff8b96, #e23b4e); box-shadow: 0 4px 0 #a11d2e; color: #fff; }
+#screen-staff .paneBody { flex: none; min-height: 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+#screen-staff .growSwitch button {
+  min-height: 34px;
+  border: 2px solid #163e6c;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #2f74b8, #1a568f);
+  color: #eef7ff;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 2px 0 #0e3a66;
+}
+#screen-staff .growSwitch button.on { background: linear-gradient(180deg, #ffe57a, #f0a31a); color: #6a3b08; border-color: #fff6d0; }
+#screen-staff .staffPopCard .taskRow > span { color: #fff8dc; }
+#screen-staff .staffPopCard .taskRow > small,
+#screen-staff .staffPopCard .taskNote { color: #f3fbff; }
+#screen-staff .staffPopCard .taskBtn {
+  min-height: 42px;
+  padding: 8px 8px;
+  border: 3px solid #fff;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffe14a, #f5a623);
+  color: #5a2d08;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.15;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .75), 0 4px 0 #c47a10;
+}
+#screen-staff .staffPopCard .taskBtn small { display: inline; color: #5a2d08; font-size: 13px; font-weight: 900; }
+#screen-staff .staffPopCard .taskBtn small::before { content: ' · '; }
+#screen-staff .staffPopCard .taskBtn.on { background: linear-gradient(180deg, #8dff67, #2fbf45); border-color: #fff; color: #083214; box-shadow: inset 0 2px 0 rgba(255,255,255,.7), 0 4px 0 #178a32; }
+#screen-staff .paneBody .btn.promote {
+  background: linear-gradient(180deg, #8fd0ff, #1d7fe0) !important;
+  color: #04284a !important;
+  border-color: #fff !important;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .75), 0 4px 0 #0c4f96 !important;
+}
+#screen-staff .staffPopX {
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #fff;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ff8d98, #e23b4e);
+  box-shadow: 0 3px 0 #a11d2e;
+}
+#screen-staff .paneBody .statBars,
+#screen-staff .paneBody .taskRow,
+#screen-staff .paneBody .assignDockActions,
+#screen-staff .paneBody .staffPay,
+#screen-staff .paneBody .staffDelta,
+#screen-staff .staffPopCard .salarySlide span { color: #fff3c4; }
+#screen-staff .staffPopCard .salarySlide b { color: #ffe14a; }
+#screen-staff .staffPopCard .salarySlide small { color: #fff6d8; }
+#screen-staff .salarySlide input { accent-color: #f5a623; }
+#screen-staff .salarySlide b { color: #ffe14a; }
+#screen-staff .paneBody .taskRow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-content: start; }
+#screen-staff .paneBody .taskRow > span,
+#screen-staff .paneBody .taskRow > small,
+#screen-staff .paneBody .treeLine { grid-column: 1 / -1; }
+#screen-staff .paneBody .taskBtn { min-height: 42px; font-size: 13px; font-weight: 900; color: #5a2d08; }
+#screen-staff .paneBody .taskBtn small { font-size: 13px; line-height: 1.15; color: #5a2d08; }
+#screen-staff .growSwitch { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+#screen-staff .growSwitch button.on { background: linear-gradient(180deg, #ffe57a, #f0a31a); color: #6a3b08; border-color: #fff6d0; }
+#screen-staff .treeNodes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#screen-staff .staffPopCard .staffPay { background: transparent; padding: 0; }
+#screen-staff .staffPopCard .taskBtn.on { background: linear-gradient(180deg, #c8ff9a, #3dce62); border-color: #fff; color: #0d4a22; box-shadow: 0 3px 0 #1e9a42; }
+#screen-staff .staffPopX {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #fff;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ff8d98, #e23b4e);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  box-shadow: 0 3px 0 #a11d2e;
+}
+#screen-staff .staffPopCard .assignDockFace { width: 72px; height: 72px; }
+#screen-staff .staffPopCard .statBars,
+#screen-staff .staffPopCard .assignDockActions { grid-column: 1 / -1; }
+#screen-staff .staffDelta { grid-column: 1 / -1; color: #7dffb2; font-size: 12px; font-style: normal; font-weight: 800; }
+#screen-staff .staffPay { grid-column: 1 / -1; display: grid; gap: 2px; padding: 6px 8px; border-radius: 10px; background: #082033; }
+#screen-staff .staffPay span { color: #9fd8ff; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+#screen-staff .staffPay b { color: #fff; font-size: 13px; }
+#screen-staff .staffPay small { color: #d5e7f2; font-size: 11px; }
+#screen-staff .assignDockFace { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; object-position: center 15%; }
+#screen-staff .staffPopCard b { display: block; font-size: 16px; padding-right: 24px; }
+#screen-staff .staffPopCard span,
+#screen-staff .staffPopCard small { display: block; color: #d5e7f2; font-size: 12px; line-height: 1.3; }
+#screen-staff .assignDockActions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+#screen-staff .assignDockActions .btn { min-height: 32px; padding: 6px 8px; font-size: 12px; }
+

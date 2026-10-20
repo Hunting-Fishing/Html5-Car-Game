@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <rect width="900" height="520" fill="#86d4ff"/>
+  <rect y="306" width="900" height="214" fill="#4f9e52"/>
+  <path d="M-40 310 L115 120 L250 310Z" fill="#78909c"/>
+  <path d="M70 310 L310 84 L540 310Z" fill="#607d8b"/>
+  <path d="M330 310 L560 118 L790 310Z" fill="#78909c"/>
+  <path d="M570 310 L760 104 L940 310Z" fill="#546e7a"/>
+  <path d="M310 84 L374 146 L250 134Z" fill="#f8fafc" opacity=".75"/>
+  <path d="M760 104 L812 160 L710 150Z" fill="#f8fafc" opacity=".75"/>
+  <path d="M0 304 C125 260 240 294 380 238 C520 180 650 290 900 222 L900 360 L0 360Z" fill="#5eb35d"/>
+</svg>

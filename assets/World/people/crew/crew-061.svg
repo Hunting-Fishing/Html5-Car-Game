@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" width="64" height="80" role="img" aria-label="Tow Hand sprite 61">
+  <rect width="64" height="80" rx="14" fill="#10283c"/>
+  <ellipse cx="32" cy="74" rx="16" ry="3" fill="#000" opacity=".28"/>
+  <rect x="22" y="54" width="8" height="16" rx="3" fill="#1b2430"/>
+  <rect x="34" y="54" width="8" height="16" rx="3" fill="#1b2430"/>
+  <rect x="16" y="34" width="32" height="24" rx="8" fill="#d6b21a"/>
+  <rect x="16" y="34" width="32" height="6" fill="#6e5a08"/>
+  <rect x="8" y="36" width="8" height="16" rx="4" fill="#f3d2b0"/>
+  <rect x="48" y="36" width="8" height="16" rx="4" fill="#f3d2b0"/>
+  <circle cx="32" cy="24" r="14" fill="#f3d2b0"/>
+  <path d="M18 22c1-10 8-16 14-16s13 6 14 16c-2-6-8-9-14-9s-12 3-14 9z" fill="#7a2430"/>
+  <path d="M18 18h22l2 4H16z" fill="#6e5a08"/><path d="M16 22h34" stroke="#6e5a08" stroke-width="3"/>
+  <circle cx="26" cy="24" r="4" fill="none" stroke="#1b1408" stroke-width="1.4"/><circle cx="38" cy="24" r="4" fill="none" stroke="#1b1408" stroke-width="1.4"/><path d="M30 24h4" stroke="#1b1408" stroke-width="1.4"/>
+  <path d="M28 30c2 2 6 2 8 0" fill="none" stroke="#7a3b22" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="44" cy="46" r="4" fill="#f6c445"/>
+  <text x="44" y="48" text-anchor="middle" font-size="6" font-family="sans-serif" font-weight="700" fill="#1b1408">7</text>
+</svg>

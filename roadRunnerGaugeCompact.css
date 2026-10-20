@@ -1,0 +1,82 @@
+.rrGaugeDash {
+  top: 36px;
+  right: 8px;
+  width: 166px;
+  padding: 5px;
+  border-radius: 15px;
+  border-width: 1px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 5px 0 rgba(0,0,0,.20), 0 9px 14px rgba(0,0,0,.22);
+}
+
+.rrGaugeDashGrid {
+  gap: 5px;
+}
+
+.rrDial {
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,.08), inset 0 0 14px rgba(0,0,0,.55);
+}
+
+.rrDial::after {
+  inset: 8px;
+}
+
+.rrNeedle {
+  width: 2px;
+  height: 36%;
+  box-shadow: 0 0 5px rgba(255,255,255,.55);
+}
+
+.rrNeedleHub {
+  width: 9px;
+  height: 9px;
+  border-width: 2px;
+}
+
+.rrDialValue {
+  bottom: 19%;
+}
+
+.rrDialValue b {
+  font-size: 13px;
+  line-height: .95;
+}
+
+.rrDialValue span {
+  margin-top: 1px;
+  font-size: 6px;
+  letter-spacing: .7px;
+}
+
+.rrGaugeStatus {
+  grid-template-columns: 34px 1fr;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.rrGearBadge {
+  min-height: 18px;
+  font-size: 9px;
+}
+
+.rrDamageRisk.rrGaugeRisk {
+  min-height: 18px;
+  font-size: 7px;
+  letter-spacing: .2px;
+}
+
+.rrGaugeHelp {
+  display: none;
+}
+
+@media (max-width: 430px) {
+  .rrGaugeDash {
+    width: 150px;
+    top: 34px;
+    right: 7px;
+    padding: 5px;
+  }
+
+  .rrDialValue b {
+    font-size: 12px;
+  }
+}

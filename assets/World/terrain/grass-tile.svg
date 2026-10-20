@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Lush park grass tile">
+  <rect width="160" height="160" fill="#5cb84d"/>
+  <!-- Diagonal Sunlit Lawn Stripes (Clash of Clans style) -->
+  <path d="M0,0 L80,0 L0,80 Z M80,160 L160,80 L160,160 Z" fill="#68c558" opacity="0.55"/>
+  <path d="M80,0 L160,0 L160,80 L80,160 L0,160 L0,80 Z" fill="#52ad44" opacity="0.35"/>
+  <!-- Subtle Grass Blade Tufts -->
+  <g stroke="#3d8b32" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.55">
+    <path d="M24,36 l-3,-6 M27,36 l1,-7 M30,36 l4,-5"/>
+    <path d="M112,48 l-3,-5 M115,48 l1,-6 M118,48 l3,-5"/>
+    <path d="M58,118 l-3,-6 M61,118 l1,-7 M64,118 l4,-5"/>
+    <path d="M128,126 l-2,-5 M131,126 l2,-6"/>
+  </g>
+  <g fill="#86efac" opacity="0.45">
+    <circle cx="42" cy="72" r="2"/>
+    <circle cx="134" cy="24" r="1.8"/>
+    <circle cx="92" cy="96" r="2"/>
+  </g>
+</svg>

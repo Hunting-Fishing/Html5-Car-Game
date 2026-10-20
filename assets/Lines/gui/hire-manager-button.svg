@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" preserveAspectRatio="none" role="img" aria-label="Hire manager button">
+  <rect x="7" y="7" width="346" height="100" rx="28" fill="#06131d" opacity=".6"/>
+  <rect x="8" y="4" width="344" height="92" rx="26" fill="#5ab7ff" stroke="#c7f9ff" stroke-width="5"/>
+  <path d="M18 86h324" stroke="#0b6a95" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="58" cy="42" r="16" fill="#082033"/>
+  <path d="M32 77c5-26 47-26 52 0" fill="#082033"/>
+</svg>

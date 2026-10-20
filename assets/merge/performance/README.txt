@@ -1,0 +1,1 @@
+Performance Parts placeholders. Replace SVG files with your final art using the same file names.

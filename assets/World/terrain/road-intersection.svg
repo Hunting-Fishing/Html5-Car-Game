@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="City road intersection">
+  <defs>
+    <radialGradient id="intAsphalt" cx="50%" cy="50%" r="62%">
+      <stop offset="0%" stop-color="#2a3b54"/>
+      <stop offset="55%" stop-color="#202e43"/>
+      <stop offset="100%" stop-color="#151f2e"/>
+    </radialGradient>
+    <linearGradient id="sidewalkCorner" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full 160x160 Solid Asphalt Foundation (prevents any underlying road lines from ever bleeding through curved corner fillets!) -->
+  <rect width="160" height="160" fill="url(#intAsphalt)"/>
+
+  <!-- Straight Curb Extensions from 0..20 and 140..160 so curbs meet road-horizontal and road-vertical seamlessly -->
+  <!-- North & South Vertical Curb Lips -->
+  <rect x="36" y="0" width="3" height="22" fill="#f8fafc"/>
+  <rect x="39" y="0" width="2.5" height="22" fill="#94a3b8"/>
+  <rect x="41.5" y="0" width="2.5" height="22" fill="#090f17" opacity="0.7"/>
+
+  <rect x="121" y="0" width="3" height="22" fill="#e2e8f0"/>
+  <rect x="118.5" y="0" width="2.5" height="22" fill="#94a3b8"/>
+  <rect x="116" y="0" width="2.5" height="22" fill="#090f17" opacity="0.7"/>
+
+  <rect x="36" y="138" width="3" height="22" fill="#f8fafc"/>
+  <rect x="39" y="138" width="2.5" height="22" fill="#94a3b8"/>
+  <rect x="41.5" y="138" width="2.5" height="22" fill="#090f17" opacity="0.7"/>
+
+  <rect x="121" y="138" width="3" height="22" fill="#e2e8f0"/>
+  <rect x="118.5" y="138" width="2.5" height="22" fill="#94a3b8"/>
+  <rect x="116" y="138" width="2.5" height="22" fill="#090f17" opacity="0.7"/>
+
+  <!-- West & East Horizontal Curb Lips -->
+  <rect x="0" y="36" width="22" height="3" fill="#f8fafc"/>
+  <rect x="0" y="39" width="22" height="2.5" fill="#94a3b8"/>
+  <rect x="0" y="41.5" width="22" height="2.5" fill="#090f17" opacity="0.7"/>
+
+  <rect x="0" y="121" width="22" height="3" fill="#e2e8f0"/>
+  <rect x="0" y="118.5" width="22" height="2.5" fill="#94a3b8"/>
+  <rect x="0" y="116" width="22" height="2.5" fill="#090f17" opacity="0.7"/>
+
+  <rect x="138" y="36" width="22" height="3" fill="#f8fafc"/>
+  <rect x="138" y="39" width="22" height="2.5" fill="#94a3b8"/>
+  <rect x="138" y="41.5" width="22" height="2.5" fill="#090f17" opacity="0.7"/>
+
+  <rect x="138" y="121" width="22" height="3" fill="#e2e8f0"/>
+  <rect x="138" y="118.5" width="22" height="2.5" fill="#94a3b8"/>
+  <rect x="138" y="116" width="22" height="2.5" fill="#090f17" opacity="0.7"/>
+
+  <!-- 4 Curved Sidewalk Plaza Corners (0..36 and 124..160 = exact 36px sidewalk width!) -->
+  <!-- Top-Left Corner -->
+  <path d="M 0,0 H 36 V 22 Q 36,36 22,36 H 0 Z" fill="url(#sidewalkCorner)"/>
+  <path d="M 0,0 H 12 V 12 H 0 Z" fill="#86efac" opacity="0.18"/>
+  <path d="M 38.5,0 V 22 Q 38.5,38.5 22,38.5 H 0" fill="none" stroke="#090f17" stroke-width="4.5" opacity="0.68"/>
+  <path d="M 36,0 V 22 Q 36,36 22,36 H 0" fill="none" stroke="#94a3b8" stroke-width="4.5"/>
+  <path d="M 34.5,0 V 21.5 Q 34.5,34.5 21.5,34.5 H 0" fill="none" stroke="#f8fafc" stroke-width="2.5"/>
+  <path d="M 0,18 H 33 M 18,0 V 33" stroke="#64748b" stroke-width="1" opacity="0.4"/>
+  <!-- Red-Brick Decorative Corner Accent & Yellow ADA Tactile Ramp -->
+  <path d="M 29,18 Q 29,29 18,29" fill="none" stroke="#facc15" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="2.5 3.5"/>
+
+  <!-- Top-Right Corner -->
+  <path d="M 160,0 H 124 V 22 Q 124,36 138,36 H 160 Z" fill="url(#sidewalkCorner)"/>
+  <path d="M 121.5,0 V 22 Q 121.5,38.5 138,38.5 H 160" fill="none" stroke="#090f17" stroke-width="4.5" opacity="0.68"/>
+  <path d="M 124,0 V 22 Q 124,36 138,36 H 160" fill="none" stroke="#94a3b8" stroke-width="4.5"/>
+  <path d="M 125.5,0 V 21.5 Q 125.5,34.5 138.5,34.5 H 160" fill="none" stroke="#f8fafc" stroke-width="2.5"/>
+  <path d="M 127,18 H 160 M 142,0 V 33" stroke="#64748b" stroke-width="1" opacity="0.4"/>
+  <path d="M 131,18 Q 131,29 142,29" fill="none" stroke="#facc15" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="2.5 3.5"/>
+
+  <!-- Bottom-Left Corner -->
+  <path d="M 0,160 H 36 V 138 Q 36,124 22,124 H 0 Z" fill="url(#sidewalkCorner)"/>
+  <path d="M 38.5,160 V 138 Q 38.5,121.5 22,121.5 H 0" fill="none" stroke="#090f17" stroke-width="4.5" opacity="0.68"/>
+  <path d="M 36,160 V 138 Q 36,124 22,124 H 0" fill="none" stroke="#94a3b8" stroke-width="4.5"/>
+  <path d="M 34.5,160 V 138.5 Q 34.5,125.5 21.5,125.5 H 0" fill="none" stroke="#e2e8f0" stroke-width="2.5"/>
+  <path d="M 0,142 H 33 M 18,127 V 160" stroke="#64748b" stroke-width="1" opacity="0.4"/>
+  <path d="M 29,142 Q 29,131 18,131" fill="none" stroke="#facc15" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="2.5 3.5"/>
+
+  <!-- Bottom-Right Corner -->
+  <path d="M 160,160 H 124 V 138 Q 124,124 138,124 H 160 Z" fill="url(#sidewalkCorner)"/>
+  <path d="M 121.5,160 V 138 Q 121.5,121.5 138,121.5 H 160" fill="none" stroke="#090f17" stroke-width="4.5" opacity="0.68"/>
+  <path d="M 124,160 V 138 Q 124,124 138,124 H 160" fill="none" stroke="#94a3b8" stroke-width="4.5"/>
+  <path d="M 125.5,160 V 138.5 Q 125.5,125.5 138.5,125.5 H 160" fill="none" stroke="#e2e8f0" stroke-width="2.5"/>
+  <path d="M 127,142 H 160 M 142,127 V 160" stroke="#64748b" stroke-width="1" opacity="0.4"/>
+  <path d="M 131,142 Q 131,131 142,131" fill="none" stroke="#facc15" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="2.5 3.5"/>
+
+  <!-- Incoming Double Amber Center Lines & White Shoulder Lines up to Stop Bars -->
+  <!-- North approach (0..13) -->
+  <rect x="76.2" y="0" width="7.6" height="13" fill="#0d1522" opacity="0.58"/>
+  <line x1="77.6" y1="0" x2="77.6" y2="13" stroke="#fbbf24" stroke-width="2.2"/>
+  <line x1="82.4" y1="0" x2="82.4" y2="13" stroke="#f59e0b" stroke-width="2.2"/>
+  <line x1="45.5" y1="0" x2="45.5" y2="13" stroke="#f8fafc" stroke-width="1.8" opacity="0.78"/>
+  <line x1="114.5" y1="0" x2="114.5" y2="13" stroke="#f8fafc" stroke-width="1.8" opacity="0.78"/>
+
+  <!-- South approach (147..160) -->
+  <rect x="76.2" y="147" width="7.6" height="13" fill="#0d1522" opacity="0.58"/>
+  <line x1="77.6" y1="147" x2="77.6" y2="160" stroke="#fbbf24" stroke-width="2.2"/>
+  <line x1="82.4" y1="147" x2="82.4" y2="160" stroke="#f59e0b" stroke-width="2.2"/>
+  <line x1="45.5" y1="147" x2="45.5" y2="160" stroke="#f8fafc" stroke-width="1.8" opacity="0.78"/>
+  <line x1="114.5" y1="147" x2="114.5" y2="160" stroke="#f8fafc" stroke-width="1.8" opacity="0.78"/>
+
+  <!-- West approach (0..13) -->
+  <rect x="0" y="76.2" width="13" height="7.6" fill="#0d1522" opacity="0.58"/>
+  <line x1="0" y1="77.6" x2="13" y2="77.6" stroke="#fbbf24" stroke-width="2.2"/>
+  <line x1="0" y1="82.4" x2="13" y2="82.4" stroke="#f59e0b" stroke-width="2.2"/>
+  <line x1="0" y1="45.5" x2="13" y2="45.5" stroke="#f8fafc" stroke-width="1.8" opacity="0.78"/>
+  <line x1="0" y1="114.5" x2="13" y2="114.5" stroke="#f8fafc" stroke-width="1.8" opacity="0.78"/>
+
+  <!-- East approach (147..160) -->
+  <rect x="147" y="76.2" width="13" height="7.6" fill="#0d1522" opacity="0.58"/>
+  <line x1="147" y1="77.6" x2="160" y2="77.6" stroke="#fbbf24" stroke-width="2.2"/>
+  <line x1="147" y1="82.4" x2="160" y2="82.4" stroke="#f59e0b" stroke-width="2.2"/>
+  <line x1="147" y1="45.5" x2="160" y2="45.5" stroke="#f8fafc" stroke-width="1.8" opacity="0.78"/>
+  <line x1="147" y1="114.5" x2="160" y2="114.5" stroke="#f8fafc" stroke-width="1.8" opacity="0.78"/>
+
+  <!-- Crisp White Stop Bars -->
+  <g stroke="#f8fafc" stroke-width="3" opacity="0.92">
+    <line x1="44.5" y1="14" x2="115.5" y2="14"/>
+    <line x1="44.5" y1="146" x2="115.5" y2="146"/>
+    <line x1="14" y1="44.5" x2="14" y2="115.5"/>
+    <line x1="146" y1="44.5" x2="146" y2="115.5"/>
+  </g>
+
+  <!-- Continental High-Visibility Zebra Crosswalks with Subtle 3D Drop Shadow -->
+  <g fill="#090f17" opacity="0.45">
+    <rect x="46" y="20" width="6.5" height="14" rx="1.5"/><rect x="58" y="20" width="6.5" height="14" rx="1.5"/><rect x="70" y="20" width="6.5" height="14" rx="1.5"/><rect x="83.5" y="20" width="6.5" height="14" rx="1.5"/><rect x="95.5" y="20" width="6.5" height="14" rx="1.5"/><rect x="107.5" y="20" width="6.5" height="14" rx="1.5"/>
+    <rect x="46" y="128" width="6.5" height="14" rx="1.5"/><rect x="58" y="128" width="6.5" height="14" rx="1.5"/><rect x="70" y="128" width="6.5" height="14" rx="1.5"/><rect x="83.5" y="128" width="6.5" height="14" rx="1.5"/><rect x="95.5" y="128" width="6.5" height="14" rx="1.5"/><rect x="107.5" y="128" width="6.5" height="14" rx="1.5"/>
+    <rect x="20" y="46" width="14" height="6.5" rx="1.5"/><rect x="20" y="58" width="14" height="6.5" rx="1.5"/><rect x="20" y="70" width="14" height="6.5" rx="1.5"/><rect x="20" y="83.5" width="14" height="6.5" rx="1.5"/><rect x="20" y="95.5" width="14" height="6.5" rx="1.5"/><rect x="20" y="107.5" width="14" height="6.5" rx="1.5"/>
+    <rect x="128" y="46" width="14" height="6.5" rx="1.5"/><rect x="128" y="58" width="14" height="6.5" rx="1.5"/><rect x="128" y="70" width="14" height="6.5" rx="1.5"/><rect x="128" y="83.5" width="14" height="6.5" rx="1.5"/><rect x="128" y="95.5" width="14" height="6.5" rx="1.5"/><rect x="128" y="107.5" width="14" height="6.5" rx="1.5"/>
+  </g>
+  <g fill="#f8fafc" opacity="0.92">
+    <rect x="46" y="19" width="6.5" height="14" rx="1.5"/><rect x="58" y="19" width="6.5" height="14" rx="1.5"/><rect x="70" y="19" width="6.5" height="14" rx="1.5"/><rect x="83.5" y="19" width="6.5" height="14" rx="1.5"/><rect x="95.5" y="19" width="6.5" height="14" rx="1.5"/><rect x="107.5" y="19" width="6.5" height="14" rx="1.5"/>
+    <rect x="46" y="127" width="6.5" height="14" rx="1.5"/><rect x="58" y="127" width="6.5" height="14" rx="1.5"/><rect x="70" y="127" width="6.5" height="14" rx="1.5"/><rect x="83.5" y="127" width="6.5" height="14" rx="1.5"/><rect x="95.5" y="127" width="6.5" height="14" rx="1.5"/><rect x="107.5" y="127" width="6.5" height="14" rx="1.5"/>
+    <rect x="19" y="46" width="14" height="6.5" rx="1.5"/><rect x="19" y="58" width="14" height="6.5" rx="1.5"/><rect x="19" y="70" width="14" height="6.5" rx="1.5"/><rect x="19" y="83.5" width="14" height="6.5" rx="1.5"/><rect x="19" y="95.5" width="14" height="6.5" rx="1.5"/><rect x="19" y="107.5" width="14" height="6.5" rx="1.5"/>
+    <rect x="127" y="46" width="14" height="6.5" rx="1.5"/><rect x="127" y="58" width="14" height="6.5" rx="1.5"/><rect x="127" y="70" width="14" height="6.5" rx="1.5"/><rect x="127" y="83.5" width="14" height="6.5" rx="1.5"/><rect x="127" y="95.5" width="14" height="6.5" rx="1.5"/><rect x="127" y="107.5" width="14" height="6.5" rx="1.5"/>
+  </g>
+
+  <!-- Subtle Intersection Turning Guide Arcs -->
+  <g fill="none" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="3.5 3.5" opacity="0.32">
+    <path d="M 62,38 Q 62,62 38,62"/>
+    <path d="M 98,38 Q 98,62 122,62"/>
+    <path d="M 62,122 Q 62,98 38,98"/>
+    <path d="M 98,122 Q 98,98 122,98"/>
+  </g>
+
+  <!-- Center Cast-Iron Utility Manhole Cover -->
+  <circle cx="80" cy="80" r="10" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+  <circle cx="80" cy="80" r="7" fill="#1e293b" stroke="#64748b" stroke-width="1" stroke-dasharray="3 2"/>
+  <line x1="74.5" y1="80" x2="85.5" y2="80" stroke="#475569" stroke-width="1.2"/>
+  <line x1="80" y1="74.5" x2="80" y2="85.5" stroke="#475569" stroke-width="1.2"/>
+</svg>
