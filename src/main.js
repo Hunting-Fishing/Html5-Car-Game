@@ -6,7 +6,7 @@ import { publicAsset } from './data/assetUrl.js';
 import './ui/mobileUiSkinRuntime.js';
 import './ui/worldMobileCityRuntimeSafe.js';
 import './ui/worldAssetRuntime.js';
-import './ui/roadRunnerRuntime.js?v=101';
+import './ui/roadRunnerRuntime.js?v=102';
 import './ui/roadRunnerRuntimeWorldMapsHudLoader.js';
 import './ui/mergeAssetRuntime.js';
 import './ui/mergeAssetChecklistNote.js';
@@ -35,7 +35,7 @@ import { buyVipPass } from './systems/vipSystem.js';
 import { fmt, addCurrency, addXp, canAfford, spendCost } from './systems/economySystem.js';
 import { applyDerivedObjectives } from './systems/objectiveSystem.js';
 import { claimDaily } from './systems/objectiveSystem.js';
-import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState, tapGenerator, deliverCustomer, buyEnergyPack, upgradeEnergyCap, freeEnergyRefill, clearLastDelivery, clearCobweb, dailySpin } from './systems/mergeSystem.js';
+import { tickSupplier, placeSupplierItem, placeAllReady, selectOrMergeCell, sellSelected, autoMergeOnce, normalizeMergeState, tapGenerator, deliverCustomer, buyEnergyPack, upgradeEnergyCap, freeEnergyRefill, clearLastDelivery, clearCobweb, dailySpin, spinTycoonWheel } from './systems/mergeSystem.js';
 import { tickRace, tapRace, changeRaceMode, fixProblem, getRaceStats } from './systems/raceSystem.js';
 import { buyUpgrade, buyBuilding } from './systems/upgradeSystem.js';
 import { publishBuildCommunicationState } from './systems/buildCommunicationSystem.js';
@@ -543,6 +543,24 @@ function handleClick(event) {
   if (action === 'upgradeEnergyCap') result = upgradeEnergyCap(state);
   if (action === 'freeEnergyRefill') result = freeEnergyRefill(state);
   if (action === 'dailySpin') result = dailySpin(state);
+  if (action === 'openTycoonWheel') {
+    state.tycoonWheel = state.tycoonWheel || { open: true, spins: 0, lastFreeDay: '', lastResult: null };
+    state.tycoonWheel.open = true;
+    state.activeScreen = 'hub';
+    render();
+    queueSave();
+    return;
+  }
+  if (action === 'closeTycoonWheel') {
+    if (state.tycoonWheel) state.tycoonWheel.open = false;
+    render();
+    queueSave();
+    return;
+  }
+  if (action === 'spinTycoonWheel') {
+    result = spinTycoonWheel(state);
+    if (result?.ok) playSfx('claim');
+  }
   if (action === 'clearSpinResult') {
     if (state.merge) state.merge.lastSpinResult = null;
     render();

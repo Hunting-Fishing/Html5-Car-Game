@@ -371,15 +371,16 @@ const GHOST_MODES = {
 };
 
 const MAX_SELECTED_RIVALS = 3;
+const PLAYER_AVATAR = publicAsset('/assets/World/people/crew/crew-001.png');
 const RIVAL_LEADERBOARD_USERS = [
-  { id: 'friend_mia', name: 'Mia Torque', group: 'Friend', carKey: 'greenCompact', pace: 0.94, badge: 'FR' },
-  { id: 'friend_ken', name: 'Ken Parts', group: 'Friend', carKey: 'pickup', pace: 0.98, badge: 'FR' },
-  { id: 'best_jax', name: 'Jax Apex', group: 'Best Player', carKey: 'race', pace: 1.12, badge: 'TOP' },
-  { id: 'best_luna', name: 'Luna Shift', group: 'Best Player', carKey: 'superCoupe', pace: 1.18, badge: 'TOP' },
-  { id: 'local_scout', name: 'Route Scout', group: 'Nearby', carKey: 'greenCompact', pace: 0.90, badge: 'AI' },
-  { id: 'local_parts_runner', name: 'Parts Runner', group: 'Nearby', carKey: 'serviceVan', pace: 1.02, badge: 'AI' },
-  { id: 'city_rookie', name: 'City Rookie', group: 'Nearby', carKey: 'cityTaxi', pace: 0.88, badge: 'AI' },
-  { id: 'garage_pro', name: 'Garage Pro', group: 'Best Player', carKey: 'rallyLite', pace: 1.08, badge: 'TOP' }
+  { id: 'friend_mia', name: 'Mia Torque', shortName: 'MIA', group: 'Club Rival', carKey: 'greenCompact', pace: 0.96, badge: 'PR 430', pr: 430, color: '#22c55e', avatar: publicAsset('/assets/World/people/crew/crew-007.png') },
+  { id: 'best_jax', name: 'Jax "Apex" Tan', shortName: 'JAX', group: 'Pro League', carKey: 'race', pace: 1.04, badge: 'PR 475', pr: 475, color: '#a855f7', avatar: publicAsset('/assets/World/people/crew/crew-008.png') },
+  { id: 'friend_ken', name: 'Ken Baja', shortName: 'KEN', group: 'Crew Rival', carKey: 'pickup', pace: 0.99, badge: 'PR 445', pr: 445, color: '#f59e0b', avatar: publicAsset('/assets/World/people/crew/crew-003.png') },
+  { id: 'best_luna', name: 'Luna Shift', shortName: 'LUNA', group: 'Apex Champion', carKey: 'superCoupe', pace: 1.12, badge: 'PR 520', pr: 520, color: '#f43f5e', avatar: publicAsset('/assets/World/people/crew/crew-004.png') },
+  { id: 'local_scout', name: 'Jay Cruiser', shortName: 'JAY', group: 'Street Club', carKey: 'rallyLite', pace: 0.93, badge: 'PR 415', pr: 415, color: '#38bdf8', avatar: publicAsset('/assets/World/people/crew/crew-009.png') },
+  { id: 'local_parts_runner', name: 'Marcus Vance', shortName: 'MARCUS', group: 'Showroom VIP', carKey: 'naMuscle', pace: 1.02, badge: 'PR 460', pr: 460, color: '#ef4444', avatar: publicAsset('/assets/World/people/crew/crew-006.png') },
+  { id: 'city_rookie', name: 'Rico Metro', shortName: 'RICO', group: 'City Fleet', carKey: 'cityTaxi', pace: 0.90, badge: 'PR 395', pr: 395, color: '#eab308', avatar: publicAsset('/assets/World/people/crew/crew-002.png') },
+  { id: 'garage_pro', name: 'Hank Heavy', shortName: 'HANK', group: 'Baja Division', carKey: 'mountainCourier', pace: 1.06, badge: 'PR 485', pr: 485, color: '#fb923c', avatar: publicAsset('/assets/World/people/crew/crew-005.png') }
 ];
 
 const VEHICLES = {
@@ -445,8 +446,9 @@ const ASSET_PATHS = {
   hatchback: RACER_VEHICLE_ASSETS.hatchback,
   legacyStarterCompact: publicAsset('/assets/race/cars/starter_compact.png'),
   ghostA: RACER_VEHICLE_ASSETS.greenCompact,
-  ghostB: RACER_VEHICLE_ASSETS.pickup,
-  ghostC: RACER_VEHICLE_ASSETS.serviceVan,
+  ghostB: RACER_VEHICLE_ASSETS.race,
+  ghostC: RACER_VEHICLE_ASSETS.pickup,
+  pvpSpeedwayVista: publicAsset('/assets/race/backgrounds/pvp_speedway_vista.jpg'),
   coin: publicAsset('/assets/road-runner/token-coin.svg'),
   fuel: publicAsset('/assets/road-runner/token-energy.svg'),
   parts: publicAsset('/assets/road-runner/token-parts.svg'),
@@ -513,7 +515,9 @@ function loadSave() {
     const parsed = JSON.parse(raw);
     const unlockedVehicles = Array.isArray(parsed.unlockedVehicles) && parsed.unlockedVehicles.length ? parsed.unlockedVehicles : ['hatchback'];
     const selectedVehicle = unlockedVehicles.includes(parsed.selectedVehicle) ? parsed.selectedVehicle : 'hatchback';
-    const rawRivals = Array.isArray(parsed.selectedRivals) ? parsed.selectedRivals : ['friend_mia', 'local_scout'];
+    const rawRivals = Array.isArray(parsed.selectedRivals) && parsed.selectedRivals.length === 3
+      ? parsed.selectedRivals
+      : ['friend_mia', 'best_jax', 'friend_ken'];
     const result = {
       coins: parsed.coins || 0,
       parts: parsed.parts || 0,
@@ -626,6 +630,7 @@ function ghostsForRun(route, stage) {
 function refreshActiveGhosts() {
   if (!game) return;
   game.activeGhosts = ghostsForRun(game.route, game.stage || currentGhostStage());
+  game.liveRivals = createLiveRivals(game.route, game.stage || currentGhostStage());
 }
 
 function recordGhostSample(force = false) {
@@ -856,9 +861,18 @@ function sampledTerrainOffset(route, x) {
   return left.y + (right.y - left.y) * t;
 }
 
+const PVP_LANE_OFFSETS = [-54, -18, 18, 54];
+const PVP_PLAYER_LANE = 2;
+const PVP_RIVAL_LANES = [0, 1, 3];
+
 function routeY(route, x, height) {
-  const base = Math.max(170, Math.min(height - 130, height * 0.61));
-  return base + sampledTerrainOffset(route, x);
+  const base = Math.max(185, Math.min(height - 76, height * 0.69));
+  return clamp(base + sampledTerrainOffset(route, x) * 0.42, 168, height - 64);
+}
+
+function laneY(route, x, height, laneIndex = PVP_PLAYER_LANE) {
+  const offset = PVP_LANE_OFFSETS[clamp(laneIndex, 0, 3)] || 0;
+  return routeY(route, x, height) + offset;
 }
 
 function routeAngle(route, x, height) {
@@ -962,8 +976,12 @@ function leaderboardCandidates(routeKey = activeRoute, stage = currentGhostStage
   const candidates = local ? [{
     id: 'local_best',
     name: 'Your Best Run',
+    shortName: 'BEST',
     group: 'You',
     badge: 'YOU',
+    pr: 450,
+    color: '#38bdf8',
+    avatar: PLAYER_AVATAR,
     carKey: local.carKey,
     bestTimeMs: local.bestTimeMs,
     route: routeKey,
@@ -975,9 +993,14 @@ function leaderboardCandidates(routeKey = activeRoute, stage = currentGhostStage
     candidates.push({
       id: profile.id,
       name: profile.name,
+      shortName: profile.shortName || profile.name.split(' ')[0].toUpperCase(),
       group: profile.group,
       badge: profile.badge,
+      pr: profile.pr || 440,
+      color: profile.color || '#22c55e',
+      avatar: profile.avatar || PLAYER_AVATAR,
       carKey: profile.carKey,
+      pace: profile.pace || 1.0,
       bestTimeMs: ghost.bestTimeMs,
       route: routeKey,
       ghost
@@ -1279,6 +1302,99 @@ function refreshRaceCommand() {
   command.outerHTML = raceCommandHtml();
 }
 
+function createLiveRivals(route, stage) {
+  const all = leaderboardCandidates(activeRoute, stage);
+  const picked = selectedRivalCandidates(activeRoute, stage);
+  const roster = [...picked];
+  for (const cand of all) {
+    if (roster.length >= 3) break;
+    if (cand.id === 'local_best') continue;
+    if (!roster.some((item) => item.id === cand.id)) roster.push(cand);
+  }
+  const gridStartX = [184, 144, 114];
+  const skillPaces = [0.97, 1.01, 0.94];
+  const defaultColors = ['#22c55e', '#a855f7', '#f59e0b'];
+  return roster.slice(0, 3).map((cand, idx) => ({
+    id: cand.id,
+    ghostId: cand.ghost?.ghostId || `pvp_${cand.id}`,
+    name: cand.name,
+    shortName: cand.shortName || cand.name.split(' ')[0].toUpperCase(),
+    group: cand.group || 'PvP Rival',
+    badge: cand.badge || `PR ${430 + idx * 25}`,
+    pr: cand.pr || (430 + idx * 25),
+    color: cand.color || defaultColors[idx] || '#22c55e',
+    avatar: cand.avatar || PLAYER_AVATAR,
+    carKey: cand.carKey || (idx === 0 ? 'greenCompact' : idx === 1 ? 'race' : 'pickup'),
+    laneIndex: PVP_RIVAL_LANES[idx] ?? idx,
+    startX: gridStartX[idx] || 96,
+    x: gridStartX[idx] || 96,
+    speed: 0,
+    kmh: 0,
+    gear: 1,
+    pitch: 0,
+    skillMult: skillPaces[idx] || 0.98,
+    boostActive: false,
+    boostTimer: 0,
+    boostCooldown: 2.2 + idx * 1.4,
+    brakeActive: false
+  }));
+}
+
+function getPvpStandings() {
+  if (!game) return [];
+  const car = selectedVehicle();
+  const racers = [
+    {
+      id: 'player_you',
+      name: currentPlayerName() || 'YOU',
+      shortName: 'YOU',
+      isPlayer: true,
+      laneIndex: PVP_PLAYER_LANE,
+      x: game.x,
+      distanceM: game.distanceM,
+      kmh: Math.round(game.telemetry?.kmh || 0),
+      gearLabel: game.telemetry?.gearLabel || 'G1',
+      carKey: saveData.selectedVehicle,
+      carLabel: car.label,
+      color: '#38bdf8',
+      avatar: PLAYER_AVATAR,
+      boostActive: Boolean(game.boostActive)
+    },
+    ...(game.liveRivals || []).map((rival) => ({
+      id: rival.id,
+      name: rival.name,
+      shortName: rival.shortName,
+      isPlayer: false,
+      laneIndex: rival.laneIndex,
+      x: rival.x,
+      distanceM: routeMeters(game.route, Math.max(0, rival.x - 80)),
+      kmh: Math.round(rival.kmh || 0),
+      gearLabel: `G${rival.gear || 1}`,
+      carKey: rival.carKey,
+      carLabel: VEHICLES[rival.carKey]?.label || rival.carKey,
+      color: rival.color,
+      avatar: rival.avatar,
+      boostActive: Boolean(rival.boostActive)
+    }))
+  ];
+  racers.sort((a, b) => b.x - a.x);
+  const leaderX = racers[0]?.x || game.x;
+  return racers.map((racer, idx) => {
+    const rank = idx + 1;
+    const diffFromPlayerM = Math.round(routeMeters(game.route, racer.x - game.x));
+    const diffFromLeaderM = Math.round(routeMeters(game.route, leaderX - racer.x));
+    return {
+      ...racer,
+      rank,
+      diffFromPlayerM,
+      diffFromLeaderM,
+      gapLabel: racer.isPlayer
+        ? (rank === 1 ? 'LEADER' : `-${diffFromLeaderM}m`)
+        : (diffFromPlayerM >= 0 ? `+${diffFromPlayerM}m` : `${diffFromPlayerM}m`)
+    };
+  });
+}
+
 function resetRun() {
   ensureMissionState(saveData);
   const mapStage = currentStage();
@@ -1304,6 +1420,7 @@ function resetRun() {
   const director = makeDirector(route);
   const stage = currentGhostStage();
   const activeGhosts = ghostsForRun(route, stage);
+  const liveRivals = createLiveRivals(route, stage);
   game = {
     route,
     routeKey: activeRoute,
@@ -1326,6 +1443,8 @@ function resetRun() {
     wheelRotation: 0,
     traction: 1,
     elapsed: 0,
+    raceStarted: false,
+    raceStartTime: 0,
     finished: false,
     finishedRoute: false,
     maxKmh: 0,
@@ -1352,12 +1471,13 @@ function resetRun() {
     cleanBrakes: 0,
     airtimeCount: 0,
     overtakenGhosts: new Set(),
-    liveRank: 1,
-    totalRacers: 1 + activeGhosts.length,
+    liveRank: 4,
+    totalRacers: 1 + liveRivals.length,
     hazardsCleared: 0,
     usedRepair: false,
     activeGhosts,
-    ghostColors: ['#22c55e', '#f97316', '#38bdf8']
+    liveRivals,
+    ghostColors: ['#22c55e', '#a855f7', '#f59e0b']
   };
   game.telemetry = computeTelemetry();
   hidePostRunPanel();
@@ -1370,7 +1490,7 @@ function shellHtml() {
     ['routes', 'Map', '🗺️'],
     ['vehicles', 'Cars', '🏎️'],
     ['garage', 'Tune', '🔧'],
-    ['leaderboard', 'Ranks', '🏆'],
+    ['leaderboard', 'Rivals', '⚔️'],
     ['missions', 'Quests', '📋']
   ];
   const car = selectedVehicle();
@@ -1384,9 +1504,11 @@ function shellHtml() {
           <div id="roadRunnerGameHost"><canvas id="roadRunnerCanvas"></canvas></div>
           <div class="roadRunnerOverlay">
             <div class="roadRunnerBadge" data-rr-route>${currentStage().name || currentStage().id}</div>
-            <div class="rrLiveRankBadge" data-rr-rank-pill>🏆 1st/3</div>
+            <div class="rrLiveRankBadge" data-rr-rank-pill>🏆 P4/4</div>
+            <button class="rrVsRivalsButton" type="button" onclick="window.rrSetTab?.('leaderboard')" title="Choose PvP Rivals">⚔️ VS</button>
             <button class="rrRestartRunButton" onclick="window.restartHillRoute?.()" aria-label="Restart run" title="Restart run">↻</button>
           </div>
+          <div class="rrPvpStandingsStrip" data-rr-pvp-standings aria-label="Live PvP Race Standings"></div>
           <div class="rrRouteProgressBar" aria-label="Route progress">
             <div class="rrRouteTrack">
               <div class="rrRouteFill" data-rr-progress-fill style="width:0%"></div>
@@ -1496,7 +1618,7 @@ function updateHud() {
   setText('[data-rr-run-parts]', `${game.parts}`);
   setText('[data-rr-run-tools]', `${game.tools}`);
 
-  // Route progress bar & live rival rank
+  // Route progress bar & live 4-Player PvP Standings
   const routeLen = Math.max(1, game.route?.length || 2400);
   const progressPct = clamp((game.distancePx / routeLen) * 100, 0, 100);
   const progressFill = document.querySelector('[data-rr-progress-fill]');
@@ -1506,24 +1628,41 @@ function updateHud() {
   const targetM = game.route?.meters || Math.round(routeLen * 0.15);
   setText('[data-rr-progress-label]', `${Math.floor(game.distanceM)}m / ${targetM}m (${Math.round(progressPct)}%)`);
 
-  // Rival ghost progress dots & live rank
-  const ghosts = game.activeGhosts || [];
-  let aheadCount = 0;
-  const rivalDotsHtml = ghosts.map((ghost, idx) => {
-    const sample = sampleGhostAt(ghost, game.elapsed * 1000);
-    const gx = Math.max(0, sample.x || 0);
-    if (gx > game.distancePx + 4) aheadCount += 1;
+  const standings = getPvpStandings();
+  const playerStanding = standings.find((r) => r.isPlayer) || { rank: 1 };
+  const liveRivals = game.liveRivals || [];
+  const rivalDotsHtml = liveRivals.map((rival) => {
+    const gx = Math.max(0, rival.x - 80);
     const gPct = clamp((gx / routeLen) * 100, 1, 97);
-    const color = game.ghostColors?.[idx] || '#38bdf8';
-    return `<i class="rrRouteRivalDot" style="left:${gPct.toFixed(1)}%;background:${color}" title="${escapeAttr(ghost.playerName || 'Rival')}"></i>`;
+    return `<i class="rrRouteRivalDot" style="left:${gPct.toFixed(1)}%;background:${rival.color}" title="${escapeAttr(rival.name)}"></i>`;
   }).join('');
   const rivalsHost = document.querySelector('[data-rr-progress-rivals]');
   if (rivalsHost && rivalsHost.innerHTML !== rivalDotsHtml) rivalsHost.innerHTML = rivalDotsHtml;
-  const rank = 1 + aheadCount;
+
+  const rank = playerStanding.rank;
   game.liveRank = rank;
-  game.totalRacers = 1 + ghosts.length;
+  game.totalRacers = standings.length;
   const ord = rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : `${rank}th`;
-  setText('[data-rr-rank-pill]', ghosts.length ? `🏆 ${ord}/${1 + ghosts.length}` : '🏁 SOLO');
+  setText('[data-rr-rank-pill]', `🏆 ${ord}/${standings.length}`);
+
+  const standingsHost = document.querySelector('[data-rr-pvp-standings]');
+  if (standingsHost) {
+    const medals = ['🥇', '🥈', '🥉', '4th'];
+    const standingsHtml = standings.map((racer, idx) => `
+      <div class="rrPvpRacerChip ${racer.isPlayer ? 'is-player' : ''} ${racer.boostActive ? 'is-boosting' : ''}" style="--racer-color:${racer.color}">
+        <span class="rrPvpRankNum">${medals[idx] || `${idx + 1}`}</span>
+        <img class="rrPvpAvatar" src="${racer.avatar}" alt="" draggable="false">
+        <span class="rrPvpRacerInfo">
+          <b>${escapeHtml(racer.shortName)}</b>
+          <small>${escapeHtml(racer.gapLabel)}</small>
+        </span>
+      </div>
+    `).join('');
+    if (standingsHost.dataset.lastHtml !== standingsHtml) {
+      standingsHost.innerHTML = standingsHtml;
+      standingsHost.dataset.lastHtml = standingsHtml;
+    }
+  }
 
   // Shift LEDs & Pedal pressure bars
   const shiftHost = document.querySelector('[data-rr-shift-lights]');
@@ -1680,16 +1819,18 @@ function renderLeaderboardCandidate(candidate, index, selectedIds) {
   const selected = selectedIds.includes(candidate.id);
   const atLimit = !selected && selectedIds.length >= MAX_SELECTED_RIVALS;
   const vehicle = VEHICLES[candidate.carKey]?.label || candidate.carKey;
+  const carImg = ASSET_PATHS[candidate.carKey] || ASSET_PATHS.greenCompact;
   const rank = index + 1;
   return `
     <article class="rrLeaderboardRow ${selected ? 'selected' : ''}">
       <div class="rrLeaderboardRank">#${rank}</div>
+      <img class="rrLeaderboardAvatar" src="${candidate.avatar || PLAYER_AVATAR}" alt="" draggable="false">
       <div class="rrLeaderboardCopy">
         <div class="rrLeaderboardName"><b>${escapeHtml(candidate.name)}</b><span>${escapeHtml(candidate.group)}</span></div>
-        <small>${escapeHtml(vehicle)} · ${ROUTES[candidate.route]?.label || 'Route'} · Stage ${candidate.ghost.stage}</small>
+        <small><img class="rrLeaderboardCarMini" src="${carImg}" alt="" draggable="false"> ${escapeHtml(vehicle)} · ${escapeHtml(candidate.badge)}</small>
       </div>
       <div class="rrLeaderboardTime"><b>${formatRaceTime(candidate.bestTimeMs)}</b><span>${escapeHtml(candidate.badge)}</span></div>
-      <button class="btn small ${selected ? 'gold' : atLimit ? 'ghost' : 'primary'}" onclick="window.rrToggleRival?.('${candidate.id}')" ${atLimit ? 'disabled' : ''}>${selected ? 'Picked' : atLimit ? 'Max 3' : 'Pick'}</button>
+      <button class="btn small ${selected ? 'gold' : atLimit ? 'ghost' : 'primary'}" onclick="window.rrToggleRival?.('${candidate.id}')" ${atLimit ? 'disabled' : ''}>${selected ? 'Picked' : atLimit ? 'Max 3' : 'Race VS'}</button>
     </article>
   `;
 }
@@ -2617,24 +2758,38 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
   stopEngineSound();
   stopTireScreech();
   const wearPct = Math.floor(Math.min(100, game.wear / game.stats.wearLimit * 100));
-  const stars = completed && wearPct < 40 ? 3 : completed || wearPct < 75 ? 2 : 1;
-  const title = completed ? 'Route Complete' : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
+  const standings = getPvpStandings();
+  const playerRank = standings.find((r) => r.isPlayer)?.rank || 1;
+  const stars = completed && playerRank === 1 ? 3 : completed && playerRank <= 2 ? 2 : completed || wearPct < 75 ? 2 : 1;
+  const ord = playerRank === 1 ? '1st Place Victory!' : playerRank === 2 ? '2nd Place Podium!' : playerRank === 3 ? '3rd Place Podium!' : '4th Place Finish';
+  const title = completed ? ord : reason === 'wear' ? 'Vehicle Worn Out' : 'Out of Fuel';
   const car = selectedVehicle();
   const src = ASSET_PATHS[car.asset] || MAP_CAR;
   const starHtml = [1, 2, 3].map((n) => `<div><b>${n <= stars ? '★' : '☆'}</b><small>Level ${n}</small></div>`).join('');
+  const medals = ['🥇 1st', '🥈 2nd', '🥉 3rd', '4th'];
+  const standingsRows = standings.map((racer, idx) => `
+    <div class="podiumPvpRow ${racer.isPlayer ? 'is-player' : ''}">
+      <span class="podiumPvpRank">${medals[idx] || `${idx + 1}th`}</span>
+      <img class="podiumPvpAvatar" src="${racer.avatar}" alt="" draggable="false">
+      <b class="podiumPvpName">${escapeHtml(racer.name)}</b>
+      <small class="podiumPvpCar">${escapeHtml(racer.carLabel)}</small>
+      <span class="podiumPvpDist">${Math.floor(racer.distanceM)}m</span>
+    </div>
+  `).join('');
   panel.innerHTML = `<div class="podium">
     <div class="podiumHead">
       <div class="podiumStars">${starHtml}</div>
       <div class="podiumTitle">${title} · ${stars}/3</div>
       ${game.foundPart ? '<div class="podiumPart">Found Upgraded Part</div>' : ''}
     </div>
+    <div class="podiumPvpTable">${standingsRows}</div>
     <div class="podiumRewards">
       <div><b>+${formatSmall(game.coins)}</b><span>Coins</span></div>
       <div><b>+${formatSmall(bonus)}</b><span>Bonus</span></div>
       <div class="parts"><b>+${formatSmall(game.parts)}</b><span>Parts</span></div>
     </div>
     <div class="podiumBay">
-      <button type="button" class="podiumGo ranks" onclick="window.rrEndMatch?.('leaderboard')">Ranks</button>
+      <button type="button" class="podiumGo ranks" onclick="window.rrEndMatch?.('leaderboard')">Rivals</button>
       <button type="button" class="podiumGo map" onclick="window.rrEndMatch?.('routes')">Map</button>
       <div class="podiumCar"><img draggable="false" alt="" src="${src}"><b>${car.label}</b></div>
       <button type="button" class="podiumGo cars" onclick="window.rrEndMatch?.('vehicles')">Vehicles</button>
@@ -2646,7 +2801,7 @@ function showPostRunPanel(completed, reason, bonus, missionRewards) {
       <div><b>${wearPct}%</b><span>Wear</span></div>
       <div><b>${formatSmall(saveData.bestDistance)}m</b><span>Best</span></div>
     </div>
-    <div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Retry</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Next</button></div>
+    <div class="rrPostRunActions"><button type="button" onclick="window.restartHillRoute?.()">Rematch</button><button type="button" class="primary" onclick="window.nextHillRace?.()">Next Race</button></div>
   </div>`;
   panel.hidden = false;
 }
@@ -2670,7 +2825,7 @@ function draw() {
   const width = canvas.width;
   const height = canvas.height;
   const route = game.route;
-  const cameraX = clamp(game.x - width * 0.32, 0, Math.max(0, route.length - width + 260));
+  const cameraX = clamp(game.x - width * 0.27, 0, Math.max(0, route.length - width + 260));
   drawBackground(width, height, route, cameraX);
   drawRoad(width, height, route, cameraX);
   drawSpeedStreaks(width, height, route, cameraX);
@@ -2678,10 +2833,10 @@ function draw() {
   drawCheckpoints(width, height, route, cameraX);
   drawMilestoneCheckpoints(width, height, route, cameraX);
   drawPickups(width, height, route, cameraX);
-  drawGhosts(width, height, route, cameraX);
   drawParticles(width, height, cameraX);
-  drawPlayer(width, height, route, cameraX);
+  drawRaceCarsByLane(width, height, route, cameraX);
   drawFinish(width, height, route, cameraX);
+  drawStartingGantryOverlay(width, height, route, cameraX);
   drawNextFuelGuide(width, height, route, cameraX);
   drawApproachingHazardGuide(width, height, route, cameraX);
   drawFloatingRewards(width, height, route, cameraX);
@@ -2694,180 +2849,35 @@ function drawBackground(width, height, route, cameraX) {
 }
 
 function drawCityBackdrop(width, height, route, cameraX) {
-  const horizon = Math.round(height * 0.57);
-  const themes = {
-    manila: { skyTop: '#071b34', skyMid: '#134e7a', skyBot: '#67c6e3', sun: '#fde047', water: '#0284c7', waterHi: '#38bdf8', ground: '#15803d', groundBot: '#064e3b', mtnFar: '#1e3a5f', mtnNear: '#1e40af', bldgA: '#1e293b', bldgB: '#0f172a', win: '#fef08a', accent: '#38bdf8', palm: true },
-    monaco: { skyTop: '#0c1e3e', skyMid: '#1d4ed8', skyBot: '#93c5fd', sun: '#fef08a', water: '#0369a1', waterHi: '#7dd3fc', ground: '#166534', groundBot: '#052e16', mtnFar: '#334155', mtnNear: '#475569', bldgA: '#334155', bldgB: '#1e293b', win: '#fde68a', accent: '#f43f5e' },
-    denver: { skyTop: '#0f172a', skyMid: '#1e3a8a', skyBot: '#bae6fd', sun: '#fed7aa', water: '#075985', waterHi: '#38bdf8', ground: '#14532d', groundBot: '#052e16', mtnFar: '#475569', mtnNear: '#64748b', bldgA: '#1e293b', bldgB: '#0f172a', win: '#bae6fd', accent: '#34d399', pine: true, snowPeak: true },
-    garage: { skyTop: '#040d1a', skyMid: '#0f2942', skyBot: '#1e4e68', sun: '#38bdf8', water: '#083344', waterHi: '#22d3ee', ground: '#1e293b', groundBot: '#0f172a', mtnFar: '#0f172a', mtnNear: '#1e293b', bldgA: '#0f172a', bldgB: '#1e293b', win: '#35e58a', accent: '#ffd166' }
-  };
-  const look = themes[route.theme] || themes.manila;
+  const vista = images.pvpSpeedwayVista;
+  const backdropH = Math.round(height * 0.68);
+  if (vista && vista.ready && vista.naturalWidth > 0) {
+    const aspect = vista.naturalWidth / Math.max(1, vista.naturalHeight);
+    const tileW = Math.max(width, Math.round(backdropH * aspect));
+    const scrollX = ((cameraX * 0.22) % tileW + tileW) % tileW;
+    ctx.drawImage(vista, -scrollX, 0, tileW, backdropH);
+    if (tileW - scrollX < width) {
+      ctx.drawImage(vista, tileW - scrollX, 0, tileW, backdropH);
+    }
+    // Subtle atmospheric horizon blend into the 4-lane track
+    const blend = ctx.createLinearGradient(0, backdropH - 36, 0, height);
+    blend.addColorStop(0, 'rgba(15, 23, 42, 0)');
+    blend.addColorStop(0.35, 'rgba(20, 83, 45, 0.85)');
+    blend.addColorStop(1, '#064e3b');
+    ctx.fillStyle = blend;
+    ctx.fillRect(0, backdropH - 36, width, height - backdropH + 36);
+    return;
+  }
 
-  // 1. Multi-stop atmospheric sky
-  const sky = ctx.createLinearGradient(0, 0, 0, horizon);
-  sky.addColorStop(0, look.skyTop);
-  sky.addColorStop(0.52, look.skyMid);
-  sky.addColorStop(1, look.skyBot);
+  // Fallback gradient while high-res vista image loads
+  const sky = ctx.createLinearGradient(0, 0, 0, backdropH);
+  sky.addColorStop(0, '#1e1b4b');
+  sky.addColorStop(0.55, '#9a3412');
+  sky.addColorStop(1, '#f59e0b');
   ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, width, horizon);
-
-  // 2. Sun & atmospheric glow
-  const sunX = width * 0.76 - ((cameraX * 0.015) % (width * 0.35));
-  const sunY = horizon * 0.34;
-  const sunGrad = ctx.createRadialGradient(sunX, sunY, 6, sunX, sunY, 78);
-  sunGrad.addColorStop(0, 'rgba(255, 250, 210, 0.92)');
-  sunGrad.addColorStop(0.3, 'rgba(253, 224, 71, 0.38)');
-  sunGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
-  ctx.fillStyle = sunGrad;
-  ctx.beginPath();
-  ctx.arc(sunX, sunY, 78, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 3. Soft drifting clouds
-  ctx.save();
-  for (let i = -1; i < 6; i += 1) {
-    const cx = ((i * 220 - (cameraX * 0.055) % 220) + 1100) % (width + 260) - 110;
-    const cy = 44 + (Math.abs(i * 37) % 52);
-    ctx.globalAlpha = 0.24;
-    ctx.fillStyle = '#ffffff';
-    roundedCloud(cx, cy);
-  }
-  ctx.restore();
-
-  // 4. Far mountain range (0.11x parallax)
-  const mtnSpan = 220;
-  ctx.fillStyle = look.mtnFar;
-  ctx.beginPath();
-  ctx.moveTo(0, horizon);
-  for (let i = -1; i <= Math.ceil(width / mtnSpan) + 2; i += 1) {
-    const mx = i * mtnSpan - ((cameraX * 0.11) % mtnSpan);
-    const peakH = 54 + ((Math.abs(i * 73 + 19)) % 48);
-    ctx.lineTo(mx + mtnSpan * 0.5, horizon - peakH);
-    ctx.lineTo(mx + mtnSpan, horizon);
-  }
-  ctx.lineTo(width, horizon);
-  ctx.closePath();
-  ctx.fill();
-
-  // Snow / mist caps on peaks
-  if (look.snowPeak || route.profile === 'mountain') {
-    ctx.fillStyle = 'rgba(241, 245, 249, 0.45)';
-    for (let i = -1; i <= Math.ceil(width / mtnSpan) + 2; i += 1) {
-      const mx = i * mtnSpan - ((cameraX * 0.11) % mtnSpan);
-      const peakH = 54 + ((Math.abs(i * 73 + 19)) % 48);
-      ctx.beginPath();
-      ctx.moveTo(mx + mtnSpan * 0.5, horizon - peakH);
-      ctx.lineTo(mx + mtnSpan * 0.5 - 22, horizon - peakH + 19);
-      ctx.lineTo(mx + mtnSpan * 0.5 + 22, horizon - peakH + 19);
-      ctx.closePath();
-      ctx.fill();
-    }
-  }
-
-  // 5. Midground City Skyline & Bridges (0.24x parallax)
-  const bldgSlot = 68;
-  const startSlot = Math.floor((cameraX * 0.24) / bldgSlot) - 1;
-  const visibleSlots = Math.ceil(width / bldgSlot) + 3;
-  for (let s = 0; s < visibleSlots; s += 1) {
-    const idx = startSlot + s;
-    const bx = idx * bldgSlot - cameraX * 0.24;
-    const seed = Math.abs(idx * 97 + 31);
-    const bW = 36 + (seed % 22);
-    const bH = 38 + ((seed * 13) % 74);
-    const by = horizon - bH - 12;
-
-    // Building body
-    ctx.fillStyle = idx % 2 === 0 ? look.bldgA : look.bldgB;
-    ctx.fillRect(bx, by, bW, bH + 12);
-
-    // Roof trim / spire
-    ctx.fillStyle = look.accent;
-    ctx.fillRect(bx, by, bW, 2.5);
-    if (seed % 3 === 0) {
-      ctx.fillStyle = look.bldgA;
-      ctx.fillRect(bx + bW * 0.3, by - 10, bW * 0.4, 10);
-      ctx.strokeStyle = look.accent;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(bx + bW * 0.5, by - 10);
-      ctx.lineTo(bx + bW * 0.5, by - 22);
-      ctx.stroke();
-    }
-
-    // Lit windows grid
-    ctx.fillStyle = look.win;
-    ctx.globalAlpha = 0.55;
-    for (let wy = by + 7; wy < horizon - 16; wy += 9) {
-      for (let wx = bx + 5; wx < bx + bW - 6; wx += 8) {
-        if (((wx + wy + seed) % 5) !== 0) {
-          ctx.fillRect(wx, wy, 4, 5);
-        }
-      }
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  // 6. Bay / Harbor water strip with shimmer
-  const waterGrad = ctx.createLinearGradient(0, horizon - 14, 0, horizon + 16);
-  waterGrad.addColorStop(0, look.water);
-  waterGrad.addColorStop(0.5, look.waterHi);
-  waterGrad.addColorStop(1, look.water);
-  ctx.fillStyle = waterGrad;
-  ctx.fillRect(0, horizon - 14, width, 28);
-
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
-  for (let i = 0; i < 14; i += 1) {
-    const sx = ((i * 84 - (cameraX * 0.35) % 84) + width) % width;
-    const sy = horizon - 9 + (i % 3) * 6;
-    ctx.fillRect(sx, sy, 26, 2);
-  }
-
-  // 7. Ground & lush lower meadow gradient
-  const groundGrad = ctx.createLinearGradient(0, horizon + 12, 0, height);
-  groundGrad.addColorStop(0, look.ground);
-  groundGrad.addColorStop(1, look.groundBot);
-  ctx.fillStyle = groundGrad;
-  ctx.fillRect(0, horizon + 12, width, height - horizon);
-
-  // 8. Roadside trees & light poles (0.58x parallax)
-  const propStep = 115;
-  const firstProp = Math.floor((cameraX * 0.58) / propStep) - 1;
-  const propCount = Math.ceil(width / propStep) + 3;
-  for (let p = 0; p < propCount; p += 1) {
-    const pIdx = firstProp + p;
-    const px = pIdx * propStep - cameraX * 0.58;
-    const roadAtScreen = routeY(route, cameraX + px, height);
-    const py = Math.min(horizon + 26, roadAtScreen - 26);
-
-    // Streetlight every 2nd slot
-    if (pIdx % 2 === 0) {
-      ctx.strokeStyle = '#64748b';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(px + 42, py + 24);
-      ctx.lineTo(px + 42, py - 24);
-      ctx.lineTo(px + 54, py - 27);
-      ctx.stroke();
-      ctx.fillStyle = '#fef08a';
-      ctx.beginPath();
-      ctx.arc(px + 55, py - 27, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Stylized Tree
-    ctx.fillStyle = '#451a03';
-    ctx.fillRect(px + 8, py - 2, 5, 24);
-    ctx.fillStyle = '#15803d';
-    ctx.beginPath();
-    ctx.arc(px + 10.5, py - 8, 15, 0, Math.PI * 2);
-    ctx.arc(px + 3, py - 2, 11, 0, Math.PI * 2);
-    ctx.arc(px + 18, py - 2, 11, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#4ade80';
-    ctx.beginPath();
-    ctx.arc(px + 8, py - 12, 8, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  ctx.fillRect(0, 0, width, backdropH);
+  ctx.fillStyle = '#14532d';
+  ctx.fillRect(0, backdropH, width, height - backdropH);
 }
 
 function roundedCloud(x, y) {
@@ -2879,72 +2889,76 @@ function roundedCloud(x, y) {
 }
 
 function drawRoad(width, height, route, cameraX) {
-  const step = 12;
+  const step = 14;
   const start = Math.max(0, Math.floor((cameraX - 48) / step) * step);
   const end = Math.min(route.length + 280, cameraX + width + 96);
-  const halfRoad = route.profile === 'track' ? 24 : 21;
+  const halfRoad = 74; // 4 lanes x 36px = 144px wide speedway
 
-  // 1. Deep Earth / Rock Embankment Cut below the road
-  const earthGrad = ctx.createLinearGradient(0, height * 0.5, 0, height);
-  earthGrad.addColorStop(0, '#1e293b');
-  earthGrad.addColorStop(0.35, '#0f172a');
-  earthGrad.addColorStop(1, '#020617');
-  ctx.fillStyle = earthGrad;
+  // 1. Rich Foreground Motorsport Apron, Grass Verge & Sponsor Barriers below Lane 4 (zero black void)
+  const apronGrad = ctx.createLinearGradient(0, height * 0.68, 0, height);
+  apronGrad.addColorStop(0, '#15803d');
+  apronGrad.addColorStop(0.38, '#166534');
+  apronGrad.addColorStop(0.42, '#1e293b');
+  apronGrad.addColorStop(1, '#0f172a');
+  ctx.fillStyle = apronGrad;
   ctx.beginPath();
   ctx.moveTo(start - cameraX, height);
   for (let worldX = start; worldX <= end; worldX += step) {
-    ctx.lineTo(worldX - cameraX, routeY(route, worldX, height) + halfRoad + 6);
+    ctx.lineTo(worldX - cameraX, routeY(route, worldX, height) + halfRoad);
   }
   ctx.lineTo(end - cameraX, height);
   ctx.closePath();
   ctx.fill();
 
-  // Retaining wall support pillars along the embankment
-  ctx.fillStyle = 'rgba(51, 65, 85, 0.42)';
-  for (let worldX = Math.floor(start / 160) * 160; worldX <= end; worldX += 160) {
+  // Foreground Pit-Wall Sponsor Boards along the top & bottom edges of the track
+  const banners = [
+    { text: '365 SPEEDWAY', bg: '#0284c7', border: '#38bdf8' },
+    { text: 'APEX PVP CUP', bg: '#7e22ce', border: '#c084fc' },
+    { text: 'NITRO OVERDRIVE', bg: '#047857', border: '#34d399' },
+    { text: '365 AUTO WORLD', bg: '#b45309', border: '#facc15' }
+  ];
+  const bannerStep = 140;
+  for (let worldX = Math.floor(start / bannerStep) * bannerStep; worldX <= end; worldX += bannerStep) {
     const sx = worldX - cameraX;
-    const sy = routeY(route, worldX, height) + halfRoad + 8;
-    ctx.fillRect(sx - 6, sy, 12, height - sy);
+    const syTop = routeY(route, worldX, height) - halfRoad - 22;
+    const syBot = routeY(route, worldX, height) + halfRoad + 6;
+    const bItem = banners[Math.abs(Math.floor(worldX / bannerStep)) % banners.length];
+
+    // Upper Pit-Wall Sponsor Billboard
+    ctx.save();
+    ctx.fillStyle = bItem.bg;
+    roundRect(sx, syTop, 112, 15, 4);
+    ctx.fill();
+    ctx.strokeStyle = bItem.border;
+    ctx.lineWidth = 1.25;
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(bItem.text, sx + 56, syTop + 10.5);
+    ctx.restore();
+
+    // Lower Foreground Guardrail & Sponsor Strip
+    if (syBot + 12 < height) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      roundRect(sx + 10, syBot, 108, 13, 4);
+      ctx.fill();
+      ctx.strokeStyle = bItem.border;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '900 7.5px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`🏁 ${bItem.text}`, sx + 64, syBot + 9.5);
+      ctx.restore();
+    }
   }
 
-  // 2. Upper & Lower Grass Verge Shoulders
+  // 2. Main 4-Lane Asphalt Speedway Deck
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = '#22c55e';
-  ctx.lineWidth = halfRoad * 2 + 16;
-  ctx.beginPath();
-  for (let worldX = start; worldX <= end; worldX += step) {
-    const sx = worldX - cameraX;
-    const sy = routeY(route, worldX, height);
-    if (worldX === start) ctx.moveTo(sx, sy);
-    else ctx.lineTo(sx, sy);
-  }
-  ctx.stroke();
-
-  // 3. Alternating Red & White Racing Rumble Curbs along road edges
-  const curbLen = 36;
-  for (let worldX = Math.floor(start / curbLen) * curbLen; worldX < end; worldX += curbLen) {
-    const x1 = worldX - cameraX;
-    const y1 = routeY(route, worldX, height);
-    const x2 = worldX + curbLen - cameraX;
-    const y2 = routeY(route, worldX + curbLen, height);
-    const isRed = Math.floor(worldX / curbLen) % 2 === 0;
-    ctx.strokeStyle = isRed ? '#ef4444' : '#f8fafc';
-    ctx.lineWidth = 5;
-    // Upper curb
-    ctx.beginPath();
-    ctx.moveTo(x1, y1 - halfRoad - 1);
-    ctx.lineTo(x2, y2 - halfRoad - 1);
-    ctx.stroke();
-    // Lower curb
-    ctx.beginPath();
-    ctx.moveTo(x1, y1 + halfRoad + 1);
-    ctx.lineTo(x2, y2 + halfRoad + 1);
-    ctx.stroke();
-  }
-
-  // 4. Main Asphalt Road Deck
-  ctx.strokeStyle = '#1e2636';
+  ctx.strokeStyle = '#1e293b';
   ctx.lineWidth = halfRoad * 2;
   ctx.beginPath();
   for (let worldX = start; worldX <= end; worldX += step) {
@@ -2955,52 +2969,144 @@ function drawRoad(width, height, route, cameraX) {
   }
   ctx.stroke();
 
-  // Inner specular asphalt crown highlight
-  ctx.strokeStyle = '#2b364b';
-  ctx.lineWidth = halfRoad * 1.15;
-  ctx.beginPath();
-  for (let worldX = start; worldX <= end; worldX += step) {
-    const sx = worldX - cameraX;
-    const sy = routeY(route, worldX, height) - 2;
-    if (worldX === start) ctx.moveTo(sx, sy);
-    else ctx.lineTo(sx, sy);
+  // Alternating asphalt lane shading for the 4 lanes + cyan racing line glow on Lane 3 (YOU)
+  const laneStyles = [
+    { offset: -54, color: 'rgba(15, 23, 42, 0.45)', width: 34 },
+    { offset: -18, color: 'rgba(51, 65, 85, 0.35)', width: 34 },
+    { offset: 18, color: 'rgba(56, 189, 248, 0.14)', width: 34 },
+    { offset: 54, color: 'rgba(15, 23, 42, 0.45)', width: 34 }
+  ];
+  for (const lane of laneStyles) {
+    ctx.strokeStyle = lane.color;
+    ctx.lineWidth = lane.width;
+    ctx.beginPath();
+    for (let worldX = start; worldX <= end; worldX += step) {
+      const sx = worldX - cameraX;
+      const sy = routeY(route, worldX, height) + lane.offset;
+      if (worldX === start) ctx.moveTo(sx, sy);
+      else ctx.lineTo(sx, sy);
+    }
+    ctx.stroke();
   }
-  ctx.stroke();
 
-  // 5. Crisp Center Dashed Racing Lane Markings (following road slope)
-  ctx.strokeStyle = '#facc15';
-  ctx.lineWidth = 3;
-  for (let worldX = Math.floor(start / 84) * 84; worldX <= end; worldX += 84) {
+  // 3. Alternating Red & White FIA Racing Rumble Curbs (Top & Bottom)
+  const curbLen = 32;
+  for (let worldX = Math.floor(start / curbLen) * curbLen; worldX < end; worldX += curbLen) {
     const x1 = worldX - cameraX;
     const y1 = routeY(route, worldX, height);
-    const x2 = worldX + 42 - cameraX;
-    const y2 = routeY(route, worldX + 42, height);
+    const x2 = worldX + curbLen - cameraX;
+    const y2 = routeY(route, worldX + curbLen, height);
+    const isRed = Math.floor(worldX / curbLen) % 2 === 0;
+    ctx.strokeStyle = isRed ? '#ef4444' : '#f8fafc';
+    ctx.lineWidth = 5.5;
+    // Upper curb
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
+    ctx.moveTo(x1, y1 - halfRoad - 2);
+    ctx.lineTo(x2, y2 - halfRoad - 2);
+    ctx.stroke();
+    // Lower curb
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 + halfRoad + 2);
+    ctx.lineTo(x2, y2 + halfRoad + 2);
     ctx.stroke();
   }
 
-  // 6. Roadside Distance Marker Signs every 100m
-  const pxPer100m = Math.max(400, Math.round((100 / Math.max(100, route.meters)) * route.length));
-  for (let worldX = 80 + pxPer100m; worldX < route.length - 200; worldX += pxPer100m) {
+  // 4. Three Dashed Lane Divider Lines separating Lanes 1, 2, 3, and 4
+  const dividerOffsets = [-36, 0, 36];
+  for (let dIdx = 0; dIdx < dividerOffsets.length; dIdx += 1) {
+    const dOffset = dividerOffsets[dIdx];
+    ctx.strokeStyle = dIdx === 1 || dIdx === 2 ? 'rgba(125, 211, 252, 0.65)' : 'rgba(248, 250, 252, 0.45)';
+    ctx.lineWidth = 2;
+    for (let worldX = Math.floor(start / 68) * 68; worldX <= end; worldX += 68) {
+      const x1 = worldX - cameraX;
+      const y1 = routeY(route, worldX, height) + dOffset;
+      const x2 = worldX + 34 - cameraX;
+      const y2 = routeY(route, worldX + 34, height) + dOffset;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+  }
+
+  // 5. Painted Asphalt Lane Numbers (01, 02, 03 YOU, 04) & Starting Grid Boxes
+  for (let worldX = 240; worldX < route.length - 120; worldX += 380) {
     const sx = worldX - cameraX;
     if (sx < -60 || sx > width + 60) continue;
-    const sy = routeY(route, worldX, height) - halfRoad - 6;
-    const meters = routeMeters(route, worldX - 80);
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillRect(sx - 1.5, sy - 24, 3, 24);
-    ctx.fillStyle = '#0f172a';
-    roundRect(sx - 20, sy - 38, 40, 16, 5);
-    ctx.fill();
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = '900 9px Arial';
+    ctx.save();
+    ctx.font = '900 8.5px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(`${meters}m`, sx, sy - 27);
+    for (let l = 0; l < 4; l += 1) {
+      const ly = laneY(route, worldX, height, l) + 3;
+      ctx.fillStyle = l === PVP_PLAYER_LANE ? 'rgba(56, 189, 248, 0.55)' : 'rgba(226, 232, 240, 0.28)';
+      ctx.fillText(l === PVP_PLAYER_LANE ? 'L3 · YOU' : `LANE 0${l + 1}`, sx, ly);
+    }
+    ctx.restore();
   }
+
+  // Checkered Starting Line & FIA Grid Boxes at worldX = 80..226
+  const startLineX = 226 - cameraX;
+  if (startLineX > -80 && startLineX < width + 80) {
+    const centerStartY = routeY(route, 226, height);
+    for (let row = 0; row < 18; row += 1) {
+      const ry = centerStartY - halfRoad + row * 8.2;
+      ctx.fillStyle = row % 2 === 0 ? '#f8fafc' : '#0f172a';
+      ctx.fillRect(startLineX, ry, 6, 8.2);
+      ctx.fillStyle = row % 2 === 0 ? '#0f172a' : '#f8fafc';
+      ctx.fillRect(startLineX + 6, ry, 6, 8.2);
+    }
+    // White grid bracket in each of the 4 lanes
+    const gridBoxes = [
+      { lane: 0, gx: 184 },
+      { lane: 1, gx: 144 },
+      { lane: 2, gx: 80 },
+      { lane: 3, gx: 114 }
+    ];
+    ctx.strokeStyle = 'rgba(248, 250, 252, 0.72)';
+    ctx.lineWidth = 2;
+    for (const box of gridBoxes) {
+      const bx = box.gx + 40 - cameraX;
+      const by = laneY(route, box.gx, height, box.lane);
+      ctx.beginPath();
+      ctx.moveTo(bx - 16, by - 9);
+      ctx.lineTo(bx, by - 9);
+      ctx.lineTo(bx, by + 9);
+      ctx.lineTo(bx - 16, by + 9);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawStartingGantryOverlay(width, height, route, cameraX) {
+  const gantryX = 228 - cameraX;
+  if (gantryX < -90 || gantryX > width + 90) return;
+  const centerStartY = routeY(route, 228, height);
+  const topY = centerStartY - 102;
+  ctx.save();
+  // Gantry support pillar
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(gantryX - 3, topY, 6, 32);
+  // Overhead LED Gantry Sign
+  ctx.fillStyle = 'rgba(6, 19, 33, 0.95)';
+  roundRect(gantryX - 58, topY - 22, 116, 24, 7);
+  ctx.fill();
+  ctx.strokeStyle = game.raceStarted ? '#35e58a' : '#facc15';
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+
+  // 4 Starting Lights + Status Text
+  const lightColor = game.raceStarted ? '#22c55e' : (Math.floor(game.elapsed * 3) % 2 === 0 ? '#ef4444' : '#f59e0b');
+  for (let i = 0; i < 4; i += 1) {
+    ctx.fillStyle = lightColor;
+    ctx.beginPath();
+    ctx.arc(gantryX - 42 + i * 11, topY - 10, 3.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 9px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(game.raceStarted ? 'GO! PVP LIVE' : 'HOLD GAS!', gantryX + 4, topY - 7);
+  ctx.restore();
 }
 
 function drawSpeedStreaks(width, height, route, cameraX) {
@@ -3117,9 +3223,9 @@ function drawApproachingHazardGuide(width, height, route, cameraX) {
   const kmh = Math.round(game.telemetry?.kmh || 0);
   const danger = kmh >= DAMAGE_SPEED_KMH && !game.boostActive;
   const boxW = 158;
-  const boxH = 30;
+  const boxH = 28;
   const bx = width - boxW - 10;
-  const by = 84;
+  const by = 115;
   ctx.save();
   ctx.fillStyle = danger ? 'rgba(127, 29, 29, 0.92)' : 'rgba(6, 78, 59, 0.9)';
   roundRect(bx, by, boxW, boxH, 10);
@@ -3220,48 +3326,85 @@ function drawPickups(width, height, route, cameraX) {
   }
 }
 
-function drawGhosts(width, height, route, cameraX) {
-  const keys = ['ghostA', 'ghostB', 'ghostC'];
-  const ghosts = game.activeGhosts || [];
-  for (let i = 0; i < ghosts.length; i++) {
-    const ghost = ghosts[i];
-    const point = ghostPoint(ghost, height);
-    const x = point.x - cameraX;
-    const gapM = routeMeters(route, Math.abs(point.x - game.x));
-    const ahead = point.x >= game.x;
-    const shortName = (ghost.source === 'local_best' ? 'Your Best' : ghost.playerName || `Rival ${i + 1}`).split(' ')[0];
-    const color = game.ghostColors[i] || '#38bdf8';
+function drawRaceCarsByLane(width, height, route, cameraX) {
+  const standings = getPvpStandings();
+  const rankMap = new Map(standings.map((r) => [r.id, r]));
+  const fallbackKeys = ['ghostA', 'ghostB', 'ghostC'];
 
-    // If off-screen, draw an edge radar indicator pill so player tracks rival distance
-    if (x < -70 || x > width + 70) {
+  const entities = [
+    ...(game.liveRivals || []).map((rival, idx) => {
+      const st = rankMap.get(rival.id) || { rank: idx + 2, gapLabel: '+0m' };
+      const imageKey = images[rival.carKey]?.ready ? rival.carKey : (fallbackKeys[idx] || 'ghostA');
+      const revBob = !game.raceStarted ? Math.sin(game.elapsed * 22 + idx * 1.7) * 1.1 : 0;
+      const y = laneY(route, rival.x, height, rival.laneIndex) - 18 + revBob;
+      const angle = routeAngle(route, rival.x, height) * 0.72 + (rival.boostActive ? -0.028 : rival.brakeActive ? 0.03 : 0);
+      return {
+        isPlayer: false,
+        laneIndex: rival.laneIndex,
+        worldX: rival.x,
+        x: rival.x - cameraX,
+        y,
+        angle,
+        img: images[imageKey],
+        label: `P${st.rank} ${rival.shortName} ${st.gapLabel}`,
+        shortName: rival.shortName,
+        gapLabel: st.gapLabel,
+        rank: st.rank,
+        color: rival.color,
+        throttle: game.raceStarted && !rival.brakeActive,
+        boosting: Boolean(rival.boostActive),
+        braking: Boolean(rival.brakeActive)
+      };
+    }),
+    (() => {
+      const st = rankMap.get('player_you') || { rank: 1 };
+      const revBob = !game.raceStarted ? Math.sin(game.elapsed * 26) * 1.1 : 0;
+      const y = laneY(route, game.x, height, PVP_PLAYER_LANE) - 18 + game.suspensionTravel * 0.38 + revBob;
+      return {
+        isPlayer: true,
+        laneIndex: PVP_PLAYER_LANE,
+        worldX: game.x,
+        x: game.x - cameraX,
+        y,
+        angle: game.pitch,
+        img: images[selectedVehicle().asset],
+        label: `★ YOU · P${st.rank}`,
+        shortName: 'YOU',
+        gapLabel: 'YOU',
+        rank: st.rank,
+        color: '#38bdf8',
+        throttle: Boolean(input.gas || game.boostActive || !game.raceStarted),
+        boosting: Boolean(game.boostActive),
+        braking: Boolean(input.brake)
+      };
+    })()
+  ].sort((a, b) => a.laneIndex - b.laneIndex);
+
+  for (const ent of entities) {
+    if (!ent.isPlayer && (ent.x < -64 || ent.x > width + 64)) {
+      const ahead = ent.worldX >= game.x;
       const edgeX = ahead ? width - 48 : 48;
-      const edgeY = 122 + i * 24;
+      const edgeY = clamp(ent.y + 8, 118, height - 24);
       ctx.save();
-      ctx.fillStyle = 'rgba(4, 17, 29, 0.88)';
-      roundRect(edgeX - 44, edgeY - 10, 88, 20, 10);
+      ctx.fillStyle = 'rgba(4, 17, 29, 0.92)';
+      roundRect(edgeX - 44, edgeY - 10, 88, 19, 9.5);
       ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = ent.color;
+      ctx.lineWidth = 1.6;
       ctx.stroke();
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 9px Arial';
+      ctx.font = '900 8.5px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(ahead ? `${shortName} +${gapM}m ▶` : `◀ ${shortName} -${gapM}m`, edgeX, edgeY + 3);
+      ctx.fillText(ahead ? `P${ent.rank} ${ent.shortName} ${ent.gapLabel} ▶` : `◀ P${ent.rank} ${ent.shortName} ${ent.gapLabel}`, edgeX, edgeY + 2.5);
       ctx.restore();
       continue;
     }
 
-    const imageKey = images[ghost.carKey]?.ready ? ghost.carKey : keys[i] || 'ghostA';
-    const label = `${shortName} (${ahead ? `+${gapM}m` : `-${gapM}m`})`;
-    drawCar(x, point.y, routeAngle(route, point.x, height) * 0.72, images[imageKey], label, 0.68, color, false, 16 + i * 18);
+    if (ent.isPlayer || ent.boosting) {
+      drawBoostGlow(ent.x, ent.y, ent.boosting, ent.color);
+    }
+    drawCar(ent.x, ent.y, ent.angle, ent.img, ent.label, 1.0, ent.color, ent.isPlayer, ent);
   }
-}
-
-function ghostPoint(ghost, height) {
-  const route = game.route;
-  const sample = sampleGhostAt(ghost, game.elapsed * 1000);
-  const x = 80 + Math.max(0, sample.x || 0);
-  return { x, y: routeY(route, x, height) - 28, speed: sample.speed || 0 };
 }
 
 function spawnParticle(opts) {
@@ -3295,99 +3438,95 @@ function drawParticles(width, height, cameraX) {
   ctx.restore();
 }
 
-function drawPlayer(width, height, route, cameraX) {
-  const x = game.x - cameraX;
-  const y = routeY(route, game.x, height) - 28 + game.suspensionTravel * 0.45;
-  drawBoostGlow(x, y);
-  drawCar(x, y, game.pitch, images[selectedVehicle().asset], 'YOU', 1, '#3b82f6', true, 0);
-}
-
-function drawBoostGlow(x, y) {
+function drawBoostGlow(x, y, boosting = false, color = '#38bdf8') {
   const speedRatio = clamp(Math.abs(game.speed) / Math.max(1, game.stats.topSpeed), 0, 1);
-  const glow = clamp((input.gas ? 0.28 : 0) + (game.boostActive ? 0.65 : 0) + speedRatio * 0.25 + (game.boostPulse || 0), 0, 1);
+  const glow = boosting ? 0.82 : clamp((input.gas ? 0.28 : 0) + speedRatio * 0.22 + (game.boostPulse || 0), 0, 0.72);
   if (glow <= 0.04) return;
   ctx.save();
   ctx.globalAlpha = glow;
   const pulse = 1 + Math.sin(game.elapsed * 24) * 0.1;
-  const grad = ctx.createRadialGradient(x - 36, y + 16, 4, x - 36, y + 16, (game.boostActive ? 88 : 62) * pulse);
-  grad.addColorStop(0, game.boostActive ? 'rgba(56, 189, 248, 0.82)' : 'rgba(53, 229, 138, 0.58)');
-  grad.addColorStop(0.45, game.boostActive ? 'rgba(53, 229, 138, 0.42)' : 'rgba(56, 189, 248, 0.26)');
+  const grad = ctx.createRadialGradient(x - 32, y + 14, 4, x - 32, y + 14, (boosting ? 78 : 54) * pulse);
+  grad.addColorStop(0, boosting ? 'rgba(56, 189, 248, 0.85)' : 'rgba(53, 229, 138, 0.52)');
+  grad.addColorStop(0.45, boosting ? 'rgba(53, 229, 138, 0.42)' : 'rgba(56, 189, 248, 0.24)');
   grad.addColorStop(1, 'rgba(56, 189, 248, 0)');
   ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.ellipse(x - 28, y + 16, (game.boostActive ? 92 : 68) * pulse, 26 * pulse, game.pitch * 0.35, 0, Math.PI * 2);
+  ctx.ellipse(x - 24, y + 14, (boosting ? 80 : 58) * pulse, 20 * pulse, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
 
-function drawCar(x, y, angle, img, label, alpha, color, isPlayer = false, tagOffset = 0) {
+function drawCar(x, y, angle, img, label, alpha, color, isPlayer = false, ent = {}) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
-  ctx.globalAlpha = alpha;
+  ctx.globalAlpha = 1.0;
   const hasSprite = Boolean(img && img.ready);
 
-  // 1. Contact shadow under vehicle
-  ctx.fillStyle = isPlayer ? 'rgba(2, 6, 23, 0.46)' : 'rgba(2, 6, 23, 0.28)';
+  // 1. Contact shadow & subtle team lane underglow
+  ctx.fillStyle = 'rgba(2, 6, 23, 0.52)';
   ctx.beginPath();
-  ctx.ellipse(0, 23, isPlayer ? 50 : 42, 9, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 21, isPlayer ? 48 : 44, 7.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Holographic ring for Rival Ghosts
-  if (!isPlayer) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.ellipse(0, 23, 44, 8, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = isPlayer ? 2.2 : 1.8;
+  ctx.beginPath();
+  ctx.ellipse(0, 21, isPlayer ? 46 : 42, 6.5, 0, 0, Math.PI * 2);
+  ctx.stroke();
 
-  // 2. Player Headlight Beam Cone
-  if (isPlayer) {
-    const beamGrad = ctx.createLinearGradient(42, 4, 135, 22);
-    beamGrad.addColorStop(0, 'rgba(224, 242, 254, 0.42)');
+  // 2. Headlight Beam Cone
+  if (isPlayer || ent.boosting) {
+    const beamGrad = ctx.createLinearGradient(38, 4, 118, 18);
+    beamGrad.addColorStop(0, isPlayer ? 'rgba(224, 242, 254, 0.38)' : 'rgba(254, 240, 138, 0.26)');
     beamGrad.addColorStop(1, 'rgba(224, 242, 254, 0)');
     ctx.fillStyle = beamGrad;
     ctx.beginPath();
-    ctx.moveTo(42, 4);
-    ctx.lineTo(135, -6);
-    ctx.lineTo(135, 26);
+    ctx.moveTo(38, 4);
+    ctx.lineTo(118, -4);
+    ctx.lineTo(118, 22);
     ctx.closePath();
     ctx.fill();
   }
 
-  // 3. Exhaust & Nitro Flame Jet behind rear bumper
-  if (isPlayer && (input.gas || game.boostActive || game.boostPulse > 0.1)) {
-    const flameLen = game.boostActive
-      ? 42 + Math.sin(game.elapsed * 45) * 12
-      : 18 + (game.boostPulse || 0) * 22 + Math.sin(game.elapsed * 36) * 5;
-    const outerColor = game.boostActive ? '#38bdf8' : '#f97316';
-    const innerColor = game.boostActive ? '#6dff9f' : '#fef08a';
+  // 3. Exhaust & Nitro Flame Jet behind rear bumper (for both Player and Live Rivals!)
+  const showFlame = isPlayer
+    ? (input.gas || game.boostActive || game.boostPulse > 0.1 || !game.raceStarted)
+    : (ent.throttle || ent.boosting || !game.raceStarted);
+  if (showFlame) {
+    const isBoost = isPlayer ? game.boostActive : Boolean(ent.boosting);
+    const flameLen = isBoost
+      ? 38 + Math.sin(game.elapsed * 45) * 10
+      : !game.raceStarted
+        ? 10 + Math.abs(Math.sin(game.elapsed * 28 + x)) * 9
+        : 15 + Math.sin(game.elapsed * 36 + x) * 5;
+    const outerColor = isBoost ? '#38bdf8' : '#f97316';
+    const innerColor = isBoost ? '#6dff9f' : '#fef08a';
     ctx.fillStyle = outerColor;
     ctx.beginPath();
-    ctx.moveTo(-44, 14);
-    ctx.lineTo(-44 - flameLen, 8);
-    ctx.lineTo(-44 - flameLen * 0.75, 16);
-    ctx.lineTo(-44 - flameLen, 21);
-    ctx.lineTo(-44, 19);
+    ctx.moveTo(-40, 13);
+    ctx.lineTo(-40 - flameLen, 8);
+    ctx.lineTo(-40 - flameLen * 0.72, 15);
+    ctx.lineTo(-40 - flameLen, 20);
+    ctx.lineTo(-40, 18);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = innerColor;
     ctx.beginPath();
-    ctx.moveTo(-44, 15);
-    ctx.lineTo(-44 - flameLen * 0.62, 13);
-    ctx.lineTo(-44 - flameLen * 0.62, 19);
+    ctx.moveTo(-40, 14);
+    ctx.lineTo(-40 - flameLen * 0.6, 12);
+    ctx.lineTo(-40 - flameLen * 0.6, 18);
     ctx.closePath();
     ctx.fill();
   }
 
-  // 4. Vehicle Body Sprite
+  // 4. High-Resolution Vehicle Body Sprite
   if (hasSprite) {
     const aspect = Math.max(0.6, Math.min(2.4, img.naturalWidth / Math.max(1, img.naturalHeight)));
-    const targetW = isPlayer ? 104 : 90;
-    const targetH = clamp(targetW / aspect, 46, 76);
-    ctx.drawImage(img, -targetW / 2, 27 - targetH, targetW, targetH);
+    const targetW = isPlayer ? 96 : 90;
+    const targetH = clamp(targetW / aspect, 40, 62);
+    ctx.drawImage(img, -targetW / 2, 24 - targetH, targetW, targetH);
   } else {
     ctx.fillStyle = color;
     roundRect(-36, -15, 72, 30, 9);
@@ -3395,38 +3534,37 @@ function drawCar(x, y, angle, img, label, alpha, color, isPlayer = false, tagOff
     ctx.strokeStyle = '#172033';
     ctx.lineWidth = 3;
     ctx.stroke();
-    drawWheelSpinOverlay(game.wheelRotation + x * 0.01, alpha, false);
+    drawWheelSpinOverlay(game.wheelRotation + x * 0.01, 1, false);
   }
 
-  // 5. Brake Light Glow when player holds BRAKE
-  if (isPlayer && input.brake) {
-    const brakeGlow = ctx.createRadialGradient(-45, 5, 2, -45, 5, 24);
+  // 5. Brake Light Glow when Player or Rival brakes
+  if ((isPlayer && input.brake) || (!isPlayer && ent.braking)) {
+    const brakeGlow = ctx.createRadialGradient(-42, 6, 2, -42, 6, 20);
     brakeGlow.addColorStop(0, 'rgba(255, 30, 66, 0.95)');
     brakeGlow.addColorStop(0.5, 'rgba(239, 68, 68, 0.45)');
     brakeGlow.addColorStop(1, 'rgba(239, 68, 68, 0)');
     ctx.fillStyle = brakeGlow;
     ctx.beginPath();
-    ctx.arc(-45, 5, 24, 0, Math.PI * 2);
+    ctx.arc(-42, 6, 20, 0, Math.PI * 2);
     ctx.fill();
   }
 
   ctx.restore();
 
-  // 6. Floating Tag Pill above Car (staggered vertically by tagOffset so rivals never overlap YOU)
-  const tagY = y - (isPlayer ? 48 : 48 + tagOffset);
+  // 6. Crisp PvP Nameplate Pill directly above car roof in its lane
+  const tagY = y - 28;
   ctx.save();
-  ctx.globalAlpha = isPlayer ? 0.95 : 0.88;
-  ctx.fillStyle = isPlayer ? 'rgba(6, 24, 44, 0.92)' : 'rgba(15, 23, 42, 0.85)';
-  const tagW = Math.max(46, label.length * 6.2 + 14);
-  roundRect(x - tagW / 2, tagY - 12, tagW, 17, 8.5);
+  ctx.fillStyle = isPlayer ? 'rgba(6, 28, 52, 0.94)' : 'rgba(15, 23, 42, 0.90)';
+  const tagW = Math.max(48, label.length * 5.6 + 12);
+  roundRect(x - tagW / 2, tagY - 11, tagW, 15, 7.5);
   ctx.fill();
   ctx.strokeStyle = isPlayer ? (game.boostActive ? '#35e58a' : '#38bdf8') : color;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 1.4;
   ctx.stroke();
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 9.5px Arial';
+  ctx.fillStyle = isPlayer ? '#fef08a' : '#ffffff';
+  ctx.font = '900 8.5px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText(label, x, tagY);
+  ctx.fillText(label, x, tagY - 0.5);
   ctx.restore();
 }
 
@@ -3527,9 +3665,9 @@ function drawNextFuelGuide(width, height, route, cameraX) {
 function drawRunMeters(width, height) {
   const fuelPct = clamp(game.fuel / game.stats.maxFuel, 0, 1);
   const healthPct = clamp(1 - game.wear / game.stats.wearLimit, 0, 1);
-  const lowFuelY = width <= 430 ? 158 : 134;
-  drawBar(12, 76, 132, 14, `⛽ ${Math.round(fuelPct * 100)}%`, fuelPct, false);
-  drawBar(12, 95, 132, 14, `🛡️ ${Math.round(healthPct * 100)}%`, healthPct, false);
+  const lowFuelY = width <= 430 ? 154 : 138;
+  drawBar(10, 96, 86, 13, `⛽ ${Math.round(fuelPct * 100)}%`, fuelPct, false);
+  drawBar(148, 96, 86, 13, `🛡️ ${Math.round(healthPct * 100)}%`, healthPct, false);
   if (fuelPct < 0.2 && nextFuelMeters() > 180) {
     drawOutlinedText('⚠️ LOW FUEL — COAST OR REACH FUEL STOP!', width / 2, lowFuelY, '12px');
   }
@@ -3801,23 +3939,78 @@ function update(dt) {
   }
   game.prevGear = game.telemetry.gear;
 
-  // Rival Overtake Callout
-  if (game.elapsed > 3 && game.activeGhosts?.length) {
-    game.activeGhosts.forEach((ghost) => {
-      const sample = sampleGhostAt(ghost, game.elapsed * 1000);
-      const gx = 80 + Math.max(0, sample.x || 0);
-      if (game.x > gx + 18 && game.x < gx + 90 && !game.overtakenGhosts.has(ghost.ghostId)) {
-        game.overtakenGhosts.add(ghost.ghostId);
-        game.coins += 10;
-        saveData.coins += 10;
-        const shortName = (ghost.playerName || 'Rival').split(' ')[0].toUpperCase();
-        spawnFloatingReward(`🔥 PASSED ${shortName} +10C`, '#ffd166', game.x, -94);
-      }
-    });
+function updateLiveRivals(dt, height, previousPlayerX) {
+  if (!game?.liveRivals?.length) return;
+  if (!game.raceStarted) {
+    if (input.gas || input.boost || game.boostBurstTimer > 0 || game.speed > 4) {
+      game.raceStarted = true;
+      game.raceStartTime = game.elapsed;
+      spawnFloatingReward('🟢 GO! 4-PLAYER PVP!', '#35e58a', game.x + 28, -86);
+    } else {
+      return;
+    }
   }
 
+  const raceTime = Math.max(0, game.elapsed - (game.raceStartTime || 0));
+  const baseOffsets = [86, 38, -28];
+
+  game.liveRivals.forEach((rival, idx) => {
+    const prevRivalX = rival.x;
+    const nearHazard = game.hazards?.find((h) => rival.x >= h.x - 42 && rival.x <= h.x + h.length * 0.65);
+    rival.brakeActive = Boolean(nearHazard && rival.speed > 95);
+
+    if (rival.boostCooldown > 0) rival.boostCooldown = Math.max(0, rival.boostCooldown - dt);
+    if (rival.boostTimer > 0) {
+      rival.boostTimer = Math.max(0, rival.boostTimer - dt);
+      rival.boostActive = !rival.brakeActive;
+    } else {
+      rival.boostActive = false;
+    }
+
+    // Dynamic weaving offset so rivals battle wheel-to-wheel in their lanes
+    const wave = Math.sin(raceTime * (0.95 + idx * 0.28) + idx * 1.9) * 52;
+    const boostPenalty = game.boostActive ? -68 : 0;
+    const desiredOffset = baseOffsets[idx % baseOffsets.length] + wave + boostPenalty;
+    const desiredX = Math.max(rival.startX, game.x + desiredOffset);
+
+    // Trigger rival nitro burst when trailing behind or surging on a straight
+    if (!rival.brakeActive && rival.boostCooldown <= 0 && (rival.x < game.x - 45 || Math.sin(raceTime * 1.7 + idx) > 0.82)) {
+      rival.boostTimer = 1.35;
+      rival.boostCooldown = 4.2 + idx * 1.1;
+      rival.boostActive = true;
+    }
+
+    const playerMoving = input.gas || game.boostActive || game.speed > 16;
+    const baseCruise = playerMoving
+      ? Math.max(72, game.speed * rival.skillMult)
+      : (rival.x - game.x < 175 ? 92 * rival.skillMult : 18);
+
+    const rubberForce = clamp((desiredX - rival.x) * 1.65, -75, 88);
+    const hazardSlow = rival.brakeActive ? 0.68 : 1;
+    const rivalBoostMult = rival.boostActive ? 1.16 : 1;
+    const targetSpeed = clamp((baseCruise + rubberForce) * hazardSlow * rivalBoostMult, 16, game.stats.topSpeed * 1.12);
+
+    rival.speed += (targetSpeed - rival.speed) * Math.min(1, dt * 4.5);
+    rival.x = Math.min(game.route.length + 40, rival.x + rival.speed * dt);
+    rival.kmh = clamp(rival.speed * 0.92, 0, 240);
+    rival.gear = clamp(1 + Math.floor(rival.kmh / 38), 1, 6);
+
+    // Overtake detection & reward callout
+    if (raceTime > 1.2 && previousPlayerX <= prevRivalX + 6 && game.x > rival.x + 10) {
+      const overtakeKey = `${rival.id}_${Math.floor(game.distanceM / 180)}`;
+      if (!game.overtakenGhosts.has(overtakeKey)) {
+        game.overtakenGhosts.add(overtakeKey);
+        game.coins += 10;
+        saveData.coins += 10;
+        spawnFloatingReward(`🔥 PASSED ${rival.shortName} +10C`, '#ffd166', game.x, -88);
+      }
+    }
+  });
+}
+  updateLiveRivals(dt, height, previousX);
+
   // Spawn Live Tire Smoke, Sparks, Hazard Spray & Nitro Particles
-  const carRoadY = routeY(route, game.x, height);
+  const carRoadY = laneY(route, game.x, height, PVP_PLAYER_LANE);
   if (input.brake && game.telemetry.kmh > 26) {
     spawnParticle({
       x: game.x - 24 + (Math.random() - 0.5) * 14,

@@ -3,6 +3,7 @@ import { SubTabBar } from '../components/SubTabBar.js';
 import { getObjectiveList } from '../../systems/objectiveSystem.js';
 import { getTotalIdlePerMinute } from '../../systems/idleLineSystem.js';
 import { fmt } from '../../systems/economySystem.js';
+import { RICHDOM_WHEEL_WEDGES, isFreeTycoonSpinAvailable } from '../../systems/mergeSystem.js';
 import { UI_ICONS } from '../../data/uiIconMap.js';
 
 function recommendedActionForObjective(objective) {
@@ -47,6 +48,91 @@ function renderRichdomWelcomeBack(pending) {
   `;
 }
 
+function renderRichdomWheelRow(state) {
+  const freeReady = isFreeTycoonSpinAvailable(state);
+  const lastWedge = state?.tycoonWheel?.lastResult?.wedge;
+  return `
+    <section class="adcapRow richdomWheelRow" aria-label="Tycoon Lucky Wheel">
+      <div class="adcapIcon"><img src="${UI_ICONS.trophy}" alt=""></div>
+      <button class="adcapBuy" type="button" data-action="openTycoonWheel">
+        <b>TYCOON LUCKY WHEEL</b>
+        <small>${freeReady ? '🎁 1 Free Daily Spin Ready!' : 'Spin for 1,000G Jackpot & Parts'}</small>
+      </button>
+      <div class="adcapTrack richdomWheelTrack">
+        <em>${lastWedge ? `Last: ${lastWedge.icon} ${lastWedge.short}` : '💎 Win up to +1,000 Coins'}</em>
+      </div>
+      <button class="adcapManager richdomSpinOpenBtn" type="button" data-action="openTycoonWheel">
+        <b>${freeReady ? 'FREE' : 'SPIN'}</b>
+      </button>
+    </section>
+  `;
+}
+
+function renderRichdomWheelModal(state) {
+  if (!state?.tycoonWheel?.open) return '';
+  const freeReady = isFreeTycoonSpinAvailable(state);
+  const lastResult = state.tycoonWheel?.lastResult;
+  const angle = Number(lastResult?.angle || 0);
+  const canAffordExtra = (state.currencies?.coins || 0) >= 120;
+
+  return `
+    <div class="richdomWheelBackdrop" data-action="closeTycoonWheel">
+      <section class="richdomWheelModal" onclick="event.stopPropagation()" aria-label="Tycoon Lucky Spin Wheel">
+        <header class="richdomWheelHeader">
+          <div>
+            <span class="richdomWheelKicker">RICHDOM TYCOON EVENT</span>
+            <h3>Lucky Empire Wheel</h3>
+          </div>
+          <button type="button" class="richdomWheelClose" data-action="closeTycoonWheel">✕</button>
+        </header>
+
+        <div class="richdomWheelStage">
+          <div class="richdomWheelPointer">▼</div>
+          <div class="richdomWheelDisc" style="transform: rotate(${angle}deg);">
+            ${RICHDOM_WHEEL_WEDGES.map((w, idx) => `
+              <div class="richdomWheelLabel" style="transform: rotate(${idx * 45 + 22.5}deg);">
+                <span>${w.icon} <b>${w.short}</b></span>
+              </div>
+            `).join('')}
+            <div class="richdomWheelCenter"><b>365</b></div>
+          </div>
+        </div>
+
+        ${lastResult?.wedge ? `
+          <div class="richdomWheelResultBanner">
+            <span>${lastResult.wedge.icon} WON: <b>${lastResult.wedge.label}</b></span>
+          </div>
+        ` : `
+          <div class="richdomWheelResultBanner muted">
+            <span>Tap SPIN below to win instant Empire Cash, Parts, Tools, or the 1,000G Jackpot!</span>
+          </div>
+        `}
+
+        <div class="richdomWheelPrizeGrid">
+          ${RICHDOM_WHEEL_WEDGES.map((w, idx) => `
+            <div class="richdomPrizeChip ${lastResult?.index === idx ? 'won' : ''}">
+              <span>${w.icon}</span>
+              <b>${w.short}</b>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="richdomWheelActions">
+          <button
+            type="button"
+            class="btn primary richdomSpinActionBtn"
+            data-action="spinTycoonWheel"
+            ${!freeReady && !canAffordExtra ? 'disabled' : ''}
+          >
+            ${freeReady ? '🎰 SPIN FREE (DAILY BONUS)' : '🎰 SPIN WHEEL · 120 Coins'}
+          </button>
+          <button type="button" class="btn ghost" data-action="closeTycoonWheel">Done</button>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
 function tile(screen, icon, title, detail) {
   return `<button class="homeTile" type="button" data-action="screen" data-screen="${screen}"><img src="${icon}" alt=""><b>${title}</b><small>${detail}</small></button>`;
 }
@@ -56,6 +142,8 @@ export function renderHubScreen(state) {
   const next = objectives.find((item) => !item.done);
   const recommended = recommendedActionForObjective(next);
   const away = renderRichdomWelcomeBack(state.pendingOffline);
+  const wheelRow = renderRichdomWheelRow(state);
+  const wheelModal = renderRichdomWheelModal(state);
   const totals = getTotalIdlePerMinute(state);
   const rateEntries = Object.entries(totals);
   const empireRate = rateEntries.length
@@ -75,6 +163,7 @@ export function renderHubScreen(state) {
         ]
       })}
       ${away}
+      ${wheelRow}
       <section class="adcapRow">
         <div class="adcapIcon"><img src="${UI_ICONS.race}" alt=""></div>
         <button class="adcapBuy" data-action="screen" data-screen="${recommended.screen}"><b>${recommended.label}</b><small>${recommended.detail}</small></button>
@@ -92,6 +181,7 @@ export function renderHubScreen(state) {
         ${tile('garage', UI_ICONS.garage, 'Garage', 'Build rooms')}
       </div>
       <a class="homeLink" href="https://www.365motorsales.com" target="_blank" rel="noopener">Visit 365 Motor Sales</a>
+      ${wheelModal}
     `
   });
 }

@@ -1641,6 +1641,7 @@ function html() {
           </span>
         </div>
         <div class="worldTopCameraPill">
+          <button type="button" class="wtCamBtn" data-action="openTycoonWheel" title="Tycoon Lucky Wheel">🎰 Spin</button>
           <button type="button" class="wtCamBtn" data-camera-angle-btn onclick="window.toggleCityCameraAngleSafe?.()">🎥 3D</button>
           <button type="button" class="wtCamBtn" data-zoom-in-btn onclick="window.zoomMobileCityInSafe?.()" title="Zoom In">➕</button>
           <button type="button" class="wtCamBtn" data-zoom-out-btn onclick="window.zoomMobileCityOutSafe?.()" title="Zoom Out">➖</button>
@@ -2390,7 +2391,7 @@ function attachClashBuildingRig(rigRoot, type, spriteSize) {
 }
 
 // 3D Extruded Isometric Diamond Plaza Pad under each building (Simpsons: Tapped Out / SimCity BuildIt style)
-function drawIsoBuildingPlaza(w, h, ready = false, accentColor = 0x38bdf8) {
+function drawIsoBuildingPlaza(w, h, ready = false, accentColor = 0x38bdf8, stars = 1) {
   const plaza = new PIXI.Graphics();
   const cx = w / 2;
   const cy = h / 2 + 14;
@@ -2412,7 +2413,7 @@ function drawIsoBuildingPlaza(w, h, ready = false, accentColor = 0x38bdf8) {
     cx, cy + ry,
     cx, cy + ry + wallH,
     cx - rx, cy + wallH
-  ]).fill({ color: 0x94a3b8, alpha: 0.98 });
+  ]).fill({ color: stars >= 4 ? 0xd97706 : 0x94a3b8, alpha: 0.98 });
 
   // 3. 3D Extruded South-East Concrete Curb Wall (Shaded Right Face)
   plaza.poly([
@@ -2420,7 +2421,7 @@ function drawIsoBuildingPlaza(w, h, ready = false, accentColor = 0x38bdf8) {
     cx + rx, cy,
     cx + rx, cy + wallH,
     cx, cy + ry + wallH
-  ]).fill({ color: 0x475569, alpha: 0.98 });
+  ]).fill({ color: stars >= 4 ? 0x92400e : 0x475569, alpha: 0.98 });
 
   // 4. Isometric Diamond Concrete Sidewalk Terrace Top
   plaza.poly([
@@ -2428,8 +2429,8 @@ function drawIsoBuildingPlaza(w, h, ready = false, accentColor = 0x38bdf8) {
     cx + rx, cy,
     cx, cy + ry,
     cx - rx, cy
-  ]).fill({ color: 0xdbe4ef, alpha: 0.96 })
-    .stroke({ width: 2, color: 0xf8fafc, alpha: 0.95 });
+  ]).fill({ color: stars >= 5 ? 0xfef3c7 : 0xdbe4ef, alpha: 0.96 })
+    .stroke({ width: stars >= 3 ? 2.6 : 2, color: stars >= 3 ? 0xfacc15 : 0xf8fafc, alpha: 0.95 });
 
   // 5. Inset Dark-Slate Asphalt Lot Pad matching the building's 2:1 diamond base
   const irx = rx * 0.84;
@@ -2440,7 +2441,7 @@ function drawIsoBuildingPlaza(w, h, ready = false, accentColor = 0x38bdf8) {
     cx, cy + iry,
     cx - irx, cy
   ]).fill({ color: 0x1e293b, alpha: 0.95 })
-    .stroke({ width: ready ? 2.5 : 1.5, color: ready ? 0x35e58a : accentColor, alpha: ready ? 0.92 : 0.58 });
+    .stroke({ width: ready ? 2.5 : stars >= 4 ? 2.2 : 1.5, color: ready ? 0x35e58a : stars >= 4 ? 0xfacc15 : accentColor, alpha: ready ? 0.92 : 0.65 });
 
   // 6. Flush Isometric SE Service Driveway Curb Cut inside the terrace rim
   plaza.poly([
@@ -2454,6 +2455,13 @@ function drawIsoBuildingPlaza(w, h, ready = false, accentColor = 0x38bdf8) {
   // 7. Lush Isometric Corner Shrub Planters on West & East Diamond Points
   plaza.circle(cx - rx + 11, cy, 5.5).fill({ color: 0x22c55e, alpha: 0.95 }).stroke({ width: 1.2, color: 0x14532d });
   plaza.circle(cx + rx - 11, cy, 5.5).fill({ color: 0x16a34a, alpha: 0.95 }).stroke({ width: 1.2, color: 0x14532d });
+
+  // 8. Richdom 3★+ Golden VIP Corner Bollards
+  if (stars >= 3) {
+    for (const [bx, by] of [[cx, cy - iry], [cx + irx, cy], [cx, cy + iry], [cx - irx, cy]]) {
+      plaza.circle(bx, by, 3.8).fill({ color: 0xfacc15, alpha: 0.96 }).stroke({ width: 1.2, color: 0x78350f });
+    }
+  }
 
   return plaza;
 }
@@ -2470,21 +2478,22 @@ function buildingVisual({ x, y, wCells, hCells, type, name, alpha = 1, rotation 
   c.alpha = alpha;
 
   const status = buildingState ? collectStatus(buildingState, def) : { ready: false };
+  const stars = buildingStarsForLevel(buildingState?.level || 1);
 
   // 3D Isometric Diamond Plaza Pad under the building (aligns the 2:1 diamond building flush with the city block!)
-  const isoPlaza = drawIsoBuildingPlaza(w, h, status.ready, def.colorA || 0x38bdf8);
+  const isoPlaza = drawIsoBuildingPlaza(w, h, status.ready, def.colorA || 0x38bdf8, stars);
   isoPlaza.zIndex = 2;
   c.addChild(isoPlaza);
 
   // Subtle Pulsing Isometric Aura Ring
   const aura = new PIXI.Graphics();
-  const auraColor = status.ready ? 0x35e58a : 0x38bdf8;
+  const auraColor = status.ready ? 0x35e58a : stars >= 5 ? 0xfacc15 : 0x38bdf8;
   aura.poly([
     w / 2, h + 22,
     w + 22, h / 2 + 16,
     w / 2, -6,
     -22, h / 2 + 16
-  ]).stroke({ width: status.ready ? 2.8 : 1.4, color: auraColor, alpha: status.ready ? 0.85 : 0.32 });
+  ]).stroke({ width: status.ready || stars >= 5 ? 2.8 : 1.4, color: auraColor, alpha: status.ready || stars >= 5 ? 0.85 : 0.32 });
   aura.zIndex = 4;
   c.addChild(aura);
 

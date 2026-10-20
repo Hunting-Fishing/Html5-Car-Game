@@ -105,6 +105,14 @@ export const HITBOX_MAT = new THREE.MeshBasicMaterial({
   depthWrite: false
 });
 
+export function buildingStarsForLevel(level = 1) {
+  if (level >= 9) return 5;
+  if (level >= 7) return 4;
+  if (level >= 5) return 3;
+  if (level >= 3) return 2;
+  return 1;
+}
+
 export function makeLabelSprite(lines, {
   bgColor = 'rgba(6, 19, 29, 0.92)',
   borderColor = '#38bdf8',
@@ -113,11 +121,14 @@ export function makeLabelSprite(lines, {
   width = 160,
   height = 42,
   scale = 0.38,
-  clickable = false
+  clickable = false,
+  readyBubble = false
 } = {}) {
+  const tailH = readyBubble ? 8 : 0;
+  const totalH = height + tailH;
   const canvas = document.createElement('canvas');
   canvas.width = width * 2;
-  canvas.height = height * 2;
+  canvas.height = totalH * 2;
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2);
 
@@ -130,27 +141,54 @@ export function makeLabelSprite(lines, {
   ctx.fill();
   ctx.stroke();
 
+  if (readyBubble) {
+    ctx.beginPath();
+    ctx.moveTo(width / 2 - 7, height - 4);
+    ctx.lineTo(width / 2, totalH - 1.5);
+    ctx.lineTo(width / 2 + 7, height - 4);
+    ctx.closePath();
+    ctx.fillStyle = bgColor;
+    ctx.fill();
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+
+    // Richdom green cash bill badge on left
+    ctx.fillStyle = '#22c55e';
+    ctx.strokeStyle = '#052e16';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(10, height / 2 - 8, 20, 14, 3);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#bbf7d0';
+    ctx.beginPath();
+    ctx.arc(20, height / 2 - 1, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   const arr = Array.isArray(lines) ? lines : [String(lines)];
+  const textX = readyBubble ? width / 2 + 10 : width / 2;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   if (arr.length === 1) {
     ctx.fillStyle = textColor;
     ctx.font = '900 12.5px Arial, sans-serif';
-    ctx.fillText(arr[0], width / 2, height / 2 + 0.5);
+    ctx.fillText(arr[0], textX, height / 2 + 0.5);
   } else {
     ctx.fillStyle = textColor;
-    ctx.font = '900 11px Arial, sans-serif';
-    ctx.fillText(arr[0], width / 2, height * 0.35);
+    ctx.font = '900 10.5px Arial, sans-serif';
+    ctx.fillText(arr[0], textX, height * 0.35);
     ctx.fillStyle = subColor;
-    ctx.font = '800 9.5px Arial, sans-serif';
-    ctx.fillText(arr[1], width / 2, height * 0.70);
+    ctx.font = '900 10px Arial, sans-serif';
+    ctx.fillText(arr[1], textX, height * 0.70);
   }
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
   const sprite = new THREE.Sprite(mat);
-  sprite.scale.set(width * scale, height * scale, 1);
+  sprite.scale.set(width * scale, totalH * scale, 1);
   sprite.renderOrder = 999;
   if (!clickable) {
     sprite.raycast = () => {};
@@ -1713,7 +1751,9 @@ export function create3DBuilding({
   signPost.add(signBorderRim);
 
   // Illuminated Textured Sign Face (Front +Z)
-  const marqueeTex = makeMarqueeSignTexture(pal.sign || name, pal.sub || `LV ${level} · 365 AUTO`, pal.accent);
+  const stars = buildingStarsForLevel(level);
+  const starStr = `${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}`;
+  const marqueeTex = makeMarqueeSignTexture(pal.sign || name, `${starStr} · LV ${level} · ${pal.sub || '365 AUTO'}`, stars >= 4 ? 0xfacc15 : pal.accent);
   const signFaceMat = new THREE.MeshBasicMaterial({ map: marqueeTex });
   const signFaceFront = new THREE.Mesh(new THREE.PlaneGeometry(signW, signH), signFaceMat);
   signFaceFront.position.set(0, 0, 2.25);
@@ -1721,6 +1761,63 @@ export function create3DBuilding({
 
   group.add(signPost);
   animParts.signGroup = signPost;
+
+  // 5A. Richdom 5-Star Building Renovation Visual Morphing (2★ Planters, 3★ Golden VIP Bollards, 4★ Executive Penthouse, 5★ Tycoon Star Crown)
+  if (stars >= 2) {
+    const planterMat = getMat(0x16a34a, { roughness: 0.48 });
+    const potMat = getMat(0x334155, { roughness: 0.5 });
+    for (const [px, pz] of [[-w * 0.42, h * 0.42], [w * 0.42, h * 0.42]]) {
+      const pot = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 5.0, 3.6, 10), potMat);
+      pot.position.set(px, baseY + 1.8, pz);
+      const bush = new THREE.Mesh(new THREE.IcosahedronGeometry(5.2, 1), planterMat);
+      bush.position.set(px, baseY + 5.6, pz);
+      bush.castShadow = true;
+      group.add(pot, bush);
+    }
+  }
+
+  if (stars >= 3) {
+    const goldBollardMat = getMat(0xfacc15, { metalness: 0.85, roughness: 0.16, emissive: 0xf59e0b, emissiveIntensity: 0.45 });
+    const beaconMat = getMat(0xfef08a, { emissive: 0xfacc15, emissiveIntensity: 1.5 });
+    for (const [bx, bz] of [[-w * 0.46, h * 0.46], [w * 0.46, h * 0.46], [-w * 0.46, -h * 0.46], [w * 0.46, -h * 0.46]]) {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.0, 9.5, 10), goldBollardMat);
+      post.position.set(bx, baseY + 4.75, bz);
+      const orb = new THREE.Mesh(new THREE.SphereGeometry(2.3, 10, 10), beaconMat);
+      orb.position.set(bx, baseY + 10.2, bz);
+      group.add(post, orb);
+    }
+  }
+
+  if (stars >= 4) {
+    const execSuite = new THREE.Mesh(
+      new THREE.BoxGeometry(bW * 0.54, 9.5, bD * 0.46),
+      getPaintMat(0x38bdf8, { roughness: 0.08, metalness: 0.9, clearcoat: 1.0, emissive: 0x0284c7, emissiveIntensity: 0.55 })
+    );
+    execSuite.position.set(0, roofY + 4.75, centerZ - 4);
+    const goldCornice = new THREE.Mesh(
+      new THREE.BoxGeometry(bW * 0.58, 1.8, bD * 0.50),
+      getMat(0xfacc15, { metalness: 0.88, roughness: 0.14, emissive: 0xf59e0b, emissiveIntensity: 0.75 })
+    );
+    goldCornice.position.set(0, roofY + 9.8, centerZ - 4);
+    group.add(execSuite, goldCornice);
+  }
+
+  if (stars >= 5) {
+    const crownGroup = new THREE.Group();
+    crownGroup.position.set(0, roofY + 20, centerZ - 4);
+    const crownRing = new THREE.Mesh(
+      new THREE.TorusGeometry(Math.max(14, bW * 0.22), 1.4, 10, 24),
+      getMat(0xfacc15, { metalness: 0.9, roughness: 0.12, emissive: 0xfacc15, emissiveIntensity: 1.6 })
+    );
+    crownRing.rotation.x = Math.PI / 2;
+    const crownGem = new THREE.Mesh(
+      new THREE.OctahedronGeometry(5.5, 0),
+      getMat(0xfef08a, { emissive: 0xfacc15, emissiveIntensity: 1.9, metalness: 0.85, roughness: 0.1 })
+    );
+    crownGroup.add(crownRing, crownGem);
+    group.add(crownGroup);
+    animParts.starCrown = crownGroup;
+  }
 
   // 5B. Simpsons: Tapped Out / SimCity BuildIt Floating 3D Collectible Token when Ready!
   if (ready) {
@@ -1743,23 +1840,28 @@ export function create3DBuilding({
     animParts.selectionRing = selGroup;
   }
 
-  // 6. Floating 3D Status Pill Badge Above Rooftop
+  // 6. Floating 3D Richdom Speech Callout / Status Pill Badge Above Rooftop
   const hudSprite = makeLabelSprite(
     [
-      selected ? `★ ${name} · Lv ${level}` : `${name} · Lv ${level}`,
+      `${starStr} · ${name} Lv${level}`,
       ready ? `✓ ${statusText}` : statusText
     ],
     {
-      bgColor: selected ? 'rgba(69, 26, 3, 0.96)' : ready ? 'rgba(6, 46, 34, 0.95)' : 'rgba(6, 19, 29, 0.92)',
-      borderColor: selected ? '#facc15' : ready ? '#35e58a' : '#38bdf8',
-      textColor: selected ? '#fef08a' : '#ffffff',
-      subColor: ready ? '#8fffc2' : '#fef08a',
-      width: selected ? 168 : 152,
-      height: 36,
-      scale: selected ? 0.39 : 0.36
+      bgColor: ready
+        ? 'rgba(248, 250, 252, 0.98)'
+        : selected
+          ? 'rgba(69, 26, 3, 0.96)'
+          : 'rgba(6, 19, 29, 0.92)',
+      borderColor: ready ? '#22c55e' : selected ? '#facc15' : '#38bdf8',
+      textColor: ready ? '#0f172a' : selected ? '#fef08a' : '#ffffff',
+      subColor: ready ? '#15803d' : '#fef08a',
+      width: ready ? 176 : selected ? 172 : 162,
+      height: 38,
+      scale: selected ? 0.39 : 0.37,
+      readyBubble: ready
     }
   );
-  hudSprite.position.set(0, roofY + (ready ? 40 : 28), 0);
+  hudSprite.position.set(0, roofY + (ready ? 42 : 30), 0);
   group.add(hudSprite);
 
   group.rotation.y = -(Math.abs(Number(rotation) || 0) % 4) * (Math.PI / 2);
@@ -2890,6 +2992,10 @@ export class Three3DCityViewport {
         parts.selectionRing.rotation.y += dt * 2.2;
         const pulse = 1 + Math.sin(clock * 4.5) * 0.08;
         parts.selectionRing.scale.set(pulse, 1, pulse);
+      }
+      if (parts.starCrown) {
+        parts.starCrown.rotation.y += dt * 1.9;
+        parts.starCrown.position.y += Math.sin(clock * 3.2 + idx) * 0.04;
       }
     });
 

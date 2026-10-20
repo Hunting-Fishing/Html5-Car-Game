@@ -366,6 +366,57 @@ export function dailySpin(state) {
   return { ok: true, message: `Spin! +${gain} energy.` };
 }
 
+export const RICHDOM_WHEEL_WEDGES = [
+  { id: 'cash250', label: '+250 Coins', short: '+250G', icon: '💰', color: '#16a34a', rewards: { coins: 250 } },
+  { id: 'parts18', label: '+18 Parts', short: '+18 Parts', icon: '⚙️', color: '#0284c7', rewards: { parts: 18 } },
+  { id: 'tools14', label: '+14 Tools', short: '+14 Tools', icon: '🔧', color: '#7c3aed', rewards: { tools: 14 } },
+  { id: 'energy25', label: '+25 Energy', short: '+25⚡', icon: '⚡', color: '#d97706', rewards: { energy: 25 } },
+  { id: 'scrap16', label: '+16 Scrap', short: '+16 Scrap', icon: '🏗️', color: '#ea580c', rewards: { scrap: 16 } },
+  { id: 'fuel4', label: '+4 Fuel Cans', short: '+4 Fuel', icon: '⛽', color: '#0d9488', rewards: { fuelCans: 4 } },
+  { id: 'cash500', label: '+500 Coins', short: '+500G', icon: '💵', color: '#059669', rewards: { coins: 500 } },
+  { id: 'jackpot', label: 'JACKPOT! +1,000 Coins & +25 Parts', short: 'JACKPOT', icon: '💎', color: '#ca8a04', rewards: { coins: 1000, parts: 25 } }
+];
+
+export function isFreeTycoonSpinAvailable(state) {
+  return state?.tycoonWheel?.lastFreeDay !== todayKey();
+}
+
+export function spinTycoonWheel(state) {
+  normalizeMergeState(state);
+  state.tycoonWheel = state.tycoonWheel || { open: true, spins: 0, lastFreeDay: '', lastResult: null };
+  const today = todayKey();
+  const isFree = state.tycoonWheel.lastFreeDay !== today;
+  const spinCost = { coins: 120 };
+  if (!isFree) {
+    if (!canAfford(state, spinCost)) {
+      return { ok: false, message: 'Need 120 Coins for an extra Lucky Spin.' };
+    }
+    spendCost(state, spinCost);
+  } else {
+    state.tycoonWheel.lastFreeDay = today;
+  }
+
+  const index = Math.floor(Math.random() * RICHDOM_WHEEL_WEDGES.length);
+  const wedge = RICHDOM_WHEEL_WEDGES[index];
+  Object.entries(wedge.rewards || {}).forEach(([key, amount]) => {
+    if (key === 'energy') {
+      state.merge.energy = Math.min((state.merge.maxEnergy || 50) + 25, (state.merge.energy || 0) + amount);
+    } else {
+      addCurrency(state, key, amount);
+    }
+  });
+  addXp(state, 15);
+  state.tycoonWheel.spins = (state.tycoonWheel.spins || 0) + 1;
+  const targetDeg = (state.tycoonWheel.spins * 1440) + (360 - (index * 45 + 22.5));
+  state.tycoonWheel.lastResult = {
+    index,
+    wedge,
+    spinId: state.tycoonWheel.spins,
+    angle: targetDeg
+  };
+  return { ok: true, message: `Lucky Spin: ${wedge.label}!`, wedge };
+}
+
 export function getTutorialHint(state) {
   if (!state.objectives?.firstGeneratorTap) return 'Tap a highlighted generator to produce items.';
   if (!state.objectives?.firstMerge) return 'Tap two matching items to merge. Merge generators for better output.';
